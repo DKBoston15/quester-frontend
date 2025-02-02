@@ -1,13 +1,16 @@
 <!-- src/App.svelte -->
-<script>
+<script lang="ts">
+    import './app.css';
     import { Router, Route } from "svelte-routing";
     import { onMount } from 'svelte';
     import { auth } from './lib/stores/AuthStore.svelte';
     import Dashboard from './routes/Dashboard.svelte';
     import ProtectedRoute from './lib/components/ProtectedRoute.svelte';
     import Onboarding from "./routes/Onboarding.svelte";
+    import Project from "./routes/Project.svelte";
 
-    const { url } = $props();
+    // In Svelte 5, we use $props() instead of export let
+    const props = $props<{ url: string }>();
 
     onMount(() => {
         auth.verifySession();
@@ -22,7 +25,7 @@
     }
 </script>
 
-<Router {url}>
+<Router url={props.url}>
     <nav class="p-4 bg-gray-100">
         {#if !auth.isAuthenticated}
             <button
@@ -51,6 +54,11 @@
         <Route path="/dashboard">
             <ProtectedRoute>
                 <Dashboard />
+            </ProtectedRoute>
+        </Route>
+        <Route path="/org/:orgSlug/project/:projectSlug" let:params>
+            <ProtectedRoute>
+                <Project {params} />
             </ProtectedRoute>
         </Route>
     </main>
