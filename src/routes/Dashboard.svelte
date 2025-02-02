@@ -1,3 +1,4 @@
+<!-- src/routes/Dashboard.svelte -->
 <script lang="ts">
     import { navigate } from "svelte-routing";
     import { onMount } from "svelte";
@@ -7,9 +8,12 @@
     import { Input } from "$lib/components/ui/input";
     import type { Department, Organization, Project } from "../lib/types/auth";
     import TreeNode from "$lib/components/TreeNode.svelte";
+    import InviteUserForm from "$lib/components/InviteUserForm.svelte";
 
     let organizations = $state<Organization[]>([]);
     let currentOrg = $state<Organization | null>(null);
+    let departments = $state<Department[]>([]);
+    let projects = $state<Project[]>([]);
     let newProjectName = $state("");
     let isLoading = $state(true);
 
@@ -27,9 +31,30 @@
 
         if (organizations.length > 0) {
             currentOrg = organizations[0];
+            await loadDepartmentsAndProjects();
         }
 
         isLoading = false;
+    }
+
+    async function loadDepartmentsAndProjects() {
+        if (!currentOrg || !auth.user) return;
+
+        // Load departments
+        const deptResponse = await fetch(
+            `http://localhost:3333/departments/by-user?userId=${auth.user.id}`,
+            { credentials: "include" }
+        );
+        const deptData = await deptResponse.json();
+        departments = deptData.data.filter(d => d.organizationId === currentOrg.id);
+
+        // Load projects
+        const projectsResponse = await fetch(
+            `http://localhost:3333/projects/by-user?userId=${auth.user.id}`,
+            { credentials: "include" }
+        );
+        const projectsData = await projectsResponse.json();
+        projects = projectsData.data.filter(p => p.organizationId === currentOrg.id);
     }
 
     async function createProject(e: Event) {
@@ -53,6 +78,9 @@
             const data = await response.json();
             newProjectName = "";
 
+            // Reload projects
+            await loadDepartmentsAndProjects();
+
             // Navigate to the new project
             const projectSlug = data.project.name.toLowerCase().replace(/\s+/g, '-');
             navigate(`/org/${currentOrg.slug}/project/${projectSlug}`);
@@ -64,6 +92,7 @@
     function handleItemSelect(item: Organization | Department | Project) {
         if ('slug' in item) { // Organization
             currentOrg = item;
+            loadDepartmentsAndProjects(); // Load new departments and projects when org changes
         } else if (!('departmentId' in item)) { // Project
             if (!currentOrg) return;
             const projectSlug = item.name.toLowerCase().replace(/\s+/g, '-');
@@ -97,7 +126,7 @@
                         {#if currentOrg}
                             <div class="mt-6">
                                 <h3 class="font-medium mb-4">Create New Project</h3>
-                                <form onsubmit={createProject} class="flex gap-2">
+                                <form on:submit|preventDefault={createProject} class="flex gap-2">
                                     <Input
                                             type="text"
                                             placeholder="New project name"
@@ -112,5 +141,15 @@
                 {/if}
             </CardContent>
         </Card>
+
+        {#if currentOrg}
+            <div class="mt-6">
+                <InviteUserForm
+                        organization={currentOrg}
+                        {departments}
+                        {projects}
+                />
+            </div>
+        {/if}
     </div>
 </div>

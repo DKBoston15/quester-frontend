@@ -8,8 +8,8 @@
     import ProtectedRoute from './lib/components/ProtectedRoute.svelte';
     import Onboarding from "./routes/Onboarding.svelte";
     import Project from "./routes/Project.svelte";
+    import PendingInvites from "$lib/components/PendingInvites.svelte";
 
-    // In Svelte 5, we use $props() instead of export let
     const props = $props<{ url: string }>();
 
     onMount(() => {
@@ -22,6 +22,20 @@
 
     function logout() {
         window.location.href = "http://localhost:3333/auth/logout";
+    }
+
+    async function checkPendingInvites() {
+        if (!auth.user?.email) return false;
+
+        const response = await fetch(
+            `http://localhost:3333/invitations/pending?email=${encodeURIComponent(auth.user.email)}`,
+            { credentials: "include" }
+        );
+
+        if (!response.ok) return false;
+
+        const invitations = await response.json();
+        return invitations.length > 0;
     }
 </script>
 
@@ -48,7 +62,17 @@
     <main class="p-4">
         <Route path="/onboarding">
             <ProtectedRoute>
-                <Onboarding />
+                {#if auth.user}
+                    {#await checkPendingInvites()}
+                        <div>Loading...</div>
+                    {:then hasPendingInvites}
+                        {#if hasPendingInvites}
+                            <PendingInvites />
+                        {:else}
+                            <Onboarding />
+                        {/if}
+                    {/await}
+                {/if}
             </ProtectedRoute>
         </Route>
         <Route path="/dashboard">
