@@ -25,27 +25,43 @@
     },
 
     async setUser(newUser: User) {
-      console.log("Setting user:", newUser); // Debug
+      console.log("Setting user:", newUser);
       user = newUser;
       if (newUser) {
         const orgs = await this.fetchUserOrganizations();
-        console.log("Fetched orgs:", orgs); // Debug
+        console.log("Fetched orgs:", orgs);
         if (orgs?.length > 0) {
-          console.log("Setting first org:", orgs[0]); // Debug
-          this.setCurrentOrganization(orgs[0]);
+          // Load the last selected org from localStorage if available
+          const lastOrgId = localStorage.getItem("lastSelectedOrgId");
+          const lastOrg = orgs.find(
+            (org: Organization) => org.id === lastOrgId
+          );
+          this.setCurrentOrganization(lastOrg || orgs[0]);
         }
       }
       isLoading = false;
     },
 
-    setCurrentOrganization(org: Organization | null) {
+    async setCurrentOrganization(org: Organization | null) {
       console.log("Setting organization:", org);
       currentOrganization = org;
+
+      // Store the selected org ID in localStorage
+      if (org?.id) {
+        localStorage.setItem("lastSelectedOrgId", org.id);
+      } else {
+        localStorage.removeItem("lastSelectedOrgId");
+      }
+
+      // Trigger a re-render of components that depend on currentOrganization
+      const event = new CustomEvent("organizationChanged", { detail: org });
+      window.dispatchEvent(event);
     },
 
     clearUser() {
       user = null;
       currentOrganization = null;
+      localStorage.removeItem("lastSelectedOrgId");
       isLoading = false;
     },
 

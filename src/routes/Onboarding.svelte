@@ -12,8 +12,6 @@
   } from "$lib/components/ui/card";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
-  import * as Select from "$lib/components/ui/select";
-  import StripeSubscribe from "../lib/components/StripeSubscribe.svelte";
   import Pricing from "./Pricing.svelte";
 
   interface CreatedOrganization {
@@ -35,7 +33,11 @@
   let projectName = $state("");
   let isLoading = $state(false);
   let error = $state("");
-  let createdOrganization = $state<CreatedOrganization | null>(null);
+  let createdOrganization = $state<CreatedOrganization>({
+    id: "",
+    name: "",
+    slug: "",
+  });
   let organizations = $state<Organization[]>([]);
   let organizationId: string;
   const totalSteps = 4;

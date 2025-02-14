@@ -40,26 +40,37 @@
     const invitations = await response.json();
     return invitations.length > 0;
   }
+
+  // Add a derived state for current org name
+  const currentOrgName = $derived(auth.currentOrganization?.name || "");
 </script>
 
 <Router url={props.url}>
-  <nav class="p-4 bg-gray-100">
-    {#if !auth.isAuthenticated}
-      <button
-        onclick={login}
-        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-      >
-        Sign in with WorkOS
-      </button>
-    {:else if auth.user}
-      <span class="mr-4">Welcome, {auth.user.firstName}!</span>
-      <button
-        onclick={logout}
-        class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-      >
-        Logout
-      </button>
-    {/if}
+  <nav class="p-4 bg-gray-100 flex justify-between items-center">
+    <div class="flex items-center gap-4">
+      {#if auth.isAuthenticated && currentOrgName}
+        <span class="font-medium text-gray-700">{currentOrgName}</span>
+      {/if}
+    </div>
+
+    <div class="flex items-center gap-4">
+      {#if !auth.isAuthenticated}
+        <button
+          onclick={login}
+          class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Sign in with WorkOS
+        </button>
+      {:else if auth.user}
+        <span class="mr-4">Welcome, {auth.user.firstName}!</span>
+        <button
+          onclick={logout}
+          class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+        >
+          Logout
+        </button>
+      {/if}
+    </div>
   </nav>
 
   <main class="p-4">
@@ -85,7 +96,12 @@
     </Route>
     <Route path="/org/:orgSlug/project/:projectSlug" let:params>
       <ProtectedRoute>
-        <Project {params} />
+        <Project
+          params={{
+            orgSlug: params.orgSlug || "",
+            projectSlug: params.projectSlug || "",
+          }}
+        />
       </ProtectedRoute>
     </Route>
     <Route path="/pricing">
@@ -99,6 +115,8 @@
         {/if}
       </ProtectedRoute>
     </Route>
-    <Route path="/subscription/success" component={Success} />
+    <Route path="/subscription/success">
+      <Success />
+    </Route>
   </main>
 </Router>

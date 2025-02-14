@@ -15,6 +15,12 @@
   import TreeNode from "$lib/components/TreeNode.svelte";
   import InviteUserForm from "$lib/components/InviteUserForm.svelte";
   import ManageSubscription from "$lib/components/ManageSubscription.svelte";
+  import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+  } from "$lib/components/ui/select";
 
   let organizations = $state<Organization[]>([]);
   let currentOrg = $state<Organization | null>(null);
@@ -22,9 +28,18 @@
   let projects = $state<Project[]>([]);
   let newProjectName = $state("");
   let isLoading = $state(true);
+  let selectedOrgId = $state<string | null>(null);
 
   onMount(async () => {
     await loadOrganizations();
+    if (auth.currentOrgId) {
+      selectedOrgId = auth.currentOrgId;
+      currentOrg =
+        organizations.find((org) => org.id === auth.currentOrgId) || null;
+      if (currentOrg) {
+        await loadDepartmentsAndProjects();
+      }
+    }
   });
 
   async function loadOrganizations() {
@@ -46,24 +61,22 @@
   async function loadDepartmentsAndProjects() {
     if (!currentOrg || !auth.user) return;
 
-    // Load departments
     const deptResponse = await fetch(
       `http://localhost:3333/departments/by-user?userId=${auth.user.id}`,
       { credentials: "include" }
     );
     const deptData = await deptResponse.json();
     departments = deptData.data.filter(
-      (d) => d.organizationId === currentOrg.id
+      (d: Department) => d.organizationId === currentOrg?.id
     );
 
-    // Load projects
     const projectsResponse = await fetch(
       `http://localhost:3333/projects/by-user?userId=${auth.user.id}`,
       { credentials: "include" }
     );
     const projectsData = await projectsResponse.json();
     projects = projectsData.data.filter(
-      (p) => p.organizationId === currentOrg.id
+      (p: Project) => p.organizationId === currentOrg?.id
     );
   }
 
@@ -102,32 +115,72 @@
     }
   }
 
-  function handleItemSelect(item: Organization | Department | Project) {
+  async function handleOrgChange(value: string) {
+    selectedOrgId = value;
+    currentOrg = organizations.find((org) => org.id === value) || null;
+
+    if (currentOrg) {
+      auth.setCurrentOrganization(currentOrg);
+      await loadDepartmentsAndProjects();
+    }
+  }
+
+  function handleTreeNodeSelect(item: Organization | Department | Project) {
     if ("slug" in item) {
       // Organization
       currentOrg = item;
-      loadDepartmentsAndProjects(); // Load new departments and projects when org changes
+      loadDepartmentsAndProjects();
     } else if (!("departmentId" in item)) {
       // Project
       if (!currentOrg) return;
       const projectSlug = item.name.toLowerCase().replace(/\s+/g, "-");
       navigate(`/org/${currentOrg.slug}/project/${projectSlug}`);
     }
-    // For departments, we just expand/collapse in the tree view
   }
 
   async function checkSubscription() {
     if (!currentOrg) return false;
     const response = await fetch(
-      `http://localhost:3333/organizations/${currentOrg.id}/subscription`,
+      `http://localhost:3333/organizations/${currentOrg.id}?include[]=subscription`,
       { credentials: "include" }
     );
-    return response.ok;
+    if (!response.ok) return false;
+    const data = await response.json();
+    return Boolean(data.subscription);
   }
 </script>
 
 <div class="container mx-auto py-6">
   <div class="grid gap-6">
+    {#if organizations.length > 0}
+      <Card>
+        <CardHeader>
+          <CardTitle>Select Organization</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Select
+            type="single"
+            value={selectedOrgId || undefined}
+            onValueChange={handleOrgChange}
+          >
+            <SelectTrigger>
+              <span class="block truncate">
+                {currentOrg?.name || "Select an organization"}
+              </span>
+            </SelectTrigger>
+            <SelectContent>
+              {#each organizations as org}
+                <SelectItem value={org.id}>
+                  {org.name}
+                </SelectItem>
+              {/each}
+            </SelectContent>
+          </Select>
+        </CardContent>
+      </Card>
+    {/if}
+
+    <!-- Existing Workspace Card -->
     <Card>
       <CardHeader>
         <CardTitle>Your Workspace</CardTitle>
@@ -143,14 +196,15 @@
           </div>
         {:else}
           <div class="space-y-6">
-            <!-- Tree View -->
             <div class="border rounded-lg p-4">
-              {#each organizations as org}
-                <TreeNode item={org} onSelect={handleItemSelect} />
-              {/each}
+              {#if currentOrg}
+                <TreeNode
+                  item={currentOrg}
+                  on:select={({ detail }) => handleTreeNodeSelect(detail)}
+                />
+              {/if}
             </div>
 
-            <!-- Quick Project Creation -->
             {#if currentOrg}
               <div class="mt-6">
                 <h3 class="font-medium mb-4">Create New Project</h3>
@@ -177,14 +231,12 @@
     {/if}
 
     {#if currentOrg}
-      <ManageSubscription organizationId={currentOrg.id} />
-    {/if}
-
-    {#if currentOrg}
       {#await checkSubscription()}
         <div>Loading subscription status...</div>
       {:then hasSubscription}
-        {#if !hasSubscription}
+        {#if hasSubscription}
+          <ManageSubscription organizationId={currentOrg.id} />
+        {:else}
           <Card>
             <CardHeader>
               <CardTitle>Subscribe to a Plan</CardTitle>
