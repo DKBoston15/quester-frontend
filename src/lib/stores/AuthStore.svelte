@@ -25,11 +25,9 @@
     },
 
     async setUser(newUser: User) {
-      console.log("Setting user:", newUser);
       user = newUser;
       if (newUser) {
         const orgs = await this.fetchUserOrganizations();
-        console.log("Fetched orgs:", orgs);
         if (orgs?.length > 0) {
           // Load the last selected org from localStorage if available
           const lastOrgId = localStorage.getItem("lastSelectedOrgId");
@@ -43,7 +41,6 @@
     },
 
     async setCurrentOrganization(org: Organization | null) {
-      console.log("Setting organization:", org);
       currentOrganization = org;
 
       // Store the selected org ID in localStorage
@@ -75,7 +72,6 @@
         );
         if (response.ok) {
           const { data } = await response.json(); // Extract the data array
-          console.log("Organizations fetched:", data); // Debug
           return data; // Return just the data array
         }
         return null;

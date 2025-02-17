@@ -20,8 +20,6 @@
 
     try {
       isLoading = true;
-      console.log("priceId", priceId);
-      console.log("planId", planId);
       const response = await fetch(
         "http://localhost:3333/stripe/generate-checkout",
         {

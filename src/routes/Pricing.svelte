@@ -38,16 +38,11 @@
     }
   });
 
-  $effect(() => {
-    console.log("Billing period changed:", isYearly ? "yearly" : "monthly");
-  });
-
   function getPrice(plan: SubscriptionPlan) {
     return isYearly ? plan.priceYearly : plan.priceMonthly;
   }
 
   function getPriceId(plan: SubscriptionPlan) {
-    console.log(plan);
     return isYearly ? plan.yearlyPriceId : plan.monthlyPriceId;
   }
 </script>
