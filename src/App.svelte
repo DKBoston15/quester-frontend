@@ -5,7 +5,7 @@
   import { onMount } from "svelte";
   import { auth } from "./lib/stores/AuthStore.svelte";
   import Dashboard from "./routes/Dashboard.svelte";
-  import ProtectedRoute from "./lib/components/ProtectedRoute.svelte";
+  import ProtectedLayout from "./lib/components/ProtectedLayout.svelte";
   import Onboarding from "./routes/Onboarding.svelte";
   import Project from "./routes/Project.svelte";
   import PendingInvites from "$lib/components/PendingInvites.svelte";
@@ -74,8 +74,9 @@
   </nav>
 
   <main class="p-4">
-    <Route path="/onboarding">
-      <ProtectedRoute>
+    <!-- Protected Routes grouped under one layout -->
+    <ProtectedLayout>
+      <Route path="/onboarding">
         {#if auth.user}
           {#await checkPendingInvites()}
             <div>Loading...</div>
@@ -87,25 +88,19 @@
             {/if}
           {/await}
         {/if}
-      </ProtectedRoute>
-    </Route>
-    <Route path="/dashboard">
-      <ProtectedRoute>
+      </Route>
+      <Route path="/dashboard">
         <Dashboard />
-      </ProtectedRoute>
-    </Route>
-    <Route path="/org/:orgSlug/project/:projectSlug" let:params>
-      <ProtectedRoute>
+      </Route>
+      <Route path="/org/:orgSlug/project/:projectSlug" let:params>
         <Project
           params={{
             orgSlug: params.orgSlug || "",
             projectSlug: params.projectSlug || "",
           }}
         />
-      </ProtectedRoute>
-    </Route>
-    <Route path="/pricing">
-      <ProtectedRoute>
+      </Route>
+      <Route path="/pricing">
         {#if auth.isLoading}
           <div>Loading...</div>
         {:else if !auth.currentOrgId}
@@ -113,10 +108,10 @@
         {:else}
           <Pricing organizationId={auth.currentOrgId} />
         {/if}
-      </ProtectedRoute>
-    </Route>
-    <Route path="/subscription/success">
-      <Success />
-    </Route>
+      </Route>
+      <Route path="/subscription/success">
+        <Success />
+      </Route>
+    </ProtectedLayout>
   </main>
 </Router>
