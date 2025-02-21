@@ -3,13 +3,6 @@
   import { auth } from "../lib/stores/AuthStore.svelte";
   import { onMount } from "svelte";
   import type { Organization } from "../lib/types/auth";
-  import { Button } from "$lib/components/ui/button";
-  import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-  } from "$lib/components/ui/card";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import Pricing from "./Pricing.svelte";

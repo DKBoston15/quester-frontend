@@ -2,7 +2,6 @@
   import { onMount } from "svelte";
   import StripeSubscribe from "$lib/components/StripeSubscribe.svelte";
   import {
-    Card,
     CardContent,
     CardDescription,
     CardFooter,

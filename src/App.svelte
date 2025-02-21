@@ -13,7 +13,6 @@
   import Pricing from "./routes/Pricing.svelte";
   import SignIn from "./routes/SignIn.svelte";
   import { navigate } from "svelte-routing";
-  import DarkmodeToggle from "$lib/components/ui/darkmode-toggle/darkmode-toggle.svelte";
 
   const props = $props<{ url: string }>();
 
