@@ -29,6 +29,7 @@
   let showNewProjectForm = $state(false);
   let newProjectName = $state("");
   let prevItemId = $state<string | null>(null);
+  let canCreateProject = $state(false);
 
   $effect(() => {
     if (!props.item) return;
@@ -43,8 +44,31 @@
 
     if (isExpanded) {
       loadChildren();
+      checkSubscription();
     }
   });
+
+  async function checkSubscription() {
+    const org =
+      props.parentOrg || (isOrganization(props.item) ? props.item : null);
+    if (!org) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:3333/organizations/${org.id}/subscription`,
+        { credentials: "include" }
+      );
+      if (!response.ok) throw new Error("Failed to fetch subscription");
+
+      const subscription = await response.json();
+      const projectCount = projects.length;
+      canCreateProject =
+        !subscription.projectLimit || projectCount < subscription.projectLimit;
+    } catch (error) {
+      console.error("Failed to check subscription:", error);
+      canCreateProject = false;
+    }
+  }
 
   function isOrganization(item: any): item is Organization {
     return "slug" in item;
@@ -55,12 +79,7 @@
   }
 
   function handleProjectClick(project: Project) {
-    const org =
-      props.parentOrg || (isOrganization(props.item) ? props.item : null);
-    if (!org) return;
-
-    const projectSlug = project.name.toLowerCase().replace(/\s+/g, "-");
-    navigate(`/org/${org.slug}/project/${projectSlug}`);
+    navigate(`/project/${project.id}`);
   }
 
   async function createProject(e: Event) {
@@ -96,9 +115,8 @@
       // Refresh the projects list
       await loadChildren();
 
-      // Navigate to the new project
-      const projectSlug = data.project.name.toLowerCase().replace(/\s+/g, "-");
-      navigate(`/org/${org.slug}/project/${projectSlug}`);
+      // Navigate to the new project using its ID
+      navigate(`/project/${data.project.id}`);
     } catch (error) {
       console.error("Failed to create project:", error);
     }
@@ -203,7 +221,7 @@
         {props.item.name}
       </span>
 
-      {#if isOrganization(props.item) || isDepartment(props.item)}
+      {#if (isOrganization(props.item) || isDepartment(props.item)) && canCreateProject}
         <button
           class="p-1 hover:bg-accent hover:text-accent-foreground rounded-full opacity-0 group-hover:opacity-100 ml-2"
           onclick={toggleNewProjectForm}

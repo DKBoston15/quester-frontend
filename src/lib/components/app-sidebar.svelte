@@ -32,11 +32,6 @@
       icon: Users,
     },
     {
-      title: "Calendar",
-      url: "/calendar",
-      icon: Calendar,
-    },
-    {
       title: "Settings",
       url: "/settings",
       icon: Settings,
@@ -173,6 +168,10 @@
                                 href={`/project/${project.id}`}
                                 {...props}
                                 class="flex ml-4 items-center gap-3 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2"
+                                onclick={(e) => {
+                                  e.preventDefault();
+                                  navigate(`/project/${project.id}`);
+                                }}
                               >
                                 <div
                                   class="w-2 h-2 rounded-full bg-foreground/70 flex-shrink-0"

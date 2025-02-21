@@ -31,9 +31,15 @@
 
   // Helper function to check if user has pro features
   function hasProFeatures() {
+    const planName = currentOrg?.subscription?.plan?.name;
+    return planName && planName !== "Research Explorer";
+  }
+
+  // Helper function to check if user has research explorer subscription and has reached project limit
+  function hasReachedResearchExplorerLimit() {
     return (
-      currentOrg?.subscriptionType === "organization" ||
-      currentOrg?.name?.toLowerCase().includes("pro")
+      currentOrg?.subscription?.plan?.name === "Research Explorer" &&
+      projects.length >= 1
     );
   }
 
@@ -280,28 +286,49 @@
           <div class="space-y-6">
             <!-- Create Project -->
             <Card
-              class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
+              class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all {hasReachedResearchExplorerLimit()
+                ? 'bg-blue-50 dark:bg-blue-900/20'
+                : ''}"
             >
               <CardHeader>
                 <div class="flex items-center gap-2">
                   <Plus class="h-5 w-5" />
-                  <CardTitle class="font-mono">Create Project</CardTitle>
+                  <CardTitle class="font-mono">
+                    {#if hasReachedResearchExplorerLimit()}
+                      Project Limit Reached
+                    {:else}
+                      Create Project
+                    {/if}
+                  </CardTitle>
                 </div>
                 <CardDescription
-                  >Start a new project in your workspace</CardDescription
-                >
+                  >{#if hasReachedResearchExplorerLimit()}
+                    Upgrade your plan to create more projects
+                  {:else}
+                    Start a new project in your workspace
+                  {/if}
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onsubmit={createProject} class="flex gap-2">
-                  <Input
-                    type="text"
-                    placeholder="Project name"
-                    bind:value={newProjectName}
-                    required
-                    class="font-mono"
-                  />
-                  <Button type="submit" class="font-mono">Create</Button>
-                </form>
+                {#if hasReachedResearchExplorerLimit()}
+                  {#if currentOrg?.id}
+                    <ManageSubscription
+                      organizationId={currentOrg.id}
+                      isUpgradeCta={true}
+                    />
+                  {/if}
+                {:else}
+                  <form onsubmit={createProject} class="flex gap-2">
+                    <Input
+                      type="text"
+                      placeholder="Project name"
+                      bind:value={newProjectName}
+                      required
+                      class="font-mono"
+                    />
+                    <Button type="submit" class="font-mono">Create</Button>
+                  </form>
+                {/if}
               </CardContent>
             </Card>
 
@@ -357,22 +384,22 @@
                   </CardContent>
                 </Card>
               {:else}
-                <!-- Upgrade CTA -->
+                <!-- Team Features CTA -->
                 <Card
-                  class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
+                  class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all bg-blue-50 dark:bg-blue-900/20"
                 >
                   <CardHeader>
                     <div class="flex items-center gap-2">
                       <Users class="h-5 w-5" />
                       <CardTitle class="font-mono">Team Features</CardTitle>
                     </div>
-                    <CardDescription
-                      >Upgrade your plan to invite team members and collaborate</CardDescription
-                    >
+                    <CardDescription>
+                      Upgrade your plan to invite team members and collaborate
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <ManageSubscription
-                      organizationId={currentOrg.id}
+                      organizationId={currentOrg?.id}
                       isUpgradeCta={true}
                     />
                   </CardContent>
@@ -389,9 +416,10 @@
                       <CreditCard class="h-5 w-5" />
                       <CardTitle class="font-mono">Subscription</CardTitle>
                     </div>
-                    <CardDescription
-                      >Manage your subscription and billing</CardDescription
-                    >
+                    <CardDescription>
+                      Current Plan: {currentOrg.subscription?.plan?.name ||
+                        "No plan"}
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <ManageSubscription organizationId={currentOrg.id} />

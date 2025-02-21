@@ -97,13 +97,12 @@
         <Route path="/dashboard">
           <Dashboard />
         </Route>
-        <Route path="/org/:orgSlug/project/:projectSlug" let:params>
-          <Project
-            params={{
-              orgSlug: params.orgSlug || "",
-              projectSlug: params.projectSlug || "",
-            }}
-          />
+        <Route path="/project/:projectId" let:params>
+          {#if params.projectId}
+            <Project params={{ projectId: params.projectId }} />
+          {:else}
+            <div>Invalid project ID</div>
+          {/if}
         </Route>
         <Route path="/pricing">
           {#if auth.isLoading}

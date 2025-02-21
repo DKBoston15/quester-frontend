@@ -32,6 +32,22 @@ export interface Organization {
     lastName: string;
     email: string;
   }>;
+  subscription?: {
+    id: string;
+    organizationId: string;
+    status: string;
+    cancelAtPeriodEnd: boolean;
+    trialEndsAt: string | null;
+    currentPeriodStartsAt: string;
+    currentPeriodEndsAt: string;
+    canceledAt: string | null;
+    seatsCount: number;
+    planId: string;
+    plan: {
+      id: string;
+      name: string;
+    };
+  };
 }
 
 export interface Project {
