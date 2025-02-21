@@ -8,9 +8,22 @@
   let error = $state("");
   const currentOrg = $derived(auth.currentOrganization);
   const currentOrgId = $derived(auth.currentOrgId);
+  let retryCount = $state(0);
+  const MAX_RETRIES = 5;
 
-  onMount(async () => {
-    if (!currentOrgId) return; // Wait until we have an orgId
+  async function processSubscription() {
+    if (!currentOrgId) {
+      if (retryCount < MAX_RETRIES) {
+        retryCount++;
+        // Exponential backoff: 1s, 2s, 4s, 8s, 16s
+        setTimeout(processSubscription, Math.pow(2, retryCount - 1) * 1000);
+        return;
+      } else {
+        error = "Could not load organization details. Please refresh the page.";
+        isLoading = false;
+        return;
+      }
+    }
 
     try {
       // First get the organization details to determine subscription type
@@ -25,6 +38,8 @@
 
       const orgData = await orgResponse.json();
       const isTeamSubscription = orgData.subscriptionType === "organization";
+
+      console.log(orgData);
 
       // Then sync the subscription
       const response = await fetch("http://localhost:3333/stripe/sync", {
@@ -43,13 +58,23 @@
         throw new Error("Failed to sync subscription");
       }
 
-      // After successful subscription sync, navigate to dashboard
-      navigate("/dashboard");
+      // After successful subscription sync, continue onboarding flow
+      if (isTeamSubscription) {
+        // For team/org subscriptions, go to department creation (step 3)
+        navigate("/onboarding", { state: { step: 3 } });
+      } else {
+        // For personal subscriptions, go directly to project creation (step 3)
+        navigate("/onboarding", { state: { step: 3 } });
+      }
     } catch (err) {
       error = err instanceof Error ? err.message : "An error occurred";
     } finally {
       isLoading = false;
     }
+  }
+
+  onMount(() => {
+    processSubscription();
   });
 </script>
 

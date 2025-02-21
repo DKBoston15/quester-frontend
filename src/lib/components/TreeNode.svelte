@@ -54,16 +54,17 @@
     if (!org) return;
 
     try {
-      const response = await fetch(
-        `http://localhost:3333/organizations/${org.id}/subscription`,
-        { credentials: "include" }
-      );
-      if (!response.ok) throw new Error("Failed to fetch subscription");
+      const subscription = org.subscription;
+      if (!subscription) {
+        canCreateProject = false;
+        return;
+      }
 
-      const subscription = await response.json();
       const projectCount = projects.length;
+      // If there's no project limit or we're under the limit, allow project creation
       canCreateProject =
-        !subscription.projectLimit || projectCount < subscription.projectLimit;
+        subscription.status === "active" &&
+        (!subscription.seatsCount || projectCount < subscription.seatsCount);
     } catch (error) {
       console.error("Failed to check subscription:", error);
       canCreateProject = false;

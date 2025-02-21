@@ -104,6 +104,13 @@
             <div>Invalid project ID</div>
           {/if}
         </Route>
+        <Route path="/project/:projectId/*" let:params>
+          {#if params.projectId}
+            <Project params={{ projectId: params.projectId }} />
+          {:else}
+            <div>Invalid project ID</div>
+          {/if}
+        </Route>
         <Route path="/pricing">
           {#if auth.isLoading}
             <div>Loading...</div>

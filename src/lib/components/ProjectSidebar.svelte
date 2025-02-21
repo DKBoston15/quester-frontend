@@ -1,0 +1,273 @@
+<!-- src/lib/components/ProjectSidebar.svelte -->
+<script lang="ts">
+  import * as Sidebar from "$lib/components/ui/sidebar/index.js";
+  import { DarkmodeToggle } from "$lib/components/ui/darkmode-toggle";
+  import { auth } from "$lib/stores/AuthStore.svelte";
+  import { navigate, Link } from "svelte-routing";
+  import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
+  import {
+    LogOut,
+    Users,
+    Settings,
+    Home,
+    Library,
+    Pencil,
+    Microscope,
+    BarChartHorizontal,
+    Workflow,
+    Trophy,
+  } from "lucide-svelte";
+
+  type Route = {
+    title: string;
+    icon: any;
+    link: string;
+  };
+
+  const props = $props<{ project: any }>();
+
+  let primaryRoutes = $state<Route[]>([]);
+  let secondaryRoutes = $state<Route[]>([]);
+  let tertiaryRoutes = $state<Route[]>([]);
+
+  $effect(() => {
+    if (!props.project?.id) return;
+
+    primaryRoutes = [
+      {
+        title: "Dashboard",
+        icon: Home,
+        link: `/project/${props.project.id}`,
+      },
+      {
+        title: "Literature",
+        icon: Library,
+        link: `/project/${props.project.id}/literature`,
+      },
+      {
+        title: "Notes",
+        icon: Pencil,
+        link: `/project/${props.project.id}/notes`,
+      },
+      {
+        title: "Outcomes",
+        icon: Microscope,
+        link: `/project/${props.project.id}/outcomes`,
+      },
+    ];
+
+    secondaryRoutes = [
+      {
+        title: "Analytics",
+        icon: BarChartHorizontal,
+        link: `/project/${props.project.id}/analytics`,
+      },
+      {
+        title: "Connections",
+        icon: Workflow,
+        link: `/project/${props.project.id}/connections`,
+      },
+      {
+        title: "Progress",
+        icon: Trophy,
+        link: `/project/${props.project.id}/progress`,
+      },
+    ];
+
+    tertiaryRoutes = [
+      {
+        title: "Project Team",
+        icon: Users,
+        link: `/project/${props.project.id}/team`,
+      },
+      {
+        title: "Project Settings",
+        icon: Settings,
+        link: `/project/${props.project.id}/project_settings`,
+      },
+    ];
+  });
+
+  async function handleLogout() {
+    auth.logout();
+    navigate("/login");
+  }
+</script>
+
+<Sidebar.Root
+  collapsible="icon"
+  class="border-r-2 border-black dark:border-dark-border bg-card dark:bg-dark-card shadow-[4px_0px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_0px_0px_0px_rgba(44,46,51,0.1)]"
+>
+  <Sidebar.Header class="border-b-2 border-black dark:border-dark-border">
+    <div
+      class="flex items-center justify-between px-2 py-2 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-2"
+    >
+      <div
+        class="flex items-center gap-2 group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:justify-center"
+      >
+        <Sidebar.Trigger class="h-8 w-8" />
+        <span
+          class="font-mono font-bold text-lg group-data-[collapsible=icon]:hidden"
+        >
+          {props.project?.name || "Project"}
+        </span>
+      </div>
+      <DarkmodeToggle
+        class="group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center"
+      />
+    </div>
+  </Sidebar.Header>
+
+  <Sidebar.Content>
+    <!-- Primary Navigation -->
+    <Sidebar.Group>
+      <Sidebar.GroupContent>
+        <Sidebar.Menu>
+          {#each primaryRoutes as item (item.title)}
+            <Sidebar.MenuItem>
+              <Sidebar.MenuButton>
+                {#snippet tooltipContent()}
+                  {item.title}
+                {/snippet}
+                {#snippet child({ props })}
+                  <Link
+                    to={item.link}
+                    class="flex items-center gap-3 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
+                  >
+                    {#if item.icon}
+                      <item.icon class="h-4 w-4 flex-shrink-0" />
+                    {/if}
+                    <span class="font-mono group-data-[collapsible=icon]:hidden"
+                      >{item.title}</span
+                    >
+                  </Link>
+                {/snippet}
+              </Sidebar.MenuButton>
+            </Sidebar.MenuItem>
+          {/each}
+        </Sidebar.Menu>
+      </Sidebar.GroupContent>
+    </Sidebar.Group>
+
+    <Sidebar.Separator />
+
+    <!-- Secondary Navigation -->
+    <Sidebar.Group>
+      <Sidebar.GroupContent>
+        <Sidebar.Menu>
+          {#each secondaryRoutes as item (item.title)}
+            <Sidebar.MenuItem>
+              <Sidebar.MenuButton>
+                {#snippet tooltipContent()}
+                  {item.title}
+                {/snippet}
+                {#snippet child({ props })}
+                  <Link
+                    to={item.link}
+                    class="flex items-center gap-3 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
+                  >
+                    {#if item.icon}
+                      <item.icon class="h-4 w-4 flex-shrink-0" />
+                    {/if}
+                    <span class="font-mono group-data-[collapsible=icon]:hidden"
+                      >{item.title}</span
+                    >
+                  </Link>
+                {/snippet}
+              </Sidebar.MenuButton>
+            </Sidebar.MenuItem>
+          {/each}
+        </Sidebar.Menu>
+      </Sidebar.GroupContent>
+    </Sidebar.Group>
+
+    <Sidebar.Separator />
+
+    <!-- Tertiary Navigation -->
+    <Sidebar.Group>
+      <Sidebar.GroupContent>
+        <Sidebar.Menu>
+          {#each tertiaryRoutes as item (item.title)}
+            <Sidebar.MenuItem>
+              <Sidebar.MenuButton>
+                {#snippet tooltipContent()}
+                  {item.title}
+                {/snippet}
+                {#snippet child({ props })}
+                  <Link
+                    to={item.link}
+                    class="flex items-center gap-3 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
+                  >
+                    {#if item.icon}
+                      <item.icon class="h-4 w-4 flex-shrink-0" />
+                    {/if}
+                    <span class="font-mono group-data-[collapsible=icon]:hidden"
+                      >{item.title}</span
+                    >
+                  </Link>
+                {/snippet}
+              </Sidebar.MenuButton>
+            </Sidebar.MenuItem>
+          {/each}
+        </Sidebar.Menu>
+      </Sidebar.GroupContent>
+    </Sidebar.Group>
+  </Sidebar.Content>
+
+  <Sidebar.Footer class="border-t-2 border-black dark:border-dark-border">
+    <Sidebar.Menu>
+      <Sidebar.MenuItem>
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger>
+            {#snippet child({ props })}
+              <Sidebar.MenuButton
+                {...props}
+                class="flex items-center gap-3 font-mono hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
+              >
+                <div
+                  class="flex-1 text-left group-data-[collapsible=icon]:hidden"
+                >
+                  <div class="font-medium">
+                    {auth.user?.firstName}
+                    {auth.user?.lastName}
+                  </div>
+                  <div class="text-sm text-muted-foreground">View profile</div>
+                </div>
+                <Users
+                  class="h-4 w-4 hidden group-data-[collapsible=icon]:block"
+                />
+              </Sidebar.MenuButton>
+            {/snippet}
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Content
+            side="top"
+            class="w-[--bits-dropdown-menu-anchor-width]"
+          >
+            <DropdownMenu.Item class="flex items-center gap-3">
+              <span class="font-mono">Profile</span>
+            </DropdownMenu.Item>
+            <DropdownMenu.Item class="flex items-center gap-3">
+              <span class="font-mono">Settings</span>
+            </DropdownMenu.Item>
+            <DropdownMenu.Separator />
+            <DropdownMenu.Item
+              onclick={handleLogout}
+              class="flex items-center gap-3"
+            >
+              <LogOut class="h-4 w-4" />
+              <span class="font-mono">Sign out</span>
+            </DropdownMenu.Item>
+          </DropdownMenu.Content>
+        </DropdownMenu.Root>
+      </Sidebar.MenuItem>
+    </Sidebar.Menu>
+  </Sidebar.Footer>
+
+  <!-- Decorative corners -->
+  <div
+    class="absolute -top-1 -right-1 w-2 h-2 bg-blue-400 dark:bg-dark-accent-blue border border-black dark:border-dark-border"
+  ></div>
+  <div
+    class="absolute -bottom-1 -left-1 w-2 h-2 bg-yellow-400 dark:bg-dark-accent-yellow border border-black dark:border-dark-border"
+  ></div>
+</Sidebar.Root>

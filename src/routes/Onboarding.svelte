@@ -154,24 +154,6 @@
     }
   }
 
-  // Add subscription status check after Stripe subscription is created
-  async function checkSubscriptionStatus() {
-    try {
-      const response = await fetch(
-        `http://localhost:3333/organizations/${createdOrganization.id}/subscription`,
-        { credentials: "include" }
-      );
-      const data = await response.json();
-      hasSubscription = data.status === "active";
-
-      if (hasSubscription) {
-        currentStep = 4;
-      }
-    } catch (error) {
-      console.error("Failed to check subscription status:", error);
-    }
-  }
-
   async function handleCreateDepartments(e: Event) {
     e.preventDefault();
     if (!createdOrganization) return;
