@@ -13,6 +13,7 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import Pricing from "./Pricing.svelte";
+  import { DarkmodeToggle } from "$lib/components/ui/darkmode-toggle";
 
   interface CreatedOrganization {
     id: string;
@@ -22,7 +23,7 @@
 
   // State management
   let currentStep = $state(1);
-  let subscriptionType = $state<"personal" | "organization" | null>(null);
+  let subscriptionType = $state<"personal" | "organization">("personal");
   let orgName = $state("");
   let departmentCount = $state(1);
   let departmentInputValue = $state("1");
@@ -40,6 +41,8 @@
   });
   let organizations = $state<Organization[]>([]);
   let organizationId: string;
+  let hasSubscription = $state(false);
+  let hasExistingWorkspace = $state(false);
   const totalSteps = 4;
 
   // Update price IDs with your actual Stripe price IDs
@@ -50,6 +53,12 @@
 
   onMount(async () => {
     try {
+      // Check if we have a step in the navigation state
+      const state = history.state;
+      if (state?.step) {
+        currentStep = state.step;
+      }
+
       const response = await fetch(
         `http://localhost:3333/organizations/by-user?userId=${auth.user?.id}`,
         { credentials: "include" }
@@ -57,13 +66,36 @@
       const data = await response.json();
       organizations = data.data;
 
-      if (organizations.length > 0) {
-        navigate("/dashboard");
-      }
+      // Check if user has any organizations with active subscriptions
+      const hasActiveSubscription = organizations.some(
+        (org) => org.billingProviderId != null
+      );
 
-      // Fetch the organization ID if not already available
-      // This might come from your auth context or previous onboarding steps
-      organizationId = "your-org-id";
+      if (organizations.length > 0) {
+        // If they have an org, set it as the current workspace
+        const lastOrg = organizations[organizations.length - 1];
+        createdOrganization = {
+          id: lastOrg.id,
+          name: lastOrg.name,
+          slug: lastOrg.slug,
+        };
+        orgName = lastOrg.name;
+        hasExistingWorkspace = true;
+
+        // Set subscription type based on organization's subscription
+        if (lastOrg.subscriptionType === "organization") {
+          subscriptionType = "organization";
+        } else {
+          subscriptionType = "personal";
+        }
+
+        if (hasActiveSubscription && !state?.step) {
+          navigate("/dashboard");
+        } else if (!state?.step) {
+          // If they have an org but no subscription, go to subscription step
+          currentStep = 2;
+        }
+      }
     } catch (error) {
       console.error("Failed to fetch organizations:", error);
     }
@@ -71,7 +103,6 @@
 
   function handleSubscriptionChoice(type: "personal" | "organization") {
     subscriptionType = type;
-    currentStep = 2;
   }
 
   function updateDepartmentCount(inputValue: string) {
@@ -92,6 +123,13 @@
 
   async function handleCreateOrganization(e: Event) {
     e.preventDefault();
+
+    // If we already have a workspace, just move to the next step
+    if (hasExistingWorkspace) {
+      currentStep = 2;
+      return;
+    }
+
     isLoading = true;
     error = "";
 
@@ -114,12 +152,30 @@
 
       const data = await response.json();
       createdOrganization = data.organization;
-      currentStep = 3; // Move to pricing step
+      currentStep = 2;
     } catch (error) {
       console.error("Failed to create organization:", error);
       error = "Failed to create organization";
     } finally {
       isLoading = false;
+    }
+  }
+
+  // Add subscription status check after Stripe subscription is created
+  async function checkSubscriptionStatus() {
+    try {
+      const response = await fetch(
+        `http://localhost:3333/organizations/${createdOrganization.id}/subscription`,
+        { credentials: "include" }
+      );
+      const data = await response.json();
+      hasSubscription = data.status === "active";
+
+      if (hasSubscription) {
+        currentStep = 4;
+      }
+    } catch (error) {
+      console.error("Failed to check subscription status:", error);
     }
   }
 
@@ -171,6 +227,7 @@
         selectedDepartmentId = createdDepts[0].id;
       }
 
+      // Move to project creation step
       currentStep = 4;
     } catch (err) {
       error = err instanceof Error ? err.message : "An error occurred";
@@ -205,10 +262,8 @@
 
       if (!response.ok) throw new Error("Failed to create project");
 
-      const data = await response.json();
-      const projectSlug = data.project.name.toLowerCase().replace(/\s+/g, "-");
-
-      navigate(`/org/${createdOrganization.slug}/project/${projectSlug}`);
+      // After successful project creation, navigate to dashboard
+      navigate("/dashboard");
     } catch (err) {
       error = err instanceof Error ? err.message : "An error occurred";
     } finally {
@@ -230,165 +285,292 @@
 </script>
 
 <div
-  class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8"
+  class="relative min-h-screen bg-background dark:bg-dark-background transition-colors duration-300"
 >
-  <Card class="mx-auto w-full max-w-md">
-    <CardHeader>
-      <CardTitle>
-        {#if currentStep === 1}
-          Choose Your Workspace Type
-        {:else if currentStep === 2}
-          Name Your Workspace
-        {:else if currentStep === 3}
-          Choose Your Plan
-        {:else if currentStep === 4}
-          {#if subscriptionType === "organization"}
-            Create Departments
-          {:else}
+  <!-- Dark mode toggle -->
+  <div class="fixed top-4 right-4 z-50">
+    <DarkmodeToggle />
+  </div>
+
+  <!-- Background pattern -->
+  <div
+    class="absolute inset-0"
+    style="background-image: radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.05) 1px, transparent 0) dark:radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.03) 1px, transparent 0); background-size: 20px 20px;"
+  ></div>
+
+  <!-- Decorative elements -->
+  <div
+    class="absolute top-20 right-20 w-4 h-4 border-2 border-black dark:border-dark-border bg-yellow-400 dark:bg-dark-accent-yellow rotate-12 hidden sm:block"
+  ></div>
+  <div
+    class="absolute bottom-20 left-20 w-4 h-4 border-2 border-black dark:border-dark-border bg-blue-400 dark:bg-dark-accent-blue -rotate-12 hidden sm:block"
+  ></div>
+
+  <div
+    class="relative mx-auto {currentStep === 2
+      ? 'max-w-[1200px]'
+      : currentStep === 3
+        ? 'max-w-5xl min-h-[calc(100vh-4rem)]'
+        : 'max-w-2xl'} px-4 sm:px-6 py-4 sm:py-8 mt-12"
+  >
+    <div
+      class="border-2 mt-8 border-black dark:border-dark-border bg-card dark:bg-dark-card {currentStep ===
+      2
+        ? 'pb-0'
+        : 'p-6'} shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] transition-all duration-300 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,1)]"
+    >
+      <div class="{currentStep === 2 ? 'px-6 pt-6' : ''} mb-6 relative">
+        <h2
+          class="font-mono text-3xl font-bold text-black dark:text-dark-text-primary mb-2"
+        >
+          {#if currentStep === 1}
+            Choose Your Workspace Type
+          {:else if currentStep === 2}
+            {#if subscriptionType === "personal"}
+              Choose Your Personal Plan
+            {:else}
+              Choose Your Team Plan
+            {/if}
+          {:else if currentStep === 3}
+            {#if subscriptionType === "organization"}
+              Create Departments
+            {:else}
+              Create Your First Project
+            {/if}
+          {:else if currentStep === 4}
             Create Your First Project
           {/if}
-        {/if}
-      </CardTitle>
-    </CardHeader>
+        </h2>
+        <div
+          class="mt-4 h-1 w-12 bg-yellow-400 dark:bg-dark-accent-yellow"
+        ></div>
+      </div>
 
-    <CardContent>
       {#if error}
-        <div class="mb-4 p-4 text-red-700 bg-red-100 rounded">
+        <div
+          class="mb-6 p-4 border-2 border-red-500 dark:border-red-400 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 font-mono"
+        >
           {error}
         </div>
       {/if}
 
       {#if currentStep === 1}
-        <!-- Workspace Type Selection -->
-        <div class="space-y-4">
-          <Button
-            variant="outline"
-            class="w-full h-24"
-            onclick={() => handleSubscriptionChoice("personal")}
-          >
-            Personal Workspace
-            <span class="block text-sm text-gray-500">For individual use</span>
-          </Button>
-
-          <Button
-            variant="outline"
-            class="w-full h-24"
-            onclick={() => handleSubscriptionChoice("organization")}
-          >
-            Organization Workspace
-            <span class="block text-sm text-gray-500"
-              >For teams and businesses</span
-            >
-          </Button>
-        </div>
-      {:else if currentStep === 2}
         <!-- Organization Name -->
-        <form onsubmit={handleCreateOrganization} class="space-y-4">
+        <form onsubmit={handleCreateOrganization} class="space-y-6">
           <div>
-            <Label for="orgName">Workspace Name</Label>
-            <Input type="text" id="orgName" bind:value={orgName} required />
+            <Label
+              class="font-mono text-black dark:text-dark-text-primary mb-2"
+              for="orgName"
+            >
+              Workspace Name
+            </Label>
+            <Input
+              type="text"
+              id="orgName"
+              bind:value={orgName}
+              required
+              disabled={hasExistingWorkspace}
+              class="border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3 font-mono w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue {hasExistingWorkspace
+                ? 'opacity-50 cursor-not-allowed'
+                : ''}"
+            />
+            {#if hasExistingWorkspace}
+              <p
+                class="mt-2 text-sm text-gray-600 dark:text-dark-text-secondary"
+              >
+                You already have a workspace created
+              </p>
+            {/if}
           </div>
 
-          <Button type="submit" disabled={isLoading} class="w-full">
-            {isLoading ? "Creating..." : "Continue"}
-          </Button>
-        </form>
-      {:else if currentStep === 3}
-        <Pricing organizationId={createdOrganization?.id || ""} />
-      {:else if currentStep === 4}
-        <!-- Existing department or project creation forms -->
-        {#if subscriptionType === "organization"}
-          <form onsubmit={handleCreateDepartments} class="space-y-4">
+          <div class="space-y-4 mt-6">
+            <Label class="font-mono text-black dark:text-dark-text-primary">
+              Workspace Type
+            </Label>
             <div class="space-y-4">
-              <div>
-                <Label>Number of Departments</Label>
-                <Input
-                  type="text"
-                  inputmode="numeric"
-                  pattern="[0-9]*"
-                  min="1"
-                  max="10"
-                  bind:value={departmentInputValue}
-                  oninput={(e) => updateDepartmentCount(e.currentTarget.value)}
-                />
-              </div>
+              <button
+                type="button"
+                class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card p-4 font-mono text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] {subscriptionType ===
+                'personal'
+                  ? 'border-4 bg-blue-50 dark:bg-blue-900/20 translate-x-[-2px] translate-y-[-2px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)]'
+                  : ''}"
+                onclick={() => handleSubscriptionChoice("personal")}
+              >
+                <span class="text-xl">Personal Workspace</span>
+                <span
+                  class="block mt-1 text-sm text-blue-800 dark:text-dark-text-blue"
+                  >For individual use</span
+                >
+              </button>
 
-              {#each departments as dept, i}
-                <div>
-                  <Label for={`dept${i}`}>Department {i + 1} Name</Label>
-                  <Input
-                    type="text"
-                    id={`dept${i}`}
-                    bind:value={dept.name}
-                    required
-                  />
-                </div>
-              {/each}
+              <button
+                type="button"
+                class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card p-4 font-mono text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] {subscriptionType ===
+                'organization'
+                  ? 'border-4 bg-blue-50 dark:bg-blue-900/20 translate-x-[-2px] translate-y-[-2px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)]'
+                  : ''}"
+                onclick={() => handleSubscriptionChoice("organization")}
+              >
+                <span class="text-xl">Organization Workspace</span>
+                <span
+                  class="block mt-1 text-sm text-blue-800 dark:text-dark-text-blue"
+                  >For teams and businesses</span
+                >
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={isLoading || (!hasExistingWorkspace && !orgName.trim())}
+            class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 font-mono text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading
+              ? "Creating..."
+              : hasExistingWorkspace
+                ? "Continue"
+                : "Create Workspace"}
+          </button>
+        </form>
+      {:else if currentStep === 2}
+        <!-- Plan Selection - Centered -->
+        <div class="w-full">
+          <Pricing
+            organizationId={createdOrganization?.id || ""}
+            mode={subscriptionType}
+            workspaceName={orgName}
+            onBack={() => {
+              currentStep = 1;
+            }}
+          />
+        </div>
+      {:else if currentStep === 3}
+        {#if subscriptionType === "organization"}
+          <!-- Department Creation -->
+          <form onsubmit={handleCreateDepartments} class="space-y-6">
+            <div>
+              <Label
+                class="font-mono text-black dark:text-dark-text-primary mb-2"
+              >
+                Number of Departments
+              </Label>
+              <Input
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                min="1"
+                max="10"
+                bind:value={departmentInputValue}
+                oninput={(e) => updateDepartmentCount(e.currentTarget.value)}
+                class="border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3 font-mono w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
+              />
             </div>
 
-            <Button type="submit" disabled={isLoading} class="w-full">
-              {isLoading ? "Creating..." : "Continue"}
-            </Button>
+            {#each departments as dept, i}
+              <div>
+                <Label
+                  class="font-mono text-black dark:text-dark-text-primary mb-2"
+                  for={`dept${i}`}
+                >
+                  Department {i + 1} Name
+                </Label>
+                <Input
+                  type="text"
+                  id={`dept${i}`}
+                  bind:value={dept.name}
+                  required
+                  class="border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3 font-mono w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
+                />
+              </div>
+            {/each}
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 font-mono text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? "Creating..." : "Continue to Project Creation"}
+            </button>
           </form>
         {:else}
-          <form onsubmit={handleCreateProject} class="space-y-4">
+          <!-- Project Creation -->
+          <form onsubmit={handleCreateProject} class="space-y-6">
             <div>
-              <Label for="projectName">Project Name</Label>
+              <Label
+                class="font-mono text-black dark:text-dark-text-primary mb-2"
+                for="projectName"
+              >
+                Project Name
+              </Label>
               <Input
                 type="text"
                 id="projectName"
                 bind:value={projectName}
                 required
+                class="border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3 font-mono w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
               />
             </div>
 
-            <Button type="submit" disabled={isLoading} class="w-full">
+            <button
+              type="submit"
+              disabled={isLoading}
+              class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 font-mono text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               {isLoading ? "Creating..." : "Create Project"}
-            </Button>
+            </button>
           </form>
         {/if}
+      {:else if currentStep === 4}
+        <!-- Project Creation for Organization -->
+        <form onsubmit={handleCreateProject} class="space-y-6">
+          <div>
+            <Label
+              class="font-mono text-black dark:text-dark-text-primary mb-2"
+              for="projectName"
+            >
+              Project Name
+            </Label>
+            <Input
+              type="text"
+              id="projectName"
+              bind:value={projectName}
+              required
+              class="border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3 font-mono w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
+            />
+          </div>
+
+          {#if departments.length > 0}
+            <div>
+              <Label
+                class="font-mono text-black dark:text-dark-text-primary mb-2"
+                for="departmentSelect"
+              >
+                Select Department
+              </Label>
+              <select
+                id="departmentSelect"
+                bind:value={selectedDepartmentId}
+                class="w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
+              >
+                <option value="">Select a department...</option>
+                {#each departments as dept}
+                  {#if dept.id}
+                    <option value={dept.id}>{dept.name}</option>
+                  {/if}
+                {/each}
+              </select>
+            </div>
+          {/if}
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 font-mono text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? "Creating..." : "Create Project"}
+          </button>
+        </form>
       {/if}
-    </CardContent>
-  </Card>
+    </div>
+  </div>
 </div>
-
-<style>
-  .onboarding-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-  }
-
-  .progress-bar {
-    margin-bottom: 2rem;
-    text-align: center;
-  }
-
-  .step {
-    margin-bottom: 2rem;
-  }
-
-  .pricing-plans {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-    margin: 2rem 0;
-  }
-
-  .plan {
-    border: 1px solid #ddd;
-    padding: 2rem;
-    border-radius: 8px;
-    text-align: center;
-  }
-
-  .plan ul {
-    list-style: none;
-    padding: 0;
-    margin: 1rem 0;
-  }
-
-  .plan li {
-    margin: 0.5rem 0;
-  }
-</style>

@@ -1,26 +1,26 @@
 <!-- TreeNode.svelte -->
 <script lang="ts">
-  import { ChevronRight, Plus } from "lucide-svelte";
+  import {
+    ChevronRight,
+    Plus,
+    Building2,
+    FolderKanban,
+    FileText,
+  } from "lucide-svelte";
   import type { Organization, Department, Project } from "$lib/types/auth";
   import { auth } from "$lib/stores/AuthStore.svelte";
   import { navigate } from "svelte-routing";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
-  import { createEventDispatcher } from "svelte";
-  import TreeNode from "./TreeNode.svelte";
+  import Self from "./TreeNode.svelte";
 
   const props = $props<{
     item: Organization | Department | Project;
     level?: number;
     expanded?: boolean;
     parentOrg?: Organization | null;
+    onSelect?: (item: Organization | Department | Project) => void;
   }>();
-
-  type Events = {
-    select: Organization | Department | Project;
-  };
-
-  const dispatch = createEventDispatcher();
 
   let departments = $state<Department[]>([]);
   let projects = $state<Project[]>([]);
@@ -161,7 +161,9 @@
   }
 
   function handleSelect() {
-    dispatch("select", props.item);
+    if (props.onSelect) {
+      props.onSelect(props.item);
+    }
   }
 </script>
 
@@ -173,41 +175,41 @@
   onkeydown={handleSelect}
 >
   <div
-    class="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer group"
+    class="flex items-center gap-2 p-2 hover:bg-accent hover:text-accent-foreground rounded cursor-pointer group transition-colors"
   >
     <div class="flex items-center gap-2 flex-1">
       {#if isOrganization(props.item) || isDepartment(props.item)}
         <button
-          class="p-1 hover:bg-gray-100 rounded-full transform transition-transform opacity-0 group-hover:opacity-100"
+          class="p-1 hover:bg-accent hover:text-accent-foreground rounded-full transform transition-transform opacity-0 group-hover:opacity-100"
           class:rotate-90={isExpanded}
           class:opacity-100={isExpanded}
           onclick={toggleExpand}
           type="button"
         >
-          <ChevronRight size={16} />
+          <ChevronRight class="h-4 w-4" />
         </button>
       {:else}
         <div class="w-[32px]"></div>
       {/if}
 
-      <span class="font-medium">
+      <span class="font-mono flex items-center gap-2">
         {#if isOrganization(props.item)}
-          🏢 <!-- Organization -->
+          <Building2 class="h-4 w-4" />
         {:else if isDepartment(props.item)}
-          📁 <!-- Department -->
+          <FolderKanban class="h-4 w-4" />
         {:else}
-          📄 <!-- Project -->
+          <FileText class="h-4 w-4" />
         {/if}
         {props.item.name}
       </span>
 
       {#if isOrganization(props.item) || isDepartment(props.item)}
         <button
-          class="p-1 hover:bg-gray-100 rounded-full opacity-0 group-hover:opacity-100 ml-2"
+          class="p-1 hover:bg-accent hover:text-accent-foreground rounded-full opacity-0 group-hover:opacity-100 ml-2"
           onclick={toggleNewProjectForm}
           type="button"
         >
-          <Plus size={16} />
+          <Plus class="h-4 w-4" />
         </button>
       {/if}
     </div>
@@ -238,16 +240,17 @@
 
   {#if isExpanded}
     {#if isLoading}
-      <div class="pl-9 text-sm text-gray-500">Loading...</div>
+      <div class="pl-9 text-sm text-muted-foreground">Loading...</div>
     {:else}
       {#if departments.length > 0}
         {#each departments as department}
-          <TreeNode
+          <Self
             item={department}
             level={props.level + 1}
             parentOrg={isOrganization(props.item)
               ? props.item
               : props.parentOrg}
+            onSelect={props.onSelect}
           />
         {/each}
       {/if}
@@ -258,13 +261,14 @@
             <div
               role="button"
               tabindex="0"
-              class="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer"
+              class="flex items-center gap-2 p-2 hover:bg-accent hover:text-accent-foreground rounded cursor-pointer transition-colors"
               onclick={() => handleProjectClick(project)}
               onkeydown={() => handleProjectClick(project)}
             >
               <div class="w-[32px]"></div>
-              <span class="font-medium">
-                📄 {project.name}
+              <span class="font-mono flex items-center gap-2">
+                <FileText class="h-4 w-4" />
+                {project.name}
               </span>
             </div>
           {/each}
@@ -272,7 +276,7 @@
       {/if}
 
       {#if departments.length === 0 && projects.length === 0}
-        <div class="pl-9 text-sm text-gray-500">No items</div>
+        <div class="pl-9 text-sm text-muted-foreground">No items</div>
       {/if}
     {/if}
   {/if}

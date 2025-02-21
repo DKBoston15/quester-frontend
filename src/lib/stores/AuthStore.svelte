@@ -1,11 +1,11 @@
-<script context="module" lang="ts">
+<script lang="ts" module>
   import type { Organization, User } from "../types/auth";
 
   let user: User | null = $state(null);
-  let currentOrganization: Organization | null = $state(null);
+  let currentOrganization = $state<Organization | null>(null);
   let isLoading = $state(true);
   const isAuthenticated = $derived(Boolean(user));
-  const currentOrgId = $derived(currentOrganization?.id ?? null);
+  const currentOrgId = $derived(currentOrganization?.id || null);
 
   export const auth = {
     get user() {
@@ -28,13 +28,13 @@
       user = newUser;
       if (newUser) {
         const orgs = await this.fetchUserOrganizations();
-        if (orgs?.length > 0) {
+        if (orgs && orgs.length > 0) {
           // Load the last selected org from localStorage if available
           const lastOrgId = localStorage.getItem("lastSelectedOrgId");
           const lastOrg = orgs.find(
             (org: Organization) => org.id === lastOrgId
           );
-          this.setCurrentOrganization(lastOrg || orgs[0]);
+          await this.setCurrentOrganization(lastOrg || orgs[0]);
         }
       }
       isLoading = false;
@@ -71,8 +71,8 @@
           }
         );
         if (response.ok) {
-          const { data } = await response.json(); // Extract the data array
-          return data; // Return just the data array
+          const { data } = await response.json();
+          return data as Organization[]; // Add type assertion here
         }
         return null;
       } catch (error) {
@@ -89,7 +89,21 @@
         if (response.ok) {
           const data = await response.json();
           if (data?.user) {
-            await this.setUser(data.user);
+            // First set the user
+            user = data.user;
+
+            // Then load organizations
+            const orgs = await this.fetchUserOrganizations();
+            if (orgs && orgs.length > 0) {
+              // Load the last selected org from localStorage if available
+              const lastOrgId = localStorage.getItem("lastSelectedOrgId");
+              const lastOrg = orgs.find(
+                (org: Organization) => org.id === lastOrgId
+              );
+              await this.setCurrentOrganization(lastOrg || orgs[0]);
+            } else {
+              await this.setCurrentOrganization(null);
+            }
           } else {
             this.clearUser();
           }
@@ -99,6 +113,8 @@
       } catch (error) {
         console.error("Failed to verify session:", error);
         this.clearUser();
+      } finally {
+        isLoading = false;
       }
     },
 

@@ -2,7 +2,6 @@
   import { onMount } from "svelte";
   import type { Stripe } from "@stripe/stripe-js";
   import { loadStripe } from "@stripe/stripe-js";
-  import { Button } from "./ui/button";
 
   export let organizationId: string;
   export let priceId: string;
@@ -58,21 +57,19 @@
   }
 </script>
 
-<Button
+<button
   onclick={handleSubscribe}
   disabled={isLoading || !stripe}
-  variant="default"
-  class="w-full"
+  class="w-full text-white font-bold"
 >
   {#if isLoading}
-    <div class="flex items-center gap-2">
-      <span
-        class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-      >
-        Processing...</span
-      >
+    <div class="flex items-center justify-center gap-2">
+      <div
+        class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+      ></div>
+      <span>Processing...</span>
     </div>
   {:else}
     Subscribe Now
   {/if}
-</Button>
+</button>
