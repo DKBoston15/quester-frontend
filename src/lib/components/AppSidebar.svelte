@@ -18,6 +18,7 @@
   import { auth } from "$lib/stores/AuthStore.svelte";
   import { navigate } from "svelte-routing";
   import { DarkmodeToggle } from "$lib/components/ui/darkmode-toggle";
+  import * as Tooltip from "$lib/components/ui/tooltip";
 
   // Menu items for the main navigation
   const mainNavItems = [
@@ -75,22 +76,24 @@
   class="border-r-2 border-black dark:border-dark-border bg-card dark:bg-dark-card shadow-[4px_0px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_0px_0px_0px_rgba(44,46,51,0.1)]"
 >
   <Sidebar.Header class="border-b-2 border-black dark:border-dark-border">
-    <div
-      class="flex items-center justify-between px-2 py-2 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-2"
-    >
-      <div
-        class="flex items-center gap-2 group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:justify-center"
-      >
-        <Sidebar.Trigger class="h-8 w-8" />
-        <span
-          class="font-mono font-bold text-lg group-data-[collapsible=icon]:hidden"
-        >
-          {auth.currentOrganization?.name || "Select Workspace"}
-        </span>
-      </div>
-      <DarkmodeToggle
-        class="group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center"
+    <div class="flex items-center gap-2 py-2">
+      <Sidebar.Trigger
+        class="h-8 w-8 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 p-2 rounded-sm"
       />
+      <Tooltip.Root>
+        <Tooltip.Trigger>
+          <span
+            class="font-mono font-bold text-lg truncate group-data-[collapsible=icon]:hidden"
+          >
+            {auth.currentOrganization?.name || "Select Workspace"}
+          </span>
+        </Tooltip.Trigger>
+        <Tooltip.Content side="right">
+          <span class="font-mono"
+            >{auth.currentOrganization?.name || "Select Workspace"}</span
+          >
+        </Tooltip.Content>
+      </Tooltip.Root>
     </div>
   </Sidebar.Header>
 
@@ -198,32 +201,28 @@
   </Sidebar.Content>
 
   <Sidebar.Footer class="border-t-2 border-black dark:border-dark-border">
-    <Sidebar.Menu>
-      <Sidebar.MenuItem>
+    <div
+      class="flex items-center gap-2 group-data-[collapsible=icon]:flex-col-reverse group-data-[collapsible=icon]:items-center"
+    >
+      <div class="w-[75%] group-data-[collapsible=icon]:w-full">
         <DropdownMenu.Root>
           <DropdownMenu.Trigger>
-            {#snippet child({ props })}
-              <Sidebar.MenuButton
-                {...props}
-                class="flex items-center gap-3 font-mono hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
+            <div
+              class="flex items-center gap-3 font-mono rounded-md hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:p-2"
+            >
+              <div
+                class="flex-1 text-left group-data-[collapsible=icon]:hidden whitespace-nowrap"
               >
-                <div
-                  class="flex-1 text-left group-data-[collapsible=icon]:hidden"
-                >
-                  <div class="font-medium">
-                    {auth.user?.firstName}
-                    {auth.user?.lastName}
-                  </div>
-                  <div class="text-sm text-muted-foreground">View profile</div>
+                <div class="font-medium">
+                  {auth.user?.firstName}
+                  {auth.user?.lastName}
                 </div>
-                <ChevronUp
-                  class="h-4 w-4 group-data-[collapsible=icon]:hidden"
-                />
-                <Users
-                  class="h-4 w-4 hidden group-data-[collapsible=icon]:block"
-                />
-              </Sidebar.MenuButton>
-            {/snippet}
+                <div class="text-sm text-muted-foreground">View profile</div>
+              </div>
+              <Users
+                class="h-4 w-4 hidden group-data-[collapsible=icon]:block"
+              />
+            </div>
           </DropdownMenu.Trigger>
           <DropdownMenu.Content
             side="top"
@@ -245,8 +244,15 @@
             </DropdownMenu.Item>
           </DropdownMenu.Content>
         </DropdownMenu.Root>
-      </Sidebar.MenuItem>
-    </Sidebar.Menu>
+      </div>
+      <div
+        class="w-[25%] flex justify-end group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:justify-center"
+      >
+        <div class="group-data-[collapsible=icon]:p-2">
+          <DarkmodeToggle />
+        </div>
+      </div>
+    </div>
   </Sidebar.Footer>
 
   <!-- Decorative corners -->

@@ -6,8 +6,9 @@
     CardHeader,
     CardTitle,
   } from "$lib/components/ui/card";
+  import type { Project } from "$lib/types/auth";
 
-  export let params: { projectId: string };
+  const props = $props<{ project: Project }>();
 </script>
 
 <div class="container mx-auto py-6 px-4">

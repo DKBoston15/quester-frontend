@@ -9,8 +9,9 @@
   import { Input } from "$lib/components/ui/input";
   import { Button } from "$lib/components/ui/button";
   import { Plus } from "lucide-svelte";
+  import type { Project } from "$lib/types/auth";
 
-  export let params: { projectId: string };
+  const props = $props<{ project: Project }>();
 </script>
 
 <div class="container mx-auto py-6 px-4">

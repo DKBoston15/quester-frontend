@@ -5,6 +5,7 @@
   import { auth } from "$lib/stores/AuthStore.svelte";
   import { navigate, Link } from "svelte-routing";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
+  import * as Tooltip from "$lib/components/ui/tooltip/index.js";
   import {
     LogOut,
     Users,
@@ -16,6 +17,7 @@
     BarChartHorizontal,
     Workflow,
     Trophy,
+    Building2,
   } from "lucide-svelte";
 
   type Route = {
@@ -37,7 +39,7 @@
       {
         title: "Dashboard",
         icon: Home,
-        link: `/project/${props.project.id}`,
+        link: `/project/${props.project.id}/dashboard`,
       },
       {
         title: "Literature",
@@ -94,138 +96,190 @@
   }
 </script>
 
-<Sidebar.Root
-  collapsible="icon"
-  class="border-r-2 border-black dark:border-dark-border bg-card dark:bg-dark-card shadow-[4px_0px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_0px_0px_0px_rgba(44,46,51,0.1)]"
->
-  <Sidebar.Header class="border-b-2 border-black dark:border-dark-border">
-    <div
-      class="flex items-center justify-between px-2 py-2 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-2"
-    >
-      <div
-        class="flex items-center gap-2 group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:justify-center"
-      >
-        <Sidebar.Trigger class="h-8 w-8" />
-        <span
-          class="font-mono font-bold text-lg group-data-[collapsible=icon]:hidden"
-        >
-          {props.project?.name || "Project"}
-        </span>
+<Tooltip.Provider delayDuration={0}>
+  <Sidebar.Root
+    collapsible="icon"
+    class="border-r-2 border-black dark:border-dark-border bg-card dark:bg-dark-card shadow-[4px_0px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_0px_0px_0px_rgba(44,46,51,0.1)]"
+  >
+    <Sidebar.Header class="border-b-2 border-black dark:border-dark-border">
+      <div class="flex items-center gap-2 py-2">
+        <Sidebar.Trigger
+          class="h-8 w-8 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 p-2 rounded-sm"
+        />
+        <Tooltip.Root>
+          <Tooltip.Trigger>
+            <span
+              class="font-mono font-bold text-lg truncate group-data-[collapsible=icon]:hidden"
+            >
+              {props.project?.name || "Project"}
+            </span>
+          </Tooltip.Trigger>
+          <Tooltip.Content side="right">
+            <span class="font-mono">{props.project?.name || "Project"}</span>
+          </Tooltip.Content>
+        </Tooltip.Root>
       </div>
-      <DarkmodeToggle
-        class="group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center"
-      />
+    </Sidebar.Header>
+
+    <Sidebar.Content>
+      <!-- Primary Navigation -->
+      <Sidebar.Group>
+        <Sidebar.GroupContent>
+          <Sidebar.Menu>
+            {#each primaryRoutes as item (item.title)}
+              <Sidebar.MenuItem>
+                <Sidebar.MenuButton>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger>
+                      <Link
+                        to={item.link}
+                        class="flex items-center gap-3 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
+                      >
+                        {#if item.icon}
+                          <item.icon class="h-4 w-4 flex-shrink-0" />
+                        {/if}
+                        <span
+                          class="font-mono group-data-[collapsible=icon]:hidden"
+                          >{item.title}</span
+                        >
+                      </Link>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content
+                      side="right"
+                      class="group-data-[collapsible=icon]:block hidden"
+                    >
+                      <span class="font-mono">{item.title}</span>
+                    </Tooltip.Content>
+                  </Tooltip.Root>
+                </Sidebar.MenuButton>
+              </Sidebar.MenuItem>
+            {/each}
+          </Sidebar.Menu>
+        </Sidebar.GroupContent>
+      </Sidebar.Group>
+
+      <Sidebar.Separator />
+
+      <!-- Secondary Navigation -->
+      <Sidebar.Group>
+        <Sidebar.GroupContent>
+          <Sidebar.Menu>
+            {#each secondaryRoutes as item (item.title)}
+              <Sidebar.MenuItem>
+                <Sidebar.MenuButton>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger>
+                      <Link
+                        to={item.link}
+                        class="flex items-center gap-3 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
+                      >
+                        {#if item.icon}
+                          <item.icon class="h-4 w-4 flex-shrink-0" />
+                        {/if}
+                        <span
+                          class="font-mono group-data-[collapsible=icon]:hidden"
+                          >{item.title}</span
+                        >
+                      </Link>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content
+                      side="right"
+                      class="group-data-[collapsible=icon]:block hidden"
+                    >
+                      <span class="font-mono">{item.title}</span>
+                    </Tooltip.Content>
+                  </Tooltip.Root>
+                </Sidebar.MenuButton>
+              </Sidebar.MenuItem>
+            {/each}
+          </Sidebar.Menu>
+        </Sidebar.GroupContent>
+      </Sidebar.Group>
+
+      <Sidebar.Separator />
+
+      <!-- Tertiary Navigation -->
+      <Sidebar.Group>
+        <Sidebar.GroupContent>
+          <Sidebar.Menu>
+            {#each tertiaryRoutes as item (item.title)}
+              <Sidebar.MenuItem>
+                <Sidebar.MenuButton>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger>
+                      <Link
+                        to={item.link}
+                        class="flex items-center gap-3 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
+                      >
+                        {#if item.icon}
+                          <item.icon class="h-4 w-4 flex-shrink-0" />
+                        {/if}
+                        <span
+                          class="font-mono group-data-[collapsible=icon]:hidden"
+                          >{item.title}</span
+                        >
+                      </Link>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content
+                      side="right"
+                      class="group-data-[collapsible=icon]:block hidden"
+                    >
+                      <span class="font-mono">{item.title}</span>
+                    </Tooltip.Content>
+                  </Tooltip.Root>
+                </Sidebar.MenuButton>
+              </Sidebar.MenuItem>
+            {/each}
+          </Sidebar.Menu>
+        </Sidebar.GroupContent>
+      </Sidebar.Group>
+    </Sidebar.Content>
+
+    <div class="mt-auto">
+      <Sidebar.Group>
+        <Sidebar.GroupContent>
+          <Sidebar.Menu>
+            <Sidebar.MenuItem>
+              <Sidebar.MenuButton>
+                <Tooltip.Root>
+                  <Tooltip.Trigger>
+                    <Link
+                      to="/dashboard"
+                      class="flex items-center gap-3 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
+                    >
+                      <Building2 class="h-4 w-4 flex-shrink-0" />
+                      <span
+                        class="font-mono group-data-[collapsible=icon]:hidden"
+                        >Organization</span
+                      >
+                    </Link>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content
+                    side="right"
+                    class="group-data-[collapsible=icon]:block hidden"
+                  >
+                    <span class="font-mono">Organization</span>
+                  </Tooltip.Content>
+                </Tooltip.Root>
+              </Sidebar.MenuButton>
+            </Sidebar.MenuItem>
+          </Sidebar.Menu>
+        </Sidebar.GroupContent>
+      </Sidebar.Group>
     </div>
-  </Sidebar.Header>
 
-  <Sidebar.Content>
-    <!-- Primary Navigation -->
-    <Sidebar.Group>
-      <Sidebar.GroupContent>
-        <Sidebar.Menu>
-          {#each primaryRoutes as item (item.title)}
-            <Sidebar.MenuItem>
-              <Sidebar.MenuButton>
-                {#snippet tooltipContent()}
-                  {item.title}
-                {/snippet}
-                {#snippet child({ props })}
-                  <Link
-                    to={item.link}
-                    class="flex items-center gap-3 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
-                  >
-                    {#if item.icon}
-                      <item.icon class="h-4 w-4 flex-shrink-0" />
-                    {/if}
-                    <span class="font-mono group-data-[collapsible=icon]:hidden"
-                      >{item.title}</span
-                    >
-                  </Link>
-                {/snippet}
-              </Sidebar.MenuButton>
-            </Sidebar.MenuItem>
-          {/each}
-        </Sidebar.Menu>
-      </Sidebar.GroupContent>
-    </Sidebar.Group>
-
-    <Sidebar.Separator />
-
-    <!-- Secondary Navigation -->
-    <Sidebar.Group>
-      <Sidebar.GroupContent>
-        <Sidebar.Menu>
-          {#each secondaryRoutes as item (item.title)}
-            <Sidebar.MenuItem>
-              <Sidebar.MenuButton>
-                {#snippet tooltipContent()}
-                  {item.title}
-                {/snippet}
-                {#snippet child({ props })}
-                  <Link
-                    to={item.link}
-                    class="flex items-center gap-3 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
-                  >
-                    {#if item.icon}
-                      <item.icon class="h-4 w-4 flex-shrink-0" />
-                    {/if}
-                    <span class="font-mono group-data-[collapsible=icon]:hidden"
-                      >{item.title}</span
-                    >
-                  </Link>
-                {/snippet}
-              </Sidebar.MenuButton>
-            </Sidebar.MenuItem>
-          {/each}
-        </Sidebar.Menu>
-      </Sidebar.GroupContent>
-    </Sidebar.Group>
-
-    <Sidebar.Separator />
-
-    <!-- Tertiary Navigation -->
-    <Sidebar.Group>
-      <Sidebar.GroupContent>
-        <Sidebar.Menu>
-          {#each tertiaryRoutes as item (item.title)}
-            <Sidebar.MenuItem>
-              <Sidebar.MenuButton>
-                {#snippet tooltipContent()}
-                  {item.title}
-                {/snippet}
-                {#snippet child({ props })}
-                  <Link
-                    to={item.link}
-                    class="flex items-center gap-3 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
-                  >
-                    {#if item.icon}
-                      <item.icon class="h-4 w-4 flex-shrink-0" />
-                    {/if}
-                    <span class="font-mono group-data-[collapsible=icon]:hidden"
-                      >{item.title}</span
-                    >
-                  </Link>
-                {/snippet}
-              </Sidebar.MenuButton>
-            </Sidebar.MenuItem>
-          {/each}
-        </Sidebar.Menu>
-      </Sidebar.GroupContent>
-    </Sidebar.Group>
-  </Sidebar.Content>
-
-  <Sidebar.Footer class="border-t-2 border-black dark:border-dark-border">
-    <Sidebar.Menu>
-      <Sidebar.MenuItem>
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger>
-            {#snippet child({ props })}
-              <Sidebar.MenuButton
-                {...props}
-                class="flex items-center gap-3 font-mono hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
+    <Sidebar.Footer class="border-t-2 border-black dark:border-dark-border">
+      <div
+        class="flex items-center gap-2 group-data-[collapsible=icon]:flex-col-reverse group-data-[collapsible=icon]:items-center"
+      >
+        <div class="w-[75%] group-data-[collapsible=icon]:w-full">
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger>
+              <div
+                class="flex items-center gap-3 font-mono hover:bg-accent rounded-md hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:p-2"
               >
                 <div
-                  class="flex-1 text-left group-data-[collapsible=icon]:hidden"
+                  class="flex-1 text-left group-data-[collapsible=icon]:hidden whitespace-nowrap"
                 >
                   <div class="font-medium">
                     {auth.user?.firstName}
@@ -234,40 +288,47 @@
                   <div class="text-sm text-muted-foreground">View profile</div>
                 </div>
                 <Users
-                  class="h-4 w-4 hidden group-data-[collapsible=icon]:block"
+                  class="h-4 w-4 hidden group-data-[collapsible=icon]:block group-data-[collapsible=icon]:mx-auto"
                 />
-              </Sidebar.MenuButton>
-            {/snippet}
-          </DropdownMenu.Trigger>
-          <DropdownMenu.Content
-            side="top"
-            class="w-[--bits-dropdown-menu-anchor-width]"
-          >
-            <DropdownMenu.Item class="flex items-center gap-3">
-              <span class="font-mono">Profile</span>
-            </DropdownMenu.Item>
-            <DropdownMenu.Item class="flex items-center gap-3">
-              <span class="font-mono">Settings</span>
-            </DropdownMenu.Item>
-            <DropdownMenu.Separator />
-            <DropdownMenu.Item
-              onclick={handleLogout}
-              class="flex items-center gap-3"
+              </div>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content
+              side="top"
+              class="w-[--bits-dropdown-menu-anchor-width]"
             >
-              <LogOut class="h-4 w-4" />
-              <span class="font-mono">Sign out</span>
-            </DropdownMenu.Item>
-          </DropdownMenu.Content>
-        </DropdownMenu.Root>
-      </Sidebar.MenuItem>
-    </Sidebar.Menu>
-  </Sidebar.Footer>
+              <DropdownMenu.Item class="flex items-center gap-3">
+                <span class="font-mono">Profile</span>
+              </DropdownMenu.Item>
+              <DropdownMenu.Item class="flex items-center gap-3">
+                <span class="font-mono">Settings</span>
+              </DropdownMenu.Item>
+              <DropdownMenu.Separator />
+              <DropdownMenu.Item
+                onclick={handleLogout}
+                class="flex items-center gap-3"
+              >
+                <LogOut class="h-4 w-4" />
+                <span class="font-mono">Sign out</span>
+              </DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
+        </div>
+        <div
+          class="w-[25%] flex justify-end group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:justify-center"
+        >
+          <div class="group-data-[collapsible=icon]:p-2">
+            <DarkmodeToggle />
+          </div>
+        </div>
+      </div>
+    </Sidebar.Footer>
 
-  <!-- Decorative corners -->
-  <div
-    class="absolute -top-1 -right-1 w-2 h-2 bg-blue-400 dark:bg-dark-accent-blue border border-black dark:border-dark-border"
-  ></div>
-  <div
-    class="absolute -bottom-1 -left-1 w-2 h-2 bg-yellow-400 dark:bg-dark-accent-yellow border border-black dark:border-dark-border"
-  ></div>
-</Sidebar.Root>
+    <!-- Decorative corners -->
+    <div
+      class="absolute -top-1 -right-1 w-2 h-2 bg-blue-400 dark:bg-dark-accent-blue border border-black dark:border-dark-border"
+    ></div>
+    <div
+      class="absolute -bottom-1 -left-1 w-2 h-2 bg-yellow-400 dark:bg-dark-accent-yellow border border-black dark:border-dark-border"
+    ></div>
+  </Sidebar.Root>
+</Tooltip.Provider>

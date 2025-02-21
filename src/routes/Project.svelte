@@ -59,9 +59,7 @@
     const path = $location.pathname;
     const parts = path.split("/");
     const section = parts[parts.length - 1];
-    return (
-      section === props.params.projectId ? "dashboard" : section
-    ) as SectionKey;
+    return section as SectionKey;
   }
 
   async function loadProject() {
@@ -114,7 +112,7 @@
       {:else if project}
         {@const section = getCurrentSection()}
         {@const Component = components[section] || components.dashboard}
-        <svelte:component this={Component} {project} />
+        <Component {project} />
       {/if}
     </main>
   </div>

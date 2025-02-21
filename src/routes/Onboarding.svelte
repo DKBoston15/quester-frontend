@@ -33,8 +33,6 @@
     slug: "",
   });
   let organizations = $state<Organization[]>([]);
-  let organizationId: string;
-  let hasSubscription = $state(false);
   let hasExistingWorkspace = $state(false);
   const totalSteps = 4;
 
