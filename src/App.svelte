@@ -13,6 +13,7 @@
   import Pricing from "./routes/Pricing.svelte";
   import SignIn from "./routes/SignIn.svelte";
   import { navigate } from "svelte-routing";
+  import { Toaster } from "$lib/components/ui/sonner";
 
   const props = $props<{ url: string }>();
 
@@ -44,6 +45,7 @@
 
 <Router url={props.url}>
   <main class="bg-background text-foreground">
+    <Toaster />
     {#if !auth.isAuthenticated && !auth.isLoading}
       <SignIn onLogin={login} />
     {:else}

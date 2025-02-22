@@ -13,8 +13,9 @@
   import * as Textarea from "$lib/components/ui/textarea";
   import * as Select from "$lib/components/ui/select";
   import * as Tooltip from "$lib/components/ui/tooltip";
-  import { InfoIcon } from "lucide-svelte";
+  import { InfoIcon, Loader2Icon, WandIcon } from "lucide-svelte";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { toast } from "svelte-sonner";
 
   const projectStatusOptions = [
     { value: "Planning", label: "Planning" },
@@ -36,6 +37,11 @@
   let currentPurpose = $state<string | null>(null);
   let currentFinancialInst = $state<string | null>(null);
   let currentFinancialSupport = $state<string | null>(null);
+
+  let isRewriting = $state(false);
+  let customInstruction = $state("");
+  let streamingContent = $state("");
+  let showCustomInstruction = $state(false);
 
   $effect(() => {
     const project = projectStore.currentProject;
@@ -89,6 +95,75 @@
       isPending = false;
     }
   }
+
+  async function startAiRewrite() {
+    if (!projectStore.currentProject?.id || !currentPurpose) return;
+
+    const toastId = toast.loading("Rewriting purpose...");
+    isRewriting = true;
+    streamingContent = "";
+
+    try {
+      const response = await fetch("http://localhost:3333/ai/rewrite-purpose", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          projectId: projectStore.currentProject.id,
+          command: customInstruction || undefined,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to start rewrite");
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No reader available");
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        // Convert the chunk to text and append to streaming content
+        const chunk = new TextDecoder().decode(value);
+        const lines = chunk.split("\n").filter((line) => line.trim() !== "");
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            const content = line.slice(6);
+            if (content === "[DONE]") continue;
+            try {
+              const parsed = JSON.parse(content);
+              const text = parsed.choices[0]?.delta?.content || "";
+              streamingContent += text;
+            } catch (e) {
+              console.error("Failed to parse chunk:", e);
+            }
+          }
+        }
+      }
+
+      // After streaming is complete, update the purpose
+      currentPurpose = streamingContent;
+      await saveProjectOverview();
+      toast.success("Successfully rewrote purpose!", {
+        id: toastId,
+        description: "The new purpose has been saved.",
+      });
+    } catch (error) {
+      console.error("Error during rewrite:", error);
+      toast.error("Failed to rewrite purpose", {
+        id: toastId,
+        description:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
+      });
+    } finally {
+      isRewriting = false;
+      showCustomInstruction = false;
+      customInstruction = "";
+    }
+  }
 </script>
 
 <Card
@@ -124,7 +199,61 @@
           </Tooltip.Content>
         </Tooltip.Root>
         <h3 class="text-sm font-bold">Purpose Statement</h3>
+        {#if !editMode.purpose && currentPurpose}
+          <div class="flex gap-2 ml-auto">
+            <Tooltip.Root>
+              <Tooltip.Trigger>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  class="gap-2"
+                  disabled={isRewriting}
+                  onclick={() =>
+                    (showCustomInstruction = !showCustomInstruction)}
+                >
+                  <WandIcon class="h-4 w-4" />
+                  AI Rewrite
+                </Button>
+              </Tooltip.Trigger>
+              <Tooltip.Content side="top" align="end">
+                <p class="text-sm max-w-xs">
+                  Let AI help improve your purpose statement. You can provide
+                  specific instructions or let Quester enhance it automatically.
+                </p>
+              </Tooltip.Content>
+            </Tooltip.Root>
+          </div>
+        {/if}
       </div>
+
+      {#if showCustomInstruction}
+        <div class="flex gap-2">
+          <Input
+            bind:value={customInstruction}
+            placeholder="Optional: Guide the rewrite (e.g. 'Make it more concise' or 'Emphasize methodology')"
+            class="flex-1"
+          />
+          <Button size="sm" onclick={startAiRewrite} disabled={isRewriting}>
+            {#if isRewriting}
+              <Loader2Icon class="h-4 w-4 animate-spin mr-2" />
+              Rewriting...
+            {:else}
+              Start
+            {/if}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onclick={() => {
+              showCustomInstruction = false;
+              customInstruction = "";
+            }}
+            disabled={isRewriting}
+          >
+            Cancel
+          </Button>
+        </div>
+      {/if}
 
       {#if editMode.purpose}
         <Textarea.Textarea
@@ -133,6 +262,15 @@
           placeholder="Enter project purpose"
           class="w-full"
         />
+      {:else if isRewriting}
+        <div class="relative">
+          <p class="text-muted-foreground whitespace-pre-wrap">
+            {streamingContent || "Generating..."}
+          </p>
+          <div class="absolute top-0 right-0">
+            <Loader2Icon class="h-4 w-4 animate-spin" />
+          </div>
+        </div>
       {:else}
         <p class="text-muted-foreground whitespace-pre-wrap">
           {currentPurpose || "No purpose defined"}
