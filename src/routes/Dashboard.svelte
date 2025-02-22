@@ -220,13 +220,13 @@
 </script>
 
 <Sidebar.Provider>
-  <div class="flex h-screen bg-background">
+  <div class="flex h-screen bg-background w-full">
     <AppSidebar />
     <main class="flex-1 overflow-y-auto">
       <div class="container mx-auto py-6 px-4">
         <!-- Welcome Section -->
         <div class="mb-8">
-          <h1 class="text-3xl font-mono font-bold mb-2">
+          <h1 class="text-3xl font-bold mb-2">
             Welcome back, {auth.user?.firstName}!
           </h1>
           <p class="text-muted-foreground">
@@ -253,7 +253,7 @@
         >
           <Card>
             <CardContent class="flex flex-col items-center justify-center">
-              <CardTitle class="text-lg font-mono">Projects</CardTitle>
+              <CardTitle class="text-lg ">Projects</CardTitle>
               <CardDescription>{projects.length} total projects</CardDescription
               >
             </CardContent>
@@ -261,7 +261,7 @@
           {#if hasProFeatures()}
             <Card>
               <CardContent class="flex flex-col items-center justify-center">
-                <CardTitle class="text-lg font-mono">Team Members</CardTitle>
+                <CardTitle class="text-lg ">Team Members</CardTitle>
                 <CardDescription
                   >{currentOrg?.members?.length || 0} members</CardDescription
                 >
@@ -271,7 +271,7 @@
           {#if currentOrg?.subscriptionType === "organization"}
             <Card>
               <CardHeader class="text-center">
-                <CardTitle class="text-lg font-mono">Departments</CardTitle>
+                <CardTitle class="text-lg ">Departments</CardTitle>
                 <CardDescription
                   >{departments.length} departments</CardDescription
                 >
@@ -293,7 +293,7 @@
               <CardHeader>
                 <div class="flex items-center gap-2">
                   <Plus class="h-5 w-5" />
-                  <CardTitle class="font-mono">
+                  <CardTitle class="">
                     {#if hasReachedResearchExplorerLimit()}
                       Project Limit Reached
                     {:else}
@@ -324,9 +324,9 @@
                       placeholder="Project name"
                       bind:value={newProjectName}
                       required
-                      class="font-mono"
+                      class=""
                     />
-                    <Button type="submit" class="font-mono">Create</Button>
+                    <Button type="submit" class="">Create</Button>
                   </form>
                 {/if}
               </CardContent>
@@ -340,7 +340,7 @@
                 <CardHeader>
                   <div class="flex items-center gap-2">
                     <Users class="h-5 w-5" />
-                    <CardTitle class="font-mono">Workspace Overview</CardTitle>
+                    <CardTitle class="">Workspace Overview</CardTitle>
                   </div>
                   <CardDescription
                     >View your workspace structure</CardDescription
@@ -369,7 +369,7 @@
                   <CardHeader>
                     <div class="flex items-center gap-2">
                       <Users class="h-5 w-5" />
-                      <CardTitle class="font-mono">Team Management</CardTitle>
+                      <CardTitle class="">Team Management</CardTitle>
                     </div>
                     <CardDescription
                       >Invite and manage team members</CardDescription
@@ -391,7 +391,7 @@
                   <CardHeader>
                     <div class="flex items-center gap-2">
                       <Users class="h-5 w-5" />
-                      <CardTitle class="font-mono">Team Features</CardTitle>
+                      <CardTitle class="">Team Features</CardTitle>
                     </div>
                     <CardDescription>
                       Upgrade your plan to invite team members and collaborate
@@ -414,7 +414,7 @@
                   <CardHeader>
                     <div class="flex items-center gap-2">
                       <CreditCard class="h-5 w-5" />
-                      <CardTitle class="font-mono">Subscription</CardTitle>
+                      <CardTitle class="">Subscription</CardTitle>
                     </div>
                     <CardDescription>
                       Current Plan: {currentOrg.subscription?.plan?.name ||
@@ -432,9 +432,7 @@
                   <CardHeader>
                     <div class="flex items-center gap-2">
                       <CreditCard class="h-5 w-5" />
-                      <CardTitle class="font-mono"
-                        >Subscribe to a Plan</CardTitle
-                      >
+                      <CardTitle class="">Subscribe to a Plan</CardTitle>
                     </div>
                     <CardDescription
                       >Choose a subscription plan to continue using Quester</CardDescription
@@ -443,7 +441,7 @@
                   <CardContent>
                     <Button
                       onclick={() => navigate("/onboarding")}
-                      class="w-full font-mono"
+                      class="w-full "
                     >
                       View Plans
                     </Button>

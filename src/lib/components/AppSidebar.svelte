@@ -83,15 +83,13 @@
       <Tooltip.Root>
         <Tooltip.Trigger>
           <span
-            class="font-mono font-bold text-lg truncate group-data-[collapsible=icon]:hidden"
+            class="font-bold text-lg truncate group-data-[collapsible=icon]:hidden"
           >
             {auth.currentOrganization?.name || "Select Workspace"}
           </span>
         </Tooltip.Trigger>
         <Tooltip.Content side="right">
-          <span class="font-mono"
-            >{auth.currentOrganization?.name || "Select Workspace"}</span
-          >
+          <span>{auth.currentOrganization?.name || "Select Workspace"}</span>
         </Tooltip.Content>
       </Tooltip.Root>
     </div>
@@ -117,7 +115,7 @@
                     {#if item.icon}
                       <item.icon class="h-4 w-4 flex-shrink-0" />
                     {/if}
-                    <span class="font-mono group-data-[collapsible=icon]:hidden"
+                    <span class=" group-data-[collapsible=icon]:hidden"
                       >{item.title}</span
                     >
                   </a>
@@ -145,7 +143,7 @@
                   class="flex items-center gap-3 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
                 >
                   <FolderKanban class="h-4 w-4 flex-shrink-0" />
-                  <span class="font-mono group-data-[collapsible=icon]:hidden"
+                  <span class=" group-data-[collapsible=icon]:hidden"
                     >Projects</span
                   >
                   <ChevronDown
@@ -179,7 +177,7 @@
                                 <div
                                   class="w-2 h-2 rounded-full bg-foreground/70 flex-shrink-0"
                                 ></div>
-                                <span class="font-mono">{project.name}</span>
+                                <span class="">{project.name}</span>
                               </a>
                             {/snippet}
                           </Sidebar.MenuButton>
@@ -208,7 +206,7 @@
         <DropdownMenu.Root>
           <DropdownMenu.Trigger>
             <div
-              class="flex items-center gap-3 font-mono rounded-md hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:p-2"
+              class="flex items-center gap-3 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:p-2"
             >
               <div
                 class="flex-1 text-left group-data-[collapsible=icon]:hidden whitespace-nowrap"
@@ -229,10 +227,10 @@
             class="w-[--bits-dropdown-menu-anchor-width]"
           >
             <DropdownMenu.Item class="flex items-center gap-3">
-              <span class="font-mono">Profile</span>
+              <span class="">Profile</span>
             </DropdownMenu.Item>
             <DropdownMenu.Item class="flex items-center gap-3">
-              <span class="font-mono">Settings</span>
+              <span class="">Settings</span>
             </DropdownMenu.Item>
             <DropdownMenu.Separator />
             <DropdownMenu.Item
@@ -240,7 +238,7 @@
               class="flex items-center gap-3"
             >
               <LogOut class="h-4 w-4" />
-              <span class="font-mono">Sign out</span>
+              <span class="">Sign out</span>
             </DropdownMenu.Item>
           </DropdownMenu.Content>
         </DropdownMenu.Root>

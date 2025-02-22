@@ -294,7 +294,7 @@
     >
       <div class="{currentStep === 2 ? 'px-6 pt-6' : ''} mb-6 relative">
         <h2
-          class="font-mono text-3xl font-bold text-black dark:text-dark-text-primary mb-2"
+          class=" text-3xl font-bold text-black dark:text-dark-text-primary mb-2"
         >
           {#if currentStep === 1}
             Choose Your Workspace Type
@@ -321,7 +321,7 @@
 
       {#if error}
         <div
-          class="mb-6 p-4 border-2 border-red-500 dark:border-red-400 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 font-mono"
+          class="mb-6 p-4 border-2 border-red-500 dark:border-red-400 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400"
         >
           {error}
         </div>
@@ -332,7 +332,7 @@
         <form onsubmit={handleCreateOrganization} class="space-y-6">
           <div>
             <Label
-              class="font-mono text-black dark:text-dark-text-primary mb-2"
+              class=" text-black dark:text-dark-text-primary mb-2"
               for="orgName"
             >
               Workspace Name
@@ -343,7 +343,7 @@
               bind:value={orgName}
               required
               disabled={hasExistingWorkspace}
-              class="border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3 font-mono w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue {hasExistingWorkspace
+              class="border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3  w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue {hasExistingWorkspace
                 ? 'opacity-50 cursor-not-allowed'
                 : ''}"
             />
@@ -357,13 +357,13 @@
           </div>
 
           <div class="space-y-4 mt-6">
-            <Label class="font-mono text-black dark:text-dark-text-primary">
+            <Label class=" text-black dark:text-dark-text-primary">
               Workspace Type
             </Label>
             <div class="space-y-4">
               <button
                 type="button"
-                class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card p-4 font-mono text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] {subscriptionType ===
+                class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card p-4 text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] {subscriptionType ===
                 'personal'
                   ? 'border-4 bg-blue-50 dark:bg-blue-900/20 translate-x-[-2px] translate-y-[-2px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)]'
                   : ''}"
@@ -378,7 +378,7 @@
 
               <button
                 type="button"
-                class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card p-4 font-mono text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] {subscriptionType ===
+                class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card p-4 text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] {subscriptionType ===
                 'organization'
                   ? 'border-4 bg-blue-50 dark:bg-blue-900/20 translate-x-[-2px] translate-y-[-2px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)]'
                   : ''}"
@@ -396,7 +396,7 @@
           <button
             type="submit"
             disabled={isLoading || (!hasExistingWorkspace && !orgName.trim())}
-            class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 font-mono text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] disabled:opacity-50 disabled:cursor-not-allowed"
+            class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading
               ? "Creating..."
@@ -422,9 +422,7 @@
           <!-- Department Creation -->
           <form onsubmit={handleCreateDepartments} class="space-y-6">
             <div>
-              <Label
-                class="font-mono text-black dark:text-dark-text-primary mb-2"
-              >
+              <Label class=" text-black dark:text-dark-text-primary mb-2">
                 Number of Departments
               </Label>
               <Input
@@ -435,14 +433,14 @@
                 max="10"
                 bind:value={departmentInputValue}
                 oninput={(e) => updateDepartmentCount(e.currentTarget.value)}
-                class="border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3 font-mono w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
+                class="border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3  w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
               />
             </div>
 
             {#each departments as dept, i}
               <div>
                 <Label
-                  class="font-mono text-black dark:text-dark-text-primary mb-2"
+                  class=" text-black dark:text-dark-text-primary mb-2"
                   for={`dept${i}`}
                 >
                   Department {i + 1} Name
@@ -452,7 +450,7 @@
                   id={`dept${i}`}
                   bind:value={dept.name}
                   required
-                  class="border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3 font-mono w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
+                  class="border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3  w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
                 />
               </div>
             {/each}
@@ -460,7 +458,7 @@
             <button
               type="submit"
               disabled={isLoading}
-              class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 font-mono text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] disabled:opacity-50 disabled:cursor-not-allowed"
+              class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? "Creating..." : "Continue to Project Creation"}
             </button>
@@ -470,7 +468,7 @@
           <form onsubmit={handleCreateProject} class="space-y-6">
             <div>
               <Label
-                class="font-mono text-black dark:text-dark-text-primary mb-2"
+                class=" text-black dark:text-dark-text-primary mb-2"
                 for="projectName"
               >
                 Project Name
@@ -480,14 +478,14 @@
                 id="projectName"
                 bind:value={projectName}
                 required
-                class="border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3 font-mono w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
+                class="border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3  w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
               />
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 font-mono text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] disabled:opacity-50 disabled:cursor-not-allowed"
+              class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? "Creating..." : "Create Project"}
             </button>
@@ -498,7 +496,7 @@
         <form onsubmit={handleCreateProject} class="space-y-6">
           <div>
             <Label
-              class="font-mono text-black dark:text-dark-text-primary mb-2"
+              class=" text-black dark:text-dark-text-primary mb-2"
               for="projectName"
             >
               Project Name
@@ -508,14 +506,14 @@
               id="projectName"
               bind:value={projectName}
               required
-              class="border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3 font-mono w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
+              class="border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3  w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
             />
           </div>
 
           {#if departments.length > 0}
             <div>
               <Label
-                class="font-mono text-black dark:text-dark-text-primary mb-2"
+                class=" text-black dark:text-dark-text-primary mb-2"
                 for="departmentSelect"
               >
                 Select Department
@@ -523,7 +521,7 @@
               <select
                 id="departmentSelect"
                 bind:value={selectedDepartmentId}
-                class="w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
+                class="w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
               >
                 <option value="">Select a department...</option>
                 {#each departments as dept}
@@ -538,7 +536,7 @@
           <button
             type="submit"
             disabled={isLoading}
-            class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 font-mono text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] disabled:opacity-50 disabled:cursor-not-allowed"
+            class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? "Creating..." : "Create Project"}
           </button>

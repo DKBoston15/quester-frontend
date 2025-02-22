@@ -18,7 +18,6 @@ const setTheme = (theme: "dark" | "light") => {
   if (!isBrowser) return;
 
   const root = document.documentElement;
-  console.log("Setting theme to:", theme);
 
   // Instead of toggle, explicitly add/remove the class
   if (theme === "dark") {
@@ -28,16 +27,13 @@ const setTheme = (theme: "dark" | "light") => {
   }
 
   localStorage.setItem("theme", theme);
-  console.log("Current classes:", root.classList.toString());
 };
 
 // Initialize theme
 export const initializeTheme = () => {
   if (!isBrowser) return;
-  console.log("Initializing theme");
 
   const theme = getPreferredTheme() as "dark" | "light";
-  console.log("Initial theme:", theme);
   setTheme(theme);
 
   // Listen for system theme changes
@@ -58,6 +54,5 @@ export const toggleMode = () => {
   const current = document.documentElement.classList.contains("dark")
     ? "dark"
     : "light";
-  console.log("Current theme before toggle:", current);
   setTheme(current === "dark" ? "light" : "dark");
 };

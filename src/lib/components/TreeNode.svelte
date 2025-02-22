@@ -211,7 +211,7 @@
         <div class="w-[32px]"></div>
       {/if}
 
-      <span class="font-mono flex items-center gap-2">
+      <span class=" flex items-center gap-2">
         {#if isOrganization(props.item)}
           <Building2 class="h-4 w-4" />
         {:else if isDepartment(props.item)}
@@ -285,7 +285,7 @@
               onkeydown={() => handleProjectClick(project)}
             >
               <div class="w-[32px]"></div>
-              <span class="font-mono flex items-center gap-2">
+              <span class=" flex items-center gap-2">
                 <FileText class="h-4 w-4" />
                 {project.name}
               </span>

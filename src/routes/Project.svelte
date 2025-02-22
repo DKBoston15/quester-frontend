@@ -2,6 +2,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { auth } from "../lib/stores/AuthStore.svelte";
+  import { projectStore } from "../lib/stores/ProjectStore.svelte";
   import type { Project } from "$lib/types/auth";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import ProjectSidebar from "$lib/components/ProjectSidebar.svelte";
@@ -45,14 +46,11 @@
     };
   }>();
 
-  let project = $state<Project | null>(null);
-  let isLoading = $state(true);
-  let error = $state("");
   const location = useLocation();
 
   $effect(() => {
     console.log("Project params:", props.params);
-    loadProject();
+    projectStore.loadProject(props.params.projectId);
   });
 
   function getCurrentSection(): SectionKey {
@@ -61,58 +59,29 @@
     const section = parts[parts.length - 1];
     return section as SectionKey;
   }
-
-  async function loadProject() {
-    if (!props.params.projectId) {
-      error = "No project ID provided";
-      isLoading = false;
-      return;
-    }
-
-    try {
-      console.log("Fetching project:", props.params.projectId);
-      const projectResponse = await fetch(
-        `http://localhost:3333/projects/${props.params.projectId}`,
-        { credentials: "include" }
-      );
-
-      if (!projectResponse.ok) {
-        throw new Error(`Project not found (${projectResponse.status})`);
-      }
-
-      const projectData = await projectResponse.json();
-      console.log("Project data:", projectData);
-      project = projectData;
-    } catch (err) {
-      console.error("Error loading project:", err);
-      error = err instanceof Error ? err.message : "An error occurred";
-    } finally {
-      isLoading = false;
-    }
-  }
 </script>
 
 <Sidebar.Provider>
-  <div class="flex h-screen bg-background">
-    <ProjectSidebar {project} />
-    <main class="flex-1 overflow-y-auto">
-      {#if isLoading}
+  <div class="flex h-screen bg-background w-full">
+    <ProjectSidebar project={projectStore.currentProject} />
+    <main class="flex-1 overflow-y-auto min-w-0">
+      {#if projectStore.isLoading}
         <div class="container mx-auto py-6">
           <div class="text-center">Loading project...</div>
         </div>
-      {:else if error}
+      {:else if projectStore.error}
         <div class="container mx-auto py-6">
           <div class="text-red-500">
-            {error}
+            {projectStore.error}
             <div class="text-sm mt-2">
               Project ID: {props.params.projectId}
             </div>
           </div>
         </div>
-      {:else if project}
+      {:else if projectStore.currentProject}
         {@const section = getCurrentSection()}
         {@const Component = components[section] || components.dashboard}
-        <Component {project} />
+        <Component project={projectStore.currentProject} />
       {/if}
     </main>
   </div>

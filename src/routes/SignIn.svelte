@@ -56,7 +56,7 @@
       </div>
       <a
         href="/"
-        class="text-2xl font-bold font-mono hover:-translate-y-0.5 transition-transform relative group text-black dark:text-dark-text-primary"
+        class="text-2xl font-bold hover:-translate-y-0.5 transition-transform relative group text-black dark:text-dark-text-primary"
       >
         Quester
         <div
@@ -73,7 +73,7 @@
         >
           <div class="mb-8 relative">
             <h2
-              class="font-mono text-4xl font-bold text-black dark:text-dark-text-primary mb-3"
+              class=" text-4xl font-bold text-black dark:text-dark-text-primary mb-3"
             >
               Welcome
             </h2>
@@ -91,7 +91,7 @@
             ></div>
             <button
               on:click={onLogin}
-              class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 font-mono text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)]"
+              class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)]"
             >
               Open Research Workspace
             </button>

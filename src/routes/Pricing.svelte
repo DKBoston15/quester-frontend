@@ -208,7 +208,7 @@
   >
     <div class="flex items-center space-x-6 mb-4 sm:mb-0">
       <span
-        class={`text-xl font-mono text-black dark:text-dark-text-primary ${!isYearly ? "font-bold" : ""}`}
+        class={`text-xl  text-black dark:text-dark-text-primary ${!isYearly ? "font-bold" : ""}`}
         >Monthly</span
       >
       <div
@@ -217,11 +217,11 @@
         <Switch bind:checked={isYearly} />
       </div>
       <span
-        class={`text-xl font-mono text-black dark:text-dark-text-primary ${isYearly ? "font-bold" : ""}`}
+        class={`text-xl  text-black dark:text-dark-text-primary ${isYearly ? "font-bold" : ""}`}
         >Yearly</span
       >
       <span
-        class="hidden sm:inline-block text-base font-bold font-mono bg-blue-400 dark:bg-dark-accent-blue dark:text-black px-3 py-1.5 border-2 border-black dark:border-dark-border"
+        class="hidden sm:inline-block text-base font-bold bg-blue-400 dark:bg-dark-accent-blue dark:text-black px-3 py-1.5 border-2 border-black dark:border-dark-border"
         >Save up to 17%</span
       >
     </div>
@@ -231,7 +231,7 @@
         >Workspace:</span
       >
       <span
-        class="font-mono font-bold text-black dark:text-dark-text-primary px-2 py-1 bg-blue-400/20 dark:bg-dark-accent-blue/20 border-2 border-black dark:border-dark-border text-sm"
+        class=" font-bold text-black dark:text-dark-text-primary px-2 py-1 bg-blue-400/20 dark:bg-dark-accent-blue/20 border-2 border-black dark:border-dark-border text-sm"
       >
         {props.workspaceName}
       </span>
@@ -240,14 +240,14 @@
   <!-- Show savings badge on mobile -->
   <div class="sm:hidden flex justify-center mb-8">
     <span
-      class="text-base font-bold font-mono bg-blue-400 dark:bg-dark-accent-blue dark:text-black px-3 py-1.5 border-2 border-black dark:border-dark-border"
+      class="text-base font-bold bg-blue-400 dark:bg-dark-accent-blue dark:text-black px-3 py-1.5 border-2 border-black dark:border-dark-border"
       >Save up to 17%</span
     >
   </div>
 
   {#if error}
     <div
-      class="mb-12 p-6 border-2 border-red-500 dark:border-red-400 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 font-mono"
+      class="mb-12 p-6 border-2 border-red-500 dark:border-red-400 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400"
     >
       {error}
     </div>
@@ -257,7 +257,7 @@
   <div class="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-8">
     {#if plans.length === 0}
       <div class="col-span-2 text-center py-12">
-        <p class="text-xl font-mono text-black dark:text-dark-text-primary">
+        <p class="text-xl text-black dark:text-dark-text-primary">
           No subscription plans available.
         </p>
       </div>
@@ -267,7 +267,7 @@
           {#if plan.tag}
             <div class="absolute -top-5 left-6 z-10">
               <div
-                class="bg-blue-400 dark:text-black dark:bg-dark-accent-blue px-4 py-1.5 border-2 border-black dark:border-dark-border font-mono text-base font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,1)]"
+                class="bg-blue-400 dark:text-black dark:bg-dark-accent-blue px-4 py-1.5 border-2 border-black dark:border-dark-border text-base font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,1)]"
               >
                 {plan.tag}
               </div>
@@ -286,7 +286,7 @@
                 : ''} min-h-[140px]"
             >
               <CardTitle
-                class="text-xl font-bold font-mono mb-2 text-black dark:text-dark-text-primary"
+                class="text-xl font-bold  mb-2 text-black dark:text-dark-text-primary"
                 >{plan.name}</CardTitle
               >
               <CardDescription
@@ -299,13 +299,13 @@
               <div class="mb-6">
                 {#if plan.type === "enterprise"}
                   <p
-                    class="text-4xl font-bold font-mono text-black dark:text-dark-text-primary"
+                    class="text-4xl font-bold text-black dark:text-dark-text-primary"
                   >
                     Custom Pricing
                   </p>
                 {:else}
                   <p
-                    class="text-4xl font-bold font-mono text-black dark:text-dark-text-primary"
+                    class="text-4xl font-bold text-black dark:text-dark-text-primary"
                   >
                     ${getPrice(plan)}
                     <span
@@ -368,7 +368,7 @@
                     {#if formSubmitted}
                       <div class="p-6 text-center">
                         <h3
-                          class="text-2xl font-bold font-mono mb-4 text-black dark:text-dark-text-primary"
+                          class="text-2xl font-bold mb-4 text-black dark:text-dark-text-primary"
                         >
                           Thank you for your interest!
                         </h3>
@@ -515,7 +515,7 @@
   <div class="mt-12 flex justify-center">
     <button
       onclick={props.onBack}
-      class="text-gray-600 dark:text-dark-text-secondary hover:text-black dark:hover:text-dark-text-primary font-mono text-sm flex items-center gap-2 transition-colors"
+      class="text-gray-600 dark:text-dark-text-secondary hover:text-black dark:hover:text-dark-text-primary text-sm flex items-center gap-2 transition-colors"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

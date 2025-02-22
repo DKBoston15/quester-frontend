@@ -95,7 +95,7 @@
     class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,1)] transition-all"
   >
     <CardHeader>
-      <CardTitle class="font-mono text-2xl">Pending Invitations</CardTitle>
+      <CardTitle class=" text-2xl">Pending Invitations</CardTitle>
     </CardHeader>
     <CardContent>
       {#if isLoading}
@@ -119,14 +119,12 @@
               class="border-2 border-black dark:border-dark-border rounded-lg p-4 bg-card dark:bg-dark-card"
             >
               <div class="mb-4">
-                <h3
-                  class="text-lg font-mono text-black dark:text-dark-text-primary"
-                >
+                <h3 class="text-lg text-black dark:text-dark-text-primary">
                   {invitation.invitedBy.firstName}
                   {invitation.invitedBy.lastName} invited you to:
                 </h3>
                 <p
-                  class="text-xl font-mono font-semibold text-black dark:text-dark-text-primary"
+                  class="text-xl font-semibold text-black dark:text-dark-text-primary"
                 >
                   {invitation.organization.name}
                 </p>
@@ -136,7 +134,7 @@
                 {#if invitation.accessMapping.departments?.length}
                   <div>
                     <h4
-                      class="font-mono font-medium text-black dark:text-dark-text-primary"
+                      class=" font-medium text-black dark:text-dark-text-primary"
                     >
                       Departments:
                     </h4>
@@ -153,7 +151,7 @@
                 {#if invitation.accessMapping.projects?.length}
                   <div>
                     <h4
-                      class="font-mono font-medium text-black dark:text-dark-text-primary"
+                      class=" font-medium text-black dark:text-dark-text-primary"
                     >
                       Projects:
                     </h4>
@@ -173,11 +171,7 @@
           <Separator class="my-6" />
 
           <div class="flex justify-end">
-            <Button
-              onclick={acceptInvitations}
-              disabled={isLoading}
-              class="font-mono"
-            >
+            <Button onclick={acceptInvitations} disabled={isLoading} class="">
               {isLoading ? "Accepting..." : "Accept All Invitations"}
             </Button>
           </div>

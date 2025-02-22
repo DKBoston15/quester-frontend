@@ -20,7 +20,7 @@ This document outlines the design system and styling guidelines used in the Ques
 
 ### Font Families
 
-- Headings: Monospace font (`font-mono`) for a technical, modern feel
+- Headings: Regular font
 - Body text: System default font stack
 - Font smoothing: Enabled with `-webkit-font-smoothing: antialiased` and `-moz-osx-font-smoothing: grayscale`
 

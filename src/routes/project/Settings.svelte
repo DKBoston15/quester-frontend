@@ -14,26 +14,26 @@
 </script>
 
 <div class="container mx-auto py-6 px-4">
-  <h1 class="text-3xl font-mono font-bold mb-6">Project Settings</h1>
+  <h1 class="text-3xl font-bold mb-6">Project Settings</h1>
 
   <div class="grid gap-6">
     <Card
       class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
     >
       <CardHeader>
-        <CardTitle class="font-mono">General Settings</CardTitle>
+        <CardTitle class="">General Settings</CardTitle>
       </CardHeader>
       <CardContent>
         <form class="space-y-4">
           <div class="space-y-2">
             <Label for="projectName">Project Name</Label>
-            <Input id="projectName" type="text" class="font-mono" />
+            <Input id="projectName" type="text" class="" />
           </div>
           <div class="space-y-2">
             <Label for="projectDescription">Project Description</Label>
-            <Input id="projectDescription" type="text" class="font-mono" />
+            <Input id="projectDescription" type="text" class="" />
           </div>
-          <Button type="submit" class="font-mono">Save Changes</Button>
+          <Button type="submit" class="">Save Changes</Button>
         </form>
       </CardContent>
     </Card>
@@ -42,10 +42,10 @@
       class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
     >
       <CardHeader>
-        <CardTitle class="font-mono text-red-600">Danger Zone</CardTitle>
+        <CardTitle class=" text-red-600">Danger Zone</CardTitle>
       </CardHeader>
       <CardContent>
-        <Button variant="destructive" class="font-mono">Delete Project</Button>
+        <Button variant="destructive" class="">Delete Project</Button>
       </CardContent>
     </Card>
   </div>

@@ -50,23 +50,39 @@ export interface Organization {
   };
 }
 
+export type ResearchProductType = "professionalism" | "writing" | "analysis";
+
+export interface ResearchProduct {
+  id: string;
+  name: string;
+  type: ResearchProductType;
+  status: "planned" | "in_progress" | "completed" | "archived";
+  description?: string;
+  dueDate?: Date;
+  order: number;
+}
+
 export interface Project {
   id: string;
-  organizationId: string;
-  departmentId: string | null;
   name: string;
-  description: string | null;
+  organizationId?: string;
+  departmentId?: string;
+  userId?: string;
+  description?: string | null;
+  purpose?: string | null;
+  financialInstitution?: string | null;
+  financialSupport?: string | null;
+  product?: string | null; // JSON string of ResearchProduct[]
+  researchDesign?: string | null;
+  analyticDesign?: string | null;
+  samplingDesign?: string | null;
+  measurementDesign?: string | null;
+  status?: string | null;
   settings: Record<string, any>;
-  metadata: Record<string, any> | null;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
-
-  // Relations (optional since they might not always be loaded)
-  organization?: Organization;
-  department?: Department;
-  projectRoles?: ProjectRole[];
-  users?: User[];
+  metadata?: Record<string, any> | null;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string | null;
 }
 
 export interface ProjectRole {

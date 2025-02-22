@@ -106,7 +106,7 @@
     >
       <div class="mb-6 relative">
         <h2
-          class="font-mono text-3xl font-bold text-black dark:text-dark-text-primary mb-2"
+          class=" text-3xl font-bold text-black dark:text-dark-text-primary mb-2"
         >
           Processing Your Subscription
         </h2>
@@ -117,7 +117,7 @@
 
       {#if error}
         <div
-          class="mb-6 p-4 border-2 border-red-500 dark:border-red-400 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 font-mono"
+          class="mb-6 p-4 border-2 border-red-500 dark:border-red-400 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400"
         >
           {error}
           <button
@@ -134,9 +134,7 @@
               <div
                 class="w-8 h-8 border-4 border-blue-400 dark:border-dark-accent-blue border-t-transparent rounded-full animate-spin"
               ></div>
-              <p
-                class="text-lg font-mono text-black dark:text-dark-text-primary"
-              >
+              <p class="text-lg text-black dark:text-dark-text-primary">
                 Please wait while we process your subscription for
                 <span class="font-bold">{currentOrg?.name}</span>...
               </p>

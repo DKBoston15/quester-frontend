@@ -11,14 +11,14 @@
 </script>
 
 <div class="container mx-auto py-6 px-4">
-  <h1 class="text-3xl font-mono font-bold mb-6">Project Analytics</h1>
+  <h1 class="text-3xl font-bold mb-6">Project Analytics</h1>
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     <Card
       class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
     >
       <CardHeader>
-        <CardTitle class="font-mono">Literature Stats</CardTitle>
+        <CardTitle class="">Literature Stats</CardTitle>
       </CardHeader>
       <CardContent>
         <p class="text-muted-foreground">
@@ -31,7 +31,7 @@
       class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
     >
       <CardHeader>
-        <CardTitle class="font-mono">Research Activity</CardTitle>
+        <CardTitle class="">Research Activity</CardTitle>
       </CardHeader>
       <CardContent>
         <p class="text-muted-foreground">
@@ -44,7 +44,7 @@
       class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
     >
       <CardHeader>
-        <CardTitle class="font-mono">Outcome Metrics</CardTitle>
+        <CardTitle class="">Outcome Metrics</CardTitle>
       </CardHeader>
       <CardContent>
         <p class="text-muted-foreground">
