@@ -127,31 +127,32 @@
         <Sidebar.GroupContent>
           <Sidebar.Menu>
             {#each primaryRoutes as item (item.title)}
-              <Sidebar.MenuItem>
-                <Sidebar.MenuButton>
-                  <Tooltip.Root>
-                    <Tooltip.Trigger>
-                      <Link
-                        to={item.link}
-                        class="flex items-center gap-3 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
-                      >
-                        {#if item.icon}
-                          <item.icon class="h-4 w-4 flex-shrink-0" />
-                        {/if}
-                        <span class=" group-data-[collapsible=icon]:hidden"
-                          >{item.title}</span
+              <Link to={item.link} class="block">
+                <Sidebar.MenuItem>
+                  <Sidebar.MenuButton>
+                    <Tooltip.Root>
+                      <Tooltip.Trigger>
+                        <div
+                          class="flex items-center gap-3 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
                         >
-                      </Link>
-                    </Tooltip.Trigger>
-                    <Tooltip.Content
-                      side="right"
-                      class="group-data-[collapsible=icon]:block hidden"
-                    >
-                      <span class="">{item.title}</span>
-                    </Tooltip.Content>
-                  </Tooltip.Root>
-                </Sidebar.MenuButton>
-              </Sidebar.MenuItem>
+                          {#if item.icon}
+                            <item.icon class="h-4 w-4 flex-shrink-0" />
+                          {/if}
+                          <span class="group-data-[collapsible=icon]:hidden"
+                            >{item.title}</span
+                          >
+                        </div>
+                      </Tooltip.Trigger>
+                      <Tooltip.Content
+                        side="right"
+                        class="group-data-[collapsible=icon]:block hidden"
+                      >
+                        <span class="">{item.title}</span>
+                      </Tooltip.Content>
+                    </Tooltip.Root>
+                  </Sidebar.MenuButton>
+                </Sidebar.MenuItem>
+              </Link>
             {/each}
           </Sidebar.Menu>
         </Sidebar.GroupContent>
@@ -164,31 +165,32 @@
         <Sidebar.GroupContent>
           <Sidebar.Menu>
             {#each secondaryRoutes as item (item.title)}
-              <Sidebar.MenuItem>
-                <Sidebar.MenuButton>
-                  <Tooltip.Root>
-                    <Tooltip.Trigger>
-                      <Link
-                        to={item.link}
-                        class="flex items-center gap-3 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
-                      >
-                        {#if item.icon}
-                          <item.icon class="h-4 w-4 flex-shrink-0" />
-                        {/if}
-                        <span class=" group-data-[collapsible=icon]:hidden"
-                          >{item.title}</span
+              <Link to={item.link} class="block">
+                <Sidebar.MenuItem>
+                  <Sidebar.MenuButton>
+                    <Tooltip.Root>
+                      <Tooltip.Trigger>
+                        <div
+                          class="flex items-center gap-3 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
                         >
-                      </Link>
-                    </Tooltip.Trigger>
-                    <Tooltip.Content
-                      side="right"
-                      class="group-data-[collapsible=icon]:block hidden"
-                    >
-                      <span class="">{item.title}</span>
-                    </Tooltip.Content>
-                  </Tooltip.Root>
-                </Sidebar.MenuButton>
-              </Sidebar.MenuItem>
+                          {#if item.icon}
+                            <item.icon class="h-4 w-4 flex-shrink-0" />
+                          {/if}
+                          <span class="group-data-[collapsible=icon]:hidden"
+                            >{item.title}</span
+                          >
+                        </div>
+                      </Tooltip.Trigger>
+                      <Tooltip.Content
+                        side="right"
+                        class="group-data-[collapsible=icon]:block hidden"
+                      >
+                        <span class="">{item.title}</span>
+                      </Tooltip.Content>
+                    </Tooltip.Root>
+                  </Sidebar.MenuButton>
+                </Sidebar.MenuItem>
+              </Link>
             {/each}
           </Sidebar.Menu>
         </Sidebar.GroupContent>
@@ -201,31 +203,32 @@
         <Sidebar.GroupContent>
           <Sidebar.Menu>
             {#each tertiaryRoutes as item (item.title)}
-              <Sidebar.MenuItem>
-                <Sidebar.MenuButton>
-                  <Tooltip.Root>
-                    <Tooltip.Trigger>
-                      <Link
-                        to={item.link}
-                        class="flex items-center gap-3 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
-                      >
-                        {#if item.icon}
-                          <item.icon class="h-4 w-4 flex-shrink-0" />
-                        {/if}
-                        <span class=" group-data-[collapsible=icon]:hidden"
-                          >{item.title}</span
+              <Link to={item.link} class="block">
+                <Sidebar.MenuItem>
+                  <Sidebar.MenuButton>
+                    <Tooltip.Root>
+                      <Tooltip.Trigger>
+                        <div
+                          class="flex items-center gap-3 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
                         >
-                      </Link>
-                    </Tooltip.Trigger>
-                    <Tooltip.Content
-                      side="right"
-                      class="group-data-[collapsible=icon]:block hidden"
-                    >
-                      <span class="">{item.title}</span>
-                    </Tooltip.Content>
-                  </Tooltip.Root>
-                </Sidebar.MenuButton>
-              </Sidebar.MenuItem>
+                          {#if item.icon}
+                            <item.icon class="h-4 w-4 flex-shrink-0" />
+                          {/if}
+                          <span class="group-data-[collapsible=icon]:hidden"
+                            >{item.title}</span
+                          >
+                        </div>
+                      </Tooltip.Trigger>
+                      <Tooltip.Content
+                        side="right"
+                        class="group-data-[collapsible=icon]:block hidden"
+                      >
+                        <span class="">{item.title}</span>
+                      </Tooltip.Content>
+                    </Tooltip.Root>
+                  </Sidebar.MenuButton>
+                </Sidebar.MenuItem>
+              </Link>
             {/each}
           </Sidebar.Menu>
         </Sidebar.GroupContent>
@@ -236,29 +239,30 @@
       <Sidebar.Group>
         <Sidebar.GroupContent>
           <Sidebar.Menu>
-            <Sidebar.MenuItem>
-              <Sidebar.MenuButton>
-                <Tooltip.Root>
-                  <Tooltip.Trigger>
-                    <Link
-                      to="/dashboard"
-                      class="flex items-center gap-3 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
-                    >
-                      <Building2 class="h-4 w-4 flex-shrink-0" />
-                      <span class=" group-data-[collapsible=icon]:hidden"
-                        >Organization</span
+            <Link to="/dashboard" class="block">
+              <Sidebar.MenuItem>
+                <Sidebar.MenuButton>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger>
+                      <div
+                        class="flex items-center gap-3 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
                       >
-                    </Link>
-                  </Tooltip.Trigger>
-                  <Tooltip.Content
-                    side="right"
-                    class="group-data-[collapsible=icon]:block hidden"
-                  >
-                    <span class="">Organization</span>
-                  </Tooltip.Content>
-                </Tooltip.Root>
-              </Sidebar.MenuButton>
-            </Sidebar.MenuItem>
+                        <Building2 class="h-4 w-4 flex-shrink-0" />
+                        <span class="group-data-[collapsible=icon]:hidden"
+                          >Organization</span
+                        >
+                      </div>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content
+                      side="right"
+                      class="group-data-[collapsible=icon]:block hidden"
+                    >
+                      <span class="">Organization</span>
+                    </Tooltip.Content>
+                  </Tooltip.Root>
+                </Sidebar.MenuButton>
+              </Sidebar.MenuItem>
+            </Link>
           </Sidebar.Menu>
         </Sidebar.GroupContent>
       </Sidebar.Group>

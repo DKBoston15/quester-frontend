@@ -101,27 +101,32 @@
       <Sidebar.GroupContent>
         <Sidebar.Menu>
           {#each mainNavItems as item (item.title)}
-            <Sidebar.MenuItem>
-              <Sidebar.MenuButton>
-                {#snippet tooltipContent()}
-                  {item.title}
-                {/snippet}
-                {#snippet child({ props })}
-                  <a
-                    href={item.url}
-                    {...props}
-                    class="flex items-center gap-3 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
-                  >
-                    {#if item.icon}
-                      <item.icon class="h-4 w-4 flex-shrink-0" />
-                    {/if}
-                    <span class=" group-data-[collapsible=icon]:hidden"
-                      >{item.title}</span
+            <a href={item.url} class="block">
+              <Sidebar.MenuItem>
+                <Sidebar.MenuButton>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger>
+                      <div
+                        class="flex items-center gap-3 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
+                      >
+                        {#if item.icon}
+                          <item.icon class="h-4 w-4 flex-shrink-0" />
+                        {/if}
+                        <span class="group-data-[collapsible=icon]:hidden"
+                          >{item.title}</span
+                        >
+                      </div>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content
+                      side="right"
+                      class="group-data-[collapsible=icon]:block hidden"
                     >
-                  </a>
-                {/snippet}
-              </Sidebar.MenuButton>
-            </Sidebar.MenuItem>
+                      <span class="">{item.title}</span>
+                    </Tooltip.Content>
+                  </Tooltip.Root>
+                </Sidebar.MenuButton>
+              </Sidebar.MenuItem>
+            </a>
           {/each}
         </Sidebar.Menu>
       </Sidebar.GroupContent>
@@ -132,26 +137,31 @@
       <Sidebar.GroupContent>
         <Sidebar.Menu>
           <Sidebar.MenuItem>
-            <Sidebar.MenuButton>
-              {#snippet tooltipContent()}
-                <span>Projects</span>
-              {/snippet}
-              {#snippet child({ props })}
-                <a
-                  href="/dashboard"
-                  {...props}
-                  class="flex items-center gap-3 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
-                >
-                  <FolderKanban class="h-4 w-4 flex-shrink-0" />
-                  <span class=" group-data-[collapsible=icon]:hidden"
-                    >Projects</span
+            <a href="/dashboard" class="block">
+              <Sidebar.MenuButton>
+                <Tooltip.Root>
+                  <Tooltip.Trigger>
+                    <div
+                      class="flex items-center gap-3 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
+                    >
+                      <FolderKanban class="h-4 w-4 flex-shrink-0" />
+                      <span class="group-data-[collapsible=icon]:hidden"
+                        >Projects</span
+                      >
+                      <ChevronDown
+                        class="h-4 w-4 ml-auto group-data-[collapsible=icon]:hidden"
+                      />
+                    </div>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content
+                    side="right"
+                    class="group-data-[collapsible=icon]:block hidden"
                   >
-                  <ChevronDown
-                    class="h-4 w-4 ml-auto group-data-[collapsible=icon]:hidden"
-                  />
-                </a>
-              {/snippet}
-            </Sidebar.MenuButton>
+                    <span class="">Projects</span>
+                  </Tooltip.Content>
+                </Tooltip.Root>
+              </Sidebar.MenuButton>
+            </a>
             <Accordion.Root
               type="single"
               value={isProjectsOpen}
@@ -162,26 +172,27 @@
                   <Sidebar.Menu>
                     {#if projects.length > 0}
                       {#each projects as project}
-                        <Sidebar.MenuItem>
-                          <Sidebar.MenuButton>
-                            {#snippet child({ props })}
-                              <a
-                                href={`/project/${project.id}`}
-                                {...props}
-                                class="flex ml-4 items-center gap-3 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2"
-                                onclick={(e) => {
-                                  e.preventDefault();
-                                  navigate(`/project/${project.id}`);
-                                }}
+                        <a
+                          href={`/project/${project.id}`}
+                          class="block"
+                          onclick={(e) => {
+                            e.preventDefault();
+                            navigate(`/project/${project.id}`);
+                          }}
+                        >
+                          <Sidebar.MenuItem>
+                            <Sidebar.MenuButton>
+                              <div
+                                class="flex ml-4 items-center gap-3 px-4 py-2"
                               >
                                 <div
                                   class="w-2 h-2 rounded-full bg-foreground/70 flex-shrink-0"
                                 ></div>
                                 <span class="">{project.name}</span>
-                              </a>
-                            {/snippet}
-                          </Sidebar.MenuButton>
-                        </Sidebar.MenuItem>
+                              </div>
+                            </Sidebar.MenuButton>
+                          </Sidebar.MenuItem>
+                        </a>
                       {/each}
                     {:else}
                       <div class="px-4 py-2 text-sm text-muted-foreground">

@@ -1,0 +1,29 @@
+export interface Literature {
+  id: string;
+  userId: string;
+  projectId: string;
+  name: string;
+  type: string;
+  authors: any[];
+  editors: any[];
+  keywords: any[];
+  chapterTitle: string;
+  endPage: string;
+  issue: string;
+  link: string;
+  publishYear: string;
+  publisherName: string;
+  startPage: string;
+  status: string;
+  volume: string;
+  researchDesign: string;
+  analyticDesign: string;
+  samplingDesign: string;
+  measurementDesign: string;
+  secondName: string;
+  city: string;
+  startDate: string;
+  endDate: string;
+  createdAt: string;
+  updatedAt: string;
+}
