@@ -326,14 +326,6 @@
             ? formatFriendlyDate(new Date(note.updated_at))
             : "";
           const highlightedDate = highlightText(friendlyDate, query);
-          console.log({
-            ...note,
-            highlightedName,
-            contentSnippet,
-            highlightedSectionType,
-            highlightedDate,
-            isHighlighted: true,
-          });
           return {
             ...note,
             highlightedName,
@@ -420,9 +412,6 @@
 
         const fetchedData = await response.json();
 
-        // Debug the raw data from the backend
-        console.log("Raw notes data from backend:", fetchedData);
-
         let processedNotes: Note[] = [];
 
         // Handle the special structure returned by the backend
@@ -431,22 +420,10 @@
           if (item.notes) {
             // This is a grouped literature note
             item.notes.forEach((note: any) => {
-              // Debug individual note before processing
-              console.log(
-                "Raw note before processing:",
-                note.id,
-                note.section_type
-              );
               processedNotes.push(processNoteData(note));
             });
           } else {
             // This is a regular note
-            // Debug individual note before processing
-            console.log(
-              "Raw note before processing:",
-              item.id,
-              item.section_type
-            );
             processedNotes.push(processNoteData(item));
           }
         });
@@ -498,8 +475,6 @@
           literatureId: data.literatureId,
         } as any; // Type assertion to avoid linter errors
 
-        console.log("Creating note with payload:", payload);
-
         const response = await fetch("http://localhost:3333/note", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -512,7 +487,6 @@
         }
 
         const newNote = await response.json();
-        console.log("Response from createNote:", newNote);
 
         // Create a new object with the correct structure before processing
         const noteWithCorrectTypes = {
@@ -559,10 +533,6 @@
         // Handle section_type specially - backend expects a string, not an object
         // Also convert section_type to sectionType for the backend
         if (payload.section_type && typeof payload.section_type === "object") {
-          console.log(
-            "Converting section_type object to string for API:",
-            payload.section_type
-          );
           // Use sectionType (camelCase) for the backend
           payload.sectionType = payload.section_type.value;
           // Remove the snake_case version to avoid confusion
@@ -576,14 +546,6 @@
           // Remove the snake_case version to avoid confusion
           delete payload.section_type;
         }
-
-        // Log the update operation for debugging
-        console.log(
-          "Updating note:",
-          id,
-          Object.keys(payload),
-          uiOnlyUpdate ? "(UI-only update)" : "(Server update)"
-        );
 
         // For UI-only updates, update the local state first
         if (uiOnlyUpdate) {
@@ -606,16 +568,6 @@
 
         // Skip the API call for UI-only updates
         if (!uiOnlyUpdate) {
-          console.log("Sending update to server:", {
-            id,
-            payloadKeys: Object.keys(payload),
-            hasContent: "content" in payload,
-            contentLength: payload.content ? payload.content.length : 0,
-            contentPreview: payload.content
-              ? payload.content.substring(0, 100) + "..."
-              : "none",
-          });
-
           const response = await fetch(`http://localhost:3333/note/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
@@ -632,7 +584,6 @@
           }
 
           const updatedNote = await response.json();
-          console.log("Response from updateNote:", updatedNote);
 
           const processedUpdatedNote = processNoteData(
             updatedNote.note || updatedNote
@@ -864,8 +815,6 @@
     // Handle section_type - it might be a string in the database but needs to be an object in the frontend
     // First check if we have sectionType from the backend (camelCase)
     if (processedNote.sectionType !== undefined) {
-      console.log("Found sectionType from backend:", processedNote.sectionType);
-
       // Handle null sectionType from backend
       if (processedNote.sectionType === null) {
         processedNote.section_type = { value: "Other", label: "Other" };
@@ -904,14 +853,6 @@
         label: processedNote.section_type.value || "Other",
       };
     }
-
-    // Log the processed section_type for debugging
-    console.log(
-      "Processed section_type:",
-      typeof processedNote.section_type === "object"
-        ? `${processedNote.section_type.value} (${processedNote.section_type.label})`
-        : processedNote.section_type
-    );
 
     // Ensure created_at and updated_at are valid ISO strings
     const now = new Date().toISOString();

@@ -98,7 +98,6 @@
 
   // Reactive side effect: update local search results and store query
   $effect(() => {
-    console.log("searchInput", searchInput);
     if (searchInput.trim()) {
       localSearchResults = performLocalSearch(
         notesStore.notes,

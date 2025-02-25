@@ -27,24 +27,6 @@
   let note: Note;
   let rightPanelNote = $state<Note | null>(null);
 
-  // For debugging
-  $effect(() => {
-    console.log("rightPanelNote updated:", rightPanelNote?.id);
-  });
-
-  $effect(() => {
-    console.log("Focus mode is now:", focusMode);
-  });
-
-  // Effect to ensure the active note is always up to date
-  $effect(() => {
-    if (notesStore.activeNoteId) {
-      // This effect will run whenever the notes array changes
-      // It ensures that the active note is always up to date
-      console.log("Notes array changed, checking if active note needs update");
-    }
-  });
-
   // Effect to sync rightPanelNote with store updates
   $effect(() => {
     // Only run this effect if we have a rightPanelNote
@@ -61,10 +43,6 @@
         const updatedStr = JSON.stringify(updatedNote);
 
         if (currentStr !== updatedStr) {
-          console.log(
-            "Right panel note updated from store:",
-            rightPanelNote?.id
-          );
           // Create a deep copy to ensure reactivity
           rightPanelNote = JSON.parse(JSON.stringify(updatedNote));
         }
@@ -84,8 +62,6 @@
 
   // Handle note selection
   function handleNoteSelect(note: Note, targetPanel = "left") {
-    console.log("Note selected:", note.id, "Target panel:", targetPanel);
-
     // Handle selection based on target panel
     if (targetPanel === "left") {
       // If this note is already in the right panel, we need to handle it carefully
@@ -104,9 +80,6 @@
     } else if (targetPanel === "right") {
       // If this note is already the active note, don't set it in the right panel
       if (notesStore.activeNoteId === note.id) {
-        console.log(
-          "Note is already active in left panel, not setting in right panel"
-        );
         return;
       }
       // Set the right panel note - use a deep copy to ensure reactivity
@@ -196,7 +169,6 @@
             size="sm"
             class={focusMode ? "bg-secondary h-8" : "h-8"}
             onclick={() => {
-              console.log("Focus mode toggled:", !focusMode);
               focusMode = !focusMode;
             }}
           >

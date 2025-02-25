@@ -63,11 +63,8 @@
 
   // Ensure literature data is loaded
   onMount(async () => {
-    console.log(`Editor mounted for note: ${note.id}`);
-
     // For new notes (with "Untitled Note"), we want to make the title editable immediately
     if (note.name === "Untitled Note" && title === "Untitled Note") {
-      console.log("New note detected, enabling title editing");
       titleChanged = true;
     }
 
@@ -79,11 +76,8 @@
 
   // Direct function to save title
   function saveTitle() {
-    console.log(`Saving title: "${title}"`);
-
     // If the title is still the default and hasn't been changed, don't save
     if (title === "Untitled Note" && originalTitle === "Untitled Note") {
-      console.log("Title unchanged from default, not saving");
       return;
     }
 
@@ -105,7 +99,6 @@
             console.error("Failed to update title");
             return;
           }
-          console.log("Title updated successfully");
 
           // Update the note object directly to prevent future effect runs from resetting
           note.name = titleToSave;
@@ -140,7 +133,6 @@
                   );
                   if (titleEl) {
                     titleEl.textContent = titleToSave || "Untitled Note";
-                    console.log(`Updated title for note ${note.id} in the DOM`);
                   }
                 });
               }
@@ -166,10 +158,6 @@
 
   // Handle literature selection
   async function handleLiteratureSelect(literatureId: string | undefined) {
-    console.log(
-      `Updating literature connection for note ${note.id} to ${literatureId}`
-    );
-
     if (!isUnmounting && note) {
       isSaving = true;
 
@@ -187,8 +175,6 @@
             `Failed to update literature connection (${response.status})`
           );
         }
-
-        console.log("Literature connection updated successfully");
 
         // Update the note object directly
         note.literatureId = literatureId;
@@ -258,8 +244,6 @@
 
   // Reactive block to update local state when the note prop changes
   $effect(() => {
-    console.log(`Note effect triggered for: ${note.id}`);
-
     // Always update content when note changes
     const noteContentStr =
       typeof note.content === "string"
@@ -270,8 +254,6 @@
 
     // Force immediate update of all state when note changes
     if (currentNoteId !== note.id || noteContentStr !== currentContentStr) {
-      console.log(`Note content or ID changed - updating editor state`);
-
       // Only reset contentChanged if the note ID has changed
       // This preserves unsaved changes when content is updated externally
       const isNewNote = currentNoteId !== note.id;
@@ -282,8 +264,6 @@
       if (!isUserEditingTitle || isNewNote) {
         title = note.name; // Update title when note changes
         originalTitle = note.name; // Update original title reference
-      } else {
-        console.log("Preserving user's title edits during note effect");
       }
 
       titleChanged = false; // Reset title changed flag when note changes
@@ -292,7 +272,6 @@
       // Only update content and previousContent if this is a new note
       // or if the content has actually changed from the server
       if (isNewNote || noteContentStr !== currentContentStr) {
-        console.log("Updating content from note prop");
         content = newContent;
         previousContent = JSON.stringify(newContent);
 
@@ -308,9 +287,6 @@
             ? { ...note.section_type }
             : { value: note.section_type, label: note.section_type };
       }
-      console.log(
-        `Note state fully updated for: ${note.id}, title: ${title}, contentChanged: ${contentChanged}`
-      );
     }
   });
 
@@ -318,37 +294,22 @@
   $effect(() => {
     // Skip processing if we're unmounting to avoid state mutation errors
     if (isUnmounting) {
-      console.log("Skipping content effect during unmount");
       return;
     }
 
     const currentContentStr = JSON.stringify(content);
-    console.log("Content effect triggered, checking for changes");
 
     if (currentContentStr !== previousContent) {
-      console.log(
-        "Content changed in effect, from:",
-        previousContent.substring(0, 50) + "...",
-        "to:",
-        currentContentStr.substring(0, 50) + "..."
-      );
-
       // Store the new content as previous content
       previousContent = currentContentStr;
 
       // Only mark as changed if we're not in the middle of a note switch
       // This prevents unnecessary saves during note switching
       if (currentNoteId === note.id) {
-        console.log(`Setting contentChanged=true for note ${note.id}`);
         contentChanged = true;
         scheduleSave();
       } else {
-        console.log(
-          `Skipping contentChanged flag for note ${currentNoteId} vs ${note.id}`
-        );
       }
-    } else {
-      console.log("Content unchanged in effect, not scheduling save");
     }
   });
 
@@ -357,9 +318,6 @@
     // Check if title has changed from original
     if (!isUnmounting) {
       titleChanged = title !== originalTitle;
-      console.log(
-        `Title changed: ${titleChanged}, title: "${title}", originalTitle: "${originalTitle}"`
-      );
     }
   });
 
@@ -379,15 +337,6 @@
 
   async function saveNote(forceSave = false) {
     if (isSaving || isUnmounting || (!contentChanged && !forceSave) || !note) {
-      console.log("Not saving note because:", {
-        isSaving,
-        isUnmounting,
-        contentChanged,
-        forceSave,
-        hasNote: !!note,
-        noteId: note?.id,
-        currentNoteId,
-      });
       return Promise.resolve(); // Return a resolved promise
     }
 
@@ -405,13 +354,6 @@
     isSaving = true;
     try {
       const contentToSave = JSON.stringify(content);
-      console.log("Saving note to database:", {
-        id: note.id,
-        name: currentTitle,
-        contentLength: contentToSave.length,
-        contentPreview: contentToSave.substring(0, 100) + "...",
-        forceSave,
-      });
 
       // Use the store's update method to ensure the note list updates
       await notesStore.updateNote(note.id, {
@@ -471,7 +413,6 @@
 
                 if (previewText) {
                   previewEl.textContent = previewText;
-                  console.log(`Updated preview for note ${note.id} in the DOM`);
                 }
               }
             });
@@ -487,7 +428,6 @@
         notesStore.setSearchQuery(currentQuery);
       }
 
-      console.log("Note saved successfully");
       return Promise.resolve(); // Return a resolved promise
     } catch (error) {
       console.error("Failed to save note:", error);
@@ -504,7 +444,6 @@
         (currentTitle !== title ||
           currentContentStr !== JSON.stringify(content))
       ) {
-        console.log("Content changed during save, scheduling another save");
         contentChanged = true;
         scheduleSave();
       }
@@ -513,13 +452,9 @@
 
   // Add function to handle section type change
   function handleSectionTypeChange(value: string) {
-    console.log("Section type changed to:", value);
-
     const selectedType = sectionTypeOptions.find(
       (option) => option.value === value
     );
-
-    console.log("Selected type object:", selectedType);
 
     if (selectedType) {
       // Update our local state first
@@ -537,8 +472,6 @@
           if (!response.ok) {
             console.error("Failed to update section type");
           } else {
-            console.log("Section type updated successfully");
-
             // Update the note in the store's notes array
             // This is a hack but it's the only way to update the UI without remounting
             const storeNotes = notesStore.notes;
@@ -560,11 +493,6 @@
                     badgeElements.forEach((badge) => {
                       badge.textContent = selectedType.label;
                     });
-                    console.log(
-                      `Updated ${badgeElements.length} badge elements in the DOM`
-                    );
-                  } else {
-                    console.log("No badge elements found in the DOM");
                   }
                 }, 100);
 
@@ -605,12 +533,6 @@
 
   onDestroy(() => {
     try {
-      if (note) {
-        console.log(`Editor unmounting for note: ${note.id}`);
-      } else {
-        console.log(`Editor unmounting for unknown note`);
-      }
-
       // Set isUnmounting to prevent any further state updates
       isUnmounting = true;
 
@@ -619,25 +541,16 @@
 
       // Save any pending changes before unmounting
       if (document.visibilityState !== "hidden" && note && contentChanged) {
-        console.log("Forcing save on unmount due to unsaved changes");
-
         // Use the store's update method to ensure the note list updates
         const contentToSave = JSON.stringify(content);
 
         // We need to use a setTimeout to ensure this runs after the current execution context
         // This helps avoid state mutation errors during unmounting
         setTimeout(() => {
-          notesStore
-            .updateNote(note.id, {
-              name: title,
-              content: contentToSave,
-            })
-            .then(() => {
-              console.log("Note saved successfully on unmount via store");
-            })
-            .catch((error) => {
-              console.error("Error saving note on unmount via store:", error);
-            });
+          notesStore.updateNote(note.id, {
+            name: title,
+            content: contentToSave,
+          });
         }, 0);
       }
     } catch (error) {
@@ -713,7 +626,6 @@
 
       <div class="flex items-center gap-2 ml-auto">
         <!-- Literature Selector Component -->
-        {console.log(note)}
         {#if note && note.projectId}
           <LiteratureSelector
             noteId={note.id}
@@ -770,16 +682,12 @@
         <ShadEditor
           {content}
           on:contentChange={(e) => {
-            console.log("Content change detected in editor");
             const newContent = e.detail;
             // Check if content has actually changed
             if (JSON.stringify(newContent) !== JSON.stringify(content)) {
-              console.log("Content has changed, updating and scheduling save");
               content = newContent;
               contentChanged = true;
               scheduleSave();
-            } else {
-              console.log("Content unchanged, not scheduling save");
             }
           }}
           placeholder="Start writing..."

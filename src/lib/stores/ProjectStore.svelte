@@ -55,10 +55,8 @@
 
         if (designsResponse.ok) {
           const designsData = await designsResponse.json();
-          console.log("Raw designs response:", $state.snapshot(designsData));
           if (designsData.length > 0 && designsData[0].designs?.designs) {
             const designOptions = designsData[0].designs.designs;
-            console.log("Design options:", $state.snapshot(designOptions));
             designs = {
               research: designOptions.research || [],
               sampling: designOptions.sampling || [],

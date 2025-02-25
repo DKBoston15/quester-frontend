@@ -19,7 +19,6 @@
     const input = e.target as HTMLInputElement;
     searchQuery = input.value;
     if (gridApi) {
-      console.log("Setting quick filter:", searchQuery);
       gridApi.setGridOption("quickFilterText", searchQuery);
     }
   }
@@ -27,25 +26,18 @@
   // Load literature data when project changes
   $effect(() => {
     const project = projectStore.currentProject;
-    console.log("Load effect running with project:", project);
     if (!project?.id) {
       console.warn("No project available");
       return;
     }
 
-    console.log("Loading literature data for project:", project.id);
     literatureStore.loadLiterature(project.id).catch((err) => {
       console.error("Failed to load literature:", err);
     });
   });
 
-  onMount(() => {
-    console.log("Literature component mounted");
-  });
-
   // Clear literature data when component is destroyed
   onDestroy(() => {
-    console.log("Literature component being destroyed");
     literatureStore.clearLiterature();
   });
 
@@ -56,8 +48,6 @@
   function handleLiteratureSelect(event: Event) {
     const customEvent = event as CustomEvent<Literature>;
     const literature = customEvent.detail;
-    // TODO: Implement literature edit dialog
-    console.log("Selected literature:", literature);
   }
 
   function handleGridReady(event: CustomEvent<{ api: GridApi<Literature> }>) {
@@ -73,7 +63,6 @@
         variant="outline"
         size="sm"
         onclick={() => {
-          console.log("Adding literature");
           handleAddLiterature();
         }}
       >
