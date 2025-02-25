@@ -11,6 +11,12 @@
   import { Badge } from "$lib/components/ui/badge";
   import { Portal } from "bits-ui";
 
+  // Add type for highlighted literature
+  type HighlightedLiterature = Literature & {
+    highlightedName: string;
+    highlightedAuthors?: string;
+  };
+
   // Props
   const {
     noteId,
@@ -31,19 +37,35 @@
   let triggerRef = $state<HTMLButtonElement>(null!);
 
   // Filtered literature based on search
-  let filteredLiterature = $derived(
+  let filteredLiterature = $derived<HighlightedLiterature[]>(
     searchValue
-      ? literatureStore.data.filter(
-          (item) =>
-            item.name?.toLowerCase().includes(searchValue.toLowerCase()) ||
-            (typeof item.authors === "string"
-              ? item.authors.toLowerCase()
-              : ""
-            ).includes(searchValue.toLowerCase()) ||
-            item.doi?.toLowerCase().includes(searchValue.toLowerCase())
-        )
-      : literatureStore.data
+      ? literatureStore.data
+          .filter(
+            (item) =>
+              item.name?.toLowerCase().includes(searchValue.toLowerCase()) ||
+              (typeof item.authors === "string"
+                ? item.authors.toLowerCase()
+                : ""
+              ).includes(searchValue.toLowerCase()) ||
+              item.doi?.toLowerCase().includes(searchValue.toLowerCase())
+          )
+          .map((item) => ({
+            ...item,
+            highlightedName: highlightText(item.name || "", searchValue),
+            highlightedAuthors: item.authors
+              ? highlightText(String(item.authors), searchValue)
+              : undefined,
+          }))
+      : (literatureStore.data as HighlightedLiterature[])
   );
+
+  // Highlight search terms in text
+  function highlightText(text: string, query: string): string {
+    if (!query || !text) return text;
+    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`(${escapedQuery})`, "gi");
+    return text.replace(regex, "<mark>$1</mark>");
+  }
 
   // Load literature data and set initial selection
   onMount(async () => {
@@ -140,8 +162,8 @@
               <Command.Group>
                 {#each filteredLiterature as literature (literature.id)}
                   <Command.Item
-                    value={literature.name}
-                    onclick={() => handleSelect(literature)}
+                    value={`${literature.name}___${literature.id}`}
+                    onSelect={() => handleSelect(literature)}
                     class="cursor-pointer"
                   >
                     <Check
@@ -154,10 +176,20 @@
                       )}
                     />
                     <div class="flex flex-col">
-                      <span>{literature.name}</span>
+                      <span>
+                        {#if searchValue}
+                          {@html literature.highlightedName}
+                        {:else}
+                          {literature.name}
+                        {/if}
+                      </span>
                       {#if literature.authors}
                         <span class="text-xs text-muted-foreground truncate">
-                          {literature.authors}
+                          {#if searchValue}
+                            {@html literature.highlightedAuthors}
+                          {:else}
+                            {literature.authors}
+                          {/if}
                         </span>
                       {/if}
                     </div>

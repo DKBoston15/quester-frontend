@@ -8,11 +8,12 @@
   import { Input } from "$lib/components/ui/input";
   import {
     Search,
-    Tag,
     PanelRight,
     PanelLeft,
     Clock,
     Book,
+    X,
+    Filter,
   } from "lucide-svelte";
   import { format } from "date-fns";
   import { fade } from "svelte/transition";
@@ -21,6 +22,12 @@
     TooltipContent,
     TooltipTrigger,
   } from "$lib/components/ui/tooltip";
+  import { Button } from "$lib/components/ui/button";
+  import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
+  import * as Command from "$lib/components/ui/command";
+  import * as Popover from "$lib/components/ui/popover";
+  import { Portal } from "bits-ui";
+  import { tick } from "svelte";
 
   // Props
   const { onNoteSelect, showSecondPanelOption = false } = $props<{
@@ -30,9 +37,29 @@
 
   // Local state
   let searchInput = $state("");
+  let filterSearchValue = $state("");
   let localSearchResults = $state<Note[]>([]);
-  let debouncedSearchTimeout: NodeJS.Timeout;
   let literatureMap = $state<Record<string, Literature>>({});
+  let activeLiteratureFilter = $state<string | undefined>(undefined);
+  let filterOpen = $state(false);
+  let triggerRef = $state<HTMLButtonElement>(null!);
+
+  // Filtered literature based on search
+  let filteredLiterature = $derived(
+    filterSearchValue
+      ? literatureStore.data.filter(
+          (item) =>
+            item.name
+              ?.toLowerCase()
+              .includes(filterSearchValue.toLowerCase()) ||
+            (typeof item.authors === "string"
+              ? item.authors.toLowerCase()
+              : ""
+            ).includes(filterSearchValue.toLowerCase()) ||
+            item.doi?.toLowerCase().includes(filterSearchValue.toLowerCase())
+        )
+      : literatureStore.data
+  );
 
   // Load literature data for display
   async function loadLiteratureData() {
@@ -258,9 +285,9 @@
     }
 
     // Apply literature filter if specified
-    if (filter.literatureId) {
+    if (activeLiteratureFilter) {
       filtered = filtered.filter(
-        (note) => note.literatureId === filter.literatureId
+        (note) => note.literatureId === activeLiteratureFilter
       );
     }
 
@@ -398,20 +425,125 @@
       return "Error extracting preview";
     }
   }
+
+  // Close popover and refocus trigger
+  function closeAndFocusTrigger() {
+    filterOpen = false;
+    tick().then(() => {
+      triggerRef?.focus();
+    });
+  }
+
+  // Handle literature selection
+  function handleLiteratureSelect(literature: Literature | undefined) {
+    if (literature?.id === activeLiteratureFilter) {
+      activeLiteratureFilter = undefined;
+    } else {
+      activeLiteratureFilter = literature?.id;
+    }
+    closeAndFocusTrigger();
+  }
 </script>
 
 <div class="flex flex-col h-full">
-  <!-- Search Bar -->
-  <div class="p-4 border-b">
-    <div class="relative">
-      <Search class="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-      <Input
-        type="text"
-        placeholder="Search notes..."
-        class="pl-8"
-        bind:value={searchInput}
-      />
+  <!-- Search Bar and Literature Filter -->
+  <div class="p-4 border-b space-y-2">
+    <div class="flex gap-2">
+      <div class="relative flex-1">
+        <Search class="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Input
+          type="text"
+          placeholder="Search notes..."
+          class="pl-8"
+          bind:value={searchInput}
+        />
+      </div>
+
+      <Popover.Root bind:open={filterOpen}>
+        <Popover.Trigger bind:ref={triggerRef}>
+          <Button
+            variant="outline"
+            size="icon"
+            class="shrink-0"
+            role="combobox"
+            aria-expanded={filterOpen}
+          >
+            <Filter class="h-4 w-4" />
+          </Button>
+        </Popover.Trigger>
+        <Portal>
+          <Popover.Content class="w-[300px] p-0" align="end">
+            <Command.Root>
+              <Command.Input
+                placeholder="Search literature..."
+                bind:value={filterSearchValue}
+              />
+              <Command.List>
+                <Command.Empty>No literature found.</Command.Empty>
+                <Command.Group>
+                  {#each filteredLiterature as literature (literature.id)}
+                    <Command.Item
+                      onSelect={() => handleLiteratureSelect(literature)}
+                      class="cursor-pointer"
+                    >
+                      <div class="flex items-center gap-2">
+                        <Book class="h-4 w-4" />
+                        <div class="flex flex-col">
+                          <span>{literature.name}</span>
+                          {#if literature.authors}
+                            <span
+                              class="text-xs text-muted-foreground truncate"
+                            >
+                              {literature.authors}
+                            </span>
+                          {/if}
+                        </div>
+                        {#if activeLiteratureFilter === literature.id}
+                          <span class="ml-auto">✓</span>
+                        {/if}
+                      </div>
+                    </Command.Item>
+                  {/each}
+                </Command.Group>
+              </Command.List>
+            </Command.Root>
+          </Popover.Content>
+        </Portal>
+      </Popover.Root>
     </div>
+
+    <!-- Active Literature Filter Badge -->
+    {#if activeLiteratureFilter}
+      <div class="flex items-center gap-2">
+        <Tooltip>
+          <TooltipTrigger>
+            <Badge variant="outline" class="flex items-center gap-1">
+              <Book class="h-3 w-3" />
+              <span class="truncate max-w-[200px]">
+                {getLiteratureTitle(activeLiteratureFilter)}
+              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                class="h-4 w-4 ml-1 hover:bg-destructive/10"
+                onclick={() => {
+                  activeLiteratureFilter = undefined;
+                }}
+              >
+                <X class="h-3 w-3" />
+              </Button>
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent
+            side="bottom"
+            sideOffset={5}
+            class="max-w-[500px] whitespace-pre-line"
+          >
+            {getLiteratureDetails(activeLiteratureFilter)}
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    {/if}
   </div>
 
   <!-- Note List -->
@@ -534,7 +666,14 @@
                             <TooltipTrigger>
                               <Badge
                                 variant="outline"
-                                class="text-xs flex items-center gap-1 badge-literature"
+                                class="text-xs flex items-center gap-1 badge-literature cursor-pointer hover:bg-accent"
+                                onclick={(e) => {
+                                  e.stopPropagation();
+                                  activeLiteratureFilter =
+                                    activeLiteratureFilter === note.literatureId
+                                      ? undefined
+                                      : note.literatureId;
+                                }}
                               >
                                 <Book class="h-3 w-3" />
                                 <span class="truncate max-w-[120px]">
