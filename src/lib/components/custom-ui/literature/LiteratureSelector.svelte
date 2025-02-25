@@ -11,11 +11,6 @@
   import { Badge } from "$lib/components/ui/badge";
   import { Portal } from "bits-ui";
 
-  // Type guard function
-  function isLiterature(lit: any): lit is Literature {
-    return lit && typeof lit === "object" && "id" in lit;
-  }
-
   // Props
   const {
     noteId,
