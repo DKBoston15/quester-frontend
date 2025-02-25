@@ -19,7 +19,7 @@
         class={cn("size-8 p-0", editor.isActive("italic") && "bg-muted")}
         onclick={() => editor.chain().focus().toggleItalic().run()}
       >
-        <Italic />
+        <Italic size={16} />
       </Button>
     </Tooltip.Trigger>
     <Tooltip.Content>

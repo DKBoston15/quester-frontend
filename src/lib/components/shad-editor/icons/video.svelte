@@ -22,7 +22,7 @@
         )}
         onclick={() => editor.chain().focus().insertVideoPlaceholder().run()}
       >
-        <Video />
+        <Video size={16} />
       </Button>
     </Tooltip.Trigger>
     <Tooltip.Content>

@@ -19,7 +19,7 @@
         class={cn("size-8 p-0", editor.isActive("bold") && "bg-muted")}
         onclick={() => editor.chain().focus().toggleBold().run()}
       >
-        <Bold />
+        <Bold size={16} />
       </Button>
     </Tooltip.Trigger>
     <Tooltip.Content>

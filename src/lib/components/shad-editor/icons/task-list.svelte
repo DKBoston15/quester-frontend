@@ -19,7 +19,7 @@
         class={cn("size-8 p-0", editor.isActive("taskList") && "bg-muted")}
         onclick={() => editor.chain().focus().toggleTaskList().run()}
       >
-        <CheckSquare />
+        <CheckSquare size={16} />
       </Button>
     </Tooltip.Trigger>
     <Tooltip.Content>

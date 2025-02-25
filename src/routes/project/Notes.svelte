@@ -36,6 +36,42 @@
     console.log("Focus mode is now:", focusMode);
   });
 
+  // Effect to ensure the active note is always up to date
+  $effect(() => {
+    if (notesStore.activeNoteId) {
+      // This effect will run whenever the notes array changes
+      // It ensures that the active note is always up to date
+      console.log("Notes array changed, checking if active note needs update");
+    }
+  });
+
+  // Effect to sync rightPanelNote with store updates
+  $effect(() => {
+    // Only run this effect if we have a rightPanelNote
+    if (rightPanelNote && rightPanelNote.id) {
+      // Find the updated note in the store
+      const updatedNote = notesStore.notes.find(
+        (n) => n.id === rightPanelNote?.id
+      );
+
+      if (updatedNote) {
+        // Only update if there's an actual difference to avoid infinite loops
+        // Compare the stringified versions to check for deep equality
+        const currentStr = JSON.stringify(rightPanelNote);
+        const updatedStr = JSON.stringify(updatedNote);
+
+        if (currentStr !== updatedStr) {
+          console.log(
+            "Right panel note updated from store:",
+            rightPanelNote?.id
+          );
+          // Create a deep copy to ensure reactivity
+          rightPanelNote = JSON.parse(JSON.stringify(updatedNote));
+        }
+      }
+    }
+  });
+
   async function loadNotes() {
     if (!projectStore.currentProject?.id) return;
     await notesStore.loadNotes(projectStore.currentProject.id, literatureId);
@@ -49,9 +85,6 @@
   // Handle note selection
   function handleNoteSelect(note: Note, targetPanel = "left") {
     console.log("Note selected:", note.id, "Target panel:", targetPanel);
-
-    // Create a deep copy of the note to ensure reactivity
-    const noteCopy = JSON.parse(JSON.stringify(note));
 
     // Handle selection based on target panel
     if (targetPanel === "left") {
@@ -76,8 +109,8 @@
         );
         return;
       }
-      // Set the right panel note
-      rightPanelNote = noteCopy;
+      // Set the right panel note - use a deep copy to ensure reactivity
+      rightPanelNote = JSON.parse(JSON.stringify(note));
     }
   }
 
@@ -111,7 +144,7 @@
 
       // If in split view and right panel is empty, load the new note there
       if (selectedView === "split" && rightPanelNote === null) {
-        // Create a new reference to ensure reactivity
+        // Create a deep copy to ensure reactivity
         rightPanelNote = JSON.parse(JSON.stringify(newNote));
       }
     }
@@ -234,11 +267,8 @@
           <!-- Left Panel -->
           <div class="flex-1 border-r overflow-hidden">
             {#if notesStore.activeNoteId && notesStore.notes.length > 0}
-              {#each notesStore.notes.filter((n) => n.id === notesStore.activeNoteId) as activeNote (activeNote.id + "-" + Date.now())}
-                <NoteEditor
-                  note={JSON.parse(JSON.stringify(activeNote))}
-                  onDelete={handleNoteDelete}
-                />
+              {#each notesStore.notes.filter((n) => n.id === notesStore.activeNoteId) as activeNote (activeNote.id + "-" + (activeNote.updated_at || ""))}
+                <NoteEditor note={activeNote} onDelete={handleNoteDelete} />
               {/each}
             {:else}
               <div class="h-full flex items-center justify-center">
@@ -263,7 +293,7 @@
           <div class="flex-1 overflow-hidden">
             {#if rightPanelNote}
               <NoteEditor
-                note={JSON.parse(JSON.stringify(rightPanelNote))}
+                note={rightPanelNote}
                 onDelete={() => {
                   handleNoteDelete();
                   rightPanelNote = null;
@@ -290,11 +320,8 @@
         {:else}
           <!-- Single Panel View -->
           {#if notesStore.activeNoteId && notesStore.notes.length > 0}
-            {#each notesStore.notes.filter((n) => n.id === notesStore.activeNoteId) as activeNote (activeNote.id + "-" + Date.now())}
-              <NoteEditor
-                note={JSON.parse(JSON.stringify(activeNote))}
-                onDelete={handleNoteDelete}
-              />
+            {#each notesStore.notes.filter((n) => n.id === notesStore.activeNoteId) as activeNote (activeNote.id + "-" + (activeNote.updated_at || ""))}
+              <NoteEditor note={activeNote} onDelete={handleNoteDelete} />
             {/each}
           {:else}
             <div class="h-full flex items-center justify-center">

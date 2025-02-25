@@ -44,86 +44,102 @@
   // Perform a quick local search for immediate feedback
   function performLocalSearch(notes: Note[], query: string): Note[] {
     const lowerQuery = query.toLowerCase();
-    return notes.filter((note) => {
-      // Search only in title, content text (not raw JSON), and date
-      const nameMatch = (note.name || "").toLowerCase().includes(lowerQuery);
+    return (
+      notes
+        .filter((note) => {
+          // Search only in title, content text (not raw JSON), and date
+          const nameMatch = (note.name || "")
+            .toLowerCase()
+            .includes(lowerQuery);
 
-      // Extract text from content using the same logic as getPreview
-      let contentText = "";
-      try {
-        const content = note.content;
-
-        if (typeof content === "string") {
+          // Extract text from content using the same logic as getPreview
+          let contentText = "";
           try {
-            // Try to parse as JSON
-            const parsed = JSON.parse(content);
+            const content = note.content;
 
-            // If it's a TipTap document
-            if (
-              parsed.type === "doc" &&
-              parsed.content &&
-              Array.isArray(parsed.content)
-            ) {
-              for (const node of parsed.content) {
-                if (node.content && Array.isArray(node.content)) {
-                  for (const contentNode of node.content) {
-                    if (contentNode.type === "text" && contentNode.text) {
-                      contentText += contentNode.text + " ";
+            if (typeof content === "string") {
+              try {
+                // Try to parse as JSON
+                const parsed = JSON.parse(content);
+
+                // If it's a TipTap document
+                if (
+                  parsed.type === "doc" &&
+                  parsed.content &&
+                  Array.isArray(parsed.content)
+                ) {
+                  for (const node of parsed.content) {
+                    if (node.content && Array.isArray(node.content)) {
+                      for (const contentNode of node.content) {
+                        if (contentNode.type === "text" && contentNode.text) {
+                          contentText += contentNode.text + " ";
+                        }
+                      }
+                    }
+                  }
+                }
+              } catch (e) {
+                // Not valid JSON, treat as text
+                const tmp = document.createElement("DIV");
+                tmp.innerHTML = content;
+                contentText = tmp.textContent || tmp.innerText || content;
+              }
+            } else if (typeof content === "object" && content !== null) {
+              const typedContent = content as any;
+              if (
+                typedContent.type === "doc" &&
+                typedContent.content &&
+                Array.isArray(typedContent.content)
+              ) {
+                for (const node of typedContent.content) {
+                  if (node.content && Array.isArray(node.content)) {
+                    for (const contentNode of node.content) {
+                      if (contentNode.type === "text" && contentNode.text) {
+                        contentText += contentNode.text + " ";
+                      }
                     }
                   }
                 }
               }
             }
-          } catch (e) {
-            // Not valid JSON, treat as text
-            const tmp = document.createElement("DIV");
-            tmp.innerHTML = content;
-            contentText = tmp.textContent || tmp.innerText || content;
+          } catch (err) {
+            console.warn("Error extracting text for search:", err);
           }
-        } else if (typeof content === "object" && content !== null) {
-          const typedContent = content as any;
+
+          const contentMatch = contentText.toLowerCase().includes(lowerQuery);
+
+          // Check section_type match
+          let sectionTypeLabel = "Other";
           if (
-            typedContent.type === "doc" &&
-            typedContent.content &&
-            Array.isArray(typedContent.content)
+            typeof note.section_type === "object" &&
+            note.section_type !== null
           ) {
-            for (const node of typedContent.content) {
-              if (node.content && Array.isArray(node.content)) {
-                for (const contentNode of node.content) {
-                  if (contentNode.type === "text" && contentNode.text) {
-                    contentText += contentNode.text + " ";
-                  }
-                }
-              }
-            }
+            sectionTypeLabel =
+              (note.section_type as { value: string; label: string }).label ||
+              "Other";
+          } else if (typeof note.section_type === "string") {
+            sectionTypeLabel = note.section_type;
           }
-        }
-      } catch (err) {
-        console.warn("Error extracting text for search:", err);
-      }
 
-      const contentMatch = contentText.toLowerCase().includes(lowerQuery);
+          const sectionMatch = sectionTypeLabel
+            .toLowerCase()
+            .includes(lowerQuery);
 
-      // Check section_type match
-      let sectionTypeLabel = "Other";
-      if (typeof note.section_type === "object" && note.section_type !== null) {
-        sectionTypeLabel =
-          (note.section_type as { value: string; label: string }).label ||
-          "Other";
-      } else if (typeof note.section_type === "string") {
-        sectionTypeLabel = note.section_type;
-      }
+          // Use friendly date format for consistent searching
+          const friendlyDate = note.updated_at
+            ? formatFriendlyDate(new Date(note.updated_at))
+            : "";
+          const dateMatch = friendlyDate.toLowerCase().includes(lowerQuery);
 
-      const sectionMatch = sectionTypeLabel.toLowerCase().includes(lowerQuery);
-
-      // Use friendly date format for consistent searching
-      const friendlyDate = note.updated_at
-        ? formatFriendlyDate(new Date(note.updated_at))
-        : "";
-      const dateMatch = friendlyDate.toLowerCase().includes(lowerQuery);
-
-      return nameMatch || contentMatch || sectionMatch || dateMatch;
-    });
+          return nameMatch || contentMatch || sectionMatch || dateMatch;
+        })
+        // Sort by updated_at date (most recent first)
+        .sort(
+          (a, b) =>
+            new Date(b.updated_at || 0).getTime() -
+            new Date(a.updated_at || 0).getTime()
+        )
+    );
   }
 
   // Format date in a friendly way (e.g., "Feb 25, 2024")
@@ -156,7 +172,12 @@
     search: string,
     filter: typeof notesStore.filter
   ) {
-    let filtered = [...notes];
+    // First sort all notes by updated_at (most recent first)
+    let filtered = [...notes].sort(
+      (a, b) =>
+        new Date(b.updated_at || 0).getTime() -
+        new Date(a.updated_at || 0).getTime()
+    );
 
     // Apply search filter
     if (search.trim()) {
@@ -175,13 +196,7 @@
         filtered = filtered.filter((note) => !!note.literature_id);
         break;
       case "recent":
-        filtered = filtered
-          .sort(
-            (a, b) =>
-              new Date(b.updated_at).getTime() -
-              new Date(a.updated_at).getTime()
-          )
-          .slice(0, 10);
+        filtered = filtered.slice(0, 10);
         break;
     }
 
@@ -232,9 +247,9 @@
 
     notes.forEach((note) => {
       try {
-        const date = note.created_at ? new Date(note.created_at) : new Date();
+        const date = note.updated_at ? new Date(note.updated_at) : new Date();
         if (isNaN(date.getTime())) {
-          console.warn(`Invalid date for note ${note.id}:`, note.created_at);
+          console.warn(`Invalid date for note ${note.id}:`, note.updated_at);
           return; // Skip this note
         }
         const dateStr = format(date, "MMM d, yyyy");
@@ -246,6 +261,15 @@
         console.warn(`Error processing note ${note.id}:`, err);
       }
     });
+
+    // Sort each group by updated_at date (most recent first)
+    for (const dateStr in groups) {
+      groups[dateStr].sort(
+        (a, b) =>
+          new Date(b.updated_at || 0).getTime() -
+          new Date(a.updated_at || 0).getTime()
+      );
+    }
 
     return Object.entries(groups).sort(
       (a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime()

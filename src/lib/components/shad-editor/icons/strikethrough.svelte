@@ -19,7 +19,7 @@
         class={cn("size-8 p-0", editor.isActive("strike") && "bg-muted")}
         onclick={() => editor.chain().focus().toggleStrike().run()}
       >
-        <Strikethrough />
+        <Strikethrough size={16} />
       </Button>
     </Tooltip.Trigger>
     <Tooltip.Content>

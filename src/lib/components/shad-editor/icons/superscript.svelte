@@ -19,7 +19,7 @@
         class={cn("size-8 p-0", editor.isActive("superscript") && "bg-muted")}
         onclick={() => editor.chain().focus().toggleSuperscript().run()}
       >
-        <Superscript />
+        <Superscript size={16} />
       </Button>
     </Tooltip.Trigger>
     <Tooltip.Content>

@@ -19,7 +19,7 @@
         onclick={() => editor.chain().focus().redo().run()}
         disabled={!editor.can().chain().focus().redo().run()}
       >
-        <Redo />
+        <Redo size={16} />
       </Button>
     </Tooltip.Trigger>
     <Tooltip.Content>

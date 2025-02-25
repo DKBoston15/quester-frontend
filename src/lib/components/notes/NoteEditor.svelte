@@ -5,17 +5,8 @@
   import ShadEditor from "$lib/components/shad-editor/shad-editor.svelte";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
-  import { Badge } from "$lib/components/ui/badge";
-  import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-  } from "$lib/components/ui/sheet";
   import { format } from "date-fns";
-  import { Tag, Save, MoreVertical, Trash2 } from "lucide-svelte";
+  import { Save, Trash2 } from "lucide-svelte";
   import type { Content } from "@tiptap/core";
   import { fade } from "svelte/transition";
   import {
@@ -42,6 +33,7 @@
   let contentChanged = false;
   let lastSaveTime = Date.now();
   let currentNoteId = note.id;
+  let originalTitle = $state(note.name); // Track original title to detect changes
 
   // Track section type locally to avoid remounting
   let currentSectionType = $state(
@@ -66,21 +58,72 @@
     { value: "Other", label: "Other" },
   ];
 
-  // Safe date formatting function to prevent errors with invalid dates
-  function safeFormat(
-    dateString: string | undefined,
-    formatStr: string,
-    fallback: string = "Not available"
-  ) {
-    try {
-      if (!dateString) return fallback;
-      const date = new Date(dateString);
-      // Check if date is valid
-      if (isNaN(date.getTime())) return fallback;
-      return format(date, formatStr);
-    } catch (err) {
-      console.warn("Date formatting error:", err);
-      return fallback;
+  // Direct function to save title
+  function saveTitle() {
+    console.log(`Saving title: "${title}"`);
+
+    if (!isUnmounting && note) {
+      // Make a direct API call to update just the title
+      fetch(`http://localhost:3333/note/${note.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ name: title }),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            console.error("Failed to update title");
+            return;
+          }
+          console.log("Title updated successfully");
+
+          // Update the note in the store's notes array
+          const storeNotes = notesStore.notes;
+          for (let i = 0; i < storeNotes.length; i++) {
+            if (storeNotes[i].id === note.id) {
+              storeNotes[i].name = title;
+              storeNotes[i].updated_at = new Date().toISOString();
+              break;
+            }
+          }
+
+          // Update original title to match current title
+          originalTitle = title;
+
+          // Try to update the note title in the NoteList directly
+          setTimeout(() => {
+            try {
+              // Find the note item in the DOM
+              const noteElements = document.querySelectorAll(
+                `[data-note-id="${note.id}"]`
+              );
+              if (noteElements.length > 0) {
+                // Update the title in each found element
+                noteElements.forEach((noteEl) => {
+                  // Find the title heading
+                  const titleEl = noteEl.querySelector(
+                    ".font-medium.leading-none"
+                  );
+                  if (titleEl) {
+                    titleEl.textContent = title || "Untitled Note";
+                    console.log(`Updated title for note ${note.id} in the DOM`);
+                  }
+                });
+              }
+            } catch (e) {
+              console.warn("Error updating note title in DOM:", e);
+            }
+          }, 50);
+
+          // Also try the search query approach as a fallback
+          const currentQuery = notesStore.searchQuery;
+          if (currentQuery) {
+            notesStore.setSearchQuery(currentQuery);
+          }
+        })
+        .catch((error) => {
+          console.error("Error updating title:", error);
+        });
     }
   }
 
@@ -105,7 +148,8 @@
       const isNewNote = currentNoteId !== note.id;
 
       currentNoteId = note.id;
-      title = note.name;
+      title = note.name; // Update title when note changes
+      originalTitle = note.name; // Update original title reference
       const newContent = parseNoteContent(note.content);
 
       // Only update content and previousContent if this is a new note
@@ -172,16 +216,6 @@
   });
 
   // Auto-save functionality
-  function handleTitleChange(e: Event) {
-    const input = e.target as HTMLInputElement;
-    title = input.value;
-
-    if (!isUnmounting) {
-      contentChanged = true;
-      scheduleSave();
-    }
-  }
-
   function scheduleSave() {
     clearTimeout(saveTimeout);
 
@@ -209,6 +243,10 @@
       return Promise.resolve(); // Return a resolved promise
     }
 
+    // Store current values to check if they change during save
+    const currentTitle = title;
+    const currentContentStr = JSON.stringify(content);
+
     lastSaveTime = Date.now();
 
     // Only reset contentChanged if we're actually going to save
@@ -221,7 +259,7 @@
       const contentToSave = JSON.stringify(content);
       console.log("Saving note to database:", {
         id: note.id,
-        name: title,
+        name: currentTitle,
         contentLength: contentToSave.length,
         contentPreview: contentToSave.substring(0, 100) + "...",
         forceSave,
@@ -229,9 +267,77 @@
 
       // Use the store's update method to ensure the note list updates
       await notesStore.updateNote(note.id, {
-        name: title,
+        name: currentTitle,
         content: contentToSave,
       });
+
+      // Update the note in the store's notes array to ensure NoteList updates
+      const storeNotes = notesStore.notes;
+      for (let i = 0; i < storeNotes.length; i++) {
+        if (storeNotes[i].id === note.id) {
+          // Update the note in place
+          storeNotes[i].name = currentTitle;
+          storeNotes[i].content = contentToSave;
+          storeNotes[i].updated_at = new Date().toISOString();
+          break;
+        }
+      }
+
+      // Try to update the note preview in the NoteList directly
+      // This is a more direct approach that should work even if the store reactivity fails
+      setTimeout(() => {
+        try {
+          // Find the note item in the DOM
+          const noteElements = document.querySelectorAll(
+            `[data-note-id="${note.id}"]`
+          );
+          if (noteElements.length > 0) {
+            // Update the preview text in each found element
+            noteElements.forEach((noteEl) => {
+              // Find the preview paragraph
+              const previewEl = noteEl.querySelector(
+                ".text-sm.text-muted-foreground.line-clamp-2"
+              );
+              if (previewEl) {
+                // Extract a preview from the content
+                let previewText = "";
+                try {
+                  const parsedContent = JSON.parse(contentToSave);
+                  if (parsedContent.type === "doc" && parsedContent.content) {
+                    for (const node of parsedContent.content) {
+                      if (node.content) {
+                        for (const contentNode of node.content) {
+                          if (contentNode.type === "text" && contentNode.text) {
+                            previewText += contentNode.text + " ";
+                          }
+                        }
+                      }
+                    }
+                    // Limit preview length
+                    previewText = previewText.trim().substring(0, 100);
+                    if (previewText.length === 100) previewText += "...";
+                  }
+                } catch (e) {
+                  console.warn("Error parsing content for preview:", e);
+                }
+
+                if (previewText) {
+                  previewEl.textContent = previewText;
+                  console.log(`Updated preview for note ${note.id} in the DOM`);
+                }
+              }
+            });
+          }
+        } catch (e) {
+          console.warn("Error updating note preview in DOM:", e);
+        }
+      }, 50);
+
+      // Also try the search query approach as a fallback
+      const currentQuery = notesStore.searchQuery;
+      if (currentQuery) {
+        notesStore.setSearchQuery(currentQuery);
+      }
 
       console.log("Note saved successfully");
       return Promise.resolve(); // Return a resolved promise
@@ -243,6 +349,17 @@
       return Promise.reject(error); // Return a rejected promise
     } finally {
       isSaving = false;
+
+      // Check if content changed during save operation
+      if (
+        !isUnmounting &&
+        (currentTitle !== title ||
+          currentContentStr !== JSON.stringify(content))
+      ) {
+        console.log("Content changed during save, scheduling another save");
+        contentChanged = true;
+        scheduleSave();
+      }
     }
   }
 
@@ -402,14 +519,24 @@
     class="border-b p-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
   >
     <div class="flex items-center justify-between">
-      <div class="flex-1 mr-4">
+      <div class="flex-1 mr-4 flex items-center">
         <Input
           type="text"
           placeholder="Untitled Note"
           class="text-lg font-medium bg-transparent border-none shadow-none h-auto px-0 focus-visible:ring-0"
           bind:value={title}
-          oninput={handleTitleChange}
         />
+        {#if title !== originalTitle}
+          <Button
+            variant="ghost"
+            size="icon"
+            class="h-6 w-6 ml-1"
+            onclick={saveTitle}
+            title="Save title"
+          >
+            <Save class="h-3 w-3" />
+          </Button>
+        {/if}
       </div>
 
       <div class="flex items-center gap-2 ml-auto">

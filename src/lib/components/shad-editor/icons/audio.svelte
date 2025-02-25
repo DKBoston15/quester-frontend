@@ -22,7 +22,7 @@
         )}
         onclick={() => editor.chain().focus().insertAudioPlaceholder().run()}
       >
-        <AudioLines />
+        <AudioLines size={16} />
       </Button>
     </Tooltip.Trigger>
     <Tooltip.Content>

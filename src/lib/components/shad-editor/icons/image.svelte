@@ -22,7 +22,7 @@
         )}
         onclick={() => editor.chain().focus().insertImagePlaceholder().run()}
       >
-        <Image />
+        <Image size={16} />
       </Button>
     </Tooltip.Trigger>
     <Tooltip.Content>

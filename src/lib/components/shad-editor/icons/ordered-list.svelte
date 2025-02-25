@@ -19,7 +19,7 @@
         class={cn("size-8 p-0", editor.isActive("orderedList") && "bg-muted")}
         onclick={() => editor.chain().focus().toggleOrderedList().run()}
       >
-        <ListOrdered />
+        <ListOrdered size={16} />
       </Button>
     </Tooltip.Trigger>
     <Tooltip.Content>

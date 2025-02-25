@@ -19,7 +19,7 @@
         class={cn("size-8 p-0", editor.isActive("subscript") && "bg-muted")}
         onclick={() => editor.chain().focus().toggleSubscript().run()}
       >
-        <Subscript />
+        <Subscript size={16} />
       </Button>
     </Tooltip.Trigger>
     <Tooltip.Content>

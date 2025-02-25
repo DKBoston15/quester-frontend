@@ -19,7 +19,7 @@
         class={cn("size-8 p-0", editor.isActive("underline") && "bg-muted")}
         onclick={() => editor.chain().focus().toggleUnderline().run()}
       >
-        <Underline />
+        <Underline size={16} />
       </Button>
     </Tooltip.Trigger>
     <Tooltip.Content>
