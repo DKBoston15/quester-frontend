@@ -16,7 +16,7 @@
     Plus,
     Command as CommandIcon,
   } from "lucide-svelte";
-
+  import { auth } from "$lib/stores/AuthStore.svelte";
   // Props
   const { literatureId = undefined } = $props();
 
@@ -133,7 +133,7 @@
     const newNote = await notesStore.createNote({
       name: "Untitled Note",
       content: "",
-      user_id: "current-user-id", // Replace with actual user ID
+      user_id: auth.user?.id,
       project_id: projectStore.currentProject.id,
       literature_id: literatureId,
       type: literatureId ? "BASE" : "QUICK",
@@ -148,15 +148,6 @@
         rightPanelNote = JSON.parse(JSON.stringify(newNote));
       }
     }
-  }
-
-  // Handle tab changes
-  function handleTabChange(value: string) {
-    selectedTab = value;
-    notesStore.setFilter({
-      type: value as "all" | "unlinked" | "literature" | "recent",
-      literatureId: literatureId,
-    });
   }
 
   // Handle view changes
@@ -224,17 +215,6 @@
           New Note
         </Button>
       </div>
-    </div>
-
-    <div class="mt-4">
-      <Tabs value={selectedTab} class="w-full" onValueChange={handleTabChange}>
-        <TabsList>
-          <TabsTrigger value="all">All Notes</TabsTrigger>
-          <TabsTrigger value="unlinked">Unlinked</TabsTrigger>
-          <TabsTrigger value="literature">Literature Notes</TabsTrigger>
-          <TabsTrigger value="recent">Recent</TabsTrigger>
-        </TabsList>
-      </Tabs>
     </div>
   </header>
 

@@ -34,6 +34,9 @@
   let lastSaveTime = Date.now();
   let currentNoteId = note.id;
   let originalTitle = $state(note.name); // Track original title to detect changes
+  let titleChanged = $state(false); // Track if title has changed
+  let isTitleFocused = $state(false); // Track if title is currently focused
+  let isUserEditingTitle = $state(false); // Track if user is actively editing title
 
   // Track section type locally to avoid remounting
   let currentSectionType = $state(
@@ -62,13 +65,24 @@
   function saveTitle() {
     console.log(`Saving title: "${title}"`);
 
+    // If the title is still the default and hasn't been changed, don't save
+    if (title === "Untitled Note" && originalTitle === "Untitled Note") {
+      console.log("Title unchanged from default, not saving");
+      return;
+    }
+
     if (!isUnmounting && note) {
+      isSaving = true;
+
+      // Store the current title in case it changes during the save operation
+      const titleToSave = title;
+
       // Make a direct API call to update just the title
       fetch(`http://localhost:3333/note/${note.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ name: title }),
+        body: JSON.stringify({ name: titleToSave }),
       })
         .then((response) => {
           if (!response.ok) {
@@ -77,18 +91,22 @@
           }
           console.log("Title updated successfully");
 
+          // Update the note object directly to prevent future effect runs from resetting
+          note.name = titleToSave;
+
           // Update the note in the store's notes array
           const storeNotes = notesStore.notes;
           for (let i = 0; i < storeNotes.length; i++) {
             if (storeNotes[i].id === note.id) {
-              storeNotes[i].name = title;
+              storeNotes[i].name = titleToSave;
               storeNotes[i].updated_at = new Date().toISOString();
               break;
             }
           }
 
           // Update original title to match current title
-          originalTitle = title;
+          originalTitle = titleToSave;
+          titleChanged = false; // Reset the title changed flag
 
           // Try to update the note title in the NoteList directly
           setTimeout(() => {
@@ -105,7 +123,7 @@
                     ".font-medium.leading-none"
                   );
                   if (titleEl) {
-                    titleEl.textContent = title || "Untitled Note";
+                    titleEl.textContent = titleToSave || "Untitled Note";
                     console.log(`Updated title for note ${note.id} in the DOM`);
                   }
                 });
@@ -123,6 +141,9 @@
         })
         .catch((error) => {
           console.error("Error updating title:", error);
+        })
+        .finally(() => {
+          isSaving = false;
         });
     }
   }
@@ -148,8 +169,16 @@
       const isNewNote = currentNoteId !== note.id;
 
       currentNoteId = note.id;
-      title = note.name; // Update title when note changes
-      originalTitle = note.name; // Update original title reference
+
+      // Only update title if user is not actively editing it or if we're switching notes
+      if (!isUserEditingTitle || isNewNote) {
+        title = note.name; // Update title when note changes
+        originalTitle = note.name; // Update original title reference
+      } else {
+        console.log("Preserving user's title edits during note effect");
+      }
+
+      titleChanged = false; // Reset title changed flag when note changes
       const newContent = parseNoteContent(note.content);
 
       // Only update content and previousContent if this is a new note
@@ -212,6 +241,17 @@
       }
     } else {
       console.log("Content unchanged in effect, not scheduling save");
+    }
+  });
+
+  // Add an effect to track title changes
+  $effect(() => {
+    // Check if title has changed from original
+    if (!isUnmounting) {
+      titleChanged = title !== originalTitle;
+      console.log(
+        `Title changed: ${titleChanged}, title: "${title}", originalTitle: "${originalTitle}"`
+      );
     }
   });
 
@@ -457,6 +497,12 @@
 
   onMount(() => {
     console.log(`Editor mounted for note: ${note.id}`);
+
+    // For new notes (with "Untitled Note"), we want to make the title editable immediately
+    if (note.name === "Untitled Note" && title === "Untitled Note") {
+      console.log("New note detected, enabling title editing");
+      titleChanged = true;
+    }
   });
 
   onDestroy(() => {
@@ -520,18 +566,51 @@
   >
     <div class="flex items-center justify-between">
       <div class="flex-1 mr-4 flex items-center">
-        <Input
-          type="text"
-          placeholder="Untitled Note"
-          class="text-lg font-medium bg-transparent border-none shadow-none h-auto px-0 focus-visible:ring-0"
-          bind:value={title}
-        />
-        {#if title !== originalTitle}
+        <div class="relative flex-1">
+          <Input
+            type="text"
+            placeholder="Untitled Note"
+            class="text-lg font-medium bg-transparent border-none shadow-none h-auto px-0 focus-visible:ring-0"
+            bind:value={title}
+            onfocus={() => {
+              // When the input is focused, mark as editing and ensure save button is visible
+              isUserEditingTitle = true;
+              isTitleFocused = true;
+              titleChanged = true;
+            }}
+            onblur={() => {
+              // When input loses focus, save if changed
+              if (title !== originalTitle) {
+                saveTitle();
+              }
+
+              // Small delay to allow for save operations to complete
+              setTimeout(() => {
+                isUserEditingTitle = false;
+                isTitleFocused = false;
+              }, 100);
+            }}
+            onkeydown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault(); // Prevent form submission
+                if (title !== originalTitle) {
+                  saveTitle();
+                }
+              }
+            }}
+          />
+          {#if title === "Untitled Note" && !isTitleFocused}
+            <div class="absolute right-0 top-0 text-xs text-muted-foreground">
+              Click to edit
+            </div>
+          {/if}
+        </div>
+        {#if titleChanged}
           <Button
             variant="ghost"
             size="icon"
             class="h-6 w-6 ml-1"
-            onclick={saveTitle}
+            on:click={saveTitle}
             title="Save title"
           >
             <Save class="h-3 w-3" />
@@ -559,7 +638,7 @@
           variant="ghost"
           size="icon"
           class="h-8 w-8"
-          onclick={() => saveNote(true)}
+          on:click={() => saveNote(true)}
           title="Save note"
           disabled={isSaving}
         >
@@ -570,7 +649,7 @@
           variant="ghost"
           size="icon"
           class="h-8 w-8"
-          onclick={() => onDelete()}
+          on:click={() => onDelete()}
           title="Delete note"
         >
           <Trash2 class="h-4 w-4" />

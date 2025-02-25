@@ -1,6 +1,6 @@
 export interface Note {
   id: string;
-  user_id: string;
+  user_id: number;
   project_id: string;
   literature_id?: string;
   name: string;
