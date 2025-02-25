@@ -14,6 +14,8 @@ export interface Note {
     | string;
   created_at: string;
   updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Literature {

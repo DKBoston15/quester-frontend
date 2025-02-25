@@ -201,18 +201,18 @@
             .includes(lowerQuery);
 
           // Use friendly date format for consistent searching
-          const friendlyDate = note.updated_at
-            ? formatFriendlyDate(new Date(note.updated_at))
+          const friendlyDate = note.updatedAt
+            ? formatFriendlyDate(new Date(note.updatedAt))
             : "";
           const dateMatch = friendlyDate.toLowerCase().includes(lowerQuery);
 
           return nameMatch || contentMatch || sectionMatch || dateMatch;
         })
-        // Sort by updated_at date (most recent first)
+        // Sort by updatedAt date (most recent first)
         .sort(
           (a, b) =>
-            new Date(b.updated_at || 0).getTime() -
-            new Date(a.updated_at || 0).getTime()
+            new Date(b.updatedAt || 0).getTime() -
+            new Date(a.updatedAt || 0).getTime()
         )
     );
   }
@@ -242,11 +242,11 @@
     search: string,
     filter: typeof notesStore.filter
   ) {
-    // First sort all notes by updated_at (most recent first)
+    // First sort all notes by updatedAt (most recent first)
     let filtered = [...notes].sort(
       (a, b) =>
-        new Date(b.updated_at || 0).getTime() -
-        new Date(a.updated_at || 0).getTime()
+        new Date(b.updatedAt || 0).getTime() -
+        new Date(a.updatedAt || 0).getTime()
     );
 
     // Apply search filter
@@ -291,9 +291,9 @@
 
     notes.forEach((note) => {
       try {
-        const date = note.updated_at ? new Date(note.updated_at) : new Date();
+        const date = note.updatedAt ? new Date(note.updatedAt) : new Date();
         if (isNaN(date.getTime())) {
-          console.warn(`Invalid date for note ${note.id}:`, note.updated_at);
+          console.warn(`Invalid date for note ${note.id}:`, note.updatedAt);
           return; // Skip this note
         }
         const dateStr = format(date, "MMM d, yyyy");
@@ -306,12 +306,12 @@
       }
     });
 
-    // Sort each group by updated_at date (most recent first)
+    // Sort each group by updatedAt date (most recent first)
     for (const dateStr in groups) {
       groups[dateStr].sort(
         (a, b) =>
-          new Date(b.updated_at || 0).getTime() -
-          new Date(a.updated_at || 0).getTime()
+          new Date(b.updatedAt || 0).getTime() -
+          new Date(a.updatedAt || 0).getTime()
       );
     }
 
@@ -426,6 +426,7 @@
             </h3>
             <div class="space-y-2">
               {#each notes as note (note.id)}
+                {console.log(note)}
                 <div
                   class="w-full text-left rounded-lg border hover:bg-accent transition-colors cursor-pointer"
                   class:bg-accent={note.id === notesStore.activeNoteId}
@@ -512,51 +513,53 @@
                         {/if}
                       </div>
                     </div>
-                    <div class="flex items-center gap-2 mt-2">
-                      {#if note.section_type}
-                        <Badge
-                          variant="outline"
-                          class="text-xs badge-section-type"
-                        >
-                          {#if isSearchActive() && "highlightedSectionType" in note}
-                            {@html note.highlightedSectionType}
-                          {:else}
-                            {typeof note.section_type === "object"
-                              ? note.section_type.label
-                              : note.section_type}
-                          {/if}
-                        </Badge>
-                      {/if}
-                      {#if note.literatureId}
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <Badge
-                              variant="outline"
-                              class="text-xs flex items-center gap-1 badge-literature"
-                            >
-                              <Book class="h-3 w-3" />
-                              <span class="truncate max-w-[120px]">
-                                {getLiteratureTitle(note.literatureId)}
-                              </span>
-                            </Badge>
-                          </TooltipTrigger>
-                          <TooltipContent
-                            side="right"
-                            sideOffset={5}
-                            class="max-w-[500px] whitespace-pre-line"
+                    <div class="flex flex-col gap-2 mt-2">
+                      <div class="flex flex-wrap gap-1.5">
+                        {#if note.section_type}
+                          <Badge
+                            variant="outline"
+                            class="text-xs badge-section-type"
                           >
-                            {getLiteratureDetails(note.literatureId)}
-                          </TooltipContent>
-                        </Tooltip>
-                      {/if}
+                            {#if isSearchActive() && "highlightedSectionType" in note}
+                              {@html note.highlightedSectionType}
+                            {:else}
+                              {typeof note.section_type === "object"
+                                ? note.section_type.label
+                                : note.section_type}
+                            {/if}
+                          </Badge>
+                        {/if}
+                        {#if note.literatureId}
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <Badge
+                                variant="outline"
+                                class="text-xs flex items-center gap-1 badge-literature"
+                              >
+                                <Book class="h-3 w-3" />
+                                <span class="truncate max-w-[120px]">
+                                  {getLiteratureTitle(note.literatureId)}
+                                </span>
+                              </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent
+                              side="right"
+                              sideOffset={5}
+                              class="max-w-[500px] whitespace-pre-line"
+                            >
+                              {getLiteratureDetails(note.literatureId)}
+                            </TooltipContent>
+                          </Tooltip>
+                        {/if}
+                      </div>
                       <span
-                        class="text-xs text-muted-foreground ml-auto flex items-center gap-1"
+                        class="text-xs text-muted-foreground flex items-center gap-1"
                       >
                         <Clock class="h-3 w-3" />
                         {#if isSearchActive() && "highlightedDate" in note}
                           {@html note.highlightedDate}
                         {:else}
-                          {getFormattedDate(note.updated_at)}
+                          {getFormattedDate(note.updatedAt)}
                         {/if}
                       </span>
                     </div>
