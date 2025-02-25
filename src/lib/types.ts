@@ -1,8 +1,8 @@
 export interface Note {
   id: string;
   user_id: number;
-  project_id: string;
-  literature_id?: string;
+  projectId: string;
+  literatureId?: string;
   name: string;
   type: "BASE" | "QUICK";
   content: string;

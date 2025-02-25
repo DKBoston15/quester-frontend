@@ -1,45 +1,121 @@
 <script lang="ts">
   import { notesStore } from "$lib/stores/NotesStore.svelte";
+  import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
   import type { Note } from "$lib/types";
+  import type { Literature } from "$lib/types/literature";
   import { ScrollArea } from "$lib/components/ui/scroll-area";
   import { Badge } from "$lib/components/ui/badge";
   import { Input } from "$lib/components/ui/input";
-  import { Search, Tag, PanelRight, PanelLeft, Clock } from "lucide-svelte";
+  import {
+    Search,
+    Tag,
+    PanelRight,
+    PanelLeft,
+    Clock,
+    Book,
+  } from "lucide-svelte";
   import { format } from "date-fns";
   import { fade } from "svelte/transition";
+  import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+  } from "$lib/components/ui/tooltip";
 
   // Props
-  export let onNoteSelect: (note: Note, targetPanel?: string) => void;
-  export let showSecondPanelOption = false;
+  const { onNoteSelect, showSecondPanelOption = false } = $props<{
+    onNoteSelect: (note: Note, targetPanel?: string) => void;
+    showSecondPanelOption?: boolean;
+  }>();
 
   // Local state
-  let searchInput = "";
-  let localSearchResults: Note[] = [];
+  let searchInput = $state("");
+  let localSearchResults = $state<Note[]>([]);
   let debouncedSearchTimeout: NodeJS.Timeout;
+  let literatureMap = $state<Record<string, Literature>>({});
 
-  // Reactive declarations
-  $: {
-    // Immediately update local search results and store query
+  // Load literature data for display
+  async function loadLiteratureData() {
+    // Only load if we have notes with literature connections
+    const hasLiteratureConnections = notesStore.notes.some(
+      (note) => note.literatureId
+    );
+
+    if (hasLiteratureConnections && literatureStore.data.length === 0) {
+      // Find a project_id from the notes
+      const projectId = notesStore.notes.find((n) => n.projectId)?.projectId;
+      if (projectId) {
+        await literatureStore.loadLiterature(projectId);
+      }
+    }
+
+    // Create a map of literature items by ID for easy lookup
+    literatureMap = literatureStore.data.reduce(
+      (map, item) => {
+        map[item.id] = item;
+        return map;
+      },
+      {} as Record<string, Literature>
+    );
+  }
+
+  // Call this on component mount
+  import { onMount } from "svelte";
+  onMount(loadLiteratureData);
+
+  // Also update when notes change
+  $effect(() => {
+    if (notesStore.notes.length > 0) {
+      loadLiteratureData();
+    }
+  });
+
+  // Get literature title for a note
+  function getLiteratureTitle(literatureId: string | undefined) {
+    if (!literatureId) return "Literature";
+    const literature = literatureMap[literatureId];
+    return literature?.title || "Literature";
+  }
+
+  // Get complete literature details for tooltip
+  function getLiteratureDetails(literatureId: string | undefined) {
+    if (!literatureId) return "No literature connected";
+    const literature = literatureMap[literatureId];
+    if (!literature) return "Literature data not found";
+
+    let details = literature.name;
+    if (literature.authors) {
+      details += `\nAuthors: ${literature.authors}`;
+    }
+    if (literature.publishYear) {
+      details += `\nYear: ${literature.publishYear}`;
+    }
+    if (literature.publisherName) {
+      details += `\nPublication: ${literature.publisherName}`;
+    }
+    return details;
+  }
+
+  // Reactive side effect: update local search results and store query
+  $effect(() => {
+    console.log("searchInput", searchInput);
     if (searchInput.trim()) {
       localSearchResults = performLocalSearch(
         notesStore.notes,
         searchInput.trim()
       );
-      // Update store immediately for better responsiveness
       notesStore.setSearchQuery(searchInput.trim());
     } else {
       localSearchResults = [];
       notesStore.setSearchQuery("");
     }
-  }
+  });
 
-  $: filteredNotes = filterNotes(
-    notesStore.notes,
-    searchInput,
-    notesStore.filter
+  const filteredNotes = $derived(() =>
+    filterNotes(notesStore.notes, searchInput, notesStore.filter)
   );
-  $: groupedNotes = groupNotesByDate(filteredNotes);
-  $: isSearchActive = searchInput.trim().length > 0;
+  const groupedNotes = $derived(() => groupNotesByDate(filteredNotes()));
+  const isSearchActive = $derived(() => searchInput.trim().length > 0);
 
   // Perform a quick local search for immediate feedback
   function performLocalSearch(notes: Note[], query: string): Note[] {
@@ -161,11 +237,6 @@
     return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
   }
 
-  // Update search input
-  function handleSearchInput(e: Event) {
-    // The binding will update searchInput, and the reactive statement will handle the search
-  }
-
   // Filter notes based on search and filter criteria
   function filterNotes(
     notes: Note[],
@@ -187,40 +258,14 @@
         : localSearchResults;
     }
 
-    // Apply type filter
-    switch (filter.type) {
-      case "unlinked":
-        filtered = filtered.filter((note) => !note.literature_id);
-        break;
-      case "literature":
-        filtered = filtered.filter((note) => !!note.literature_id);
-        break;
-      case "recent":
-        filtered = filtered.slice(0, 10);
-        break;
-    }
-
     // Apply literature filter if specified
     if (filter.literatureId) {
       filtered = filtered.filter(
-        (note) => note.literature_id === filter.literatureId
+        (note) => note.literatureId === filter.literatureId
       );
     }
 
     return filtered;
-  }
-
-  // Get formatted time
-  function getFormattedTime(dateStr: string | undefined) {
-    try {
-      if (!dateStr) return "";
-      const date = new Date(dateStr);
-      if (isNaN(date.getTime())) return "";
-      return format(date, "h:mm a");
-    } catch (err) {
-      console.warn("Error formatting time:", err);
-      return "";
-    }
   }
 
   // Get formatted date
@@ -239,7 +284,7 @@
   // Group notes by date
   function groupNotesByDate(notes: Note[]): [string, Note[]][] {
     // If search is active, don't group by date
-    if (isSearchActive) {
+    if (isSearchActive()) {
       return [["Search Results", notes]];
     }
 
@@ -276,132 +321,10 @@
     );
   }
 
-  // Strip HTML tags from content for preview
-  function stripHtml(html: string | any) {
-    if (!html) return "";
-
-    // If it's an object, try to extract text
-    if (typeof html === "object") {
-      return extractTextFromJson(html);
-    }
-
-    // If it looks like JSON, try to extract text
-    if (
-      typeof html === "string" &&
-      (html.trim().startsWith("{") || html.trim().startsWith("["))
-    ) {
-      try {
-        const parsed = JSON.parse(html);
-        return extractTextFromJson(parsed);
-      } catch (e) {
-        // If parsing fails, treat as HTML
-        console.warn("Failed to parse JSON:", e);
-      }
-    }
-
-    // Handle as HTML
-    if (typeof html !== "string") {
-      return String(html);
-    }
-
-    const tmp = document.createElement("DIV");
-    tmp.innerHTML = html;
-    return tmp.textContent || tmp.innerText || "";
-  }
-
-  // Extract text from TipTap JSON content
-  function extractTextFromJson(json: any): string {
-    if (!json) return "";
-
-    // For debugging
-    console.log(
-      "Extracting text from:",
-      typeof json === "string" ? json : JSON.stringify(json).slice(0, 100)
-    );
-
-    let text = "";
-
-    try {
-      // Handle string JSON
-      if (typeof json === "string") {
-        try {
-          json = JSON.parse(json);
-        } catch (e) {
-          console.warn("Failed to parse JSON string:", e);
-          return json;
-        }
-      }
-
-      // Handle TipTap document format
-      if (json.type === "doc" && json.content && Array.isArray(json.content)) {
-        // Process each node in the document
-        json.content.forEach((node: any) => {
-          if (node.type === "paragraph" || node.type === "heading") {
-            // Extract text from paragraph or heading content
-            if (node.content && Array.isArray(node.content)) {
-              node.content.forEach((textNode: any) => {
-                if (textNode.type === "text" && textNode.text) {
-                  text += textNode.text + " ";
-                }
-              });
-              text += "\n";
-            }
-          } else if (node.type === "text" && node.text) {
-            // Direct text node
-            text += node.text + " ";
-          } else if (node.content && Array.isArray(node.content)) {
-            // Other node types with content
-            node.content.forEach((child: any) => {
-              if (child.type === "text" && child.text) {
-                text += child.text + " ";
-              }
-            });
-          }
-        });
-
-        console.log("Extracted text:", text.trim());
-        return text.trim();
-      }
-
-      // Fallback for other JSON structures
-      if (json.content && Array.isArray(json.content)) {
-        json.content.forEach((node: any) => {
-          // Handle text nodes
-          if (node.text) {
-            text += node.text + " ";
-          }
-          // Handle paragraph/headings with text content
-          else if (node.content && Array.isArray(node.content)) {
-            node.content.forEach((child: any) => {
-              if (child.text) {
-                text += child.text + " ";
-              }
-            });
-            text += " ";
-          }
-        });
-      } else if (json.text) {
-        text += json.text + " ";
-      }
-
-      console.log("Extracted text (fallback):", text.trim());
-      return text.trim();
-    } catch (e) {
-      console.warn("Error extracting text from JSON:", e);
-      return "";
-    }
-  }
-
   // Get preview text
   function getPreview(content: string | any) {
     try {
       if (!content) return "";
-
-      // For debugging
-      console.log("Content type:", typeof content);
-      if (typeof content === "string") {
-        console.log("Content preview:", content.substring(0, 50));
-      }
 
       // Handle string content that might be JSON
       if (typeof content === "string") {
@@ -434,9 +357,6 @@
           }
         } catch (e) {
           // Not valid JSON, treat as text
-          console.log("Not valid JSON:", e);
-
-          // Handle as plain text or HTML
           const tmp = document.createElement("DIV");
           tmp.innerHTML = content;
           const plainText = tmp.textContent || tmp.innerText || content;
@@ -491,7 +411,6 @@
         placeholder="Search notes..."
         class="pl-8"
         bind:value={searchInput}
-        oninput={handleSearchInput}
       />
     </div>
   </div>
@@ -499,7 +418,7 @@
   <!-- Note List -->
   <ScrollArea class="flex-1">
     <div class="p-4 space-y-6">
-      {#each groupedNotes as [date, notes]}
+      {#each groupedNotes() as [date, notes]}
         <div>
           <h3 class="mb-2 px-2 text-sm font-medium text-muted-foreground">
             {date}
@@ -521,14 +440,14 @@
                   <div class="flex items-start justify-between">
                     <div class="space-y-1 flex-1 mr-2">
                       <h4 class="font-medium leading-none">
-                        {#if isSearchActive && "highlightedName" in note}
+                        {#if isSearchActive() && "highlightedName" in note}
                           {@html note.highlightedName}
                         {:else}
                           {note.name || "Untitled Note"}
                         {/if}
                       </h4>
                       <p class="text-sm text-muted-foreground line-clamp-2">
-                        {#if isSearchActive && "contentSnippet" in note}
+                        {#if isSearchActive() && "contentSnippet" in note}
                           {@html note.contentSnippet}
                         {:else}
                           {getPreview(note.content)}
@@ -598,7 +517,7 @@
                         variant="outline"
                         class="text-xs badge-section-type"
                       >
-                        {#if isSearchActive && "highlightedSectionType" in note}
+                        {#if isSearchActive() && "highlightedSectionType" in note}
                           {@html note.highlightedSectionType}
                         {:else}
                           {typeof note.section_type === "object"
@@ -607,20 +526,33 @@
                         {/if}
                       </Badge>
                     {/if}
-                    {#if note.literature_id}
-                      <Badge
-                        variant="outline"
-                        class="text-xs flex items-center gap-1"
-                      >
-                        <Tag class="h-3 w-3" />
-                        Literature
-                      </Badge>
+                    {#if note.literatureId}
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <Badge
+                            variant="outline"
+                            class="text-xs flex items-center gap-1 badge-literature"
+                          >
+                            <Book class="h-3 w-3" />
+                            <span class="truncate max-w-[120px]">
+                              {getLiteratureTitle(note.literatureId)}
+                            </span>
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent
+                          side="right"
+                          sideOffset={5}
+                          class="max-w-[500px] whitespace-pre-line"
+                        >
+                          {getLiteratureDetails(note.literatureId)}
+                        </TooltipContent>
+                      </Tooltip>
                     {/if}
                     <span
                       class="text-xs text-muted-foreground ml-auto flex items-center gap-1"
                     >
                       <Clock class="h-3 w-3" />
-                      {#if isSearchActive && "highlightedDate" in note}
+                      {#if isSearchActive() && "highlightedDate" in note}
                         {@html note.highlightedDate}
                       {:else}
                         {getFormattedDate(note.updated_at)}
@@ -634,7 +566,7 @@
         </div>
       {/each}
 
-      {#if filteredNotes.length === 0}
+      {#if filteredNotes().length === 0}
         <div class="text-center py-8 text-muted-foreground">
           <p>No notes found</p>
           {#if searchInput}

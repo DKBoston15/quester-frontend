@@ -1,11 +1,11 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
   import { notesStore } from "$lib/stores/NotesStore.svelte";
+  import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
   import type { Note } from "$lib/types";
   import ShadEditor from "$lib/components/shad-editor/shad-editor.svelte";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
-  import { format } from "date-fns";
   import { Save, Trash2 } from "lucide-svelte";
   import type { Content } from "@tiptap/core";
   import { fade } from "svelte/transition";
@@ -15,6 +15,7 @@
     SelectItem,
     SelectTrigger,
   } from "$lib/components/ui/select";
+  import LiteratureSelector from "$lib/components/custom-ui/literature/LiteratureSelector.svelte";
 
   // Props
   const { note, onDelete } = $props<{
@@ -26,7 +27,6 @@
   let title = $state(note.name);
   let content = parseNoteContent(note.content);
   let previousContent = JSON.stringify(content);
-  let isMetadataOpen = $state(false);
   let isSaving = $state(false);
   let saveTimeout: NodeJS.Timeout;
   let isUnmounting = false;
@@ -60,6 +60,22 @@
     { value: "References", label: "References" },
     { value: "Other", label: "Other" },
   ];
+
+  // Ensure literature data is loaded
+  onMount(async () => {
+    console.log(`Editor mounted for note: ${note.id}`);
+
+    // For new notes (with "Untitled Note"), we want to make the title editable immediately
+    if (note.name === "Untitled Note" && title === "Untitled Note") {
+      console.log("New note detected, enabling title editing");
+      titleChanged = true;
+    }
+
+    // Load literature data if needed
+    if (literatureStore.data.length === 0 && note.project_id) {
+      await literatureStore.loadLiterature(note.project_id);
+    }
+  });
 
   // Direct function to save title
   function saveTitle() {
@@ -145,6 +161,98 @@
         .finally(() => {
           isSaving = false;
         });
+    }
+  }
+
+  // Handle literature selection
+  async function handleLiteratureSelect(literatureId: string | undefined) {
+    console.log(
+      `Updating literature connection for note ${note.id} to ${literatureId}`
+    );
+
+    if (!isUnmounting && note) {
+      isSaving = true;
+
+      try {
+        // Make a direct API call to update the literature connection
+        const response = await fetch(`http://localhost:3333/note/${note.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ literatureId: literatureId || null }),
+        });
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to update literature connection (${response.status})`
+          );
+        }
+
+        console.log("Literature connection updated successfully");
+
+        // Update the note object directly
+        note.literatureId = literatureId;
+
+        // Update the note in the store's notes array
+        const storeNotes = notesStore.notes;
+        for (let i = 0; i < storeNotes.length; i++) {
+          if (storeNotes[i].id === note.id) {
+            storeNotes[i].literatureId = literatureId;
+            storeNotes[i].updated_at = new Date().toISOString();
+            break;
+          }
+        }
+
+        // Try to update the literature badge in the NoteList
+        setTimeout(() => {
+          try {
+            // Find the note item in the DOM
+            const noteElements = document.querySelectorAll(
+              `[data-note-id="${note.id}"]`
+            );
+
+            if (noteElements.length > 0) {
+              noteElements.forEach((noteEl) => {
+                // Find the badges container
+                const badgesContainer = noteEl.querySelector(
+                  ".flex.items-center.gap-2.mt-2"
+                );
+
+                if (badgesContainer) {
+                  // Check if literature badge exists
+                  const existingLitBadge =
+                    noteEl.querySelector(".badge-literature");
+
+                  if (literatureId && !existingLitBadge) {
+                    // Add literature badge if it doesn't exist
+                    const newBadge = document.createElement("div");
+                    newBadge.className =
+                      "badge-literature text-xs flex items-center gap-1 border rounded-full px-2 py-1";
+                    newBadge.innerHTML =
+                      '<svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></svg> Literature';
+                    badgesContainer.appendChild(newBadge);
+                  } else if (!literatureId && existingLitBadge) {
+                    // Remove literature badge if it exists
+                    existingLitBadge.remove();
+                  }
+                }
+              });
+            }
+          } catch (e) {
+            console.warn("Error updating literature badge in DOM:", e);
+          }
+        }, 50);
+
+        // Refresh the notes list via search query as a fallback
+        const currentQuery = notesStore.searchQuery;
+        if (currentQuery) {
+          notesStore.setSearchQuery(currentQuery);
+        }
+      } catch (error) {
+        console.error("Error updating literature connection:", error);
+      } finally {
+        isSaving = false;
+      }
     }
   }
 
@@ -495,16 +603,6 @@
     }
   }
 
-  onMount(() => {
-    console.log(`Editor mounted for note: ${note.id}`);
-
-    // For new notes (with "Untitled Note"), we want to make the title editable immediately
-    if (note.name === "Untitled Note" && title === "Untitled Note") {
-      console.log("New note detected, enabling title editing");
-      titleChanged = true;
-    }
-  });
-
   onDestroy(() => {
     try {
       if (note) {
@@ -599,18 +697,13 @@
               }
             }}
           />
-          {#if title === "Untitled Note" && !isTitleFocused}
-            <div class="absolute right-0 top-0 text-xs text-muted-foreground">
-              Click to edit
-            </div>
-          {/if}
         </div>
         {#if titleChanged}
           <Button
             variant="ghost"
             size="icon"
             class="h-6 w-6 ml-1"
-            on:click={saveTitle}
+            onclick={saveTitle}
             title="Save title"
           >
             <Save class="h-3 w-3" />
@@ -619,6 +712,17 @@
       </div>
 
       <div class="flex items-center gap-2 ml-auto">
+        <!-- Literature Selector Component -->
+        {console.log(note)}
+        {#if note && note.projectId}
+          <LiteratureSelector
+            noteId={note.id}
+            projectId={note.projectId}
+            selectedLiteratureId={note.literatureId}
+            onLiteratureSelect={handleLiteratureSelect}
+          />
+        {/if}
+
         <Select
           type="single"
           value={currentSectionType.value}
@@ -638,7 +742,7 @@
           variant="ghost"
           size="icon"
           class="h-8 w-8"
-          on:click={() => saveNote(true)}
+          onclick={() => saveNote(true)}
           title="Save note"
           disabled={isSaving}
         >
@@ -649,7 +753,7 @@
           variant="ghost"
           size="icon"
           class="h-8 w-8"
-          on:click={() => onDelete()}
+          onclick={() => onDelete()}
           title="Delete note"
         >
           <Trash2 class="h-4 w-4" />

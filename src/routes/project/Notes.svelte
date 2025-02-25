@@ -134,8 +134,8 @@
       name: "Untitled Note",
       content: "",
       user_id: auth.user?.id,
-      project_id: projectStore.currentProject.id,
-      literature_id: literatureId,
+      projectId: projectStore.currentProject.id,
+      literatureId: literatureId,
       type: literatureId ? "BASE" : "QUICK",
       section_type: { value: "Other", label: "Other" },
     });

@@ -326,7 +326,14 @@
             ? formatFriendlyDate(new Date(note.updated_at))
             : "";
           const highlightedDate = highlightText(friendlyDate, query);
-
+          console.log({
+            ...note,
+            highlightedName,
+            contentSnippet,
+            highlightedSectionType,
+            highlightedDate,
+            isHighlighted: true,
+          });
           return {
             ...note,
             highlightedName,
@@ -486,9 +493,9 @@
           content: data.content || "",
           type: data.type || "QUICK",
           sectionType: sectionType, // Use camelCase for backend
-          projectId: data.project_id,
+          projectId: data.projectId,
           userId: auth.user.id,
-          literatureId: data.literature_id,
+          literatureId: data.literatureId,
         } as any; // Type assertion to avoid linter errors
 
         console.log("Creating note with payload:", payload);
