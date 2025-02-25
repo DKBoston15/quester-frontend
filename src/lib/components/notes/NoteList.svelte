@@ -415,154 +415,157 @@
   </div>
 
   <!-- Note List -->
+  <!-- Replace your Note List section with this improved version -->
   <ScrollArea class="flex-1">
     <div class="p-4 space-y-6">
       {#each groupedNotes() as [date, notes]}
-        <div>
-          <h3 class="mb-2 px-2 text-sm font-medium text-muted-foreground">
-            {date}
-          </h3>
-          <div class="space-y-2">
-            {#each notes as note (note.id)}
-              <div
-                class="w-full text-left rounded-lg border hover:bg-accent transition-colors cursor-pointer"
-                class:bg-accent={note.id === notesStore.activeNoteId}
-                transition:fade
-                onclick={() => onNoteSelect(note, "left")}
-                onkeydown={(e) =>
-                  e.key === "Enter" && onNoteSelect(note, "left")}
-                tabindex="0"
-                role="button"
-                data-note-id={note.id}
-              >
-                <div class="p-3">
-                  <div class="flex items-start justify-between">
-                    <div class="space-y-1 flex-1 mr-2">
-                      <h4 class="font-medium leading-none">
-                        {#if isSearchActive() && "highlightedName" in note}
-                          {@html note.highlightedName}
-                        {:else}
-                          {note.name || "Untitled Note"}
-                        {/if}
-                      </h4>
-                      <p class="text-sm text-muted-foreground line-clamp-2">
-                        {#if isSearchActive() && "contentSnippet" in note}
-                          {@html note.contentSnippet}
-                        {:else}
-                          {getPreview(note.content)}
-                        {/if}
-                      </p>
-                    </div>
+        {#if notes.length > 0}
+          <div>
+            <h3 class="mb-2 px-2 text-sm font-medium text-muted-foreground">
+              {date}
+            </h3>
+            <div class="space-y-2">
+              {#each notes as note (note.id)}
+                <div
+                  class="w-full text-left rounded-lg border hover:bg-accent transition-colors cursor-pointer"
+                  class:bg-accent={note.id === notesStore.activeNoteId}
+                  transition:fade={{ duration: 150 }}
+                  onclick={() => onNoteSelect(note, "left")}
+                  onkeydown={(e) =>
+                    e.key === "Enter" && onNoteSelect(note, "left")}
+                  tabindex="0"
+                  role="button"
+                  data-note-id={note.id}
+                >
+                  <div class="p-3">
+                    <div class="flex items-start justify-between">
+                      <div class="space-y-1 flex-1 mr-2">
+                        <h4 class="font-medium leading-none">
+                          {#if isSearchActive() && "highlightedName" in note}
+                            {@html note.highlightedName}
+                          {:else}
+                            {note.name || "Untitled Note"}
+                          {/if}
+                        </h4>
+                        <p class="text-sm text-muted-foreground line-clamp-2">
+                          {#if isSearchActive() && "contentSnippet" in note}
+                            {@html note.contentSnippet}
+                          {:else}
+                            {getPreview(note.content)}
+                          {/if}
+                        </p>
+                      </div>
 
-                    <div class="flex-shrink-0">
-                      {#if showSecondPanelOption}
-                        <div class="flex gap-1">
+                      <div class="flex-shrink-0">
+                        {#if showSecondPanelOption}
+                          <div class="flex gap-1">
+                            <button
+                              class="p-1 rounded hover:bg-secondary"
+                              title="Open in left panel"
+                              onclick={(e) => {
+                                e.stopPropagation();
+                                onNoteSelect(note, "left");
+                              }}
+                              onkeydown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.stopPropagation();
+                                  onNoteSelect(note, "left");
+                                }
+                              }}
+                            >
+                              <PanelLeft class="h-4 w-4" />
+                            </button>
+                            <button
+                              class="p-1 rounded hover:bg-secondary"
+                              title="Open in right panel"
+                              onclick={(e) => {
+                                e.stopPropagation();
+                                onNoteSelect(note, "right");
+                              }}
+                              onkeydown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.stopPropagation();
+                                  onNoteSelect(note, "right");
+                                }
+                              }}
+                            >
+                              <PanelRight class="h-4 w-4" />
+                            </button>
+                          </div>
+                        {:else}
                           <button
                             class="p-1 rounded hover:bg-secondary"
-                            title="Open in left panel"
+                            title="Open note"
                             onclick={(e) => {
                               e.stopPropagation();
-                              onNoteSelect(note, "left");
+                              onNoteSelect(note);
                             }}
                             onkeydown={(e) => {
                               if (e.key === "Enter" || e.key === " ") {
                                 e.stopPropagation();
-                                onNoteSelect(note, "left");
+                                onNoteSelect(note);
                               }
                             }}
                           >
                             <PanelLeft class="h-4 w-4" />
                           </button>
-                          <button
-                            class="p-1 rounded hover:bg-secondary"
-                            title="Open in right panel"
-                            onclick={(e) => {
-                              e.stopPropagation();
-                              onNoteSelect(note, "right");
-                            }}
-                            onkeydown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                e.stopPropagation();
-                                onNoteSelect(note, "right");
-                              }
-                            }}
-                          >
-                            <PanelRight class="h-4 w-4" />
-                          </button>
-                        </div>
-                      {:else}
-                        <button
-                          class="p-1 rounded hover:bg-secondary"
-                          title="Open note"
-                          onclick={(e) => {
-                            e.stopPropagation();
-                            onNoteSelect(note);
-                          }}
-                          onkeydown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.stopPropagation();
-                              onNoteSelect(note);
-                            }
-                          }}
+                        {/if}
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2 mt-2">
+                      {#if note.section_type}
+                        <Badge
+                          variant="outline"
+                          class="text-xs badge-section-type"
                         >
-                          <PanelLeft class="h-4 w-4" />
-                        </button>
+                          {#if isSearchActive() && "highlightedSectionType" in note}
+                            {@html note.highlightedSectionType}
+                          {:else}
+                            {typeof note.section_type === "object"
+                              ? note.section_type.label
+                              : note.section_type}
+                          {/if}
+                        </Badge>
                       {/if}
+                      {#if note.literatureId}
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Badge
+                              variant="outline"
+                              class="text-xs flex items-center gap-1 badge-literature"
+                            >
+                              <Book class="h-3 w-3" />
+                              <span class="truncate max-w-[120px]">
+                                {getLiteratureTitle(note.literatureId)}
+                              </span>
+                            </Badge>
+                          </TooltipTrigger>
+                          <TooltipContent
+                            side="right"
+                            sideOffset={5}
+                            class="max-w-[500px] whitespace-pre-line"
+                          >
+                            {getLiteratureDetails(note.literatureId)}
+                          </TooltipContent>
+                        </Tooltip>
+                      {/if}
+                      <span
+                        class="text-xs text-muted-foreground ml-auto flex items-center gap-1"
+                      >
+                        <Clock class="h-3 w-3" />
+                        {#if isSearchActive() && "highlightedDate" in note}
+                          {@html note.highlightedDate}
+                        {:else}
+                          {getFormattedDate(note.updated_at)}
+                        {/if}
+                      </span>
                     </div>
                   </div>
-                  <div class="flex items-center gap-2 mt-2">
-                    {#if note.section_type}
-                      <Badge
-                        variant="outline"
-                        class="text-xs badge-section-type"
-                      >
-                        {#if isSearchActive() && "highlightedSectionType" in note}
-                          {@html note.highlightedSectionType}
-                        {:else}
-                          {typeof note.section_type === "object"
-                            ? note.section_type.label
-                            : note.section_type}
-                        {/if}
-                      </Badge>
-                    {/if}
-                    {#if note.literatureId}
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <Badge
-                            variant="outline"
-                            class="text-xs flex items-center gap-1 badge-literature"
-                          >
-                            <Book class="h-3 w-3" />
-                            <span class="truncate max-w-[120px]">
-                              {getLiteratureTitle(note.literatureId)}
-                            </span>
-                          </Badge>
-                        </TooltipTrigger>
-                        <TooltipContent
-                          side="right"
-                          sideOffset={5}
-                          class="max-w-[500px] whitespace-pre-line"
-                        >
-                          {getLiteratureDetails(note.literatureId)}
-                        </TooltipContent>
-                      </Tooltip>
-                    {/if}
-                    <span
-                      class="text-xs text-muted-foreground ml-auto flex items-center gap-1"
-                    >
-                      <Clock class="h-3 w-3" />
-                      {#if isSearchActive() && "highlightedDate" in note}
-                        {@html note.highlightedDate}
-                      {:else}
-                        {getFormattedDate(note.updated_at)}
-                      {/if}
-                    </span>
-                  </div>
                 </div>
-              </div>
-            {/each}
+              {/each}
+            </div>
           </div>
-        </div>
+        {/if}
       {/each}
 
       {#if filteredNotes().length === 0}
