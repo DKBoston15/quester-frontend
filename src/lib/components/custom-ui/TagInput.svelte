@@ -50,7 +50,7 @@
       <button
         type="button"
         class="rounded-full hover:bg-destructive/20"
-        on:click={() => removeTag(index)}
+        onclick={() => removeTag(index)}
       >
         <X class="h-3 w-3" />
         <span class="sr-only">Remove {tag}</span>

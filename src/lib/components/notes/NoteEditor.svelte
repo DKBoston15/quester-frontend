@@ -1,0 +1,490 @@
+<script lang="ts">
+  import { onMount, onDestroy } from "svelte";
+  import { notesStore } from "$lib/stores/NotesStore.svelte";
+  import type { Note } from "$lib/types";
+  import ShadEditor from "$lib/components/shad-editor/shad-editor.svelte";
+  import { Button } from "$lib/components/ui/button";
+  import { Input } from "$lib/components/ui/input";
+  import { Badge } from "$lib/components/ui/badge";
+  import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+  } from "$lib/components/ui/sheet";
+  import { format } from "date-fns";
+  import { Tag, Save, MoreVertical, Trash2 } from "lucide-svelte";
+  import type { Content } from "@tiptap/core";
+  import { fade } from "svelte/transition";
+  import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+  } from "$lib/components/ui/select";
+
+  // Props
+  const { note, onDelete } = $props<{
+    note: Note;
+    onDelete: () => void;
+  }>();
+
+  // Local state
+  let title = $state(note.name);
+  let content = parseNoteContent(note.content);
+  let previousContent = JSON.stringify(content);
+  let isMetadataOpen = $state(false);
+  let isSaving = $state(false);
+  let saveTimeout: NodeJS.Timeout;
+  let isUnmounting = false;
+  let contentChanged = false;
+  let lastSaveTime = Date.now();
+  let currentNoteId = note.id;
+
+  // Track section type locally to avoid remounting
+  let currentSectionType = $state(
+    typeof note.section_type === "object"
+      ? { ...note.section_type }
+      : {
+          value: note.section_type || "Other",
+          label: note.section_type || "Other",
+        }
+  );
+
+  const SAVE_DEBOUNCE = 2000; // 2 seconds between saves
+
+  // Add section type options
+  const sectionTypeOptions = [
+    { value: "Introduction", label: "Introduction" },
+    { value: "Methods", label: "Methods" },
+    { value: "Results", label: "Results" },
+    { value: "Discussion", label: "Discussion" },
+    { value: "Conclusion", label: "Conclusion" },
+    { value: "References", label: "References" },
+    { value: "Other", label: "Other" },
+  ];
+
+  // Safe date formatting function to prevent errors with invalid dates
+  function safeFormat(
+    dateString: string | undefined,
+    formatStr: string,
+    fallback: string = "Not available"
+  ) {
+    try {
+      if (!dateString) return fallback;
+      const date = new Date(dateString);
+      // Check if date is valid
+      if (isNaN(date.getTime())) return fallback;
+      return format(date, formatStr);
+    } catch (err) {
+      console.warn("Date formatting error:", err);
+      return fallback;
+    }
+  }
+
+  // Reactive block to update local state when the note prop changes
+  $effect(() => {
+    console.log(`Note effect triggered for: ${note.id}`);
+
+    // Always update content when note changes
+    const noteContentStr =
+      typeof note.content === "string"
+        ? note.content
+        : JSON.stringify(note.content);
+    const currentContentStr =
+      typeof content === "string" ? content : JSON.stringify(content);
+
+    // Force immediate update of all state when note changes
+    if (currentNoteId !== note.id || noteContentStr !== currentContentStr) {
+      console.log(`Note content or ID changed - updating editor state`);
+
+      // Only reset contentChanged if the note ID has changed
+      // This preserves unsaved changes when content is updated externally
+      const isNewNote = currentNoteId !== note.id;
+
+      currentNoteId = note.id;
+      title = note.name;
+      const newContent = parseNoteContent(note.content);
+
+      // Only update content and previousContent if this is a new note
+      // or if the content has actually changed from the server
+      if (isNewNote || noteContentStr !== currentContentStr) {
+        console.log("Updating content from note prop");
+        content = newContent;
+        previousContent = JSON.stringify(newContent);
+
+        // Only reset contentChanged flag if we're switching to a new note
+        if (isNewNote) {
+          contentChanged = false;
+        }
+      }
+
+      if (note.section_type) {
+        currentSectionType =
+          typeof note.section_type === "object"
+            ? { ...note.section_type }
+            : { value: note.section_type, label: note.section_type };
+      }
+      console.log(
+        `Note state fully updated for: ${note.id}, title: ${title}, contentChanged: ${contentChanged}`
+      );
+    }
+  });
+
+  // Monitor content changes using $effect instead of afterUpdate
+  $effect(() => {
+    // Skip processing if we're unmounting to avoid state mutation errors
+    if (isUnmounting) {
+      console.log("Skipping content effect during unmount");
+      return;
+    }
+
+    const currentContentStr = JSON.stringify(content);
+    console.log("Content effect triggered, checking for changes");
+
+    if (currentContentStr !== previousContent) {
+      console.log(
+        "Content changed in effect, from:",
+        previousContent.substring(0, 50) + "...",
+        "to:",
+        currentContentStr.substring(0, 50) + "..."
+      );
+
+      // Store the new content as previous content
+      previousContent = currentContentStr;
+
+      // Only mark as changed if we're not in the middle of a note switch
+      // This prevents unnecessary saves during note switching
+      if (currentNoteId === note.id) {
+        console.log(`Setting contentChanged=true for note ${note.id}`);
+        contentChanged = true;
+        scheduleSave();
+      } else {
+        console.log(
+          `Skipping contentChanged flag for note ${currentNoteId} vs ${note.id}`
+        );
+      }
+    } else {
+      console.log("Content unchanged in effect, not scheduling save");
+    }
+  });
+
+  // Auto-save functionality
+  function handleTitleChange(e: Event) {
+    const input = e.target as HTMLInputElement;
+    title = input.value;
+
+    if (!isUnmounting) {
+      contentChanged = true;
+      scheduleSave();
+    }
+  }
+
+  function scheduleSave() {
+    clearTimeout(saveTimeout);
+
+    // If we recently saved, wait the full debounce period
+    const timeSinceLastSave = Date.now() - lastSaveTime;
+    const delay =
+      timeSinceLastSave < SAVE_DEBOUNCE
+        ? SAVE_DEBOUNCE
+        : Math.max(500, SAVE_DEBOUNCE - timeSinceLastSave);
+
+    saveTimeout = setTimeout(saveNote, delay);
+  }
+
+  async function saveNote(forceSave = false) {
+    if (isSaving || isUnmounting || (!contentChanged && !forceSave) || !note) {
+      console.log("Not saving note because:", {
+        isSaving,
+        isUnmounting,
+        contentChanged,
+        forceSave,
+        hasNote: !!note,
+        noteId: note?.id,
+        currentNoteId,
+      });
+      return Promise.resolve(); // Return a resolved promise
+    }
+
+    lastSaveTime = Date.now();
+
+    // Only reset contentChanged if we're actually going to save
+    if (!isUnmounting) {
+      contentChanged = false;
+    }
+
+    isSaving = true;
+    try {
+      const contentToSave = JSON.stringify(content);
+      console.log("Saving note to database:", {
+        id: note.id,
+        name: title,
+        contentLength: contentToSave.length,
+        contentPreview: contentToSave.substring(0, 100) + "...",
+        forceSave,
+      });
+
+      // Use the store's update method to ensure the note list updates
+      await notesStore.updateNote(note.id, {
+        name: title,
+        content: contentToSave,
+      });
+
+      console.log("Note saved successfully");
+      return Promise.resolve(); // Return a resolved promise
+    } catch (error) {
+      console.error("Failed to save note:", error);
+      if (!isUnmounting) {
+        contentChanged = true; // Mark as still needing save, but only if not unmounting
+      }
+      return Promise.reject(error); // Return a rejected promise
+    } finally {
+      isSaving = false;
+    }
+  }
+
+  // Add function to handle section type change
+  function handleSectionTypeChange(value: string) {
+    console.log("Section type changed to:", value);
+
+    const selectedType = sectionTypeOptions.find(
+      (option) => option.value === value
+    );
+
+    console.log("Selected type object:", selectedType);
+
+    if (selectedType) {
+      // Update our local state first
+      currentSectionType = selectedType;
+
+      // Make a direct API call to update the section type without going through the store's update mechanism
+      // This avoids the remounting issue while ensuring the data is saved to the database
+      fetch(`http://localhost:3333/note/${note.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ sectionType: selectedType.value }),
+      })
+        .then(async (response) => {
+          if (!response.ok) {
+            console.error("Failed to update section type");
+          } else {
+            console.log("Section type updated successfully");
+
+            // Update the note in the store's notes array
+            // This is a hack but it's the only way to update the UI without remounting
+            const storeNotes = notesStore.notes;
+            for (let i = 0; i < storeNotes.length; i++) {
+              if (storeNotes[i].id === note.id) {
+                // Create a new object to ensure reactivity
+                const updatedNote = {
+                  ...storeNotes[i],
+                  section_type: selectedType,
+                };
+
+                // Use a direct DOM update to change the badge text
+                // This is a last resort since we can't update the store directly
+                setTimeout(() => {
+                  const badgeElements = document.querySelectorAll(
+                    `[data-note-id="${note.id}"] .badge-section-type`
+                  );
+                  if (badgeElements.length > 0) {
+                    badgeElements.forEach((badge) => {
+                      badge.textContent = selectedType.label;
+                    });
+                    console.log(
+                      `Updated ${badgeElements.length} badge elements in the DOM`
+                    );
+                  } else {
+                    console.log("No badge elements found in the DOM");
+                  }
+                }, 100);
+
+                break;
+              }
+            }
+          }
+        })
+        .catch((error) => {
+          console.error("Error updating section type:", error);
+        });
+    }
+  }
+
+  // Helper function to parse note content
+  function parseNoteContent(rawContent: any): Content {
+    if (!rawContent) {
+      return {
+        type: "doc",
+        content: [{ type: "paragraph", content: [] }],
+      };
+    }
+
+    try {
+      if (typeof rawContent === "string") {
+        return JSON.parse(rawContent);
+      } else {
+        return rawContent;
+      }
+    } catch (e) {
+      console.error("Error parsing note content:", e);
+      return {
+        type: "doc",
+        content: [{ type: "paragraph", content: [] }],
+      };
+    }
+  }
+
+  onMount(() => {
+    console.log(`Editor mounted for note: ${note.id}`);
+  });
+
+  onDestroy(() => {
+    try {
+      if (note) {
+        console.log(`Editor unmounting for note: ${note.id}`);
+      } else {
+        console.log(`Editor unmounting for unknown note`);
+      }
+
+      // Set isUnmounting to prevent any further state updates
+      isUnmounting = true;
+
+      // Clear any pending save timeout
+      clearTimeout(saveTimeout);
+
+      // Save any pending changes before unmounting
+      if (document.visibilityState !== "hidden" && note && contentChanged) {
+        console.log("Forcing save on unmount due to unsaved changes");
+
+        // Use the store's update method to ensure the note list updates
+        const contentToSave = JSON.stringify(content);
+
+        // We need to use a setTimeout to ensure this runs after the current execution context
+        // This helps avoid state mutation errors during unmounting
+        setTimeout(() => {
+          notesStore
+            .updateNote(note.id, {
+              name: title,
+              content: contentToSave,
+            })
+            .then(() => {
+              console.log("Note saved successfully on unmount via store");
+            })
+            .catch((error) => {
+              console.error("Error saving note on unmount via store:", error);
+            });
+        }, 0);
+      }
+    } catch (error) {
+      console.error("Error during editor unmounting:", error);
+    }
+  });
+</script>
+
+<div class="flex flex-col h-full relative">
+  <!-- Saving Indicator (Absolute Position) -->
+  {#if isSaving}
+    <div
+      class="absolute top-4 right-4 z-10 px-3 py-1 rounded-full bg-background/80 backdrop-blur border shadow-sm flex items-center gap-2 text-sm text-muted-foreground"
+      transition:fade={{ duration: 200 }}
+    >
+      <Save class="h-3 w-3 animate-spin" />
+      Saving...
+    </div>
+  {/if}
+
+  <!-- Editor Header -->
+  <header
+    class="border-b p-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+  >
+    <div class="flex items-center justify-between">
+      <div class="flex-1 mr-4">
+        <Input
+          type="text"
+          placeholder="Untitled Note"
+          class="text-lg font-medium bg-transparent border-none shadow-none h-auto px-0 focus-visible:ring-0"
+          bind:value={title}
+          oninput={handleTitleChange}
+        />
+      </div>
+
+      <div class="flex items-center gap-2 ml-auto">
+        <Select
+          type="single"
+          value={currentSectionType.value}
+          onValueChange={handleSectionTypeChange}
+        >
+          <SelectTrigger class="h-8 w-[180px]">
+            <span>{currentSectionType.label}</span>
+          </SelectTrigger>
+          <SelectContent>
+            {#each sectionTypeOptions as option}
+              <SelectItem value={option.value}>{option.label}</SelectItem>
+            {/each}
+          </SelectContent>
+        </Select>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          class="h-8 w-8"
+          onclick={() => saveNote(true)}
+          title="Save note"
+          disabled={isSaving}
+        >
+          <Save class={isSaving ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          class="h-8 w-8"
+          onclick={() => onDelete()}
+          title="Delete note"
+        >
+          <Trash2 class="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Editor Content -->
+  {#if note}
+    <div class="flex-1 overflow-hidden">
+      <!-- Use a key block with just the note ID to force remounting when the note changes -->
+      {#key note.id}
+        <ShadEditor
+          {content}
+          on:contentChange={(e) => {
+            console.log("Content change detected in editor");
+            const newContent = e.detail;
+            // Check if content has actually changed
+            if (JSON.stringify(newContent) !== JSON.stringify(content)) {
+              console.log("Content has changed, updating and scheduling save");
+              content = newContent;
+              contentChanged = true;
+              scheduleSave();
+            } else {
+              console.log("Content unchanged, not scheduling save");
+            }
+          }}
+          placeholder="Start writing..."
+        />
+      {/key}
+    </div>
+  {/if}
+</div>
+
+<style>
+  :global(.tiptap p.is-editor-empty:first-child::before) {
+    content: attr(data-placeholder);
+    float: left;
+    color: var(--muted-foreground);
+    pointer-events: none;
+    height: 0;
+  }
+</style>
