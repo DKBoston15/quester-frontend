@@ -63,6 +63,8 @@
         isDialog={false}
         --picker-indicator-size="1rem"
         --input-size="1rem"
+        --cp-bg-color="hsl(var(--popover))"
+        --cp-border-color="hsl(var(--border))"
       />
     </div>
     <div class="flex items-center justify-end gap-2">

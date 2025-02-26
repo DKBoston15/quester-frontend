@@ -6,7 +6,7 @@
   import ResearchDesigns from "$lib/components/project/ResearchDesigns.svelte";
 </script>
 
-<div class="flex-1 w-full">
+<div class="flex-1 w-full overflow-x-hidden">
   <div class="w-full py-6 px-4">
     <h1 class="text-3xl font-bold mb-6 ml-1">Project Dashboard</h1>
 

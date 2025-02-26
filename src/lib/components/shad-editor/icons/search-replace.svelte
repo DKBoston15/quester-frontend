@@ -108,28 +108,80 @@
         placeholder="Enter Text to search.."
         bind:value={searchText}
         oninput={() => updateSearchTerm()}
-        class="mr-1 "
+        class="mr-1"
       />
-      <Button variant="ghost" class="ml-1 size-8" onclick={previous}>
-        <ArrowLeft />
-      </Button>
-      <Button variant="ghost" class="ml-1 size-8" onclick={next}>
-        <ArrowRight />
-      </Button>
+      <Tooltip.Provider>
+        <Tooltip.Root>
+          <Tooltip.Trigger>
+            <Button
+              variant="outline"
+              class="ml-1 p-0 h-8 w-8 hover:bg-muted"
+              onclick={previous}
+            >
+              ←
+            </Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>
+            <p>Previous Match</p>
+          </Tooltip.Content>
+        </Tooltip.Root>
+      </Tooltip.Provider>
+      <Tooltip.Provider>
+        <Tooltip.Root>
+          <Tooltip.Trigger>
+            <Button
+              variant="outline"
+              class="ml-1 p-0 h-8 w-8 hover:bg-muted"
+              onclick={next}
+            >
+              →
+            </Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>
+            <p>Next Match</p>
+          </Tooltip.Content>
+        </Tooltip.Root>
+      </Tooltip.Provider>
     </div>
     <div class="flex items-center justify-between">
       <Input
         placeholder="Enter Text to Replace.."
         bind:value={replaceText}
         oninput={() => updateSearchTerm()}
-        class="mr-1 "
+        class="mr-1"
       />
-      <Button variant="ghost" class="ml-1 size-8" onclick={replace}>
-        <Replace />
-      </Button>
-      <Button variant="ghost" class="ml-1 size-8" onclick={replaceAll}>
-        <ReplaceAll />
-      </Button>
+      <Tooltip.Provider>
+        <Tooltip.Root>
+          <Tooltip.Trigger>
+            <Button
+              variant="outline"
+              class="ml-1 p-0 h-8 w-8 hover:bg-muted"
+              onclick={replace}
+            >
+              R
+            </Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>
+            <p>Replace Current Match</p>
+          </Tooltip.Content>
+        </Tooltip.Root>
+      </Tooltip.Provider>
+      <Tooltip.Provider>
+        <Tooltip.Root>
+          <Tooltip.Trigger>
+            <Button
+              variant="outline"
+              class="ml-1 p-0 h-8 w-8 hover:bg-muted"
+              onclick={replaceAll}
+            >
+              RA
+            </Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>
+            <p>Replace All Matches</p>
+          </Tooltip.Content>
+        </Tooltip.Root>
+      </Tooltip.Provider>
     </div>
 
     <div class="flex items-center justify-between">
