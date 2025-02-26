@@ -230,14 +230,14 @@
       <!-- Editor Area -->
       <main
         class={selectedView === "split"
-          ? "flex-1 flex"
-          : "flex-1 bg-background"}
+          ? "flex-1 flex overflow-hidden"
+          : "flex-1 bg-background overflow-hidden"}
       >
         {#if selectedView === "split"}
           <!-- Left Panel -->
-          <div class="flex-1 border-r">
+          <div class="flex-1 border-r overflow-y-auto">
             {#if notesStore.activeNoteId && notesStore.notes.length > 0}
-              {#each notesStore.notes.filter((n) => n.id === notesStore.activeNoteId) as activeNote (activeNote.id + "-" + (activeNote.updated_at || ""))}
+              {#each notesStore.notes.filter((n) => n.id === notesStore.activeNoteId) as activeNote (activeNote.id)}
                 <NoteEditor note={activeNote} onDelete={handleNoteDelete} />
               {/each}
             {:else}
@@ -260,7 +260,7 @@
           </div>
 
           <!-- Right Panel -->
-          <div class="flex-1 overflow-hidden">
+          <div class="flex-1 overflow-y-auto">
             {#if rightPanelNote}
               <NoteEditor
                 note={rightPanelNote}
@@ -290,7 +290,7 @@
         {:else}
           <!-- Single Panel View -->
           {#if notesStore.activeNoteId && notesStore.notes.length > 0}
-            {#each notesStore.notes.filter((n) => n.id === notesStore.activeNoteId) as activeNote (activeNote.id + "-" + (activeNote.updated_at || ""))}
+            {#each notesStore.notes.filter((n) => n.id === notesStore.activeNoteId) as activeNote (activeNote.id)}
               <NoteEditor note={activeNote} onDelete={handleNoteDelete} />
             {/each}
           {:else}
