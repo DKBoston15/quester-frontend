@@ -158,7 +158,7 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<div class="h-screen flex flex-col overflow-hidden">
+<div class="h-screen flex flex-col">
   <!-- Top Bar -->
   <header
     class="border-b p-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
@@ -214,7 +214,7 @@
       <div class="text-center text-muted-foreground">Loading notes...</div>
     </div>
   {:else}
-    <div class="flex-1 flex overflow-hidden">
+    <div class="flex-1 flex">
       {#if !focusMode}
         <!-- Sidebar -->
         <aside
@@ -230,12 +230,12 @@
       <!-- Editor Area -->
       <main
         class={selectedView === "split"
-          ? "flex-1 flex overflow-hidden"
-          : "flex-1 overflow-hidden bg-background"}
+          ? "flex-1 flex"
+          : "flex-1 bg-background"}
       >
         {#if selectedView === "split"}
           <!-- Left Panel -->
-          <div class="flex-1 border-r overflow-hidden">
+          <div class="flex-1 border-r">
             {#if notesStore.activeNoteId && notesStore.notes.length > 0}
               {#each notesStore.notes.filter((n) => n.id === notesStore.activeNoteId) as activeNote (activeNote.id + "-" + (activeNote.updated_at || ""))}
                 <NoteEditor note={activeNote} onDelete={handleNoteDelete} />
