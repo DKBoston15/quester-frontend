@@ -4,7 +4,7 @@ export interface Note {
   projectId: string;
   literatureId?: string;
   name: string;
-  type: "BASE" | "QUICK";
+  type: "LITERATURE" | "RESEARCH" | "BASE" | "QUICK";
   content: string;
   section_type:
     | {

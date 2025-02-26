@@ -33,10 +33,10 @@
   let contentChanged = false;
   let lastSaveTime = Date.now();
   let currentNoteId = note.id;
-  let originalTitle = $state(note.name); // Track original title to detect changes
-  let titleChanged = $state(false); // Track if title has changed
-  let isTitleFocused = $state(false); // Track if title is currently focused
-  let isUserEditingTitle = $state(false); // Track if user is actively editing title
+  let originalTitle = $state(note.name);
+  let titleChanged = $state(false);
+  let isTitleFocused = $state(false);
+  let isUserEditingTitle = $state(false);
 
   // Track section type locally to avoid remounting
   let currentSectionType = $state(
@@ -559,7 +559,7 @@
   });
 </script>
 
-<div class="flex flex-col h-full relative">
+<div class="flex flex-col">
   <!-- Saving Indicator (Absolute Position) -->
   {#if isSaving}
     <div
@@ -573,7 +573,7 @@
 
   <!-- Editor Header -->
   <header
-    class="border-b p-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+    class="sticky top-0 z-10 border-b p-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
   >
     <div class="flex items-center justify-between">
       <div class="flex-1 mr-4 flex items-center">
@@ -626,7 +626,7 @@
 
       <div class="flex items-center gap-2 ml-auto">
         <!-- Literature Selector Component -->
-        {#if note && note.projectId}
+        {#if note && note.projectId && note.type === "LITERATURE"}
           <LiteratureSelector
             noteId={note.id}
             projectId={note.projectId}
@@ -635,20 +635,22 @@
           />
         {/if}
 
-        <Select
-          type="single"
-          value={currentSectionType.value}
-          onValueChange={handleSectionTypeChange}
-        >
-          <SelectTrigger class="h-8 w-[180px]">
-            <span>{currentSectionType.label}</span>
-          </SelectTrigger>
-          <SelectContent>
-            {#each sectionTypeOptions as option}
-              <SelectItem value={option.value}>{option.label}</SelectItem>
-            {/each}
-          </SelectContent>
-        </Select>
+        {#if note && note.type === "LITERATURE"}
+          <Select
+            type="single"
+            value={currentSectionType.value}
+            onValueChange={handleSectionTypeChange}
+          >
+            <SelectTrigger class="h-8 w-[180px]">
+              <span>{currentSectionType.label}</span>
+            </SelectTrigger>
+            <SelectContent>
+              {#each sectionTypeOptions as option}
+                <SelectItem value={option.value}>{option.label}</SelectItem>
+              {/each}
+            </SelectContent>
+          </Select>
+        {/if}
 
         <Button
           variant="ghost"
@@ -676,23 +678,20 @@
 
   <!-- Editor Content -->
   {#if note}
-    <div class="flex-1 overflow-hidden">
-      <!-- Use a key block with just the note ID to force remounting when the note changes -->
-      {#key note.id}
-        <ShadEditor
-          {content}
-          on:contentChange={(e) => {
-            const newContent = e.detail;
-            // Check if content has actually changed
-            if (JSON.stringify(newContent) !== JSON.stringify(content)) {
-              content = newContent;
-              contentChanged = true;
-              scheduleSave();
-            }
-          }}
-          placeholder="Start writing..."
-        />
-      {/key}
+    <div class="flex-1">
+      <ShadEditor
+        {content}
+        on:contentChange={(e) => {
+          const newContent = e.detail;
+          // Check if content has actually changed
+          if (JSON.stringify(newContent) !== JSON.stringify(content)) {
+            content = newContent;
+            contentChanged = true;
+            scheduleSave();
+          }
+        }}
+        placeholder="Start writing..."
+      />
     </div>
   {/if}
 </div>

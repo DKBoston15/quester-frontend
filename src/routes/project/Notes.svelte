@@ -23,7 +23,7 @@
   // State
   let focusMode = $state(false);
   let selectedView = $state(""); // Default to split view
-  let selectedTab = "all";
+  let selectedTab = $state("literature"); // Default to literature notes
   let note: Note;
   let rightPanelNote = $state<Note | null>(null);
 
@@ -108,8 +108,8 @@
       content: "",
       user_id: auth.user?.id,
       projectId: projectStore.currentProject.id,
-      literatureId: literatureId,
-      type: literatureId ? "BASE" : "QUICK",
+      literatureId: selectedTab === "literature" ? literatureId : undefined,
+      type: selectedTab === "literature" ? "LITERATURE" : "RESEARCH",
       section_type: { value: "Other", label: "Other" },
     });
     if (newNote) {
@@ -134,6 +134,17 @@
         rightPanelNote = null;
       }
     }
+  }
+
+  // Handle tab changes
+  function handleTabChange(value: string) {
+    selectedTab = value as "literature" | "research";
+    notesStore.setFilter({ type: value as "literature" | "research" });
+
+    // Clear the selected note
+    notesStore.setActiveNote(null);
+    // Also clear the right panel note if in split view
+    rightPanelNote = null;
   }
 
   // Keyboard shortcuts
@@ -179,6 +190,13 @@
             {/if}
           </Button>
         </div>
+
+        <Tabs value={selectedTab} onValueChange={handleTabChange}>
+          <TabsList>
+            <TabsTrigger value="literature">Literature Notes</TabsTrigger>
+            <TabsTrigger value="research">Research Notes</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
       <div class="flex items-center gap-4">

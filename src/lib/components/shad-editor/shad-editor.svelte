@@ -218,6 +218,6 @@
   <div
     bind:this={element}
     spellcheck="false"
-    class="h-full w-full flex-1 overflow-auto"
+    class="h-full w-full flex-1 overflow-y-scroll"
   ></div>
 </div>

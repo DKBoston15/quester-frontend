@@ -2,17 +2,22 @@
   import type { Note } from "$lib/types";
   import { auth } from "$lib/stores/AuthStore.svelte";
 
+  type FilterType = "literature" | "research" | "all" | "unlinked" | "recent";
+  type FilterState = {
+    type: FilterType;
+    literatureId?: string;
+  };
+
   let notes = $state<Note[]>([]);
   let activeNoteId = $state<string | null>(null);
   let isLoading = $state(false);
   let error = $state<string | null>(null);
   let searchQuery = $state("");
-  let filter = $state<{
-    type: "all" | "unlinked" | "literature" | "recent";
-    literatureId?: string;
-  }>({
-    type: "all",
+  let filter = $state<FilterState>({
+    type: "literature",
   });
+  let localSearchResults = $state<Note[]>([]);
+  let activeLiteratureFilter = $state<string | undefined>(undefined);
 
   // Search highlighting functionality
   let highlightedNotes = $state<Note[]>([]);
@@ -468,7 +473,7 @@
         const payload = {
           name: data.name || "Untitled Note",
           content: data.content || "",
-          type: data.type || "QUICK",
+          type: data.type || "RESEARCH",
           sectionType: sectionType, // Use camelCase for backend
           projectId: data.projectId,
           userId: auth.user.id,
@@ -787,8 +792,8 @@
       highlightedNotes = processNotesForHighlighting(filteredNotes, query);
     },
 
-    setFilter(newFilter: typeof filter) {
-      filter = newFilter;
+    setFilter(newFilter: FilterState) {
+      filter = { ...newFilter }; // Create a new object to ensure reactivity
 
       // If there's an active search query, update highlighted notes
       if (searchQuery) {
@@ -802,7 +807,7 @@
       error = null;
       isLoading = false;
       searchQuery = "";
-      filter = { type: "all" };
+      filter = { type: "literature" };
       highlightedNotes = [];
     },
   };
@@ -864,5 +869,48 @@
       : now;
 
     return processedNote as Note;
+  }
+
+  // Update the filterNotes function to handle note types
+  function filterNotes(
+    notes: Note[],
+    search: string,
+    currentFilter: FilterState
+  ) {
+    // First sort all notes by updatedAt (most recent first)
+    let filtered = [...notes].sort(
+      (a, b) =>
+        new Date(b.updatedAt || 0).getTime() -
+        new Date(a.updatedAt || 0).getTime()
+    );
+
+    // Apply search filter
+    if (search.trim()) {
+      // Use highlighted notes from store if available, otherwise use local results
+      return notesStore.highlightedNotes.length > 0
+        ? notesStore.highlightedNotes
+        : localSearchResults;
+    }
+
+    // Apply note type filter
+    if (currentFilter.type !== "all") {
+      filtered = filtered.filter((note) => {
+        if (currentFilter.type === "literature") {
+          return note.type === "LITERATURE";
+        } else if (currentFilter.type === "research") {
+          return note.type === "RESEARCH";
+        }
+        return true;
+      });
+    }
+
+    // Apply literature filter if specified
+    if (activeLiteratureFilter) {
+      filtered = filtered.filter(
+        (note) => note.literatureId === activeLiteratureFilter
+      );
+    }
+
+    return filtered;
   }
 </script>

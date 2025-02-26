@@ -37,10 +37,13 @@
 
   // Local state
   let searchInput = $state("");
-  let filterSearchValue = $state("");
+  let filteredNotes = $state<Note[]>([]);
+  let groupedNotes = $state<[string, Note[]][]>([]);
+  let isSearchActive = $state(false);
   let localSearchResults = $state<Note[]>([]);
-  let literatureMap = $state<Record<string, Literature>>({});
   let activeLiteratureFilter = $state<string | undefined>(undefined);
+  let filterSearchValue = $state("");
+  let literatureMap = $state<Record<string, Literature>>({});
   let filterOpen = $state(false);
   let triggerRef = $state<HTMLButtonElement>(null!);
 
@@ -123,7 +126,62 @@
     return details;
   }
 
-  // Reactive side effect: update local search results and store query
+  // Update search state
+  $effect(() => {
+    isSearchActive = searchInput.trim().length > 0;
+  });
+
+  // Update filtered notes
+  $effect(() => {
+    // Get base filtered notes
+    let filtered = [...notesStore.notes];
+
+    // Apply type filter - ALWAYS do this first
+    if (notesStore.filter.type !== "all") {
+      filtered = filtered.filter((note) => {
+        if (notesStore.filter.type === "literature") {
+          return note.type === "LITERATURE";
+        } else if (notesStore.filter.type === "research") {
+          return note.type === "RESEARCH";
+        }
+        return true;
+      });
+    }
+
+    // Then apply search filter if active
+    if (isSearchActive) {
+      // Get search results but ensure they respect the current type filter
+      const searchResults =
+        notesStore.highlightedNotes.length > 0
+          ? notesStore.highlightedNotes.filter((note) => {
+              if (notesStore.filter.type === "literature") {
+                return note.type === "LITERATURE";
+              } else if (notesStore.filter.type === "research") {
+                return note.type === "RESEARCH";
+              }
+              return true;
+            })
+          : localSearchResults;
+
+      filteredNotes = searchResults;
+    } else {
+      // Apply literature filter if specified
+      if (activeLiteratureFilter) {
+        filtered = filtered.filter(
+          (note) => note.literatureId === activeLiteratureFilter
+        );
+      }
+
+      // Sort by date
+      filteredNotes = filtered.sort(
+        (a, b) =>
+          new Date(b.updatedAt || 0).getTime() -
+          new Date(a.updatedAt || 0).getTime()
+      );
+    }
+  });
+
+  // Update search results
   $effect(() => {
     if (searchInput.trim()) {
       localSearchResults = performLocalSearch(
@@ -137,17 +195,79 @@
     }
   });
 
-  const filteredNotes = $derived(() =>
-    filterNotes(notesStore.notes, searchInput, notesStore.filter)
-  );
-  const groupedNotes = $derived(() => groupNotesByDate(filteredNotes()));
-  const isSearchActive = $derived(() => searchInput.trim().length > 0);
+  // Update grouped notes
+  $effect(() => {
+    groupedNotes = groupNotesByDate(filteredNotes);
+  });
+
+  // Group notes by date
+  function groupNotesByDate(notes: Note[]): [string, Note[]][] {
+    // If search is active, don't group by date
+    if (isSearchActive) {
+      return [["Search Results", notes]];
+    }
+
+    const groups: Record<string, Note[]> = {};
+
+    if (!Array.isArray(notes)) {
+      console.warn("Notes is not an array:", notes);
+      return [];
+    }
+
+    notes.forEach((note) => {
+      try {
+        const date = note.updatedAt ? new Date(note.updatedAt) : new Date();
+        if (isNaN(date.getTime())) {
+          console.warn(`Invalid date for note ${note.id}:`, note.updatedAt);
+          return; // Skip this note
+        }
+        const dateStr = format(date, "MMM d, yyyy");
+        if (!groups[dateStr]) {
+          groups[dateStr] = [];
+        }
+        groups[dateStr].push(note);
+      } catch (err) {
+        console.warn(`Error processing note ${note.id}:`, err);
+      }
+    });
+
+    // Sort each group by updatedAt date (most recent first)
+    for (const dateStr in groups) {
+      groups[dateStr].sort(
+        (a, b) =>
+          new Date(b.updatedAt || 0).getTime() -
+          new Date(a.updatedAt || 0).getTime()
+      );
+    }
+
+    // Convert groups object to array of [date, notes] pairs
+    return Object.entries(groups).sort((a, b) => {
+      // Sort groups by date (most recent first)
+      const dateA = new Date(a[0]);
+      const dateB = new Date(b[0]);
+      return dateB.getTime() - dateA.getTime();
+    });
+  }
 
   // Perform a quick local search for immediate feedback
   function performLocalSearch(notes: Note[], query: string): Note[] {
     const lowerQuery = query.toLowerCase();
+
+    // First filter by type based on the current filter
+    let filteredByType = notes;
+    if (notesStore.filter.type !== "all") {
+      filteredByType = notes.filter((note) => {
+        if (notesStore.filter.type === "literature") {
+          return note.type === "LITERATURE";
+        } else if (notesStore.filter.type === "research") {
+          return note.type === "RESEARCH";
+        }
+        return true;
+      });
+    }
+
     return (
-      notes
+      filteredByType
         .filter((note) => {
           // Search only in title, content text (not raw JSON), and date
           const nameMatch = (note.name || "")
@@ -263,37 +383,6 @@
     return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
   }
 
-  // Filter notes based on search and filter criteria
-  function filterNotes(
-    notes: Note[],
-    search: string,
-    filter: typeof notesStore.filter
-  ) {
-    // First sort all notes by updatedAt (most recent first)
-    let filtered = [...notes].sort(
-      (a, b) =>
-        new Date(b.updatedAt || 0).getTime() -
-        new Date(a.updatedAt || 0).getTime()
-    );
-
-    // Apply search filter
-    if (search.trim()) {
-      // Use highlighted notes from store if available, otherwise use local results
-      return notesStore.highlightedNotes.length > 0
-        ? notesStore.highlightedNotes
-        : localSearchResults;
-    }
-
-    // Apply literature filter if specified
-    if (activeLiteratureFilter) {
-      filtered = filtered.filter(
-        (note) => note.literatureId === activeLiteratureFilter
-      );
-    }
-
-    return filtered;
-  }
-
   // Get formatted date
   function getFormattedDate(dateStr: string | undefined) {
     try {
@@ -305,46 +394,6 @@
       console.warn("Error formatting date:", err);
       return "";
     }
-  }
-
-  // Group notes by date
-  function groupNotesByDate(notes: Note[]): [string, Note[]][] {
-    // If search is active, don't group by date
-    if (isSearchActive()) {
-      return [["Search Results", notes]];
-    }
-
-    const groups: Record<string, Note[]> = {};
-
-    notes.forEach((note) => {
-      try {
-        const date = note.updatedAt ? new Date(note.updatedAt) : new Date();
-        if (isNaN(date.getTime())) {
-          console.warn(`Invalid date for note ${note.id}:`, note.updatedAt);
-          return; // Skip this note
-        }
-        const dateStr = format(date, "MMM d, yyyy");
-        if (!groups[dateStr]) {
-          groups[dateStr] = [];
-        }
-        groups[dateStr].push(note);
-      } catch (err) {
-        console.warn(`Error processing note ${note.id}:`, err);
-      }
-    });
-
-    // Sort each group by updatedAt date (most recent first)
-    for (const dateStr in groups) {
-      groups[dateStr].sort(
-        (a, b) =>
-          new Date(b.updatedAt || 0).getTime() -
-          new Date(a.updatedAt || 0).getTime()
-      );
-    }
-
-    return Object.entries(groups).sort(
-      (a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime()
-    );
   }
 
   // Get preview text
@@ -459,57 +508,59 @@
         />
       </div>
 
-      <Popover.Root bind:open={filterOpen}>
-        <Popover.Trigger bind:ref={triggerRef}>
-          <Button
-            variant="outline"
-            size="icon"
-            class="shrink-0"
-            role="combobox"
-            aria-expanded={filterOpen}
-          >
-            <Filter class="h-4 w-4" />
-          </Button>
-        </Popover.Trigger>
-        <Portal>
-          <Popover.Content class="w-[300px] p-0" align="end">
-            <Command.Root>
-              <Command.Input
-                placeholder="Search literature..."
-                bind:value={filterSearchValue}
-              />
-              <Command.List>
-                <Command.Empty>No literature found.</Command.Empty>
-                <Command.Group>
-                  {#each filteredLiterature as literature (literature.id)}
-                    <Command.Item
-                      onSelect={() => handleLiteratureSelect(literature)}
-                      class="cursor-pointer"
-                    >
-                      <div class="flex items-center gap-2">
-                        <Book class="h-4 w-4" />
-                        <div class="flex flex-col">
-                          <span>{literature.name}</span>
-                          {#if literature.authors}
-                            <span
-                              class="text-xs text-muted-foreground truncate"
-                            >
-                              {literature.authors}
-                            </span>
+      {#if notesStore.filter.type === "literature"}
+        <Popover.Root bind:open={filterOpen}>
+          <Popover.Trigger bind:ref={triggerRef}>
+            <Button
+              variant="outline"
+              size="icon"
+              class="shrink-0"
+              role="combobox"
+              aria-expanded={filterOpen}
+            >
+              <Filter class="h-4 w-4" />
+            </Button>
+          </Popover.Trigger>
+          <Portal>
+            <Popover.Content class="w-[300px] p-0" align="end">
+              <Command.Root>
+                <Command.Input
+                  placeholder="Search literature..."
+                  bind:value={filterSearchValue}
+                />
+                <Command.List>
+                  <Command.Empty>No literature found.</Command.Empty>
+                  <Command.Group>
+                    {#each filteredLiterature as literature (literature.id)}
+                      <Command.Item
+                        onSelect={() => handleLiteratureSelect(literature)}
+                        class="cursor-pointer"
+                      >
+                        <div class="flex items-center gap-2">
+                          <Book class="h-4 w-4" />
+                          <div class="flex flex-col">
+                            <span>{literature.name}</span>
+                            {#if literature.authors}
+                              <span
+                                class="text-xs text-muted-foreground truncate"
+                              >
+                                {literature.authors}
+                              </span>
+                            {/if}
+                          </div>
+                          {#if activeLiteratureFilter === literature.id}
+                            <span class="ml-auto">✓</span>
                           {/if}
                         </div>
-                        {#if activeLiteratureFilter === literature.id}
-                          <span class="ml-auto">✓</span>
-                        {/if}
-                      </div>
-                    </Command.Item>
-                  {/each}
-                </Command.Group>
-              </Command.List>
-            </Command.Root>
-          </Popover.Content>
-        </Portal>
-      </Popover.Root>
+                      </Command.Item>
+                    {/each}
+                  </Command.Group>
+                </Command.List>
+              </Command.Root>
+            </Popover.Content>
+          </Portal>
+        </Popover.Root>
+      {/if}
     </div>
 
     <!-- Active Literature Filter Badge -->
@@ -547,10 +598,9 @@
   </div>
 
   <!-- Note List -->
-  <!-- Replace your Note List section with this improved version -->
   <ScrollArea class="flex-1">
     <div class="p-4 space-y-6">
-      {#each groupedNotes() as [date, notes]}
+      {#each groupedNotes as [date, notes]}
         {#if notes.length > 0}
           <div>
             <h3 class="mb-2 px-2 text-sm font-medium text-muted-foreground">
@@ -558,7 +608,6 @@
             </h3>
             <div class="space-y-2">
               {#each notes as note (note.id)}
-                {console.log(note)}
                 <div
                   class="w-full text-left rounded-lg border hover:bg-accent transition-colors cursor-pointer"
                   class:bg-accent={note.id === notesStore.activeNoteId}
@@ -574,14 +623,14 @@
                     <div class="flex items-start justify-between">
                       <div class="space-y-1 flex-1 mr-2">
                         <h4 class="font-medium leading-none">
-                          {#if isSearchActive() && "highlightedName" in note}
+                          {#if isSearchActive && "highlightedName" in note}
                             {@html note.highlightedName}
                           {:else}
                             {note.name || "Untitled Note"}
                           {/if}
                         </h4>
                         <p class="text-sm text-muted-foreground line-clamp-2">
-                          {#if isSearchActive() && "contentSnippet" in note}
+                          {#if isSearchActive && "contentSnippet" in note}
                             {@html note.contentSnippet}
                           {:else}
                             {getPreview(note.content)}
@@ -652,7 +701,7 @@
                             variant="outline"
                             class="text-xs badge-section-type"
                           >
-                            {#if isSearchActive() && "highlightedSectionType" in note}
+                            {#if isSearchActive && "highlightedSectionType" in note}
                               {@html note.highlightedSectionType}
                             {:else}
                               {typeof note.section_type === "object"
@@ -695,7 +744,7 @@
                         class="text-xs text-muted-foreground flex items-center gap-1"
                       >
                         <Clock class="h-3 w-3" />
-                        {#if isSearchActive() && "highlightedDate" in note}
+                        {#if isSearchActive && "highlightedDate" in note}
                           {@html note.highlightedDate}
                         {:else}
                           {getFormattedDate(note.updatedAt)}
@@ -710,7 +759,7 @@
         {/if}
       {/each}
 
-      {#if filteredNotes().length === 0}
+      {#if filteredNotes.length === 0}
         <div class="text-center py-8 text-muted-foreground">
           <p>No notes found</p>
           {#if searchInput}
