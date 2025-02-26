@@ -90,7 +90,7 @@
               class="absolute -inset-1 rounded-lg bg-gradient-to-r from-yellow-400 via-blue-500 to-yellow-400 dark:from-dark-accent-yellow dark:via-dark-accent-blue dark:to-dark-accent-yellow blur-sm opacity-70 transition-all animate-gradient-x"
             ></div>
             <button
-              on:click={onLogin}
+              onclick={onLogin}
               class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)]"
             >
               Open Research Workspace

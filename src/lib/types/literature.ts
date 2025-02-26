@@ -3,8 +3,9 @@ export interface Literature {
   userId: string;
   projectId: string;
   name: string;
+  title: string;
   type: string;
-  authors: any[];
+  authors: any[] | string;
   editors: any[];
   keywords: any[];
   chapterTitle: string;
@@ -26,4 +27,5 @@ export interface Literature {
   endDate: string;
   createdAt: string;
   updatedAt: string;
+  doi?: string;
 }

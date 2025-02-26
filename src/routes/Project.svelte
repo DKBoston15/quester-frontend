@@ -49,7 +49,6 @@
   const location = useLocation();
 
   $effect(() => {
-    console.log("Project params:", props.params);
     projectStore.loadProject(props.params.projectId);
   });
 

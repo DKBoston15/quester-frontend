@@ -32,10 +32,6 @@
   }>();
   const urlProjectId = projectId;
 
-  $effect(() => {
-    console.log("isOpen changed:", isOpen);
-  });
-
   type LiteratureType = {
     label: string;
     value: string;
@@ -109,24 +105,6 @@
     start_date,
     end_date,
     city,
-  });
-
-  $effect(() => {
-    console.log("Name changed:", name);
-    console.log("Authors changed:", authors);
-  });
-
-  function updateAuthors(event: CustomEvent<string[]>) {
-    console.log("Updating authors:", event.detail);
-    authors = event.detail;
-  }
-
-  function updateEditors(event: CustomEvent<string[]>) {
-    editors = event.detail;
-  }
-
-  $effect(() => {
-    console.log("manualEntry changed:", manualEntry);
   });
 
   // Literature type options
@@ -413,7 +391,6 @@
 
   // Fix button bindings
   async function handleSaveLiterature() {
-    console.log("handleSaveLiterature called", { name, authors, manualEntry });
     try {
       if (!name || authors.length === 0) {
         processingError = "Title and at least one author are required";
@@ -761,7 +738,7 @@
               <Label.Root>Authors</Label.Root>
               <TagInput
                 tags={selectedReference!.authors}
-                onchange={(e: CustomEvent<string[]>) =>
+                on:change={(e: CustomEvent<string[]>) =>
                   (selectedReference!.authors = e.detail)}
                 placeholder="Add authors"
               />
@@ -772,7 +749,7 @@
                 <Label.Root>Editors</Label.Root>
                 <TagInput
                   tags={selectedReference!.editors}
-                  onchange={(e: CustomEvent<string[]>) =>
+                  on:change={(e: CustomEvent<string[]>) =>
                     (selectedReference!.editors = e.detail)}
                   placeholder="Add editors"
                 />

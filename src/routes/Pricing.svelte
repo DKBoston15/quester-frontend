@@ -52,7 +52,6 @@
 
   onMount(async () => {
     try {
-      console.log("Fetching subscription plans...");
       const response = await fetch("http://localhost:3333/subscription-plans", {
         credentials: "include",
       });
@@ -64,7 +63,6 @@
       }
 
       const allPlans = await response.json();
-      console.log("Received plans:", allPlans);
 
       if (!Array.isArray(allPlans)) {
         throw new Error(
@@ -98,9 +96,6 @@
           description: getDescriptionForPlan(type),
         };
       });
-
-      console.log("Mode:", props.mode);
-      console.log("Enhanced plans:", enhancedPlans);
 
       // Filter plans based on mode
       if (props.mode === "personal") {
@@ -139,8 +134,6 @@
           accentColor: "blue-400", // Make all organization plans use blue accent
         }));
       }
-
-      console.log("Filtered plans:", plans);
     } catch (err) {
       error = err instanceof Error ? err.message : "Failed to fetch plans";
       console.error("Failed to fetch plans:", err);

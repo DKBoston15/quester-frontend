@@ -18,8 +18,6 @@
     },
 
     async loadLiterature(projectId: string) {
-      console.log("Loading literature for project:", projectId);
-
       if (!projectId) {
         error = "No project ID provided";
         isLoading = false;
@@ -30,10 +28,6 @@
       error = null;
 
       try {
-        console.log(
-          "Fetching from:",
-          `http://localhost:3333/literature/project/${projectId}`
-        );
         const response = await fetch(
           `http://localhost:3333/literature/project/${projectId}`,
           {
@@ -41,20 +35,17 @@
           }
         );
 
-        console.log("Response status:", response.status);
         if (!response.ok) {
           throw new Error(`Failed to load literature (${response.status})`);
         }
 
         const data = await response.json();
-        console.log("Received literature data:", data);
         literatureData = data;
       } catch (err) {
         console.error("Error loading literature:", err);
         error = err instanceof Error ? err.message : "An error occurred";
         literatureData = [];
       } finally {
-        console.log("Setting isLoading to false");
         isLoading = false;
       }
     },

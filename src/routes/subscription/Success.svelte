@@ -39,8 +39,6 @@
       const orgData = await orgResponse.json();
       const isTeamSubscription = orgData.subscriptionType === "organization";
 
-      console.log(orgData);
-
       // Then sync the subscription
       const response = await fetch("http://localhost:3333/stripe/sync", {
         method: "POST",
