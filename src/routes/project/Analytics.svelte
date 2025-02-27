@@ -810,9 +810,6 @@
     onOpenChange={(open: boolean) => !open && closeFullscreen()}
   >
     <Dialog.Content class="fullscreen-dialog">
-      <div class="dialog-header">
-        <h2 class="dialog-title">{activeChart?.title || ""}</h2>
-      </div>
       <div class="fullscreen-canvas-container">
         <canvas id="fullscreen-canvas"></canvas>
       </div>
@@ -1381,17 +1378,6 @@
     }
   }
 
-  .dialog-header {
-    padding: 1.5rem;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .dialog-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-  }
-
   .fullscreen-button {
     position: absolute;
     top: 2rem;
@@ -1415,13 +1401,20 @@
   }
 
   .fullscreen-canvas-container {
-    width: 100%;
-    height: calc(95vh - 10rem);
-    padding: 1rem;
+    width: 90%;
+    height: calc(85vh - 10rem);
+    padding: 2rem;
+    margin: 0 auto;
   }
 
   .fullscreen-canvas-container canvas {
     width: 100% !important;
     height: 100% !important;
+  }
+
+  :global(.fullscreen-dialog) {
+    max-width: 90vw;
+    max-height: 90vh;
+    margin: 2.5vh auto;
   }
 </style>
