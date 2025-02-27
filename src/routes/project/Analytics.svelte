@@ -261,6 +261,7 @@
             ticks: {
               color: textColor,
               stepSize: 1,
+              // @ts-ignore
               callback: function (value: number | string) {
                 if (isYearsChart) {
                   const labels = originalChart.data.labels;
@@ -843,6 +844,7 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
+              aria-label="View chart in fullscreen"
               onclick={() =>
                 openFullscreen(
                   canvasRefs.publishers,
@@ -872,6 +874,7 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
+              aria-label="View chart in fullscreen"
               onclick={() =>
                 openFullscreen(
                   canvasRefs.keywords,
@@ -901,6 +904,7 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
+              aria-label="View chart in fullscreen"
               onclick={() =>
                 openFullscreen(
                   canvasRefs.years,
@@ -930,6 +934,7 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
+              aria-label="View chart in fullscreen"
               onclick={() =>
                 openFullscreen(
                   canvasRefs.types,
@@ -964,6 +969,7 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
+              aria-label="View chart in fullscreen"
               onclick={() =>
                 openFullscreen(
                   canvasRefs.notesNouns,
@@ -993,6 +999,7 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
+              aria-label="View chart in fullscreen"
               onclick={() =>
                 openFullscreen(
                   canvasRefs.notesVerbs,
@@ -1022,6 +1029,7 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
+              aria-label="View chart in fullscreen"
               onclick={() =>
                 openFullscreen(
                   canvasRefs.notesAdjectives,
@@ -1056,6 +1064,7 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
+              aria-label="View chart in fullscreen"
               onclick={() =>
                 openFullscreen(
                   canvasRefs.litNouns,
@@ -1085,6 +1094,7 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
+              aria-label="View chart in fullscreen"
               onclick={() =>
                 openFullscreen(
                   canvasRefs.litVerbs,
@@ -1114,6 +1124,7 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
+              aria-label="View chart in fullscreen"
               onclick={() =>
                 openFullscreen(
                   canvasRefs.litAdjectives,
@@ -1148,6 +1159,7 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
+              aria-label="View chart in fullscreen"
               onclick={() =>
                 openFullscreen(
                   canvasRefs.researchDesigns,
@@ -1177,6 +1189,7 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
+              aria-label="View chart in fullscreen"
               onclick={() =>
                 openFullscreen(
                   canvasRefs.samplingDesigns,
@@ -1206,6 +1219,7 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
+              aria-label="View chart in fullscreen"
               onclick={() =>
                 openFullscreen(
                   canvasRefs.measurementDesigns,
@@ -1235,6 +1249,7 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
+              aria-label="View chart in fullscreen"
               onclick={() =>
                 openFullscreen(
                   canvasRefs.analyticDesigns,
@@ -1377,10 +1392,6 @@
     margin-bottom: 0.5rem;
   }
 
-  .dialog-description {
-    color: var(--muted-foreground);
-  }
-
   .fullscreen-button {
     position: absolute;
     top: 2rem;
@@ -1401,13 +1412,6 @@
   .fullscreen-button:hover {
     opacity: 1;
     background: var(--accent);
-  }
-
-  .fullscreen-dialog {
-    max-width: 95vw !important;
-    max-height: 95vh !important;
-    width: 95vw !important;
-    height: 95vh !important;
   }
 
   .fullscreen-canvas-container {
