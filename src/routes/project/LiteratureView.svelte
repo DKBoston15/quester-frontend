@@ -84,6 +84,15 @@
             }
           })()}
         </p>
+        <div class="mt-4">
+          <Card.Root
+            class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
+          >
+            <Card.Content class="py-4">
+              <LiteratureStatus {literature} />
+            </Card.Content>
+          </Card.Root>
+        </div>
       {/if}
     </div>
 
@@ -111,9 +120,8 @@
           >
             <Tabs.Root value={selectedTab}>
               <Card.Header>
-                <Tabs.List class="grid w-full grid-cols-2">
+                <Tabs.List class="grid w-full grid-cols-1">
                   <Tabs.Trigger value="details">Details</Tabs.Trigger>
-                  <Tabs.Trigger value="status">Status</Tabs.Trigger>
                 </Tabs.List>
               </Card.Header>
 
@@ -125,12 +133,6 @@
                       literature = detail.literature;
                     }}
                   />
-                </Card.Content>
-              </Tabs.Content>
-
-              <Tabs.Content value="status">
-                <Card.Content>
-                  <LiteratureStatus {literature} />
                 </Card.Content>
               </Tabs.Content>
             </Tabs.Root>

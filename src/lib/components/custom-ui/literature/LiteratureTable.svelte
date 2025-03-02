@@ -8,11 +8,18 @@
   import type { Literature } from "$lib/types/literature";
   import type {
     ValueFormatterParams,
-    RowDoubleClickedEvent,
+    ICellRendererParams,
     GridApi,
     GridOptions,
     ColDef,
   } from "@ag-grid-community/core";
+  import {
+    BookOpen,
+    CheckCircle2,
+    Clock,
+    Archive,
+    AlertCircle,
+  } from "lucide-svelte";
 
   // Register required modules
   ModuleRegistry.registerModules([ClientSideRowModelModule]);
@@ -25,6 +32,56 @@
 
   let gridDiv: HTMLElement;
   let gridApi: GridApi<Literature>;
+
+  const statusConfig = {
+    "Not Started": {
+      icon: AlertCircle,
+      color: "text-yellow-500 dark:text-yellow-400",
+      bgColor: "bg-yellow-100 dark:bg-yellow-900/20",
+    },
+    Reading: {
+      icon: BookOpen,
+      color: "text-blue-500 dark:text-blue-400",
+      bgColor: "bg-blue-100 dark:bg-blue-900/20",
+    },
+    "Note Taking": {
+      icon: Clock,
+      color: "text-purple-500 dark:text-purple-400",
+      bgColor: "bg-purple-100 dark:bg-purple-900/20",
+    },
+    Completed: {
+      icon: CheckCircle2,
+      color: "text-green-500 dark:text-green-400",
+      bgColor: "bg-green-100 dark:bg-green-900/20",
+    },
+    Archived: {
+      icon: Archive,
+      color: "text-gray-500 dark:text-gray-400",
+      bgColor: "bg-gray-100 dark:bg-gray-900/20",
+    },
+  };
+
+  function StatusCellRenderer(props: ICellRendererParams<Literature>) {
+    const status = props.value || "Not Started";
+    const config = statusConfig[status as keyof typeof statusConfig];
+
+    const container = document.createElement("div");
+    container.className = "flex items-center gap-2";
+
+    const iconContainer = document.createElement("div");
+    iconContainer.className = `p-1.5 rounded-md ${config.bgColor}`;
+
+    // Use a simple div with the icon class
+    iconContainer.innerHTML = `<div class="${config.color} w-4 h-4" data-status-icon="${status.toLowerCase()}"></div>`;
+
+    container.appendChild(iconContainer);
+
+    const text = document.createElement("span");
+    text.textContent = status;
+    container.appendChild(text);
+
+    return container;
+  }
 
   const columnDefs: ColDef<Literature>[] = [
     {
@@ -59,6 +116,18 @@
       },
     },
     {
+      field: "status",
+      headerName: "Status",
+      width: 160,
+      sortable: true,
+      filter: true,
+      cellRenderer: StatusCellRenderer,
+      filterParams: {
+        buttons: ["reset", "apply"],
+        closeOnApply: true,
+      },
+    },
+    {
       field: "publisherName",
       headerName: "Publisher",
       flex: 1,
@@ -85,17 +154,6 @@
       suppressMenu: true,
     },
     {
-      field: "status",
-      headerName: "Status",
-      width: 120,
-      sortable: true,
-      filter: true,
-      filterParams: {
-        buttons: ["reset", "apply"],
-        closeOnApply: true,
-      },
-    },
-    {
       field: "type",
       headerName: "Type",
       width: 120,
@@ -111,7 +169,7 @@
   const gridOptions: GridOptions<Literature> = {
     columnDefs,
     rowData: props.data,
-    rowClass: "row-class",
+    rowClass: "row-class cursor-pointer hover:bg-muted",
     defaultColDef: {
       resizable: true,
       getQuickFilterText: (params) => {
@@ -128,7 +186,7 @@
     },
     animateRows: true,
     rowSelection: "single",
-    onRowDoubleClicked: (event: RowDoubleClickedEvent<Literature>) => {
+    onRowClicked: (event) => {
       if (event.data) {
         dispatch("literatureSelect", event.data);
       }
@@ -317,5 +375,52 @@
     :global(.ag-input-field-input::placeholder) {
       color: #9ca3af;
     }
+  }
+
+  /* New styles for status icons */
+  :global([data-status-icon="not started"]) {
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>');
+  }
+
+  :global([data-status-icon="reading"]) {
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>');
+  }
+
+  :global([data-status-icon="note taking"]) {
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>');
+  }
+
+  :global([data-status-icon="completed"]) {
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>');
+  }
+
+  :global([data-status-icon="archived"]) {
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>');
+  }
+
+  :global(.dark [data-status-icon="not started"]) {
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>');
+  }
+
+  :global(.dark [data-status-icon="reading"]) {
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>');
+  }
+
+  :global(.dark [data-status-icon="note taking"]) {
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>');
+  }
+
+  :global(.dark [data-status-icon="completed"]) {
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>');
+  }
+
+  :global(.dark [data-status-icon="archived"]) {
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>');
+  }
+
+  :global([data-status-icon]) {
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
   }
 </style>
