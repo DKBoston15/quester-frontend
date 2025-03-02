@@ -1,6 +1,6 @@
 <!-- src/routes/project/Literature.svelte -->
 <script lang="ts">
-  import { onMount, onDestroy } from "svelte";
+  import { onDestroy } from "svelte";
   import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
   import LiteratureTable from "$lib/components/custom-ui/literature/LiteratureTable.svelte";
@@ -10,10 +10,12 @@
   import { Plus } from "lucide-svelte";
   import type { Literature } from "$lib/types/literature";
   import type { GridApi } from "@ag-grid-community/core";
+  import { navigate } from "svelte-routing";
 
   let searchQuery = $state("");
-  let gridApi: GridApi<Literature>;
+  let gridApi = $state<GridApi<Literature>>();
   let isAddLiteratureOpen = $state(false);
+  let selectedLiterature = $state<Literature | null>(null);
 
   function handleSearch(e: Event) {
     const input = e.target as HTMLInputElement;
@@ -45,9 +47,13 @@
     isAddLiteratureOpen = true;
   }
 
-  function handleLiteratureSelect(event: Event) {
-    const customEvent = event as CustomEvent<Literature>;
-    const literature = customEvent.detail;
+  function handleLiteratureSelect(event: CustomEvent<Literature>) {
+    selectedLiterature = event.detail;
+    const literatureId = event.detail.id;
+    const projectId = projectStore.currentProject?.id;
+    if (projectId && literatureId) {
+      navigate(`/project/${projectId}/literature/${literatureId}`);
+    }
   }
 
   function handleGridReady(event: CustomEvent<{ api: GridApi<Literature> }>) {
@@ -56,20 +62,25 @@
 </script>
 
 <div class="flex-1 w-full">
-  <div class="w-full py-6 px-4">
-    <div class="flex items-center justify-between">
-      <h1 class="text-3xl font-bold mb-6 ml-1">Literature</h1>
-      <Button
-        variant="outline"
-        size="sm"
-        onclick={() => {
-          handleAddLiterature();
-        }}
-      >
-        <Plus class="h-4 w-4 mr-2" />
-        Add Literature
-      </Button>
+  <div class="container mx-auto py-6 px-4">
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <h1 class="text-3xl font-bold">Literature</h1>
+        <Button
+          variant="outline"
+          size="sm"
+          onclick={handleAddLiterature}
+          class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
+        >
+          <Plus class="h-4 w-4 mr-2" />
+          Add Literature
+        </Button>
+      </div>
+      <p class="text-muted-foreground mt-2">
+        Manage and organize your research literature
+      </p>
     </div>
+
     <Card.Root
       class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
     >

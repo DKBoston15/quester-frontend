@@ -5,51 +5,56 @@
   import { X } from "lucide-svelte";
   import { createEventDispatcher } from "svelte";
 
-  export let tags: string[] = [];
-  export let placeholder = "Add tag...";
-
-  let inputValue = "";
   const dispatch = createEventDispatcher();
+  const { tags, placeholder = "" } = $props<{
+    tags: string[];
+    placeholder?: string;
+  }>();
+
+  let localTags = $state<string[]>([...tags]);
+  let inputValue = $state("");
+
+  // Keep localTags in sync with props
+  $effect(() => {
+    localTags = [...tags];
+  });
 
   function handleKeydown(event: KeyboardEvent) {
-    if (event.key === "Enter") {
+    if (event.key === "Enter" && inputValue.trim()) {
       event.preventDefault();
-      addTag();
+      if (!localTags.includes(inputValue.trim())) {
+        localTags = [...localTags, inputValue.trim()];
+        dispatch("change", { tags: localTags });
+      }
+      inputValue = "";
     } else if (
       event.key === "Backspace" &&
-      inputValue === "" &&
-      tags.length > 0
+      !inputValue &&
+      localTags.length > 0
     ) {
-      removeTag(tags.length - 1);
+      localTags = localTags.slice(0, -1);
+      dispatch("change", { tags: localTags });
     }
-  }
-
-  function addTag() {
-    const tag = inputValue.trim();
-    if (tag && !tags.includes(tag)) {
-      const newTags = [...tags, tag];
-      tags = newTags;
-      dispatch("change", newTags);
-    }
-    inputValue = "";
   }
 
   function removeTag(index: number) {
-    const newTags = tags.filter((_, i) => i !== index);
-    tags = newTags;
-    dispatch("change", newTags);
+    localTags = localTags.filter((_, i) => i !== index);
+    dispatch("change", { tags: localTags });
   }
 </script>
 
 <div
-  class="flex flex-wrap gap-2 p-2 min-h-[42px] rounded-md border border-input bg-background"
+  class="flex flex-wrap gap-2 p-2 border rounded-md bg-background min-h-[40px]"
 >
-  {#each tags as tag, index}
-    <Badge variant="secondary" class="gap-1">
+  {#each localTags as tag, index}
+    <Badge
+      class="flex items-center h-[24px] px-2 gap-1 text-xs font-normal"
+      variant="secondary"
+    >
       {tag}
       <button
         type="button"
-        class="rounded-full hover:bg-destructive/20"
+        class="inline-flex items-center justify-center rounded-sm opacity-70 hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white"
         onclick={() => removeTag(index)}
       >
         <X class="h-3 w-3" />
@@ -59,9 +64,9 @@
   {/each}
   <Input
     type="text"
-    bind:value={inputValue}
     {placeholder}
+    bind:value={inputValue}
     onkeydown={handleKeydown}
-    class="flex-1 !border-0 focus-visible:ring-0 focus-visible:ring-offset-0 !px-0"
+    class="flex-1 !border-none !ring-0 !shadow-none min-w-[120px] h-[24px] !p-0"
   />
 </div>

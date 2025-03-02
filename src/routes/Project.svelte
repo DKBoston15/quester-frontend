@@ -1,14 +1,12 @@
 <!-- src/routes/Project.svelte -->
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { auth } from "../lib/stores/AuthStore.svelte";
   import { projectStore } from "../lib/stores/ProjectStore.svelte";
-  import type { Project } from "$lib/types/auth";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import ProjectSidebar from "$lib/components/ProjectSidebar.svelte";
   import { useLocation } from "svelte-routing";
   import Dashboard from "./project/Dashboard.svelte";
   import Literature from "./project/Literature.svelte";
+  import LiteratureView from "./project/LiteratureView.svelte";
   import Notes from "./project/Notes.svelte";
   import Outcomes from "./project/Outcomes.svelte";
   import Analytics from "./project/Analytics.svelte";
@@ -43,6 +41,8 @@
   const props = $props<{
     params: {
       projectId: string;
+      view?: string;
+      literatureId?: string;
     };
   }>();
 
@@ -78,9 +78,13 @@
           </div>
         </div>
       {:else if projectStore.currentProject}
-        {@const section = getCurrentSection()}
-        {@const Component = components[section] || components.dashboard}
-        <Component project={projectStore.currentProject} />
+        {#if props.params.view === "literature" && props.params.literatureId}
+          <LiteratureView literatureId={props.params.literatureId} />
+        {:else}
+          {@const section = getCurrentSection()}
+          {@const Component = components[section] || components.dashboard}
+          <Component project={projectStore.currentProject} />
+        {/if}
       {/if}
     </main>
   </div>

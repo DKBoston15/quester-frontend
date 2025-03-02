@@ -15,6 +15,12 @@
   import { navigate } from "svelte-routing";
   import { Toaster } from "$lib/components/ui/sonner";
 
+  type ProjectParams = {
+    projectId: string;
+    view?: string;
+    literatureId?: string;
+  };
+
   const props = $props<{ url: string }>();
 
   onMount(() => {
@@ -98,6 +104,28 @@
         </Route>
         <Route path="/dashboard">
           <Dashboard />
+        </Route>
+        <Route path="/project/:projectId/literature/:literatureId" let:params>
+          {#if params.projectId && params.literatureId}
+            <Project
+              params={{
+                projectId: params.projectId,
+                view: "literature",
+                literatureId: params.literatureId,
+              }}
+            />
+          {:else}
+            <div>Invalid project or literature ID</div>
+          {/if}
+        </Route>
+        <Route path="/project/:projectId/literature" let:params>
+          {#if params.projectId}
+            <Project
+              params={{ projectId: params.projectId, view: "literature" }}
+            />
+          {:else}
+            <div>Invalid project ID</div>
+          {/if}
         </Route>
         <Route path="/project/:projectId" let:params>
           {#if params.projectId}

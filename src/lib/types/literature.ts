@@ -6,8 +6,8 @@ export interface Literature {
   title: string;
   type: string;
   authors: any[] | string;
-  editors: any[];
-  keywords: any[];
+  editors: any[] | string;
+  keywords: any[] | string;
   chapterTitle: string;
   endPage: string;
   issue: string;

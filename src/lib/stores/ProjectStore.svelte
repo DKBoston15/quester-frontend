@@ -55,8 +55,8 @@
 
         if (designsResponse.ok) {
           const designsData = await designsResponse.json();
-          if (designsData.length > 0 && designsData[0].designs?.designs) {
-            const designOptions = designsData[0].designs.designs;
+          if (designsData.length > 0 && designsData[0].designs) {
+            const designOptions = designsData[0].designs;
             designs = {
               research: designOptions.research || [],
               sampling: designOptions.sampling || [],
