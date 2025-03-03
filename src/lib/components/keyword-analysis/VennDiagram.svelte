@@ -177,7 +177,7 @@
     const maxSize = Math.max(1, ...circles.map((c) => c.size));
     const scale = d3.scaleLinear().domain([0, maxSize]).range([30, 80]);
     const angleStep = (2 * Math.PI) / keywords.length;
-    const radius = Math.min(width, height) / 3;
+    const radius = Math.min(width, height) / 2.6;
 
     // Create chart
     const chart = d3
@@ -201,7 +201,11 @@
       const y2 = Math.sin(angle2) * radius;
 
       // Draw connection line
-      chart
+      const connectionGroup = chart
+        .append("g")
+        .attr("class", "hover:cursor-help");
+
+      connectionGroup
         .append("line")
         .attr("x1", x1)
         .attr("y1", y1)
@@ -212,17 +216,17 @@
         .attr("stroke-width", Math.max(2, scale(overlap.size) / 10))
         .attr("stroke-opacity", 0.6);
 
-      // Add overlap label
+      // Add overlap label with tooltip
       const midX = (x1 + x2) / 2;
       const midY = (y1 + y2) / 2;
       const dx = x2 - x1;
       const dy = y2 - y1;
       const angle = Math.atan2(dy, dx);
-      const offsetDistance = 15;
+      const offsetDistance = 8;
       const labelX = midX + Math.cos(angle + Math.PI / 2) * offsetDistance;
       const labelY = midY + Math.sin(angle + Math.PI / 2) * offsetDistance;
 
-      chart
+      const overlapText = connectionGroup
         .append("text")
         .attr("x", labelX)
         .attr("y", labelY)
@@ -231,6 +235,11 @@
         .attr("class", "transition-colors duration-300 dark:fill-white")
         .attr("font-size", "10px")
         .text(overlap.size.toLocaleString());
+
+      // Add tooltip for overlap
+      overlapText
+        .append("title")
+        .text(`Co-occurrence of "${keyword1}" and "${keyword2}"`);
     });
 
     // Draw circles and labels
@@ -240,7 +249,9 @@
       const y = Math.sin(angle) * radius;
 
       // Draw circle
-      chart
+      const circleGroup = chart.append("g").attr("class", "hover:cursor-help");
+
+      circleGroup
         .append("circle")
         .attr("cx", x)
         .attr("cy", y)
@@ -251,31 +262,24 @@
         .attr("stroke", d3.schemeCategory10[i % 10])
         .attr("stroke-width", 2);
 
-      // Add label
+      // Add label showing only the number
       const fontSize = Math.min(14, Math.max(10, scale(circle.size) / 4));
-      const truncatedKeyword = truncateText(circle.keyword);
-      const displayText = `${truncatedKeyword}\n(${circle.size.toLocaleString()})`;
 
-      const textElement = chart
+      const textElement = circleGroup
         .append("text")
         .attr("x", x)
         .attr("y", y)
         .attr("text-anchor", "middle")
         .attr("dominant-baseline", "middle")
-        .attr(
-          "class",
-          "transition-colors duration-300 dark:fill-white hover:cursor-help"
-        )
+        .attr("class", "transition-colors duration-300 dark:fill-white")
         .attr("font-size", `${fontSize}px`)
         .attr("font-weight", "bold")
-        .text(displayText);
+        .text(circle.size.toLocaleString());
 
-      // Add SVG title element for native tooltip
-      if (truncatedKeyword !== circle.keyword) {
-        textElement
-          .append("title")
-          .text(`${circle.keyword} (${circle.size.toLocaleString()})`);
-      }
+      // Add tooltip with full keyword name
+      textElement
+        .append("title")
+        .text(`${circle.keyword} (${circle.size.toLocaleString()})`);
     });
   }
 </script>

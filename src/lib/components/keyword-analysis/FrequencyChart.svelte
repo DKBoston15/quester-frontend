@@ -57,7 +57,7 @@
     const data = keywords
       .map((keyword: string) => {
         const counts = Object.values(frequencyData).map(
-          (timepoint: any) => timepoint[keyword]?.count || 0
+          (dataPoint: any) => dataPoint[keyword]?.count || 0
         );
         return {
           keyword,
@@ -86,27 +86,71 @@
     // Create chart
     const chart = d3.select(svg).attr("width", width).attr("height", height);
 
-    // Add bars with IDs for tooltip targeting
-    chart
-      .selectAll("rect")
+    // Create bar group to hold both the bar and its label
+    const barGroups = chart
+      .selectAll(".bar-group")
       .data(data)
       .enter()
-      .append("rect")
-      .attr("id", (d: DataPoint, i: number) => `bar-${i}`)
-      .attr("x", (d: DataPoint) => x(d.keyword)!)
-      .attr("y", (d: DataPoint) => y(Math.max(1, d.frequency)))
-      .attr("width", x.bandwidth())
-      .attr(
-        "height",
-        (d: DataPoint) => height - margin.bottom - y(Math.max(1, d.frequency))
-      )
-      .attr("fill", (_: unknown, i: number) => d3.schemeCategory10[i % 10])
-      .attr(
-        "class",
-        "hover:opacity-70 transition-opacity duration-200 hover:cursor-help"
-      )
-      .append("title") // Add native SVG tooltip
-      .text((d: DataPoint) => `${d.keyword}: ${d.frequency.toLocaleString()}`);
+      .append("g")
+      .attr("class", "bar-group");
+
+    // Helper function with correct typing for rectangle attributes
+    function addBars(selection: d3.Selection<any, any, any, any>) {
+      selection
+        .append("rect")
+        .attr("id", function (d: any) {
+          return `bar-${d.keyword}`;
+        })
+        .attr("x", function (d: any) {
+          return x(d.keyword)!;
+        })
+        .attr("y", function (d: any) {
+          return y(Math.max(1, d.frequency));
+        })
+        .attr("width", x.bandwidth())
+        .attr("height", function (d: any) {
+          return height - margin.bottom - y(Math.max(1, d.frequency));
+        })
+        .attr("fill", function (_: any, i: number) {
+          return d3.schemeCategory10[i % 10];
+        })
+        .attr("class", "transition-opacity duration-200 hover:opacity-70");
+      return selection;
+    }
+
+    // Helper function with correct typing for text attributes
+    function addLabels(selection: d3.Selection<any, any, any, any>) {
+      selection
+        .append("text")
+        .attr("class", "frequency-label theme-text")
+        .attr("x", function (d: any) {
+          return x(d.keyword)! + x.bandwidth() / 2;
+        })
+        .attr("y", function (d: any) {
+          return y(Math.max(1, d.frequency)) - 5;
+        })
+        .attr("text-anchor", "middle")
+        .attr("font-size", "9px") // Even smaller font size
+        .attr("font-weight", "bold")
+        .text(function (d: any) {
+          return d.frequency.toLocaleString();
+        })
+        .style("opacity", 0); // Start hidden
+      return selection;
+    }
+
+    // Apply the bars and labels
+    addBars(barGroups);
+    addLabels(barGroups);
+
+    // Add mouse events to show/hide frequency labels
+    barGroups
+      .on("mouseenter", function () {
+        d3.select(this).select(".frequency-label").style("opacity", 1);
+      })
+      .on("mouseleave", function () {
+        d3.select(this).select(".frequency-label").style("opacity", 0);
+      });
 
     // Add axes
     chart
@@ -118,18 +162,12 @@
       .attr("text-anchor", "end")
       .attr("dx", "-.8em")
       .attr("dy", ".15em")
-      .attr("class", "hover:cursor-help")
-      .each(function (this: SVGTextElement, d: string, i: number) {
+      .each(function (d) {
         // Replace the text with truncated version if needed
         const textElement = d3.select(this);
-        const fullText = d;
+        const fullText = String(d);
         const truncatedText = truncateText(fullText);
         textElement.text(truncatedText);
-
-        // Add native SVG tooltip if truncated
-        if (truncatedText !== fullText) {
-          textElement.append("title").text(fullText);
-        }
       });
 
     chart
@@ -150,3 +188,14 @@
     ></svg>
   </div>
 </Card>
+
+<style>
+  /* Theme-aware styling for the frequency labels */
+  :global(.theme-text) {
+    fill: black;
+  }
+
+  :global(:root.dark .theme-text) {
+    fill: white;
+  }
+</style>

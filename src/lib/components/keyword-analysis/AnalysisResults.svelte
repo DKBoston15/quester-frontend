@@ -75,43 +75,22 @@
   function getKeywordFrequency(keyword: string) {
     if (!frequencyData) return { count: 0, url: "" };
 
-    // Find the individual frequency for this keyword
-    // Look through all timepoints to find where this term was individually searched
+    let maxCount = 0;
+
+    // Look through all timepoints to find the maximum count
     for (const [timepoint, data] of Object.entries(frequencyData) as [
       string,
       any,
     ][]) {
       if (timepoint !== "combined" && data[keyword]?.count !== undefined) {
-        // Check if this is an individual search result (not part of a pair)
-        const isIndividualSearch =
-          Object.keys(data).length === 1 ||
-          Object.keys(data)
-            .filter((k) => k !== keyword)
-            .every((k) => !data[k]?.count);
-
-        if (isIndividualSearch) {
-          return {
-            count: data[keyword].count,
-            url: `https://scholar.google.com/scholar?hl=en&q="${encodeURIComponent(keyword)}"`,
-          };
-        }
+        maxCount = Math.max(maxCount, data[keyword].count);
       }
     }
 
-    // If no individual search found, fall back to the first occurrence of the term
-    for (const [timepoint, data] of Object.entries(frequencyData) as [
-      string,
-      any,
-    ][]) {
-      if (timepoint !== "combined" && data[keyword]?.count !== undefined) {
-        return {
-          count: data[keyword].count,
-          url: `https://scholar.google.com/scholar?hl=en&q="${encodeURIComponent(keyword)}"`,
-        };
-      }
-    }
-
-    return { count: 0, url: "" };
+    return {
+      count: maxCount,
+      url: `https://scholar.google.com/scholar?hl=en&q=${encodeURIComponent(keyword)}`,
+    };
   }
 
   function getCooccurrenceData(keyword1: string, keyword2: string) {
@@ -142,7 +121,10 @@
           if (frequencyData["1"] && timepoint === frequencyData["1"]) {
             return {
               count: Math.min(freq1, freq2),
-              url: `https://scholar.google.com/scholar?hl=en&q="${encodeURIComponent(keyword1)}"+AND+"${encodeURIComponent(keyword2)}"`,
+              url:
+                keyword1 === keyword2
+                  ? `https://scholar.google.com/scholar?hl=en&q=${encodeURIComponent(keyword1)}`
+                  : `https://scholar.google.com/scholar?hl=en&q="${encodeURIComponent(keyword1)}"+AND+"${encodeURIComponent(keyword2)}"`,
             };
           }
         }
@@ -150,7 +132,10 @@
         const minValue = Math.min(freq1, freq2);
         if (minValue > mostRelevantCount) {
           mostRelevantCount = minValue;
-          mostRelevantUrl = `https://scholar.google.com/scholar?hl=en&q="${encodeURIComponent(keyword1)}"+AND+"${encodeURIComponent(keyword2)}"`;
+          mostRelevantUrl =
+            keyword1 === keyword2
+              ? `https://scholar.google.com/scholar?hl=en&q=${encodeURIComponent(keyword1)}`
+              : `https://scholar.google.com/scholar?hl=en&q="${encodeURIComponent(keyword1)}"+AND+"${encodeURIComponent(keyword2)}"`;
         }
       }
     }
