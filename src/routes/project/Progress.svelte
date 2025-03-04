@@ -30,7 +30,7 @@
     start: Date;
     type: string;
     className: string;
-    itemData?: any[];
+    itemData?: any;
   };
 
   // Define timeline groups
@@ -103,6 +103,33 @@
         type: "point",
         className: "project-item",
       });
+
+      // Fetch and add status changes
+      try {
+        const response = await fetch(
+          `http://localhost:3333/events?type=project.status.changed&subjectId=${currentProject.id}`,
+          {
+            credentials: "include",
+          }
+        );
+        if (response.ok) {
+          const statusChanges = await response.json();
+          statusChanges.forEach((change: any) => {
+            const changeDate = new Date(change.createdAt);
+            timelineItems.push({
+              id: `status_${change.id}`,
+              group: "project",
+              content: `Status Changed: ${change.data.previousStatus || "None"} → ${change.data.newStatus}`,
+              start: changeDate,
+              type: "point",
+              className: "status-change-item",
+              itemData: change.data,
+            });
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching status changes:", error);
+      }
 
       // Group literature items by date
       const litByDate = new Map<string, any[]>();
@@ -247,6 +274,16 @@
             return `${note.name || "Untitled Note"} (${type})`;
           });
           showDialog = true;
+        } else if (selectedId.startsWith("status_")) {
+          dialogTitle = "Project Status Change";
+          const time = new Date(selectedItem.start).toLocaleString();
+          const { previousStatus, newStatus } = selectedItem.itemData;
+          dialogContent = [
+            `Time: ${time}`,
+            `Previous Status: ${previousStatus || "None"}`,
+            `New Status: ${newStatus}`,
+          ];
+          showDialog = true;
         }
       });
     } catch (error) {
@@ -354,6 +391,12 @@
   :global(.note-item) {
     background-color: #f59e0b !important;
     border-color: #d97706 !important;
+    color: white;
+  }
+
+  :global(.status-change-item) {
+    background-color: #ec4899 !important;
+    border-color: #db2777 !important;
     color: white;
   }
 
