@@ -150,17 +150,7 @@
             </Card.Content>
           </Card.Root>
 
-          <!-- Research Design -->
-          <Card.Root
-            class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
-          >
-            <Card.Header>
-              <Card.Title>Research Design</Card.Title>
-            </Card.Header>
-            <Card.Content>
-              <LiteratureDesigns {literature} />
-            </Card.Content>
-          </Card.Root>
+          <LiteratureDesigns {literature} />
         </div>
 
         <!-- Right Column: Literature Health, Keywords, and Citation -->

@@ -1,5 +1,8 @@
 // Check if we're in a browser environment
 const isBrowser = typeof window !== "undefined";
+import { writable } from "svelte/store";
+
+export const isDarkMode = writable(false);
 
 // Get the user's preference from localStorage or system preference
 const getPreferredTheme = () => {
@@ -22,8 +25,16 @@ const setTheme = (theme: "dark" | "light") => {
   // Instead of toggle, explicitly add/remove the class
   if (theme === "dark") {
     root.classList.add("dark");
+    root.style.setProperty("--background-color", "#1a1a1a"); // Dark background
+    root.style.setProperty("--button-background", "#2d2d2d"); // Dark button background
+    root.style.setProperty("--container-background", "#242424"); // Dark container background
+    isDarkMode.set(true);
   } else {
     root.classList.remove("dark");
+    root.style.setProperty("--background-color", "#ffffff"); // Light background
+    root.style.setProperty("--button-background", "#f0f0f0"); // Light button background
+    root.style.setProperty("--container-background", "#f5f5f5"); // Light container background
+    isDarkMode.set(false);
   }
 
   localStorage.setItem("theme", theme);

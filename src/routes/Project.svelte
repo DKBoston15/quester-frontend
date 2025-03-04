@@ -63,7 +63,11 @@
 <Sidebar.Provider>
   <div class="flex h-screen bg-background w-full">
     <ProjectSidebar project={projectStore.currentProject} />
-    <main class="flex-1 overflow-y-auto min-w-0">
+    <main
+      class="flex-1 {getCurrentSection() === 'connections'
+        ? 'overflow-hidden'
+        : 'overflow-y-auto'} min-w-0"
+    >
       {#if projectStore.isLoading}
         <div class="container mx-auto py-6">
           <div class="text-center">Loading project...</div>
