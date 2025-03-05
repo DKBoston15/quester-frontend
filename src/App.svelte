@@ -19,6 +19,7 @@
     projectId: string;
     view?: string;
     literatureId?: string;
+    modelId?: string;
   };
 
   const props = $props<{ url: string }>();
@@ -123,6 +124,26 @@
             <Project
               params={{ projectId: params.projectId, view: "literature" }}
             />
+          {:else}
+            <div>Invalid project ID</div>
+          {/if}
+        </Route>
+        <Route path="/project/:projectId/models/:modelId" let:params>
+          {#if params.projectId && params.modelId}
+            <Project
+              params={{
+                projectId: params.projectId,
+                view: "models",
+                modelId: params.modelId,
+              }}
+            />
+          {:else}
+            <div>Invalid project or model ID</div>
+          {/if}
+        </Route>
+        <Route path="/project/:projectId/models" let:params>
+          {#if params.projectId}
+            <Project params={{ projectId: params.projectId, view: "models" }} />
           {:else}
             <div>Invalid project ID</div>
           {/if}

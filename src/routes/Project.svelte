@@ -7,6 +7,8 @@
   import Dashboard from "./project/Dashboard.svelte";
   import Literature from "./project/Literature.svelte";
   import LiteratureView from "./project/LiteratureView.svelte";
+  import Models from "./project/Models.svelte";
+  import ModelView from "./project/ModelView.svelte";
   import Notes from "./project/Notes.svelte";
   import Outcomes from "./project/Outcomes.svelte";
   import Analytics from "./project/Analytics.svelte";
@@ -18,6 +20,7 @@
   type SectionKey =
     | "dashboard"
     | "literature"
+    | "models"
     | "notes"
     | "outcomes"
     | "analytics"
@@ -29,6 +32,7 @@
   const components: Record<SectionKey, any> = {
     dashboard: Dashboard,
     literature: Literature,
+    models: Models,
     notes: Notes,
     outcomes: Outcomes,
     analytics: Analytics,
@@ -43,6 +47,7 @@
       projectId: string;
       view?: string;
       literatureId?: string;
+      modelId?: string;
     };
   }>();
 
@@ -84,6 +89,11 @@
       {:else if projectStore.currentProject}
         {#if props.params.view === "literature" && props.params.literatureId}
           <LiteratureView literatureId={props.params.literatureId} />
+        {:else if props.params.view === "models" && props.params.modelId}
+          <ModelView
+            modelId={props.params.modelId}
+            projectId={props.params.projectId}
+          />
         {:else}
           {@const section = getCurrentSection()}
           {@const Component = components[section] || components.dashboard}

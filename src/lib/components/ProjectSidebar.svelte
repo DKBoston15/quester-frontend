@@ -18,6 +18,7 @@
     Workflow,
     Trophy,
     Building2,
+    ChartNetwork,
   } from "lucide-svelte";
 
   type Route = {
@@ -50,6 +51,11 @@
         title: "Notes",
         icon: Pencil,
         link: `/project/${props.project.id}/notes`,
+      },
+      {
+        title: "Models",
+        icon: ChartNetwork,
+        link: `/project/${props.project.id}/models`,
       },
       {
         title: "Outcomes",
