@@ -15,13 +15,6 @@
   import { navigate } from "svelte-routing";
   import { Toaster } from "$lib/components/ui/sonner";
 
-  type ProjectParams = {
-    projectId: string;
-    view?: string;
-    literatureId?: string;
-    modelId?: string;
-  };
-
   const props = $props<{ url: string }>();
 
   onMount(() => {

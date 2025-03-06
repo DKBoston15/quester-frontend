@@ -19,6 +19,7 @@
     Trophy,
     Building2,
     ChartNetwork,
+    TextSearch,
   } from "lucide-svelte";
 
   type Route = {
@@ -51,6 +52,11 @@
         title: "Notes",
         icon: Pencil,
         link: `/project/${props.project.id}/notes`,
+      },
+      {
+        title: "Analysis",
+        icon: TextSearch,
+        link: `/project/${props.project.id}/analysis`,
       },
       {
         title: "Models",

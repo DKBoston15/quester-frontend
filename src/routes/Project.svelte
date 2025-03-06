@@ -16,6 +16,7 @@
   import Progress from "./project/Progress.svelte";
   import Team from "./project/Team.svelte";
   import Settings from "./project/Settings.svelte";
+  import Analysis from "./project/Analysis.svelte";
 
   type SectionKey =
     | "dashboard"
@@ -24,6 +25,7 @@
     | "notes"
     | "outcomes"
     | "analytics"
+    | "analysis"
     | "connections"
     | "progress"
     | "team"
@@ -36,6 +38,7 @@
     notes: Notes,
     outcomes: Outcomes,
     analytics: Analytics,
+    analysis: Analysis,
     connections: Connections,
     progress: Progress,
     team: Team,

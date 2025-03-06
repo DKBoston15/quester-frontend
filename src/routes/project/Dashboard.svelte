@@ -5,7 +5,6 @@
   import ProjectOverview from "$lib/components/project/ProjectOverview.svelte";
   import ResearchDesigns from "$lib/components/project/ResearchDesigns.svelte";
   import PublisherScore from "$lib/components/custom-ui/dashboard/PublisherScore.svelte";
-  import KeywordAnalysis from "$lib/components/keyword-analysis/KeywordAnalysis.svelte";
 </script>
 
 <div class="flex-1 w-full overflow-x-hidden">
@@ -33,9 +32,6 @@
           <PublisherScore />
         </div>
       </div>
-    </div>
-    <div class="mt-4">
-      <KeywordAnalysis />
     </div>
   </div>
 </div>
