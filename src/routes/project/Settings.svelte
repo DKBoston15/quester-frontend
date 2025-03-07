@@ -17,6 +17,8 @@
   let originalName = $state("");
   let isUpdating = $state(false);
   let hasChanges = $state(false);
+  let showDeleteDialog = $state(false);
+  let isDeleting = $state(false);
 
   // Load the current project name when the component mounts
   $effect(() => {
@@ -59,10 +61,44 @@
       isUpdating = false;
     }
   }
+
+  // Delete project function
+  async function deleteProject() {
+    if (!projectStore.currentProject?.id) {
+      toast.error("No project selected");
+      return;
+    }
+
+    isDeleting = true;
+    try {
+      // Call the API to delete the project
+      const response = await fetch(
+        `http://localhost:3333/projects/${projectStore.currentProject.id}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete project (${response.status})`);
+      }
+
+      toast.success("Project deleted successfully");
+      // Navigate to dashboard with lowercase path
+      window.location.href = "/dashboard";
+    } catch (error) {
+      console.error("Failed to delete project:", error);
+      toast.error("Failed to delete project");
+    } finally {
+      isDeleting = false;
+      showDeleteDialog = false;
+    }
+  }
 </script>
 
 <div class="container mx-auto py-6 px-4">
-  <h1 class="text-3xl font-bold mb-6">Project Settings</h1>
+  <h1 class="text-3xl font-bold mb-6">Settings</h1>
 
   <div class="grid gap-6">
     <Card
@@ -111,7 +147,11 @@
         <CardTitle class="text-red-600">Danger Zone</CardTitle>
       </CardHeader>
       <CardContent>
-        <Button variant="destructive" disabled={!projectStore.currentProject}>
+        <Button
+          variant="destructive"
+          disabled={!projectStore.currentProject}
+          onclick={() => (showDeleteDialog = true)}
+        >
           Delete Project
         </Button>
         {#if !projectStore.currentProject}
@@ -123,3 +163,47 @@
     </Card>
   </div>
 </div>
+
+<!-- Delete Project Confirmation Dialog -->
+{#if showDeleteDialog}
+  <div
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+  >
+    <div
+      class="bg-white dark:bg-gray-800 p-8 rounded-lg max-w-md w-full shadow-xl"
+    >
+      <h2 class="text-2xl font-bold mb-4">Delete Project</h2>
+      <p class="text-base mb-6">
+        Are you sure you want to delete this project? This action cannot be
+        undone.
+        {#if projectStore.currentProject}
+          <p class="font-medium mt-2">
+            Project: {projectStore.currentProject.name}
+          </p>
+        {/if}
+      </p>
+      <div class="flex justify-end space-x-2">
+        <Button
+          type="button"
+          variant="outline"
+          onclick={() => (showDeleteDialog = false)}
+          disabled={isDeleting}
+        >
+          Cancel
+        </Button>
+        <Button
+          type="button"
+          variant="destructive"
+          onclick={deleteProject}
+          disabled={isDeleting}
+        >
+          {#if isDeleting}
+            <span class="animate-spin mr-2">⏳</span> Deleting...
+          {:else}
+            Delete
+          {/if}
+        </Button>
+      </div>
+    </div>
+  </div>
+{/if}

@@ -9,7 +9,9 @@
   export let color;
 </script>
 
-<div class="flex items-center space-x-4 w-full justify-between">
+<div
+  class="flex items-center space-x-4 w-full justify-between dark:bg-[#1F2024]"
+>
   <Label class="text-lg">{typeMap[type]}</Label>
   <Checkbox {checked} {color} onCheckedChange={() => onToggle(type)} />
 </div>

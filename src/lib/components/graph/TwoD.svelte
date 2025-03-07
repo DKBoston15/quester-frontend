@@ -244,8 +244,8 @@
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillStyle = document.documentElement.classList.contains("dark")
-          ? "black"
-          : "white";
+          ? "white"
+          : "black";
         ctx.fillText(label, node.x, node.y);
 
         node.__bckgDimensions = bckgDimensions;
@@ -533,8 +533,10 @@
                       Toggle visibility of different node types
                     </Card.Description>
                   </Card.Header>
-                  <Card.Content class="grid grid-cols-1 gap-4">
-                    <div class="space-y-4">
+                  <Card.Content
+                    class="grid grid-cols-1 gap-4 dark:bg-[#1F2024]"
+                  >
+                    <div class="space-y-4 dark:bg-[#1F2024]">
                       {#each nodeTypes as type}
                         <div class="flex items-center space-x-2 bg-[#1F2024]">
                           <TypeCheckbox

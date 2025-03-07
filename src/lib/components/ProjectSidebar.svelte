@@ -90,12 +90,7 @@
 
     tertiaryRoutes = [
       {
-        title: "Project Team",
-        icon: Users,
-        link: `/project/${props.project.id}/team`,
-      },
-      {
-        title: "Project Settings",
+        title: "Settings",
         icon: Settings,
         link: `/project/${props.project.id}/project_settings`,
       },

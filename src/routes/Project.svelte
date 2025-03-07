@@ -14,7 +14,6 @@
   import Analytics from "./project/Analytics.svelte";
   import Connections from "./project/Connections.svelte";
   import Progress from "./project/Progress.svelte";
-  import Team from "./project/Team.svelte";
   import Settings from "./project/Settings.svelte";
   import Analysis from "./project/Analysis.svelte";
 
@@ -28,7 +27,6 @@
     | "analysis"
     | "connections"
     | "progress"
-    | "team"
     | "project_settings";
 
   const components: Record<SectionKey, any> = {
@@ -41,7 +39,6 @@
     analysis: Analysis,
     connections: Connections,
     progress: Progress,
-    team: Team,
     project_settings: Settings,
   };
 
