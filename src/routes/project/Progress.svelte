@@ -8,7 +8,7 @@
   } from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { Plus } from "lucide-svelte";
-  import { onDestroy } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
   import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
   import { notesStore } from "$lib/stores/NotesStore.svelte";
@@ -40,14 +40,28 @@
     { id: "notes", content: "Notes", order: 3 },
   ];
 
+  onMount(() => {
+    if (
+      timelineContainer &&
+      projectStore.currentProject?.id &&
+      !isInitialized
+    ) {
+      initializeTimeline();
+    }
+  });
+
   $effect(() => {
-    if (!timelineContainer || isInitialized || !projectStore.currentProject?.id)
-      return;
-    initializeTimeline();
+    if (
+      timelineContainer &&
+      projectStore.currentProject?.id &&
+      !isInitialized
+    ) {
+      initializeTimeline();
+    }
   });
 
   async function initializeTimeline() {
-    if (!projectStore.currentProject) return;
+    if (!timelineContainer || !projectStore.currentProject) return;
     isInitialized = true;
 
     try {
