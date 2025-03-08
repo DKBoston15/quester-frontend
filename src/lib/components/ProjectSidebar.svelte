@@ -34,6 +34,26 @@
   let secondaryRoutes = $state<Route[]>([]);
   let tertiaryRoutes = $state<Route[]>([]);
 
+  async function checkAchievements() {
+    if (!props.project?.id) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:3333/achievement/project/${props.project.id}/status`,
+        {
+          credentials: "include",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+    } catch (error) {
+      console.error("Error checking achievements:", error);
+    }
+  }
+
   $effect(() => {
     if (!props.project?.id) return;
 
@@ -134,7 +154,7 @@
         <Sidebar.GroupContent>
           <Sidebar.Menu>
             {#each primaryRoutes as item (item.title)}
-              <Link to={item.link} class="block">
+              <Link to={item.link} class="block" on:click={checkAchievements}>
                 <Sidebar.MenuItem>
                   <Sidebar.MenuButton>
                     <Tooltip.Root>
@@ -172,7 +192,7 @@
         <Sidebar.GroupContent>
           <Sidebar.Menu>
             {#each secondaryRoutes as item (item.title)}
-              <Link to={item.link} class="block">
+              <Link to={item.link} class="block" on:click={checkAchievements}>
                 <Sidebar.MenuItem>
                   <Sidebar.MenuButton>
                     <Tooltip.Root>
@@ -210,7 +230,7 @@
         <Sidebar.GroupContent>
           <Sidebar.Menu>
             {#each tertiaryRoutes as item (item.title)}
-              <Link to={item.link} class="block">
+              <Link to={item.link} class="block" on:click={checkAchievements}>
                 <Sidebar.MenuItem>
                   <Sidebar.MenuButton>
                     <Tooltip.Root>

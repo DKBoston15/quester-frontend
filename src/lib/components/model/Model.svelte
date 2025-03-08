@@ -95,7 +95,6 @@
           nodes: JSON.stringify(cleanNodes) as any,
           edges: JSON.stringify(cleanEdges) as any,
         });
-        console.log("Model saved successfully");
       } catch (error) {
         console.error("Error saving model:", error);
       }
@@ -119,9 +118,6 @@
   });
 
   const onConnect = (params: any) => {
-    console.log("Connection created with params:", params);
-    console.log("Current edge settings:", $edgeSettings);
-
     const newEdge: Edge = {
       ...params,
       id: `e${Date.now()}`,
@@ -137,10 +133,8 @@
         : undefined,
     };
 
-    console.log("New edge with full configuration:", newEdge);
     edges.update((eds) => {
       const updatedEdges = [...eds, newEdge];
-      console.log("Updated edges store:", updatedEdges);
       return updatedEdges;
     });
   };
@@ -148,7 +142,6 @@
   // Handle edge selection
   const onEdgeClick = (event: CustomEvent<{ edge: Edge }>) => {
     const edge = event.detail.edge;
-    console.log("Edge clicked:", edge);
     selectedEdge.set(edge);
   };
 
@@ -209,7 +202,6 @@
 
   // Create a reactive statement to log edge settings changes
   $effect(() => {
-    console.log("Edge settings updated:", $edgeSettings);
     // Update only non-customized edges when settings change
     edges.update((currentEdges) =>
       currentEdges.map((edge) => {
@@ -234,7 +226,6 @@
 </script>
 
 <div class="overview" style="height: 100vh; width: 100%;" data-flowid={modelId}>
-  {console.log($snapToGrid)}
   <SvelteFlow
     {nodes}
     {edges}
@@ -255,16 +246,11 @@
     connectionMode={ConnectionMode.Loose}
     on:nodeschange={({ detail }) => nodes.set(detail)}
     on:edgeschange={({ detail }) => {
-      console.log("Edges changed:", detail);
       edges.set(detail);
     }}
     on:connect={({ detail }) => onConnect(detail)}
     on:edgeclick={onEdgeClick}
     on:paneclick={onPaneClick}
-    on:edgecontextmenu={({ detail }) =>
-      console.log("Edge right-clicked:", detail)}
-    on:connectstart={(event) => console.log("Connection started:", event)}
-    on:connectend={(event) => console.log("Connection ended:", event)}
   >
     {#if $showGrid}
       <Background patternColor="#aaa" gap={20} />

@@ -38,11 +38,6 @@
   }
 
   function renderChart() {
-    console.log(
-      "FrequencyChart - Incoming analysis:",
-      $state.snapshot(analysis)
-    );
-
     const keywords =
       typeof analysis.keywords === "string"
         ? JSON.parse(analysis.keywords)
@@ -65,8 +60,6 @@
         };
       })
       .sort((a: DataPoint, b: DataPoint) => b.frequency - a.frequency);
-
-    console.log("FrequencyChart - Processed data:", data);
 
     // Clear previous content
     d3.select(svg).selectAll("*").remove();

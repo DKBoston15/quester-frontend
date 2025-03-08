@@ -108,8 +108,6 @@ async function processTextWithNLP(
   analysisData: AnalysisData,
   countType: "wordCounts" | "literatureWordCounts"
 ) {
-  console.log(`Processing text for ${countType}:`, text);
-
   // Clean and normalize the text
   const cleanText = text
     .replace(/[^\w\s-]/g, " ") // Replace non-word chars (except hyphens) with spaces
@@ -117,8 +115,6 @@ async function processTextWithNLP(
     .replace(/-/g, " ") // Split hyphenated words for better processing
     .trim()
     .toLowerCase(); // Convert to lowercase for better NLP processing
-
-  console.log("Cleaned text:", cleanText);
 
   const doc = nlp.readDoc(cleanText);
 
@@ -176,8 +172,6 @@ async function processTextWithNLP(
   // Get all tokens and their parts of speech for debugging
   const allTokens = doc.tokens().out();
   const allPos = doc.tokens().out(posIts);
-  console.log("All tokens:", allTokens);
-  console.log("All parts of speech:", allPos);
 
   // Extract parts of speech with pattern matching
   const nouns = doc
@@ -185,7 +179,6 @@ async function processTextWithNLP(
     .filter((t) => {
       const pos = t.out(posIts);
       const word = t.out();
-      console.log(`Token: "${word}", POS: "${pos}"`);
       return pos === "NOUN" || pos === "PROPN";
     })
     .out(lemmaIts);
@@ -223,14 +216,6 @@ async function processTextWithNLP(
     }
   });
 
-  console.log("Found parts of speech:", {
-    nouns: [...new Set(nouns)],
-    verbs: [...new Set(verbs)],
-    adjectives: [...new Set(adjectives)],
-    countType,
-    totalTokens: allTokens.length,
-  });
-
   // Update counts without deduplicating words
   if (nouns.length > 0) {
     analysisData.updateWordCount("nouns", nouns, countType);
@@ -246,43 +231,30 @@ async function processTextWithNLP(
 function extractTextFromTipTap(content: any): string {
   try {
     if (!content) {
-      console.log("Empty content received");
       return "";
     }
-
-    // Log the type and structure of content
-    console.log("Content type:", typeof content);
-    console.log("Content structure:", JSON.stringify(content, null, 2));
 
     // If it's a string that might be JSON
     if (typeof content === "string") {
       try {
         const parsed = JSON.parse(content);
-        console.log("Successfully parsed JSON string");
         return extractTextFromTipTap(parsed);
       } catch (e) {
         // Not JSON, return as is
-        console.log("Not a JSON string, returning as is");
         return content;
       }
     }
 
     // If it's a text node
     if (content.type === "text" && content.text) {
-      console.log("Found text node:", content.text);
       return content.text + " ";
     }
 
     // If it has content array
     if (content.content && Array.isArray(content.content)) {
-      console.log(
-        "Processing content array with length:",
-        content.content.length
-      );
       return content.content
         .map((node: any) => {
           const text = extractTextFromTipTap(node);
-          console.log("Extracted from node:", text);
           return text;
         })
         .join(" ");
@@ -290,7 +262,6 @@ function extractTextFromTipTap(content: any): string {
 
     // For any other object
     if (typeof content === "object") {
-      console.log("Processing object with keys:", Object.keys(content));
       return Object.values(content)
         .map((value: any) => {
           if (Array.isArray(value)) {
@@ -305,7 +276,6 @@ function extractTextFromTipTap(content: any): string {
         .join(" ");
     }
 
-    console.log("No text found in content");
     return "";
   } catch (error) {
     console.error("Error extracting text from TipTap:", error);
@@ -371,20 +341,12 @@ export async function analyzeLiterature(
   });
 
   // Process notes
-  console.log("Processing notes:", notes.length);
   notes.forEach((note, index) => {
-    console.log(`Processing note ${index + 1}/${notes.length}`);
-    console.log("Note content type:", typeof note.content);
-
     if (note.content) {
-      console.log("Raw note content:", note.content);
       const plainText = extractTextFromTipTap(note.content);
-      console.log("Extracted plain text:", plainText);
 
       if (plainText.trim()) {
         processTextWithNLP(plainText.trim(), analysisData, "wordCounts");
-      } else {
-        console.log("No text extracted from note");
       }
     } else {
       console.log("Note has no content");

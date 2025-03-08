@@ -219,14 +219,6 @@
   function extractKeywords(title: string): string[] {
     return title.toLowerCase().split(/\s+/);
   }
-
-  function trackExplainClick() {
-    // You can implement your own analytics tracking here if needed
-    console.log("Publisher Score Explain Clicked", {
-      project_id: projectStore.currentProject?.id,
-      user_id: auth.user?.id,
-    });
-  }
 </script>
 
 {#if !dialog}
@@ -237,10 +229,7 @@
           <h3 class="font-semibold mb-2 text-xl text-[#2383fb]">
             Journal Suggestions For Publication:
           </h3>
-          <Dialog.Trigger
-            ><Button size="sm" on:click={trackExplainClick}>Explain</Button
-            ></Dialog.Trigger
-          >
+          <Dialog.Trigger><Button size="sm">Explain</Button></Dialog.Trigger>
         </Card.Title>
       </Card.Header>
       <Card.Content>

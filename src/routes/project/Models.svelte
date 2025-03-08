@@ -66,10 +66,6 @@
     }
 
     try {
-      console.log(
-        "Creating new model for project:",
-        projectStore.currentProject.id
-      );
       const newModel = await modelStore.createModel({
         name: newModelName,
         projectId: projectStore.currentProject.id,
@@ -90,7 +86,6 @@
       showCreateDialog = false;
       newModelName = "New Model";
       const path = `/project/${projectStore.currentProject.id}/models/${newModel.id}`;
-      console.log("Navigating to:", path);
       navigate(path);
     } catch (err) {
       console.error("Failed to create model:", err);

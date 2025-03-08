@@ -40,10 +40,8 @@
         throw new Error("Failed to fetch analyses");
       }
       const data = await response.json();
-      console.log("Raw analyses data:", data);
 
       analyses = data.map((analysis: KeywordAnalysis) => {
-        console.log("Processing analysis:", analysis);
         const processed = {
           ...analysis,
           keywords:
@@ -59,16 +57,11 @@
               ? JSON.parse(analysis.frequencyData)
               : analysis.frequencyData,
         };
-        console.log("Processed analysis:", processed);
         return processed;
       });
 
       if (analyses.length > 0) {
         currentAnalysis = analyses[0];
-        console.log(
-          "Set current analysis to:",
-          $state.snapshot(currentAnalysis)
-        );
       }
     } catch (err) {
       console.error("Error fetching analyses:", err);
@@ -149,10 +142,8 @@
   }
 
   function formatDate(dateString: string) {
-    console.log("Formatting date string:", dateString);
     try {
       const date = new Date(dateString);
-      console.log("Parsed date:", date);
       if (isNaN(date.getTime())) {
         console.error("Invalid date string:", dateString);
         return "Invalid date";
@@ -164,7 +155,6 @@
         hour: "numeric",
         minute: "numeric",
       });
-      console.log("Formatted date:", formatted);
       return formatted;
     } catch (error) {
       console.error("Error formatting date:", error);
@@ -173,13 +163,6 @@
   }
 
   function setCurrentAnalysis(analysis: KeywordAnalysis) {
-    console.log("Setting current analysis:", {
-      id: analysis.id,
-      created_at: analysis.createdAt,
-      keywords: analysis.keywords,
-      report: analysis.report,
-      frequencyData: analysis.frequencyData,
-    });
     currentAnalysis = analysis;
     error = null;
     showNewAnalysis = false;
@@ -250,7 +233,6 @@
               type="button"
               class="w-full text-left cursor-pointer p-4"
               onclick={() => {
-                console.log("Card clicked:", $state.snapshot(analysis));
                 setCurrentAnalysis(analysis);
               }}
             >

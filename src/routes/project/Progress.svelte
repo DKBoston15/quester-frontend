@@ -1,5 +1,6 @@
 <!-- src/routes/project/Progress.svelte -->
 <script lang="ts">
+  import * as Tabs from "$lib/components/ui/tabs";
   import {
     Card,
     CardContent,
@@ -7,22 +8,91 @@
     CardTitle,
   } from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
-  import { Plus } from "lucide-svelte";
+  import * as Progress from "$lib/components/ui/progress";
+  import * as Dialog from "$lib/components/ui/dialog";
+  import {
+    Trophy,
+    Plus,
+    PenTool,
+    Book,
+    Calendar,
+    Search,
+    Network,
+    Star,
+    Expand,
+  } from "lucide-svelte";
   import { onDestroy, onMount } from "svelte";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
   import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
   import { notesStore } from "$lib/stores/NotesStore.svelte";
-  import * as Dialog from "$lib/components/ui/dialog";
+  import { fade, fly } from "svelte/transition";
+  import { quintOut } from "svelte/easing";
 
-  let timelineContainer: HTMLElement;
-  let timeline = $state<any>(null);
-  let isLoading = $state(true);
-  let isInitialized = $state(false);
-  let showDialog = $state(false);
-  let dialogTitle = $state("");
-  let dialogContent = $state<string[]>([]);
+  // Level definitions with colors
+  const levels = [
+    {
+      name: "Spark of Curiosity",
+      minXP: 0,
+      maxXP: 1000,
+      color: "from-amber-500 to-orange-600",
+    },
+    {
+      name: "Illuminator",
+      minXP: 1001,
+      maxXP: 2000,
+      color: "from-blue-500 to-indigo-600",
+    },
+    {
+      name: "Knowledge Weaver",
+      minXP: 2001,
+      maxXP: 3000,
+      color: "from-purple-500 to-fuchsia-600",
+    },
+    {
+      name: "Insight Architect",
+      minXP: 3001,
+      maxXP: 4000,
+      color: "from-emerald-500 to-teal-600",
+    },
+    {
+      name: "Wisdom Sculptor",
+      minXP: 4001,
+      maxXP: 5000,
+      color: "from-rose-500 to-pink-600",
+    },
+    {
+      name: "Enlightenment Explorer",
+      minXP: 5001,
+      maxXP: 6000,
+      color: "from-cyan-500 to-blue-600",
+    },
+    {
+      name: "Sage of Scholars",
+      minXP: 6001,
+      maxXP: Infinity,
+      color: "from-violet-500 to-purple-600",
+    },
+  ];
 
-  // Define timeline item type
+  // Function to get current level info
+  function getCurrentLevel(points: number) {
+    const level =
+      levels.find((l) => points >= l.minXP && points <= l.maxXP) || levels[0];
+    const levelIndex = levels.indexOf(level);
+    const nextLevel = levels[levelIndex + 1];
+    const progress = nextLevel
+      ? ((points - level.minXP) / (nextLevel.minXP - level.minXP)) * 100
+      : 100;
+
+    return {
+      current: level,
+      next: nextLevel,
+      progress,
+      index: levelIndex + 1,
+    };
+  }
+
+  // Timeline related state and types
   type TimelineItem = {
     id: string;
     group: string;
@@ -33,14 +103,98 @@
     itemData?: any;
   };
 
-  // Define timeline groups
-  const groups = [
+  let timelineContainer: HTMLElement;
+  let timeline = $state<any>(null);
+  let isTimelineLoading = $state(true);
+  let isInitialized = $state(false);
+  let showDialog = $state(false);
+  let dialogTitle = $state("");
+  let dialogContent = $state<string[]>([]);
+
+  // Achievement related state and types
+  let achievements = $state<Achievement[]>([]);
+  let newlyAwarded = $state<Achievement[]>([]);
+  let isAchievementsLoading = $state(true);
+  let activeTab = $state("timeline");
+  let error = $state<string | null>(null);
+
+  interface Achievement {
+    id: string;
+    code: string;
+    name: string;
+    category: string;
+    points: number;
+    completed: boolean;
+    progress?: {
+      current: number;
+      required: number;
+    };
+    count?: number;
+  }
+
+  type AchievementGroup = {
+    name: string;
+    icon: any;
+    achievements: Achievement[];
+  };
+
+  // Achievement categories for grouping with colors
+  const achievementGroups: Record<
+    string,
+    AchievementGroup & { color: string }
+  > = {
+    "Note-Taking Master": {
+      name: "Note Taking",
+      icon: PenTool,
+      achievements: [],
+      color: "from-blue-500 to-blue-600",
+    },
+    Collector: {
+      name: "Literature Collection",
+      icon: Book,
+      achievements: [],
+      color: "from-purple-500 to-purple-600",
+    },
+    Consistency: {
+      name: "Consistency",
+      icon: Calendar,
+      achievements: [],
+      color: "from-green-500 to-green-600",
+    },
+    "Keyword Researcher": {
+      name: "Keyword Research",
+      icon: Search,
+      achievements: [],
+      color: "from-amber-500 to-amber-600",
+    },
+    Explorer: {
+      name: "Research Design",
+      icon: Expand,
+      achievements: [],
+      color: "from-rose-500 to-rose-600",
+    },
+    "Expanding Horizons": {
+      name: "Custom Designs",
+      icon: Star,
+      achievements: [],
+      color: "from-indigo-500 to-indigo-600",
+    },
+    "Visualization Expert": {
+      name: "Visualization",
+      icon: Network,
+      achievements: [],
+      color: "from-cyan-500 to-cyan-600",
+    },
+  };
+
+  // Timeline groups
+  const timelineGroups = [
     { id: "project", content: "Project", order: 1 },
     { id: "literature", content: "Literature", order: 2 },
     { id: "notes", content: "Notes", order: 3 },
   ];
 
-  onMount(() => {
+  onMount(async () => {
     if (
       timelineContainer &&
       projectStore.currentProject?.id &&
@@ -48,6 +202,7 @@
     ) {
       initializeTimeline();
     }
+    await loadAchievements();
   });
 
   $effect(() => {
@@ -104,11 +259,9 @@
       const timelineItems: TimelineItem[] = [];
 
       const currentProject = projectStore.currentProject;
-      console.log("Project", currentProject.createdAt);
 
       // Add project creation
       const projectDate = new Date(currentProject.createdAt || Date.now());
-      console.log("Project creation time:", projectDate.toLocaleString());
       timelineItems.push({
         id: "project_creation",
         group: "project",
@@ -149,7 +302,6 @@
       const litByDate = new Map<string, any[]>();
       literatureStore.data.forEach((lit) => {
         const date = new Date(lit.createdAt || Date.now());
-        console.log("Literature time:", date.toLocaleString());
         const dateKey = getDateKey(date);
         if (!litByDate.has(dateKey)) {
           litByDate.set(dateKey, []);
@@ -169,7 +321,6 @@
         const earliestTime = new Date(
           Math.min(...lits.map((lit) => lit.exactDate.getTime()))
         );
-        console.log("Literature group time:", earliestTime.toLocaleString());
 
         timelineItems.push({
           id: `lit_${dateKey}`,
@@ -186,7 +337,6 @@
       const notesByDate = new Map<string, any[]>();
       notesStore.notes.forEach((note) => {
         const date = new Date(note.createdAt || Date.now());
-        console.log("Note time:", date.toLocaleString());
         const dateKey = getDateKey(date);
         if (!notesByDate.has(dateKey)) {
           notesByDate.set(dateKey, []);
@@ -204,7 +354,6 @@
         const earliestTime = new Date(
           Math.min(...notes.map((note) => note.exactDate.getTime()))
         );
-        console.log("Notes group time:", earliestTime.toLocaleString());
 
         timelineItems.push({
           id: `note_${dateKey}`,
@@ -241,7 +390,7 @@
       // @ts-ignore - vis is loaded dynamically
       const itemsDataset = new vis.DataSet(timelineItems);
       // @ts-ignore - vis is loaded dynamically
-      const groupsDataset = new vis.DataSet(groups);
+      const groupsDataset = new vis.DataSet(timelineGroups);
 
       // Initialize timeline
       // @ts-ignore - vis is loaded dynamically
@@ -304,8 +453,76 @@
       console.error("Error initializing timeline:", error);
       isInitialized = false;
     } finally {
-      isLoading = false;
+      isTimelineLoading = false;
     }
+  }
+
+  // Sort function for achievements
+  function sortAchievements(achievements: Achievement[]): Achievement[] {
+    return [...achievements].sort((a, b) => {
+      // First sort by completion status
+      if (a.completed !== b.completed) {
+        return a.completed ? -1 : 1;
+      }
+
+      // Then sort by required count if available
+      const aRequired = a.progress?.required || 0;
+      const bRequired = b.progress?.required || 0;
+      return aRequired - bRequired;
+    });
+  }
+
+  async function loadAchievements() {
+    if (!projectStore.currentProject?.id) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:3333/achievement/project/${projectStore.currentProject.id}/status`,
+        {
+          credentials: "include",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch achievements");
+
+      const data = await response.json();
+      achievements = data.statuses;
+      newlyAwarded = data.newlyAwarded;
+
+      // Reset achievement groups
+      Object.values(achievementGroups).forEach((group) => {
+        group.achievements = [];
+      });
+
+      // Group and sort achievements
+      achievements.forEach((achievement) => {
+        if (achievementGroups[achievement.category]) {
+          achievementGroups[achievement.category].achievements.push(
+            achievement
+          );
+        }
+      });
+
+      // Sort achievements in each group
+      Object.values(achievementGroups).forEach((group) => {
+        group.achievements = sortAchievements(group.achievements);
+      });
+
+      error = null;
+    } catch (err) {
+      console.error("Error loading achievements:", err);
+      error = "Failed to load achievements. Please try again later.";
+    } finally {
+      isAchievementsLoading = false;
+    }
+  }
+
+  function formatNumber(num: number) {
+    return new Intl.NumberFormat().format(num);
   }
 
   onDestroy(() => {
@@ -315,35 +532,206 @@
   });
 </script>
 
-<div class="container mx-auto py-6 px-4">
-  <div class="flex justify-between items-center mb-6">
+<div class="container mx-auto py-6 px-4 space-y-6">
+  <div class="flex justify-between items-center">
     <h1 class="text-3xl font-bold">Research Progress</h1>
-    <Button>
-      <Plus class="h-4 w-4 mr-2" />
-      Add Milestone
-    </Button>
   </div>
 
-  <div class="grid gap-6">
-    <Card
-      class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
-    >
-      <CardHeader>
-        <CardTitle>Project Timeline</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div bind:this={timelineContainer} class="w-full timeline-container">
-          {#if isLoading}
-            <div class="flex justify-center items-center min-h-[400px]">
-              <div
-                class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"
-              ></div>
+  {#if !isAchievementsLoading && !error}
+    {@const totalPoints = achievements.reduce(
+      (sum, a) => sum + (a.completed ? a.points : 0),
+      0
+    )}
+    {@const levelInfo = getCurrentLevel(totalPoints)}
+    <div class="level-progress-container" in:fade={{ duration: 300 }}>
+      <div class="flex items-center gap-4 mb-2">
+        <div class={`level-badge bg-gradient-to-br ${levelInfo.current.color}`}>
+          <span class="text-xl font-bold">{levelInfo.index}</span>
+        </div>
+        <div class="flex-1">
+          <div class="flex justify-between items-center mb-1">
+            <h3
+              class={`text-lg font-semibold bg-gradient-to-r ${levelInfo.current.color} bg-clip-text text-transparent`}
+            >
+              {levelInfo.current.name}
+            </h3>
+            <span
+              class={`text-lg font-bold bg-gradient-to-r ${levelInfo.current.color} bg-clip-text text-transparent`}
+            >
+              {formatNumber(totalPoints)} Points
+            </span>
+          </div>
+          <div class="relative">
+            <Progress.Root
+              value={levelInfo.progress}
+              class={`h-2.5 level-progress ${levelInfo.current.color}`}
+            />
+            {#if levelInfo.next}
+              <div class="flex justify-between text-sm mt-1">
+                <span
+                  class={`bg-gradient-to-r ${levelInfo.current.color} bg-clip-text text-transparent font-medium`}
+                >
+                  {formatNumber(levelInfo.current.minXP)}
+                </span>
+                <span
+                  class={`bg-gradient-to-r ${levelInfo.next.color} bg-clip-text text-transparent font-medium`}
+                >
+                  {formatNumber(levelInfo.next.minXP)}
+                </span>
+              </div>
+            {/if}
+          </div>
+        </div>
+      </div>
+      {#if levelInfo.next}
+        <p class="text-sm text-center mt-3">
+          <span class="text-muted-foreground"
+            >{formatNumber(levelInfo.next.minXP - totalPoints)} points until</span
+          >
+          <span
+            class={`ml-1 font-medium bg-gradient-to-r ${levelInfo.next.color} bg-clip-text text-transparent`}
+          >
+            {levelInfo.next.name}
+          </span>
+        </p>
+      {:else}
+        <p
+          class={`text-sm font-medium text-center mt-3 bg-gradient-to-r ${levelInfo.current.color} bg-clip-text text-transparent`}
+        >
+          Maximum Level Achieved!
+        </p>
+      {/if}
+    </div>
+  {/if}
+
+  <Tabs.Root
+    value={activeTab}
+    onValueChange={(value) => (activeTab = value)}
+    class="space-y-6"
+  >
+    <Tabs.List class="inline-flex h-10 items-center justify-center gap-4">
+      <Tabs.Trigger value="timeline" class="tab-button">
+        <Calendar class="h-4 w-4 mr-2" />
+        Timeline
+      </Tabs.Trigger>
+      <Tabs.Trigger value="achievements" class="tab-button">
+        <Trophy class="h-4 w-4 mr-2" />
+        Achievements
+      </Tabs.Trigger>
+    </Tabs.List>
+
+    <Tabs.Content value="timeline" class="space-y-4">
+      <Card class="border-2">
+        <CardHeader>
+          <CardTitle>Project Timeline</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div bind:this={timelineContainer} class="w-full timeline-container">
+            {#if isTimelineLoading}
+              <div class="flex justify-center items-center min-h-[400px]">
+                <div
+                  class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"
+                ></div>
+              </div>
+            {/if}
+          </div>
+        </CardContent>
+      </Card>
+    </Tabs.Content>
+
+    <Tabs.Content value="achievements" class="space-y-6">
+      {#if isAchievementsLoading}
+        <div class="flex justify-center items-center min-h-[400px]">
+          <div
+            class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"
+          ></div>
+        </div>
+      {:else if error}
+        <Card class="border-destructive">
+          <CardContent class="pt-6">
+            <div class="text-destructive text-center">{error}</div>
+          </CardContent>
+        </Card>
+      {:else}
+        {#each Object.entries(achievementGroups).sort( ([, a], [, b]) => a.name.localeCompare(b.name) ) as [category, { name, icon: Icon, achievements, color }]}
+          {#if achievements.length > 0}
+            <div class="achievement-group" in:fade={{ duration: 300 }}>
+              <div class="flex items-center gap-3 mb-4">
+                <div
+                  class={`h-8 w-8 rounded-lg bg-gradient-to-br ${color} text-white flex items-center justify-center shadow-lg`}
+                >
+                  <Icon class="h-5 w-5" />
+                </div>
+                <h2 class="text-xl font-semibold">{name}</h2>
+                <div class="text-sm text-muted-foreground ml-auto">
+                  {achievements.filter((a) => a.completed)
+                    .length}/{achievements.length} Complete
+                </div>
+              </div>
+
+              <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {#each achievements as achievement (achievement.id)}
+                  <div in:fade={{ duration: 300 }}>
+                    <Card
+                      class={`achievement-card ${achievement.completed ? "completed" : ""} hover:shadow-${color.split("-")[1]}/20`}
+                    >
+                      {#if achievement.completed}
+                        <div
+                          class={`achievement-badge bg-gradient-to-br ${color}`}
+                        >
+                          <Trophy class="h-4 w-4" />
+                        </div>
+                      {/if}
+                      <CardHeader class="pb-2">
+                        <CardTitle
+                          class="flex justify-between items-start gap-4"
+                        >
+                          <span class="text-base">{achievement.name}</span>
+                          <span
+                            class={`achievement-points ${achievement.completed ? `bg-gradient-to-br ${color} text-white` : ""}`}
+                          >
+                            {achievement.points}
+                          </span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {#if achievement.progress}
+                          <div class="space-y-3">
+                            <Progress.Root
+                              value={(achievement.progress.current /
+                                achievement.progress.required) *
+                                100}
+                              class={`h-2 achievement-progress ${achievement.completed ? "completed" : color}`}
+                            />
+                            <div class="flex justify-between text-sm">
+                              <span class="text-muted-foreground">Progress</span
+                              >
+                              <span class="font-medium">
+                                {achievement.progress.current}/{achievement
+                                  .progress.required}
+                                {#if achievement.count && achievement.count > achievement.progress.required}
+                                  <span
+                                    class={`text-${color.split(" ")[0]} ml-1`}
+                                  >
+                                    (+{achievement.count -
+                                      achievement.progress.required})
+                                  </span>
+                                {/if}
+                              </span>
+                            </div>
+                          </div>
+                        {/if}
+                      </CardContent>
+                    </Card>
+                  </div>
+                {/each}
+              </div>
             </div>
           {/if}
-        </div>
-      </CardContent>
-    </Card>
-  </div>
+        {/each}
+      {/if}
+    </Tabs.Content>
+  </Tabs.Root>
 </div>
 
 <Dialog.Root bind:open={showDialog}>
@@ -359,9 +747,9 @@
       </ul>
     </div>
     <div class="flex justify-end p-6 pt-0">
-      <Button variant="outline" onclick={() => (showDialog = false)}>
-        Close
-      </Button>
+      <Button variant="outline" onclick={() => (showDialog = false)}
+        >Close</Button
+      >
     </div>
   </Dialog.Content>
 </Dialog.Root>
@@ -437,6 +825,49 @@
     padding: 0.5rem !important;
   }
 
+  .achievement-group {
+    @apply bg-card/50 backdrop-blur-sm rounded-lg p-6 border-2;
+    border-image: linear-gradient(
+        to right,
+        hsl(var(--primary) / 0.2),
+        transparent
+      )
+      1;
+  }
+
+  .achievement-card {
+    @apply relative border-2 transition-all duration-300 hover:scale-[1.02] bg-card/50 backdrop-blur-sm;
+    border-image: linear-gradient(
+        to bottom right,
+        transparent,
+        hsl(var(--muted-foreground) / 0.2)
+      )
+      1;
+  }
+
+  .achievement-card.completed {
+    @apply bg-gradient-to-br from-background to-background/50;
+    border-image: linear-gradient(
+        to bottom right,
+        hsl(var(--primary)),
+        hsl(var(--primary) / 0.2)
+      )
+      1;
+  }
+
+  .achievement-badge {
+    @apply absolute -top-2 -right-2 h-8 w-8 text-white rounded-full 
+           flex items-center justify-center shadow-lg animate-in zoom-in-50 duration-300;
+  }
+
+  .achievement-points {
+    @apply text-sm font-normal px-2 py-0.5 rounded-full transition-colors duration-300;
+  }
+
+  .tab-button {
+    @apply inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-muted-foreground hover:text-foreground data-[state=active]:text-foreground data-[state=active]:font-semibold;
+  }
+
   :global([role="dialog"]) {
     max-height: 90vh;
     display: flex;
@@ -445,5 +876,51 @@
 
   :global([role="dialog"] > div) {
     margin: 0 !important;
+  }
+
+  :global(.achievement-progress) {
+    @apply h-2 rounded-full overflow-hidden bg-muted;
+  }
+
+  :global(.achievement-progress[data-state="complete"]) > div {
+    @apply bg-gradient-to-r;
+  }
+
+  :global(.achievement-progress.completed > div) {
+    @apply bg-gradient-to-r from-emerald-500 to-emerald-600 !important;
+  }
+
+  .level-progress-container {
+    @apply bg-card/50 backdrop-blur-sm rounded-lg p-6 border-2 relative overflow-hidden;
+    border-image: linear-gradient(
+        to right,
+        hsl(var(--primary) / 0.3),
+        transparent
+      )
+      1;
+  }
+
+  .level-progress-container::before {
+    content: "";
+    @apply absolute inset-0 opacity-5;
+    background: radial-gradient(
+      circle at top left,
+      currentColor,
+      transparent 70%
+    );
+  }
+
+  .level-badge {
+    @apply h-14 w-14 rounded-xl text-primary-foreground
+           flex items-center justify-center shadow-lg
+           ring-2 ring-white/10 backdrop-blur-sm;
+  }
+
+  :global(.level-progress) {
+    @apply rounded-full overflow-hidden bg-muted/50 backdrop-blur-sm;
+  }
+
+  :global(.level-progress > div) {
+    @apply bg-gradient-to-r transition-all duration-500 shadow-lg;
   }
 </style>

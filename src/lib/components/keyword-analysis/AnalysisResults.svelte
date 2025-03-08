@@ -38,10 +38,7 @@
     try {
       if (Array.isArray(keywords)) {
         keywordsText = keywords.join(", ");
-        console.log("Keywords array:", keywords);
-        console.log("Formatted keywords text:", keywordsText);
       } else {
-        console.warn("Keywords is not an array:", keywords);
         keywordsText = "";
       }
     } catch (error) {
@@ -193,14 +190,6 @@
       };
     });
   }
-
-  // Log the data for debugging
-  $effect(() => {
-    console.log("Analysis data:", {
-      frequencyData: $state.snapshot(frequencyData),
-      keywords: $state.snapshot(keywords),
-    });
-  });
 </script>
 
 <Card class="p-6">

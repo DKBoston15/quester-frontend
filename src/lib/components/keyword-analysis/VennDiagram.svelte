@@ -122,10 +122,6 @@
             const freq2 = timepoint1[keywords[j]]?.count || 0;
             const overlapValue =
               freq1 > 0 && freq2 > 0 ? Math.min(freq1, freq2) : 0;
-            console.log(
-              `FORCED overlap for ${keywords[i]} & ${keywords[j]} from timepoint 1:`,
-              overlapValue
-            );
 
             if (overlapValue > 0) {
               overlaps.push({
@@ -145,22 +141,10 @@
           const freq2 = data[keywords[j]]?.count || 0;
           // Only consider timepoints where both terms appear
           const minValue = freq1 > 0 && freq2 > 0 ? Math.min(freq1, freq2) : 0;
-          console.log(
-            `Timepoint ${timepoint} - ${keywords[i]} & ${keywords[j]}:`,
-            {
-              freq1,
-              freq2,
-              minValue,
-            }
-          );
           return minValue;
         });
 
         const overlapValue = Math.max(...cooccurrences);
-        console.log(
-          `Final overlap for ${keywords[i]} & ${keywords[j]}:`,
-          overlapValue
-        );
 
         if (overlapValue > 0) {
           overlaps.push({

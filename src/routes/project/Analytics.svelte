@@ -1,13 +1,20 @@
 <!-- src/routes/project/Analytics.svelte -->
 <script lang="ts">
   import { onMount } from "svelte";
-  import { Chart } from "chart.js/auto";
+  import {
+    Chart,
+    BarController,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+  } from "chart.js/auto";
   import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
   import { notesStore } from "$lib/stores/NotesStore.svelte";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
   import { analyzeLiterature } from "./analytics/utils";
   import * as Tabs from "$lib/components/ui/tabs";
   import * as Dialog from "$lib/components/ui/dialog";
+  import { PieChart, FileText, BookText, FlaskConical } from "lucide-svelte";
 
   // Watch for theme changes and update charts
   const observer = new MutationObserver((mutations) => {
@@ -362,24 +369,10 @@
         content: getPreview(note.content),
       }));
 
-      console.log(
-        "Processed Notes Content:",
-        processedNotes.map((n) => n.content)
-      );
-
       const analysisData = await analyzeLiterature(
         literatureStore.data,
         processedNotes
       );
-
-      if (analysisData) {
-        console.log("Analysis Data:", {
-          notesAdjectives: analysisData.adjectivesWordCounts,
-          litTitleNouns: analysisData.literatureNounsWordCounts,
-          litTitleVerbs: analysisData.literatureVerbsWordCounts,
-          litTitleAdjectives: analysisData.literatureAdjectivesWordCounts,
-        });
-      }
 
       data = { summary: analysisData };
     } catch (error) {
@@ -506,13 +499,6 @@
     // Get text color based on theme
     const isDark = document.documentElement.classList.contains("dark");
     const textColor = isDark ? "#ffffff" : "#000000";
-
-    console.log("Chart Data:", {
-      notesAdjectives: summary.adjectivesWordCounts,
-      litTitleNouns: summary.literatureNounsWordCounts,
-      litTitleVerbs: summary.literatureVerbsWordCounts,
-      litTitleAdjectives: summary.literatureAdjectivesWordCounts,
-    });
 
     // Overview section
     if (canvasRefs.publishers) {
@@ -803,7 +789,7 @@
 </script>
 
 <div class="analytics-container">
-  <h1>Analytics</h1>
+  <h1 class="text-3xl font-bold mb-6">Analytics</h1>
 
   <Dialog.Root
     open={!!activeChart}
@@ -826,14 +812,26 @@
   {:else}
     <Tabs.Root
       value={activeTab}
-      onValueChange={(value: string) => (activeTab = value)}
+      onValueChange={(value) => (activeTab = value)}
       class="space-y-6"
     >
-      <Tabs.List class="grid grid-cols-4 gap-4">
-        <Tabs.Trigger value="overview">Overview</Tabs.Trigger>
-        <Tabs.Trigger value="notes">Notes Analysis</Tabs.Trigger>
-        <Tabs.Trigger value="literature">Literature Analysis</Tabs.Trigger>
-        <Tabs.Trigger value="research">Research Design</Tabs.Trigger>
+      <Tabs.List class="inline-flex h-10 items-center justify-center gap-4">
+        <Tabs.Trigger value="overview" class="tab-button">
+          <PieChart class="h-4 w-4 mr-2" />
+          Overview
+        </Tabs.Trigger>
+        <Tabs.Trigger value="notes" class="tab-button">
+          <FileText class="h-4 w-4 mr-2" />
+          Notes Analysis
+        </Tabs.Trigger>
+        <Tabs.Trigger value="literature" class="tab-button">
+          <BookText class="h-4 w-4 mr-2" />
+          Literature Analysis
+        </Tabs.Trigger>
+        <Tabs.Trigger value="research" class="tab-button">
+          <FlaskConical class="h-4 w-4 mr-2" />
+          Research Design
+        </Tabs.Trigger>
       </Tabs.List>
 
       <Tabs.Content value="overview" class="space-y-6">
@@ -1416,5 +1414,9 @@
     max-width: 90vw;
     max-height: 90vh;
     margin: 2.5vh auto;
+  }
+
+  .tab-button {
+    @apply inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-muted-foreground hover:text-foreground data-[state=active]:text-foreground data-[state=active]:font-semibold;
   }
 </style>
