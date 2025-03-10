@@ -2,10 +2,30 @@ import { projectStore } from "$lib/stores/ProjectStore.svelte";
 import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
 import { notesStore } from "$lib/stores/NotesStore.svelte";
 
+interface LiteratureType {
+  value: string;
+  label?: string;
+}
+
+interface Literature {
+  id: string;
+  name: string;
+  authors?: string[];
+  keywords?: string[];
+  type?: LiteratureType;
+  publishYear?: string;
+  publisherName?: string;
+  researchDesign?: string;
+  analyticDesign?: string;
+  samplingDesign?: string;
+  measurementDesign?: string;
+  createdAt?: string;
+}
+
 export const groupColorMap = {
   1: "#006eff",
   2: "#0d52f5",
-  3: "#1444b8",
+  3: "#8b00ff",
   4: "#f8f408",
   5: "#e4e118",
   6: "#b81312",
@@ -110,7 +130,7 @@ export async function retrieveGraphData(urlProjectId: string) {
     const noteRecords = notesStore.notes;
 
     // Comment out model records
-    const modelRecords = []; // Empty array as placeholder
+    const modelRecords: any[] = []; // Empty array as placeholder
 
     // Return or process the data as needed
     return {
@@ -160,31 +180,66 @@ export async function createGraphData(urlProjectId: string) {
   };
 
   literatureRecords.forEach((literature) => {
-    addNode(literature.name, 3, "literature", 1, literature.createdAt || "");
+    addNode(
+      literature.name,
+      3,
+      "literature",
+      getNodeSize("literature"),
+      literature.createdAt || ""
+    );
 
     if (literature.authors) {
-      // Check if authors is an array before using forEach
-      if (Array.isArray(literature.authors)) {
-        literature.authors.forEach((author: string) => {
-          addNode(author, 5, "authors", 3, literature.createdAt || "");
+      // Convert authors to array if it's a string
+      const authorsList =
+        typeof literature.authors === "string"
+          ? JSON.parse(literature.authors)
+          : literature.authors;
+
+      if (Array.isArray(authorsList)) {
+        authorsList.forEach((author: string) => {
+          addNode(
+            author,
+            5,
+            "authors",
+            getNodeSize("authors"),
+            literature.createdAt || ""
+          );
           addLink(literature.name, author, 1);
         });
       }
     }
 
     if (literature.keywords) {
-      // Check if keywords is an array before using forEach
-      if (Array.isArray(literature.keywords)) {
-        literature.keywords.forEach((keyword: string) => {
-          addNode(keyword, 1, "keyword", 3, literature.createdAt || "");
+      // Convert keywords to array if it's a string
+      const keywordsList =
+        typeof literature.keywords === "string"
+          ? JSON.parse(literature.keywords)
+          : literature.keywords;
+
+      if (Array.isArray(keywordsList)) {
+        keywordsList.forEach((keyword: string) => {
+          addNode(
+            keyword,
+            1,
+            "keyword",
+            getNodeSize("keyword"),
+            literature.createdAt || ""
+          );
           addLink(literature.name, keyword, 1);
         });
       }
     }
 
-    if (literature.type && typeof literature.type === "object") {
-      addNode(literature.type.value, 8, "type", 3, literature.createdAt || "");
-      addLink(literature.name, literature.type.value, 1);
+    if (literature.type) {
+      // Handle type as string since that's what the Literature interface defines
+      addNode(
+        literature.type,
+        8,
+        "type",
+        getNodeSize("type"),
+        literature.createdAt || ""
+      );
+      addLink(literature.name, literature.type, 1);
     }
 
     if (literature.publishYear) {
@@ -192,7 +247,7 @@ export async function createGraphData(urlProjectId: string) {
         literature.publishYear,
         4,
         "year",
-        10,
+        getNodeSize("year"),
         literature.createdAt || ""
       );
       addLink(literature.name, literature.publishYear, 1);
@@ -203,7 +258,7 @@ export async function createGraphData(urlProjectId: string) {
         literature.publisherName,
         2,
         "publisher",
-        10,
+        getNodeSize("publisher"),
         literature.createdAt || ""
       );
       addLink(literature.name, literature.publisherName, 1);
@@ -214,7 +269,7 @@ export async function createGraphData(urlProjectId: string) {
         literature.researchDesign,
         6,
         "research_design",
-        5,
+        getNodeSize("research_design"),
         literature.createdAt || ""
       );
       addLink(literature.name, literature.researchDesign, 1);
@@ -225,7 +280,7 @@ export async function createGraphData(urlProjectId: string) {
         literature.analyticDesign,
         7,
         "analytic_design",
-        10,
+        getNodeSize("analytic_design"),
         literature.createdAt || ""
       );
       addLink(literature.name, literature.analyticDesign, 1);
@@ -236,7 +291,7 @@ export async function createGraphData(urlProjectId: string) {
         literature.samplingDesign,
         7,
         "sampling_design",
-        10,
+        getNodeSize("sampling_design"),
         literature.createdAt || ""
       );
       addLink(literature.name, literature.samplingDesign, 1);
@@ -247,7 +302,7 @@ export async function createGraphData(urlProjectId: string) {
         literature.measurementDesign,
         7,
         "measurement_design",
-        10,
+        getNodeSize("measurement_design"),
         literature.createdAt || ""
       );
       addLink(literature.name, literature.measurementDesign, 1);
@@ -268,7 +323,13 @@ export async function createGraphData(urlProjectId: string) {
 
   noteRecords.forEach((note) => {
     const noteLabel = getNodeLabel(note);
-    addNode(noteLabel, 9, "note", 2, note.created_at || note.createdAt || "");
+    addNode(
+      noteLabel,
+      9,
+      "note",
+      getNodeSize("note"),
+      note.created_at || note.createdAt || ""
+    );
 
     if (note.literatureId) {
       const literature = literatureRecords.find(
