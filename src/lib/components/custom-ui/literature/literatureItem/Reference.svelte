@@ -15,6 +15,7 @@
     { value: "Chicago", label: "Chicago" },
     { value: "Harvard", label: "Harvard" },
     { value: "IEEE", label: "IEEE" },
+    { value: "ASA", label: "ASA" },
   ];
 
   let citationStyle = $state(citationStyles[0]);
@@ -610,6 +611,148 @@
     return components.join(" ");
   }
 
+  function formatASACitation(citation: APAJournalCitation): string {
+    function formatASAAuthor(author: string): string {
+      const parts = author.split(", ");
+      const lastName = parts[0] || "";
+      const firstName = parts[1] || "";
+      return `${lastName}, ${firstName}`;
+    }
+
+    function formatASAAuthors(authors: string[]): string {
+      if (authors.length === 0) return "";
+      if (authors.length === 1) return formatASAAuthor(authors[0]);
+      if (authors.length === 2) {
+        return `${formatASAAuthor(authors[0])} and ${formatASAAuthor(authors[1])}`;
+      }
+      let authorsText = authors.slice(0, -1).map(formatASAAuthor).join(", ");
+      return `${authorsText}, and ${formatASAAuthor(authors[authors.length - 1])}`;
+    }
+
+    let components: string[] = [];
+
+    // 1. Authors
+    if (citation.authors.length > 0) {
+      components.push(formatASAAuthors(citation.authors));
+    } else {
+      // No author - use title alphabetically for books
+      if (citation.type.value === "Book") {
+        components.push(citation.title + ".");
+        components.push(citation.publicationYear + ".");
+        return components.join(" ");
+      }
+    }
+
+    // 2. Year
+    components.push(citation.publicationYear + ".");
+
+    // 3. Title with appropriate formatting based on type
+    switch (citation.type.value) {
+      case "Journal Article":
+      case "Literature Review":
+      case "Other":
+        components.push(`"${citation.title}."`);
+        break;
+      case "Book":
+        components.push(`<i>${citation.title}</i>.`);
+        break;
+      case "Book Chapter":
+        components.push(`"${citation.title}."`);
+        break;
+      case "Conference Presentation":
+        components.push(`"${citation.title}."`);
+        break;
+      default:
+        components.push(`"${citation.title}."`);
+    }
+
+    // 4-5. Publication details (journal, volume, pages)
+    switch (citation.type.value) {
+      case "Journal Article":
+      case "Literature Review":
+      case "Other":
+        components.push(`<i>${citation.journalName}</i>`);
+        if (citation.volumeNumber) {
+          // Format with volume and issue number if available
+          if (citation.issueNumber) {
+            components.push(
+              `${citation.volumeNumber}(${citation.issueNumber}):`
+            );
+          } else {
+            components.push(`${citation.volumeNumber}:`);
+          }
+
+          // Add page range
+          if (citation.startPage && citation.endPage) {
+            components.push(`${citation.startPage}-${citation.endPage}.`);
+          } else if (citation.startPage) {
+            components.push(`${citation.startPage}.`);
+          }
+        }
+        break;
+
+      case "Book":
+        // Add place of publication and publisher
+        if (citation.city) {
+          components.push(`${citation.city}:`);
+        }
+        if (citation.journalName) {
+          components.push(`${citation.journalName}.`);
+        }
+        break;
+
+      case "Book Chapter":
+        // Format for book chapter
+        components.push(`Pp. ${citation.startPage}-${citation.endPage} in`);
+        components.push(`<i>${citation.secondName}</i>,`);
+
+        // Add editors if available
+        if (citation.editors && citation.editors.length > 0) {
+          if (citation.editors.length === 1) {
+            components.push(
+              `edited by ${formatASAAuthor(citation.editors[0])}.`
+            );
+          } else {
+            components.push(`edited by ${formatASAAuthors(citation.editors)}.`);
+          }
+        }
+
+        // Add place and publisher
+        if (citation.city) {
+          components.push(`${citation.city}:`);
+        }
+        if (citation.journalName) {
+          components.push(`${citation.journalName}.`);
+        }
+        break;
+
+      case "Conference Presentation":
+        // Conference presentation formatting
+        components.push(`Paper presented at the ${citation.journalName},`);
+        if (citation.city) {
+          components.push(`${citation.city}.`);
+        }
+        break;
+    }
+
+    // Handle URL or DOI for electronic resources
+    if (
+      citation.url &&
+      citation.type.value !== "Book" &&
+      citation.type.value !== "Book Chapter"
+    ) {
+      const retrievedDate = new Date().toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      });
+
+      components.push(`Retrieved ${retrievedDate} (${citation.url}).`);
+    }
+
+    return components.join(" ");
+  }
+
   let formattedCitation = $state("");
 
   $effect(() => {
@@ -628,6 +771,9 @@
         break;
       case "IEEE":
         formattedCitation = formatIEEECitation(citation);
+        break;
+      case "ASA":
+        formattedCitation = formatASACitation(citation);
         break;
       default:
         formattedCitation = formatAPACitation(citation);
