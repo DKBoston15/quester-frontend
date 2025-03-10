@@ -1,0 +1,113 @@
+---
+description: Svelte 5 Rules and Best Practices
+globs: *.svelte
+alwaysApply: false
+---
+Svelte 5 Rules and Best Practices
+Core Concepts
+
+Runes: Use the new reactive primitives ($state, $derived, $effect) for managing state
+Components: Svelte components are .svelte files containing markup, styles, and logic
+Props: Access props using the $props() rune instead of export let
+Reactivity: Prefer runes over Svelte 4's $: reactive declarations
+Server/Client: Use .svelte.js and .svelte.ts files for shared logic with rune support
+
+Syntax and Structure
+Component Structure
+svelteCopy<script>
+  // Imports at the top
+  import { Component } from '$lib/components';
+  
+  // Reactive state
+  let count = $state(0);
+  let doubled = $derived(count * 2);
+  
+  // Props with destructuring 
+  let { name = 'World' } = $props();
+  
+  // Side effects
+  $effect(() => {
+    // Runs on mount and when dependencies change
+    console.log(`The count is ${count}`);
+    
+    return () => {
+      // Optional cleanup
+    };
+  });
+  
+  // Event handlers
+  function increment() {
+    count++;
+  }
+</script>
+
+<!-- Markup (HTML with Svelte features) -->
+<h1>Hello {name}!</h1>
+<button onclick={increment}>Count: {count}</button>
+<p>Doubled: {doubled}</p>
+
+<!-- Snippets (reusable markup) -->
+{#snippet item(text)}
+  <li>{text}</li>
+{/snippet}
+
+<ul>
+  {@render item('First item')}
+  {@render item('Second item')}
+</ul>
+
+<style>
+  /* Scoped CSS */
+  h1 {
+    color: purple;
+  }
+</style>
+Best Practices
+State Management
+
+Use $state(value) for simple component state
+Use $state.raw(obj) for non-proxied state when deep reactivity isn't needed
+Use $derived for computed values instead of computed functions
+Use $effect for side effects instead of onMount/afterUpdate
+
+Props
+
+Define props with $props() rune and destructure immediately
+Use $bindable() for props that need two-way binding
+Provide default values with standard JS destructuring: let { value = 'default' } = $props()
+
+Rendering and Performance
+
+Use {#snippet} and {@render} for reusable template parts
+Use {#key expression} to force re-rendering when a value changes
+Use untrack(() => {}) to exclude code from reactivity tracking
+
+Events
+
+Use standard HTML event attributes: onclick={handler}
+For custom events, use event.detail to pass data
+
+Transitions
+
+Use built-in transitions: transition:fade, transition:slide, etc.
+Customize transitions with parameters: transition:fade={{ duration: 300 }}
+Use in: and out: for entry/exit-specific transitions
+
+Error Handling
+
+Use <svelte:boundary> to catch and handle errors within components
+Provide a fallback UI with the failed snippet
+
+Accessibility
+
+Maintain proper HTML semantics and structure
+Use ARIA attributes when necessary
+Test with screen readers regularly
+
+Migration from Svelte 4
+
+Replace export let prop with let { prop } = $props()
+Replace $: derived = expression with let derived = $derived(expression)
+Replace onMount/afterUpdate with $effect
+Replace slots with snippets using {#snippet} and {@render}
+Update store usage (subscriptions via $store still work)

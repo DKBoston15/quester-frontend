@@ -60,15 +60,28 @@
   let name = $state(props.outcome.name);
   let isEditing = $state(false);
   let saveTimeout: NodeJS.Timeout;
-  let currentOutcome = $state({
-    ...props.outcome,
-    userId: props.outcome.userId || auth.user?.id,
-    type: props.outcome.type || "QUESTION", // Default type if not provided
+  let lastSavedContent = $state(JSON.stringify(content));
+  let currentOutcome = $state<Outcome>({
+    id: props.outcome.id,
+    name: props.outcome.name,
+    projectId: props.outcome.projectId,
+    type: props.outcome.type || "QUESTION",
+    content: props.outcome.content,
+    sectionType: props.outcome.sectionType,
+    createdAt: props.outcome.createdAt,
+    updatedAt: props.outcome.updatedAt,
+    userId: props.outcome.userId || auth.user?.id?.toString(),
   });
 
   // Auto-save functionality
   $effect(() => {
-    if (content !== currentOutcome.content || name !== currentOutcome.name) {
+    if (!currentOutcome) return;
+
+    const currentContentString = JSON.stringify(content);
+    const hasContentChanged = currentContentString !== lastSavedContent;
+    const hasNameChanged = name !== currentOutcome.name;
+
+    if (hasContentChanged || hasNameChanged) {
       clearTimeout(saveTimeout);
       saveTimeout = setTimeout(async () => {
         try {
@@ -76,13 +89,26 @@
             console.error("Cannot auto-save outcome: No outcome ID provided");
             return;
           }
-          const contentToSave = JSON.stringify(content);
+
           const response = await outcomeStore.updateOutcome(currentOutcome.id, {
-            content: contentToSave,
+            content: currentContentString,
             name,
             type: currentOutcome.type,
           });
-          currentOutcome = response.outcome;
+
+          // Ensure we maintain all fields when updating currentOutcome
+          currentOutcome = {
+            id: response.outcome.id,
+            name: response.outcome.name,
+            projectId: response.outcome.projectId,
+            type: response.outcome.type || currentOutcome.type,
+            content: response.outcome.content,
+            sectionType: response.outcome.sectionType,
+            createdAt: response.outcome.createdAt || currentOutcome.createdAt,
+            updatedAt: response.outcome.updatedAt || currentOutcome.updatedAt,
+            userId: response.outcome.userId || currentOutcome.userId,
+          };
+          lastSavedContent = currentContentString;
         } catch (err) {
           console.error("Failed to auto-save outcome:", err);
         }
@@ -90,7 +116,7 @@
     }
   });
 
-  function getTypeColor(type: string): string {
+  function getTypeColor(type: string | undefined): string {
     if (!type) return "bg-gray-500 dark:bg-gray-700";
 
     switch (type.toUpperCase()) {
@@ -100,6 +126,8 @@
         return "bg-green-500 dark:bg-green-700";
       case "GAP":
         return "bg-yellow-500 dark:bg-yellow-700";
+      case "LINK":
+        return "bg-purple-500 dark:bg-purple-700";
       default:
         return "bg-gray-500 dark:bg-gray-700";
     }
@@ -126,20 +154,28 @@
             {name}
           </h1>
         {/if}
-        <Badge class={getTypeColor(currentOutcome.type)}>
-          {currentOutcome.type}
-        </Badge>
+        {#if currentOutcome?.type}
+          <Badge class={getTypeColor(currentOutcome.type)}>
+            {currentOutcome.type}
+          </Badge>
+        {/if}
       </div>
     </div>
-    <div class="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-      <span
-        >Created {new Date(currentOutcome.createdAt).toLocaleDateString()}</span
-      >
-      <span>•</span>
-      <span
-        >Updated {new Date(currentOutcome.updatedAt).toLocaleDateString()}</span
-      >
-    </div>
+    {#if currentOutcome?.createdAt && currentOutcome?.updatedAt}
+      <div class="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+        <span
+          >Created {new Date(
+            currentOutcome.createdAt
+          ).toLocaleDateString()}</span
+        >
+        <span>•</span>
+        <span
+          >Updated {new Date(
+            currentOutcome.updatedAt
+          ).toLocaleDateString()}</span
+        >
+      </div>
+    {/if}
   </header>
 
   <!-- Editor -->

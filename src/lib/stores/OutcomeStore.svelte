@@ -20,6 +20,11 @@
   // Predefined outcome templates
   const outcomeTemplates = [
     {
+      name: "Link",
+      content: "",
+      type: "LINK",
+    },
+    {
       name: "Research Question",
       content: JSON.stringify({
         type: "doc",
@@ -1131,6 +1136,9 @@
             data.content = template.content;
             data.type = template.type;
           }
+        } else if (data.type === "LINK") {
+          // For LINK type, ensure content is passed through
+          data.content = data.content || "";
         } else if (data.type) {
           // If no template name but type is specified, use the first template of that type
           const defaultTemplate = outcomeTemplates.find(

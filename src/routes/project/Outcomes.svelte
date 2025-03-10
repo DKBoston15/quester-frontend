@@ -7,7 +7,14 @@
   import * as Card from "$lib/components/ui/card";
   import { Root, Content, Title, Description } from "$lib/components/ui/dialog";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import { Plus, Trash2, Pencil, Search, Info } from "lucide-svelte";
+  import {
+    Plus,
+    Trash2,
+    Pencil,
+    Search,
+    Info,
+    Link as LinkIcon,
+  } from "lucide-svelte";
   import { navigate } from "svelte-routing";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { fly } from "svelte/transition";
@@ -35,6 +42,9 @@
   let outcomeToDelete = $state<Outcome | null>(null);
   let outcomeToRename = $state<Outcome | null>(null);
   let renameValue = $state("");
+  let editLinkUrl = $state("");
+  let selectedType = $state("QUESTION");
+  let linkUrl = $state("");
 
   // Load outcomes data when project changes
   $effect(() => {
@@ -54,6 +64,16 @@
     outcomeStore.clearAll();
   });
 
+  // Reset form when dialog closes
+  $effect(() => {
+    if (!showCreateDialog) {
+      newOutcomeName = "New Outcome";
+      selectedTemplate = "";
+      selectedType = "QUESTION";
+      linkUrl = "";
+    }
+  });
+
   async function handleCreateOutcome() {
     if (!projectStore.currentProject?.id) {
       console.error("No current project ID available");
@@ -61,14 +81,21 @@
     }
 
     try {
+      // For LINK type, ensure we have both name and URL
+      if (selectedType === "LINK" && !linkUrl) {
+        console.error("URL is required for Link type outcomes");
+        return;
+      }
+
       const newOutcome = await outcomeStore.createOutcome(
         {
           name: newOutcomeName,
           projectId: projectStore.currentProject.id,
-          type: "QUESTION", // Always set a default type
+          type: selectedType,
+          content: selectedType === "LINK" ? linkUrl : undefined,
           userId: auth.user?.id?.toString(),
         },
-        selectedTemplate
+        selectedType === "LINK" ? undefined : selectedTemplate
       );
 
       if (!newOutcome) {
@@ -84,8 +111,13 @@
       showCreateDialog = false;
       newOutcomeName = "New Outcome";
       selectedTemplate = "";
-      const path = `/project/${projectStore.currentProject.id}/outcomes/${newOutcome.id}`;
-      navigate(path);
+      selectedType = "QUESTION";
+      linkUrl = "";
+
+      if (newOutcome.type !== "LINK") {
+        const path = `/project/${projectStore.currentProject.id}/outcomes/${newOutcome.id}`;
+        navigate(path);
+      }
     } catch (err) {
       console.error("Failed to create outcome:", err);
     }
@@ -100,9 +132,20 @@
   }
 
   function handleCardClick(outcome: Outcome) {
-    const projectId = projectStore.currentProject?.id;
-    if (projectId && outcome.id) {
-      navigate(`/project/${projectId}/outcomes/${outcome.id}`);
+    if (outcome.type === "LINK") {
+      // Ensure URL has a protocol
+      let url = outcome.content || "";
+      console.log(outcome);
+      if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
+        url = "https://" + url;
+      }
+      console.log(url);
+      window.open(url, "_blank", "noopener,noreferrer");
+    } else {
+      const projectId = projectStore.currentProject?.id;
+      if (projectId && outcome.id) {
+        navigate(`/project/${projectId}/outcomes/${outcome.id}`);
+      }
     }
   }
 
@@ -126,6 +169,7 @@
   function handleRenameClick(outcome: Outcome) {
     outcomeToRename = outcome;
     renameValue = outcome.name;
+    editLinkUrl = outcome.type === "LINK" ? outcome.content || "" : "";
     showRenameDialog = true;
   }
 
@@ -133,11 +177,18 @@
     if (!outcomeToRename?.id) return;
 
     try {
+      const updateData: Partial<Outcome> = {
+        name: renameValue,
+      };
+
+      // Include URL update for Link type outcomes
+      if (outcomeToRename.type === "LINK") {
+        updateData.content = editLinkUrl;
+      }
+
       const updatedOutcome = await outcomeStore.updateOutcome(
         outcomeToRename.id,
-        {
-          name: renameValue,
-        }
+        updateData
       );
 
       if (!updatedOutcome) {
@@ -154,28 +205,17 @@
       showRenameDialog = false;
       outcomeToRename = null;
       renameValue = "";
+      editLinkUrl = "";
     } catch (err) {
       console.error("Failed to rename outcome:", err);
     }
   }
 
   $effect(() => {
-    if (!showCreateDialog) {
-      newOutcomeName = "New Outcome";
-      selectedTemplate = "";
-    }
-  });
-
-  $effect(() => {
-    if (!showDeleteDialog) {
-      outcomeToDelete = null;
-    }
-  });
-
-  $effect(() => {
     if (!showRenameDialog) {
       outcomeToRename = null;
       renameValue = "";
+      editLinkUrl = "";
     }
   });
 </script>
@@ -282,12 +322,21 @@
                   class="h-full pb-4 border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all relative overflow-hidden"
                 >
                   <Card.Header class="pb-2">
-                    <div class="flex justify-between items-start">
-                      <Card.Title class="text-lg font-bold"
-                        >{outcome.name}</Card.Title
-                      >
+                    <div class="flex justify-between items-start gap-4">
+                      <div class="min-w-0 flex-1">
+                        <Card.Title class="text-lg font-bold truncate"
+                          >{outcome.name}</Card.Title
+                        >
+                        {#if outcome.type === "LINK" && outcome.content}
+                          <p
+                            class="text-sm text-muted-foreground mt-1 truncate"
+                          >
+                            {outcome.content}
+                          </p>
+                        {/if}
+                      </div>
                       <div
-                        class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                        class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0"
                       >
                         <Button
                           variant="outline"
@@ -319,9 +368,12 @@
                       <div class="flex flex-col gap-1 mt-1">
                         <div class="flex justify-between">
                           <span class="text-muted-foreground">Type:</span>
-                          <span class="capitalize"
-                            >{outcome.type.toLowerCase()}</span
-                          >
+                          <span class="capitalize flex items-center gap-1">
+                            {#if outcome.type === "LINK"}
+                              <LinkIcon class="h-3 w-3" />
+                            {/if}
+                            {outcome.type.toLowerCase()}
+                          </span>
                         </div>
                         <div class="flex justify-between">
                           <span class="text-muted-foreground">Created:</span>
@@ -370,35 +422,67 @@
     </div>
     <div class="grid gap-4 py-4">
       <div class="grid grid-cols-4 items-center gap-4">
-        <label for="name" class="text-right"> Name </label>
-        <input
-          id="name"
-          bind:value={newOutcomeName}
-          class="col-span-3 flex h-10 w-full rounded-md border-2 border-black dark:border-dark-border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-        />
-      </div>
-      <div class="grid grid-cols-4 items-center gap-4">
-        <label for="template" class="text-right"> Template </label>
+        <label for="type" class="text-right"> Type </label>
         <div class="col-span-3">
-          <Select.Root bind:value={selectedTemplate} type="single">
+          <Select.Root bind:value={selectedType} type="single">
             <Select.Trigger>
-              <span class="truncate"
-                >{selectedTemplate || "Select a template"}</span
-              >
+              <span class="truncate">
+                {selectedType === "LINK" ? "Link" : "Research Outcome"}
+              </span>
             </Select.Trigger>
             <Select.Content>
               <Select.Group>
-                <div class="px-2 py-1.5 text-sm font-medium">Templates</div>
-                {#each outcomeStore.templates as template}
-                  <Select.Item value={template.name}>
-                    {template.name}
-                  </Select.Item>
-                {/each}
+                <div class="px-2 py-1.5 text-sm font-medium">Type</div>
+                <Select.Item value="QUESTION">Research Outcome</Select.Item>
+                <Select.Item value="LINK">Link</Select.Item>
               </Select.Group>
             </Select.Content>
           </Select.Root>
         </div>
       </div>
+      <div class="grid grid-cols-4 items-center gap-4">
+        <label for="name" class="text-right">Name</label>
+        <input
+          id="name"
+          bind:value={newOutcomeName}
+          placeholder="Enter a name"
+          class="col-span-3 flex h-10 w-full rounded-md border-2 border-black dark:border-dark-border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        />
+      </div>
+      {#if selectedType === "LINK"}
+        <div class="grid grid-cols-4 items-center gap-4">
+          <label for="url" class="text-right">URL</label>
+          <input
+            id="url"
+            bind:value={linkUrl}
+            placeholder="https://example.com"
+            class="col-span-3 flex h-10 w-full rounded-md border-2 border-black dark:border-dark-border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          />
+        </div>
+      {:else}
+        <div class="grid grid-cols-4 items-center gap-4">
+          <label for="template" class="text-right"> Template </label>
+          <div class="col-span-3">
+            <Select.Root bind:value={selectedTemplate} type="single">
+              <Select.Trigger>
+                <span class="truncate"
+                  >{selectedTemplate || "Select a template"}</span
+                >
+              </Select.Trigger>
+              <Select.Content>
+                <Select.Group>
+                  <div class="px-2 py-1.5 text-sm font-medium">Templates</div>
+                  {#each outcomeStore.templates.filter((t) => t.type !== "LINK") as template}
+                    <Select.Item value={template.name}>
+                      {template.name}
+                    </Select.Item>
+                  {/each}
+                </Select.Group>
+              </Select.Content>
+            </Select.Root>
+          </div>
+        </div>
+      {/if}
     </div>
     <div class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
       <Button
@@ -457,9 +541,10 @@
     class="sm:max-w-[425px] border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
   >
     <div class="flex flex-col space-y-1.5 text-center sm:text-left">
-      <Title>Rename Outcome</Title>
+      <Title>Edit Outcome</Title>
       <Description>
-        Enter a new name for "{outcomeToRename?.name}"
+        Update the {outcomeToRename?.type === "LINK" ? "name and URL" : "name"} for
+        "{outcomeToRename?.name}"
       </Description>
     </div>
     <div class="grid gap-4 py-4">
@@ -471,6 +556,17 @@
           class="col-span-3 flex h-10 w-full rounded-md border-2 border-black dark:border-dark-border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         />
       </div>
+      {#if outcomeToRename?.type === "LINK"}
+        <div class="grid grid-cols-4 items-center gap-4">
+          <label for="editUrl" class="text-right"> URL </label>
+          <input
+            id="editUrl"
+            bind:value={editLinkUrl}
+            placeholder="https://example.com"
+            class="col-span-3 flex h-10 w-full rounded-md border-2 border-black dark:border-dark-border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          />
+        </div>
+      {/if}
     </div>
     <div class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
       <Button
@@ -484,7 +580,7 @@
         onclick={handleRenameOutcome}
         class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] transition-all"
       >
-        Rename
+        Save Changes
       </Button>
     </div>
   </Content>
