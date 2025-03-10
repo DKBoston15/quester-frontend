@@ -18,6 +18,25 @@ export interface Note {
   updatedAt: string;
 }
 
+export interface Outcome {
+  id: string;
+  user_id: number;
+  projectId: string;
+  name: string;
+  type: string;
+  content: string;
+  section_type:
+    | {
+        value: string;
+        label: string;
+      }
+    | string;
+  created_at: string;
+  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Literature {
   id: string;
   name: string;

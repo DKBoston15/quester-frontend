@@ -5,21 +5,13 @@
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
   import { Button } from "$lib/components/ui/button";
   import * as Card from "$lib/components/ui/card";
-  import {
-    Root,
-    Content,
-    Title,
-    Description,
-    Close,
-    Portal,
-    Overlay,
-  } from "$lib/components/ui/dialog";
+  import { Root, Content, Title, Description } from "$lib/components/ui/dialog";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { Plus, Trash2, Pencil, Search, Info } from "lucide-svelte";
   import { navigate } from "svelte-routing";
   import type { Node, Edge } from "@xyflow/svelte";
   import * as Tooltip from "$lib/components/ui/tooltip";
-  import { fly, fade, slide } from "svelte/transition";
+  import { fly } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
 
   interface Model {

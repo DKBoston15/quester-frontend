@@ -16,6 +16,7 @@
   import Progress from "./project/Progress.svelte";
   import Settings from "./project/Settings.svelte";
   import Analysis from "./project/Analysis.svelte";
+  import OutcomeView from "./project/OutcomeView.svelte";
 
   type SectionKey =
     | "dashboard"
@@ -48,6 +49,7 @@
       view?: string;
       literatureId?: string;
       modelId?: string;
+      outcomeId?: string;
     };
   }>();
 
@@ -92,6 +94,11 @@
         {:else if props.params.view === "models" && props.params.modelId}
           <ModelView
             modelId={props.params.modelId}
+            projectId={props.params.projectId}
+          />
+        {:else if props.params.view === "outcomes" && props.params.outcomeId}
+          <OutcomeView
+            outcomeId={props.params.outcomeId}
             projectId={props.params.projectId}
           />
         {:else}

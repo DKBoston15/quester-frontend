@@ -141,6 +141,28 @@
             <div>Invalid project ID</div>
           {/if}
         </Route>
+        <Route path="/project/:projectId/outcomes/:outcomeId" let:params>
+          {#if params.projectId && params.outcomeId}
+            <Project
+              params={{
+                projectId: params.projectId,
+                view: "outcomes",
+                outcomeId: params.outcomeId,
+              }}
+            />
+          {:else}
+            <div>Invalid project or outcome ID</div>
+          {/if}
+        </Route>
+        <Route path="/project/:projectId/outcomes" let:params>
+          {#if params.projectId}
+            <Project
+              params={{ projectId: params.projectId, view: "outcomes" }}
+            />
+          {:else}
+            <div>Invalid project ID</div>
+          {/if}
+        </Route>
         <Route path="/project/:projectId" let:params>
           {#if params.projectId}
             <Project params={{ projectId: params.projectId }} />

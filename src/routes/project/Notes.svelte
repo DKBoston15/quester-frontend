@@ -8,14 +8,7 @@
   import NoteEditor from "$lib/components/notes/NoteEditor.svelte";
   import { Button } from "$lib/components/ui/button";
   import { Tabs, TabsList, TabsTrigger } from "$lib/components/ui/tabs";
-  import {
-    ChevronDown,
-    Layout,
-    Maximize2,
-    Minimize2,
-    Plus,
-    Command as CommandIcon,
-  } from "lucide-svelte";
+  import { Layout, Maximize2, Minimize2, Plus } from "lucide-svelte";
   import { auth } from "$lib/stores/AuthStore.svelte";
   // Props
   const { literatureId = undefined } = $props();
