@@ -17,7 +17,7 @@
   import Settings from "./project/Settings.svelte";
   import Analysis from "./project/Analysis.svelte";
   import OutcomeView from "./project/OutcomeView.svelte";
-
+  import Chat from "./project/Chat.svelte";
   type SectionKey =
     | "dashboard"
     | "literature"
@@ -28,7 +28,8 @@
     | "analysis"
     | "connections"
     | "progress"
-    | "project_settings";
+    | "project_settings"
+    | "chat";
 
   const components: Record<SectionKey, any> = {
     dashboard: Dashboard,
@@ -41,6 +42,7 @@
     connections: Connections,
     progress: Progress,
     project_settings: Settings,
+    chat: Chat,
   };
 
   const props = $props<{

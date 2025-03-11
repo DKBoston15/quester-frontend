@@ -20,6 +20,7 @@
     Building2,
     ChartNetwork,
     TextSearch,
+    MessageCircle,
   } from "lucide-svelte";
 
   type Route = {
@@ -72,6 +73,11 @@
         title: "Notes",
         icon: Pencil,
         link: `/project/${props.project.id}/notes`,
+      },
+      {
+        title: "Chat",
+        icon: MessageCircle,
+        link: `/project/${props.project.id}/chat`,
       },
       {
         title: "Analysis",
