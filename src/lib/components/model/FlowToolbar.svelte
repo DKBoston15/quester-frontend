@@ -78,14 +78,14 @@
       >
       <div class="flex gap-2">
         <button
-          on:click={() => addNode("ResizableNode")}
+          onclick={() => addNode("ResizableNode")}
           class="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-md bg-white dark:bg-slate-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors"
         >
           <span class="w-4 h-4 border-2 border-current rounded-sm"></span>
           Rectangle
         </button>
         <button
-          on:click={() => addNode("CircleNode")}
+          onclick={() => addNode("CircleNode")}
           class="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-md bg-white dark:bg-slate-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors"
         >
           <span class="w-4 h-4 border-2 border-current rounded-full"></span>
@@ -128,9 +128,10 @@
     </div>
 
     <!-- Download Section -->
+    <hr class="border-gray-200 dark:border-gray-700" />
     <div class="flex flex-col gap-2">
       <span class="text-xs font-medium text-gray-700 dark:text-gray-300"
-        >Download</span
+        >Background Color for Download</span
       >
       <div class="flex flex-col gap-2">
         <div class="flex items-center gap-2">
@@ -143,11 +144,6 @@
                 ? 'opacity-30'
                 : ''} w-8 h-8 rounded cursor-pointer"
             />
-            <div
-              class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none"
-            >
-              Background Color
-            </div>
           </div>
           <label
             class="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap"
@@ -161,7 +157,7 @@
           </label>
         </div>
         <button
-          on:click={downloadImage}
+          onclick={downloadImage}
           class="flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-md bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors"
         >
           <svg
