@@ -298,6 +298,91 @@
         console.error("Error fetching status changes:", error);
       }
 
+      // Fetch and add design changes
+      try {
+        const response = await fetch(
+          `http://localhost:3333/events?type=project.design.changed&subjectId=${currentProject.id}`,
+          {
+            credentials: "include",
+          }
+        );
+        if (response.ok) {
+          const designChanges = await response.json();
+          designChanges.forEach((change: any) => {
+            const changeDate = new Date(change.createdAt);
+            const fieldName = change.data.field
+              .replace(/([A-Z])/g, " $1")
+              .replace(/^./, (str: string) => str.toUpperCase())
+              .replace(/\s(.)/g, (str: string) => " " + str.toUpperCase());
+            timelineItems.push({
+              id: `design_${change.id}`,
+              group: "project",
+              content: `${fieldName}: ${change.data.previousValue || "None"} → ${change.data.newValue}`,
+              start: changeDate,
+              type: "point",
+              className: "design-change-item",
+              itemData: { ...change.data, fieldName },
+            });
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching design changes:", error);
+      }
+
+      // Fetch and add model creations
+      try {
+        const response = await fetch(
+          `http://localhost:3333/events?type=model.created&subjectId=${currentProject.id}`,
+          {
+            credentials: "include",
+          }
+        );
+        if (response.ok) {
+          const modelEvents = await response.json();
+          modelEvents.forEach((event: any) => {
+            const changeDate = new Date(event.createdAt);
+            timelineItems.push({
+              id: `model_${event.id}`,
+              group: "project",
+              content: `Created Model: ${event.data.name}`,
+              start: changeDate,
+              type: "point",
+              className: "model-item",
+              itemData: event.data,
+            });
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching model events:", error);
+      }
+
+      // Fetch and add outcome creations
+      try {
+        const response = await fetch(
+          `http://localhost:3333/events?type=outcome.created&subjectId=${currentProject.id}`,
+          {
+            credentials: "include",
+          }
+        );
+        if (response.ok) {
+          const outcomeEvents = await response.json();
+          outcomeEvents.forEach((event: any) => {
+            const changeDate = new Date(event.createdAt);
+            timelineItems.push({
+              id: `outcome_${event.id}`,
+              group: "project",
+              content: `Created ${event.data.type} Outcome: ${event.data.name}`,
+              start: changeDate,
+              type: "point",
+              className: "outcome-item",
+              itemData: event.data,
+            });
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching outcome events:", error);
+      }
+
       // Group literature items by date
       const litByDate = new Map<string, any[]>();
       literatureStore.data.forEach((lit) => {
@@ -445,6 +530,34 @@
             `Time: ${time}`,
             `Previous Status: ${previousStatus || "None"}`,
             `New Status: ${newStatus}`,
+          ];
+          showDialog = true;
+        } else if (selectedId.startsWith("design_")) {
+          dialogTitle = "Project Design Change";
+          const time = new Date(selectedItem.start).toLocaleString();
+          const { fieldName, previousValue, newValue } = selectedItem.itemData;
+          dialogContent = [
+            `Time: ${time}`,
+            `Design Type: ${fieldName}`,
+            `Previous Design: ${previousValue || "None"}`,
+            `New Design: ${newValue}`,
+          ];
+          showDialog = true;
+        } else if (selectedId.startsWith("model_")) {
+          dialogTitle = "Model Created";
+          const time = new Date(selectedItem.start).toLocaleString();
+          const { name } = selectedItem.itemData;
+          dialogContent = [`Time: ${time}`, `Model Name: ${name}`];
+          showDialog = true;
+        } else if (selectedId.startsWith("outcome_")) {
+          dialogTitle = "Outcome Created";
+          const time = new Date(selectedItem.start).toLocaleString();
+          const { name, type, sectionType } = selectedItem.itemData;
+          dialogContent = [
+            `Time: ${time}`,
+            `Name: ${name}`,
+            `Type: ${type}`,
+            ...(sectionType ? [`Section: ${sectionType}`] : []),
           ];
           showDialog = true;
         }
@@ -802,6 +915,12 @@
     color: white;
   }
 
+  :global(.design-change-item) {
+    background-color: #8b5cf6 !important;
+    border-color: #7c3aed !important;
+    color: white;
+  }
+
   :global(.vis-time-axis .vis-text) {
     color: var(--foreground);
   }
@@ -922,5 +1041,17 @@
 
   :global(.level-progress > div) {
     @apply bg-gradient-to-r transition-all duration-500 shadow-lg;
+  }
+
+  :global(.model-item) {
+    background-color: #06b6d4 !important;
+    border-color: #0891b2 !important;
+    color: white;
+  }
+
+  :global(.outcome-item) {
+    background-color: #10b981 !important;
+    border-color: #059669 !important;
+    color: white;
   }
 </style>
