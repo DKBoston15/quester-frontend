@@ -74,11 +74,11 @@
         icon: Pencil,
         link: `/project/${props.project.id}/notes`,
       },
-      {
-        title: "Chat",
-        icon: MessageCircle,
-        link: `/project/${props.project.id}/chat`,
-      },
+      // {
+      //   title: "Research Assistant",
+      //   icon: MessageCircle,
+      //   link: `/project/${props.project.id}/chat`,
+      // },
       {
         title: "Analysis",
         icon: TextSearch,
