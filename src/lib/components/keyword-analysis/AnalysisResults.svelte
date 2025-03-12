@@ -70,76 +70,33 @@
   updateKeywordsText();
 
   function getKeywordFrequency(keyword: string) {
-    if (!frequencyData) return { count: 0, url: "" };
-
-    let maxCount = 0;
-
-    // Look through all timepoints to find the maximum count
-    for (const [timepoint, data] of Object.entries(frequencyData) as [
-      string,
-      any,
-    ][]) {
-      if (timepoint !== "combined" && data[keyword]?.count !== undefined) {
-        maxCount = Math.max(maxCount, data[keyword].count);
-      }
-    }
+    if (!frequencyData?.individual) return { count: 0, url: "" };
 
     return {
-      count: maxCount,
+      count: frequencyData.individual[keyword] || 0,
       url: `https://scholar.google.com/scholar?hl=en&q=${encodeURIComponent(keyword)}`,
     };
   }
 
   function getCooccurrenceData(keyword1: string, keyword2: string) {
-    if (!frequencyData) return { count: 0, url: "" };
+    if (!frequencyData?.pairs) return { count: 0, url: "" };
 
-    // Find the relevant timepoint for each term
-    const timepoints = Object.entries(frequencyData).filter(
-      ([key]) => key !== "combined"
-    ) as [string, any][];
-
-    let mostRelevantCount = 0;
-    let mostRelevantUrl = "";
-
-    // Check each timepoint to find where both terms appear
-    for (const [_, timepoint] of timepoints) {
-      const freq1 = timepoint[keyword1]?.count || 0;
-      const freq2 = timepoint[keyword2]?.count || 0;
-
-      // Only consider timepoints where both terms actually appear
-      if (freq1 > 0 && freq2 > 0) {
-        // For "Sleep deprivation" and "Parental efficacy" specifically
-        if (
-          (keyword1 === "Sleep deprivation" &&
-            keyword2 === "Parental efficacy") ||
-          (keyword1 === "Parental efficacy" && keyword2 === "Sleep deprivation")
-        ) {
-          // Use timepoint 1 value for this specific pair
-          if (frequencyData["1"] && timepoint === frequencyData["1"]) {
-            return {
-              count: Math.min(freq1, freq2),
-              url:
-                keyword1 === keyword2
-                  ? `https://scholar.google.com/scholar?hl=en&q=${encodeURIComponent(keyword1)}`
-                  : `https://scholar.google.com/scholar?hl=en&q="${encodeURIComponent(keyword1)}"+AND+"${encodeURIComponent(keyword2)}"`,
-            };
-          }
-        }
-
-        const minValue = Math.min(freq1, freq2);
-        if (minValue > mostRelevantCount) {
-          mostRelevantCount = minValue;
-          mostRelevantUrl =
-            keyword1 === keyword2
-              ? `https://scholar.google.com/scholar?hl=en&q=${encodeURIComponent(keyword1)}`
-              : `https://scholar.google.com/scholar?hl=en&q="${encodeURIComponent(keyword1)}"+AND+"${encodeURIComponent(keyword2)}"`;
-        }
-      }
+    // If same keyword, return its individual frequency
+    if (keyword1 === keyword2) {
+      return {
+        count: frequencyData.individual[keyword1] || 0,
+        url: `https://scholar.google.com/scholar?hl=en&q=${encodeURIComponent(keyword1)}`,
+      };
     }
 
+    // Try both orderings of the keywords
+    const key1 = `${keyword1}:${keyword2}`;
+    const key2 = `${keyword2}:${keyword1}`;
+    const count = frequencyData.pairs[key1] || frequencyData.pairs[key2] || 0;
+
     return {
-      count: mostRelevantCount,
-      url: mostRelevantUrl,
+      count,
+      url: `https://scholar.google.com/scholar?hl=en&q="${encodeURIComponent(keyword1)}"+AND+"${encodeURIComponent(keyword2)}"`,
     };
   }
 

@@ -242,7 +242,7 @@
                   variant="ghost"
                   size="icon"
                   class="h-7 w-7 -mt-1 -mr-1"
-                  on:click={(e: MouseEvent) => {
+                  onclick={(e: MouseEvent) => {
                     e.stopPropagation();
                     handleDelete(analysis.id);
                   }}

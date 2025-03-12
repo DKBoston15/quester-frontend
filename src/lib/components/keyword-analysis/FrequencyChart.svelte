@@ -13,6 +13,20 @@
   let height = 300;
   let margin = { top: 20, right: 20, bottom: 70, left: 60 };
 
+  // Define a consistent color scheme for up to 10 keywords
+  const colorScheme = [
+    "#2563eb", // Blue
+    "#dc2626", // Red
+    "#16a34a", // Green
+    "#9333ea", // Purple
+    "#ea580c", // Orange
+    "#0891b2", // Cyan
+    "#be123c", // Pink
+    "#854d0e", // Brown
+    "#4d7c0f", // Olive
+    "#475569", // Gray
+  ];
+
   interface DataPoint {
     keyword: string;
     frequency: number;
@@ -48,17 +62,12 @@
         ? JSON.parse(analysis.frequencyData)
         : analysis.frequencyData || {};
 
-    // Prepare data for visualization - get the maximum count for each keyword
+    // Prepare data for visualization using the new structure
     const data = keywords
-      .map((keyword: string) => {
-        const counts = Object.values(frequencyData).map(
-          (dataPoint: any) => dataPoint[keyword]?.count || 0
-        );
-        return {
-          keyword,
-          frequency: Math.max(...counts),
-        };
-      })
+      .map((keyword: string) => ({
+        keyword,
+        frequency: frequencyData.individual?.[keyword] || 0,
+      }))
       .sort((a: DataPoint, b: DataPoint) => b.frequency - a.frequency);
 
     // Clear previous content
@@ -105,7 +114,7 @@
           return height - margin.bottom - y(Math.max(1, d.frequency));
         })
         .attr("fill", function (_: any, i: number) {
-          return d3.schemeCategory10[i % 10];
+          return colorScheme[i % colorScheme.length];
         })
         .attr("class", "transition-opacity duration-200 hover:opacity-70");
       return selection;

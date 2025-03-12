@@ -4,166 +4,75 @@
   import * as d3 from "d3";
   import type { KeywordAnalysis } from "$lib/types/index";
   import { Card } from "$lib/components/ui/card";
+  import { Button } from "$lib/components/ui/button";
+  import { Label } from "$lib/components/ui/label";
+  import { Select } from "$lib/components/ui/select";
+
+  // Define a consistent color scheme for up to 10 keywords
+  const colorScheme = [
+    "#2563eb", // Blue
+    "#dc2626", // Red
+    "#16a34a", // Green
+    "#9333ea", // Purple
+    "#ea580c", // Orange
+    "#0891b2", // Cyan
+    "#be123c", // Pink
+    "#854d0e", // Brown
+    "#4d7c0f", // Olive
+    "#475569", // Gray
+  ];
 
   const { analysis } = $props<{ analysis: KeywordAnalysis }>();
 
   let svg: SVGSVGElement;
   let width = 400;
   let height = 300;
-
-  interface CircleData {
-    keyword: string;
-    size: number;
-  }
-
-  interface OverlapData {
-    pair: [string, string];
-    size: number;
-  }
-
-  interface TimePoint {
-    [keyword: string]: { count: number };
-  }
+  let selectedKeywords = $state<string[]>([]);
+  let frequencyData = $state<any>(null);
+  let keywords = $state<string[]>([]);
+  let container: HTMLDivElement;
 
   $effect(() => {
-    if (analysis && svg) {
-      renderVenn();
-    }
-  });
-
-  onMount(() => {
     if (analysis) {
-      renderVenn();
+      keywords =
+        typeof analysis.keywords === "string"
+          ? JSON.parse(analysis.keywords)
+          : analysis.keywords;
+
+      frequencyData =
+        typeof analysis.frequencyData === "string"
+          ? JSON.parse(analysis.frequencyData || "{}")
+          : analysis.frequencyData || {};
     }
   });
 
-  // Function to truncate text with ellipsis
-  function truncateText(text: string, maxLength = 12): string {
-    return text.length > maxLength
-      ? text.substring(0, maxLength) + "..."
-      : text;
+  function getIndividualFrequency(keyword: string): number {
+    if (!frequencyData?.individual) return 0;
+    return frequencyData.individual[keyword] || 0;
+  }
+
+  function getPairFrequency(keyword1: string, keyword2: string): number {
+    if (!frequencyData?.pairs) return 0;
+    // Try both orderings of the keywords
+    const key1 = `${keyword1}:${keyword2}`;
+    const key2 = `${keyword2}:${keyword1}`;
+    return frequencyData.pairs[key1] || frequencyData.pairs[key2] || 0;
+  }
+
+  function updateDimensions() {
+    if (container) {
+      width = container.clientWidth;
+      height = container.clientHeight;
+      renderVenn();
+    }
   }
 
   function renderVenn() {
-    const keywords =
-      typeof analysis.keywords === "string"
-        ? JSON.parse(analysis.keywords)
-        : analysis.keywords;
-
-    const frequencyData =
-      typeof analysis.frequencyData === "string"
-        ? JSON.parse(analysis.frequencyData || "{}")
-        : analysis.frequencyData || {};
-
-    // Filter out the "combined" key from frequency data
-    const timePoints = Object.entries(frequencyData)
-      .filter(([key]) => key !== "combined")
-      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {}) as {
-      [timepoint: string]: TimePoint;
-    };
-
-    // Helper function to get individual keyword frequency
-    function getKeywordFrequency(keyword: string): number {
-      // Look through all timepoints to find where this term was individually searched
-      for (const [timepoint, data] of Object.entries(frequencyData) as [
-        string,
-        any,
-      ][]) {
-        if (timepoint !== "combined" && data[keyword]?.count !== undefined) {
-          // Check if this is an individual search result (not part of a pair)
-          const isIndividualSearch =
-            Object.keys(data).length === 1 ||
-            Object.keys(data)
-              .filter((k) => k !== keyword)
-              .every((k) => !data[k]?.count);
-
-          if (isIndividualSearch) {
-            return data[keyword].count;
-          }
-        }
-      }
-
-      // If no individual search found, fall back to the first occurrence of the term
-      for (const [timepoint, data] of Object.entries(frequencyData) as [
-        string,
-        any,
-      ][]) {
-        if (timepoint !== "combined" && data[keyword]?.count !== undefined) {
-          return data[keyword].count;
-        }
-      }
-
-      return 0;
-    }
-
-    // Calculate sizes and overlaps
-    const circles: CircleData[] = keywords.map((keyword: string) => {
-      return {
-        keyword,
-        size: getKeywordFrequency(keyword),
-      };
-    });
-
-    // Calculate overlaps
-    const overlaps: OverlapData[] = [];
-    for (let i = 0; i < keywords.length; i++) {
-      for (let j = i + 1; j < keywords.length; j++) {
-        // Special case for "Sleep deprivation" and "Parental efficacy"
-        if (
-          (keywords[i] === "Sleep deprivation" &&
-            keywords[j] === "Parental efficacy") ||
-          (keywords[i] === "Parental efficacy" &&
-            keywords[j] === "Sleep deprivation")
-        ) {
-          // Force using the value from timepoint 1
-          const timepoint1 = timePoints["1"];
-          if (timepoint1) {
-            const freq1 = timepoint1[keywords[i]]?.count || 0;
-            const freq2 = timepoint1[keywords[j]]?.count || 0;
-            const overlapValue =
-              freq1 > 0 && freq2 > 0 ? Math.min(freq1, freq2) : 0;
-
-            if (overlapValue > 0) {
-              overlaps.push({
-                pair: [keywords[i], keywords[j]],
-                size: overlapValue,
-              });
-            }
-            continue;
-          }
-        }
-
-        // For all other pairs, use the normal calculation
-        const cooccurrences = (
-          Object.entries(timePoints) as [string, TimePoint][]
-        ).map(([timepoint, data]) => {
-          const freq1 = data[keywords[i]]?.count || 0;
-          const freq2 = data[keywords[j]]?.count || 0;
-          // Only consider timepoints where both terms appear
-          const minValue = freq1 > 0 && freq2 > 0 ? Math.min(freq1, freq2) : 0;
-          return minValue;
-        });
-
-        const overlapValue = Math.max(...cooccurrences);
-
-        if (overlapValue > 0) {
-          overlaps.push({
-            pair: [keywords[i], keywords[j]],
-            size: overlapValue,
-          });
-        }
-      }
-    }
+    if (!svg || selectedKeywords.length < 2) return;
 
     // Clear previous content
     d3.select(svg).selectAll("*").remove();
 
-    const maxSize = Math.max(1, ...circles.map((c) => c.size));
-    const scale = d3.scaleLinear().domain([0, maxSize]).range([30, 80]);
-    const angleStep = (2 * Math.PI) / keywords.length;
-    const radius = Math.min(width, height) / 2.6;
-
-    // Create chart
     const chart = d3
       .select(svg)
       .attr("width", width)
@@ -171,111 +80,257 @@
       .append("g")
       .attr("transform", `translate(${width / 2},${height / 2})`);
 
-    // Draw connection lines first (so they appear behind circles)
-    overlaps.forEach((overlap) => {
-      const [keyword1, keyword2] = overlap.pair;
-      const idx1 = keywords.indexOf(keyword1);
-      const idx2 = keywords.indexOf(keyword2);
+    if (selectedKeywords.length === 2) {
+      renderTwoSetVenn(chart);
+    } else if (selectedKeywords.length === 3) {
+      renderThreeSetVenn(chart);
+    }
+  }
 
-      const angle1 = idx1 * angleStep;
-      const angle2 = idx2 * angleStep;
-      const x1 = Math.cos(angle1) * radius;
-      const y1 = Math.sin(angle1) * radius;
-      const x2 = Math.cos(angle2) * radius;
-      const y2 = Math.sin(angle2) * radius;
+  function renderTwoSetVenn(
+    chart: d3.Selection<SVGGElement, unknown, null, undefined>
+  ) {
+    const [kw1, kw2] = selectedKeywords;
+    const r = Math.min(width, height) / 3;
+    const d = r * 1.4;
 
-      // Draw connection line
-      const connectionGroup = chart
-        .append("g")
-        .attr("class", "hover:cursor-help");
+    const idx1 = keywords.indexOf(kw1);
+    const idx2 = keywords.indexOf(kw2);
 
-      connectionGroup
-        .append("line")
-        .attr("x1", x1)
-        .attr("y1", y1)
-        .attr("x2", x2)
-        .attr("y2", y2)
-        .attr("class", "transition-colors duration-300 dark:stroke-gray-600")
-        .attr("stroke", "#666")
-        .attr("stroke-width", Math.max(2, scale(overlap.size) / 10))
-        .attr("stroke-opacity", 0.6);
+    // Draw first circle
+    chart
+      .append("circle")
+      .attr("cx", -d / 2)
+      .attr("cy", 0)
+      .attr("r", r)
+      .attr("fill", colorScheme[idx1])
+      .attr("fill-opacity", 0.3)
+      .attr("stroke", colorScheme[idx1])
+      .attr("stroke-width", 2);
 
-      // Add overlap label with tooltip
-      const midX = (x1 + x2) / 2;
-      const midY = (y1 + y2) / 2;
-      const dx = x2 - x1;
-      const dy = y2 - y1;
-      const angle = Math.atan2(dy, dx);
-      const offsetDistance = 8;
-      const labelX = midX + Math.cos(angle + Math.PI / 2) * offsetDistance;
-      const labelY = midY + Math.sin(angle + Math.PI / 2) * offsetDistance;
+    // Draw second circle
+    chart
+      .append("circle")
+      .attr("cx", d / 2)
+      .attr("cy", 0)
+      .attr("r", r)
+      .attr("fill", colorScheme[idx2])
+      .attr("fill-opacity", 0.3)
+      .attr("stroke", colorScheme[idx2])
+      .attr("stroke-width", 2);
 
-      const overlapText = connectionGroup
-        .append("text")
-        .attr("x", labelX)
-        .attr("y", labelY)
-        .attr("text-anchor", "middle")
-        .attr("dominant-baseline", "middle")
-        .attr("class", "transition-colors duration-300 dark:fill-white")
-        .attr("font-size", "10px")
-        .text(overlap.size.toLocaleString());
+    // Get the total frequencies for each circle and the overlap
+    const freq1 = getIndividualFrequency(kw1);
+    const freq2 = getIndividualFrequency(kw2);
+    const overlap = getPairFrequency(kw1, kw2);
 
-      // Add tooltip for overlap
-      overlapText
-        .append("title")
-        .text(`Co-occurrence of "${keyword1}" and "${keyword2}"`);
-    });
-
-    // Draw circles and labels
-    circles.forEach((circle, i) => {
-      const angle = i * angleStep;
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius;
-
-      // Draw circle
-      const circleGroup = chart.append("g").attr("class", "hover:cursor-help");
-
-      circleGroup
-        .append("circle")
-        .attr("cx", x)
-        .attr("cy", y)
-        .attr("r", scale(circle.size) / 2)
-        .attr("fill", d3.schemeCategory10[i % 10])
-        .attr("class", "transition-colors duration-300")
-        .attr("fill-opacity", 0.2)
-        .attr("stroke", d3.schemeCategory10[i % 10])
-        .attr("stroke-width", 2);
-
-      // Add label showing only the number
-      const fontSize = Math.min(14, Math.max(10, scale(circle.size) / 4));
-
-      const textElement = circleGroup
+    // Add keyword labels
+    const addLabel = (x: number, y: number, text: string) => {
+      chart
         .append("text")
         .attr("x", x)
         .attr("y", y)
         .attr("text-anchor", "middle")
         .attr("dominant-baseline", "middle")
-        .attr("class", "transition-colors duration-300 dark:fill-white")
-        .attr("font-size", `${fontSize}px`)
-        .attr("font-weight", "bold")
-        .text(circle.size.toLocaleString());
+        .attr("class", "text-sm font-medium dark:fill-white")
+        .text(text);
+    };
 
-      // Add tooltip with full keyword name
-      textElement
-        .append("title")
-        .text(`${circle.keyword} (${circle.size.toLocaleString()})`);
+    // Add frequency labels
+    const addFreqLabel = (x: number, y: number, value: number) => {
+      chart
+        .append("text")
+        .attr("x", x)
+        .attr("y", y)
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "middle")
+        .attr("class", "font-semibold dark:fill-white")
+        .text(value.toLocaleString());
+    };
+
+    // Add labels - move individual frequencies outward by r/3
+    addLabel(-d / 2, -r - 20, kw1);
+    addLabel(d / 2, -r - 20, kw2);
+    addFreqLabel(-d / 2 - r / 3, 0, freq1);
+    addFreqLabel(d / 2 + r / 3, 0, freq2);
+    addFreqLabel(0, 0, overlap);
+  }
+
+  function renderThreeSetVenn(
+    chart: d3.Selection<SVGGElement, unknown, null, undefined>
+  ) {
+    const [kw1, kw2, kw3] = selectedKeywords;
+    const r = Math.min(width, height) / 3.5;
+    const angle = (2 * Math.PI) / 3;
+    const centerOffset = r * 1.3;
+    const verticalOffset = r * 0.8;
+
+    const indices = [
+      keywords.indexOf(kw1),
+      keywords.indexOf(kw2),
+      keywords.indexOf(kw3),
+    ];
+
+    // Calculate positions for three circles in an equilateral triangle
+    const positions = [
+      { x: 0, y: -centerOffset + verticalOffset }, // Top (shifted down)
+      {
+        x: -centerOffset * Math.sin(angle),
+        y: centerOffset * Math.cos(angle) + verticalOffset,
+      }, // Bottom left (shifted down)
+      {
+        x: centerOffset * Math.sin(angle),
+        y: centerOffset * Math.cos(angle) + verticalOffset,
+      }, // Bottom right (shifted down)
+    ];
+
+    // Draw circles
+    positions.forEach((pos, i) => {
+      chart
+        .append("circle")
+        .attr("cx", pos.x)
+        .attr("cy", pos.y)
+        .attr("r", r)
+        .attr("fill", colorScheme[indices[i]])
+        .attr("fill-opacity", 0.3)
+        .attr("stroke", colorScheme[indices[i]])
+        .attr("stroke-width", 2);
+    });
+
+    // Get the total frequencies for each circle
+    const freqs = [
+      getIndividualFrequency(kw1),
+      getIndividualFrequency(kw2),
+      getIndividualFrequency(kw3),
+    ];
+
+    // Calculate pairwise overlaps
+    const overlaps = [
+      getPairFrequency(kw1, kw2),
+      getPairFrequency(kw2, kw3),
+      getPairFrequency(kw1, kw3),
+    ];
+
+    // Add keyword labels
+    const addLabel = (x: number, y: number, text: string) => {
+      chart
+        .append("text")
+        .attr("x", x)
+        .attr("y", y)
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "middle")
+        .attr("class", "text-sm font-medium dark:fill-white")
+        .text(text);
+    };
+
+    // Add frequency labels
+    const addFreqLabel = (x: number, y: number, value: number) => {
+      chart
+        .append("text")
+        .attr("x", x)
+        .attr("y", y)
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "middle")
+        .attr("class", "font-semibold dark:fill-white")
+        .text(value.toLocaleString());
+    };
+
+    // Add labels - move individual frequencies outward by r/3 in the direction from center
+    positions.forEach((pos, i) => {
+      addLabel(pos.x, pos.y - r - 20, selectedKeywords[i]);
+      // Calculate direction from center to circle center
+      const dx = pos.x;
+      const dy = pos.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      // Move frequency label outward along this direction
+      const freqX = pos.x + ((dx / dist) * r) / 3;
+      const freqY = pos.y + ((dy / dist) * r) / 3;
+      addFreqLabel(freqX, freqY, freqs[i]);
+    });
+
+    // Add overlap labels
+    const midpoints = [
+      {
+        x: (positions[0].x + positions[1].x) / 2,
+        y: (positions[0].y + positions[1].y) / 2,
+      },
+      {
+        x: (positions[1].x + positions[2].x) / 2,
+        y: (positions[1].y + positions[2].y) / 2,
+      },
+      {
+        x: (positions[0].x + positions[2].x) / 2,
+        y: (positions[0].y + positions[2].y) / 2,
+      },
+    ];
+
+    midpoints.forEach((pos, i) => {
+      addFreqLabel(pos.x, pos.y, overlaps[i]);
     });
   }
+
+  function handleKeywordSelection(keyword: string) {
+    if (selectedKeywords.includes(keyword)) {
+      selectedKeywords = selectedKeywords.filter((k) => k !== keyword);
+    } else if (selectedKeywords.length < 3) {
+      selectedKeywords = [...selectedKeywords, keyword];
+    }
+    // Force update dimensions and render
+    setTimeout(updateDimensions, 0);
+  }
+
+  $effect(() => {
+    if (selectedKeywords.length >= 2) {
+      updateDimensions();
+    }
+  });
+
+  onMount(() => {
+    updateDimensions();
+    window.addEventListener("resize", updateDimensions);
+    return () => window.removeEventListener("resize", updateDimensions);
+  });
 </script>
 
 <Card class="p-4">
-  <h3 class="text-lg font-semibold mb-4">Keyword Relationships</h3>
-  <div class="relative w-full aspect-[4/3]">
-    <svg
-      bind:this={svg}
-      class="w-full h-full"
-      viewBox="0 0 {width} {height}"
-      preserveAspectRatio="xMidYMid meet"
-    ></svg>
+  <h3 class="text-lg font-semibold mb-4">Keyword Overlap</h3>
+  <div class="flex flex-col gap-4">
+    <div class="flex flex-wrap gap-2">
+      {#each keywords as keyword}
+        <Button
+          variant={selectedKeywords.includes(keyword) ? "default" : "outline"}
+          disabled={!selectedKeywords.includes(keyword) &&
+            selectedKeywords.length >= 3}
+          onclick={() => {
+            if (selectedKeywords.includes(keyword)) {
+              selectedKeywords = selectedKeywords.filter((k) => k !== keyword);
+            } else if (selectedKeywords.length < 3) {
+              selectedKeywords = [...selectedKeywords, keyword];
+            }
+            setTimeout(updateDimensions, 0);
+          }}
+        >
+          {keyword}
+        </Button>
+      {/each}
+    </div>
+
+    <div
+      bind:this={container}
+      class="relative w-full aspect-[4/3] flex items-center justify-center"
+    >
+      {#if selectedKeywords.length < 2}
+        <p class="text-muted-foreground">
+          Select 2-3 keywords to see their overlap
+        </p>
+      {:else}
+        <svg
+          bind:this={svg}
+          class="w-full h-full"
+          viewBox="0 0 {width} {height}"
+          preserveAspectRatio="xMidYMid meet"
+        ></svg>
+      {/if}
+    </div>
   </div>
 </Card>
