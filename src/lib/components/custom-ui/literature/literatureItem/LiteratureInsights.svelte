@@ -20,7 +20,7 @@
     severity: "error" | "warning";
     message: string;
     description: string;
-    action: {
+    action?: {
       label: string;
       tab: string;
     };
@@ -34,60 +34,60 @@
       message: "Missing Literature Title",
       description:
         "Add a title to help identify and reference this literature.",
-      action: {
-        label: "Add Title",
-        tab: "details",
-      },
+      // action: {
+      //   label: "Add Title",
+      //   tab: "details",
+      // },
     },
     {
       field: "authors",
       severity: "error",
       message: "Missing Authors",
       description: "Add the authors of this literature for proper citation.",
-      action: {
-        label: "Add Authors",
-        tab: "details",
-      },
+      // action: {
+      //   label: "Add Authors",
+      //   tab: "details",
+      // },
     },
     {
       field: "publishYear",
       severity: "error",
       message: "Missing Publication Year",
       description: "Add the publication year for chronological reference.",
-      action: {
-        label: "Add Year",
-        tab: "details",
-      },
+      // action: {
+      //   label: "Add Year",
+      //   tab: "details",
+      // },
     },
     {
       field: "publisherName",
       severity: "error",
       message: "Missing Publisher",
       description: "Add the publisher information for complete citation.",
-      action: {
-        label: "Add Publisher",
-        tab: "details",
-      },
+      // action: {
+      //   label: "Add Publisher",
+      //   tab: "details",
+      // },
     },
     {
       field: "type",
       severity: "warning",
       message: "Literature Type Not Set",
       description: "Specify the type of literature for better organization.",
-      action: {
-        label: "Set Type",
-        tab: "details",
-      },
+      // action: {
+      //   label: "Set Type",
+      //   tab: "details",
+      // },
     },
     {
       field: "status",
       severity: "warning",
       message: "Reading Status Not Set",
       description: "Set the reading status to track your progress.",
-      action: {
-        label: "Set Status",
-        tab: "status",
-      },
+      // action: {
+      //   label: "Set Status",
+      //   tab: "status",
+      // },
     },
   ];
 
@@ -200,12 +200,10 @@
             <span class="font-bold">{completionPercentage}%</span>
           </div>
           <div class="relative">
-            <Progress.Root value={completionPercentage} class="h-2">
-              <Progress.Indicator
-                style={`transform: translateX(-${100 - completionPercentage}%)`}
-                class="h-full bg-black dark:bg-white transition-transform duration-300"
-              />
-            </Progress.Root>
+            <Progress.Root
+              value={completionPercentage}
+              class="h-2 bg-secondary relative overflow-hidden rounded-full"
+            />
             {#if completionPercentage > 0 && completionPercentage < 100}
               <div
                 class="absolute top-3 left-0 w-full flex justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -257,21 +255,21 @@
                             <span
                               class="text-xs px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400"
                             >
-                              required
+                              Required
                             </span>
                           </h4>
                           <p class="text-sm text-muted-foreground">
                             {insight.description}
                           </p>
                         </div>
-                        <Button
+                        <!-- <Button
                           variant="outline"
                           class="flex-shrink-0 group-hover:translate-x-[-2px] group-hover:translate-y-[-2px] group-hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all duration-300"
                           onclick={() => handleActionClick(insight.action.tab)}
                         >
                           <span>{insight.action.label}</span>
                           <ChevronRight class="h-4 w-4 ml-2" />
-                        </Button>
+                        </Button> -->
                       </div>
                     </div>
                   {/each}
@@ -306,21 +304,21 @@
                             <span
                               class="text-xs px-2 py-0.5 rounded-full bg-yellow-100 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400"
                             >
-                              recommended
+                              Recommended
                             </span>
                           </h4>
                           <p class="text-sm text-muted-foreground">
                             {insight.description}
                           </p>
                         </div>
-                        <Button
+                        <!-- <Button
                           variant="outline"
                           class="flex-shrink-0 group-hover:translate-x-[-2px] group-hover:translate-y-[-2px] group-hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all duration-300"
                           onclick={() => handleActionClick(insight.action.tab)}
                         >
                           <span>{insight.action.label}</span>
                           <ChevronRight class="h-4 w-4 ml-2" />
-                        </Button>
+                        </Button> -->
                       </div>
                     </div>
                   {/each}

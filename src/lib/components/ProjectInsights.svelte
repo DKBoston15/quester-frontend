@@ -21,7 +21,7 @@
     severity: "error" | "warning";
     message: string;
     description: string;
-    action: {
+    action?: {
       label: string;
       route: string;
     };
@@ -35,10 +35,10 @@
       message: "Missing Project Name",
       description:
         "Give your project a clear and descriptive name to help identify it.",
-      action: {
-        label: "Add Name",
-        route: "project_settings",
-      },
+      // action: {
+      //   label: "Add Name",
+      //   route: "project_settings",
+      // },
     },
     {
       field: "purpose",
@@ -46,10 +46,10 @@
       message: "Missing Project Description",
       description:
         "Define your project's purpose and scope to help guide your research and keep your team aligned.",
-      action: {
-        label: "Add Description",
-        route: "project_settings",
-      },
+      // action: {
+      //   label: "Add Description",
+      //   route: "project_settings",
+      // },
     },
     {
       field: "financialInstitution",
@@ -57,20 +57,20 @@
       message: "Financial Institution Not Set",
       description:
         "Specify the financial institution supporting this research.",
-      action: {
-        label: "Add Institution",
-        route: "project_settings",
-      },
+      // action: {
+      //   label: "Add Institution",
+      //   route: "project_settings",
+      // },
     },
     {
       field: "financialSupport",
       severity: "warning",
       message: "Financial Support Amount Missing",
       description: "Record the financial support amount for budget tracking.",
-      action: {
-        label: "Add Support Amount",
-        route: "project_settings",
-      },
+      // action: {
+      //   label: "Add Support Amount",
+      //   route: "project_settings",
+      // },
     },
     {
       field: "status",
@@ -78,10 +78,10 @@
       message: "Project Status Not Set",
       description:
         "Set the current status of your project to track its progress.",
-      action: {
-        label: "Set Status",
-        route: "project_settings",
-      },
+      // action: {
+      //   label: "Set Status",
+      //   route: "project_settings",
+      // },
     },
   ];
 
@@ -187,12 +187,10 @@
             <span class="font-bold">{completionPercentage}%</span>
           </div>
           <div class="relative">
-            <Progress.Root value={completionPercentage} class="h-2">
-              <Progress.Indicator
-                style={`transform: translateX(-${100 - completionPercentage}%)`}
-                class="h-full bg-black dark:bg-white transition-transform duration-300"
-              />
-            </Progress.Root>
+            <Progress.Root
+              value={completionPercentage}
+              class="h-2 bg-secondary relative overflow-hidden rounded-full"
+            />
             {#if completionPercentage > 0 && completionPercentage < 100}
               <div
                 class="absolute top-3 left-0 w-full flex justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -245,14 +243,14 @@
                             <span
                               class="text-xs px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400"
                             >
-                              required
+                              Required
                             </span>
                           </h4>
                           <p class="text-sm text-muted-foreground">
                             {insight.description}
                           </p>
                         </div>
-                        <Button
+                        <!-- <Button
                           variant="outline"
                           class="flex-shrink-0 group-hover:translate-x-[-2px] group-hover:translate-y-[-2px] group-hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all duration-300"
                           onclick={() =>
@@ -260,7 +258,7 @@
                         >
                           <span class="">{insight.action.label}</span>
                           <ChevronRight class="h-4 w-4 ml-2" />
-                        </Button>
+                        </Button> -->
                       </div>
                     </div>
                   {/each}
@@ -295,14 +293,14 @@
                             <span
                               class="text-xs px-2 py-0.5 rounded-full bg-yellow-100 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400"
                             >
-                              recommended
+                              Recommended
                             </span>
                           </h4>
                           <p class="text-sm text-muted-foreground">
                             {insight.description}
                           </p>
                         </div>
-                        <Button
+                        <!-- <Button
                           variant="outline"
                           class="flex-shrink-0 group-hover:translate-x-[-2px] group-hover:translate-y-[-2px] group-hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all duration-300"
                           onclick={() =>
@@ -310,7 +308,7 @@
                         >
                           <span class="">{insight.action.label}</span>
                           <ChevronRight class="h-4 w-4 ml-2" />
-                        </Button>
+                        </Button> -->
                       </div>
                     </div>
                   {/each}
