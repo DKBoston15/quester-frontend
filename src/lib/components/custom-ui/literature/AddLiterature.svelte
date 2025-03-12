@@ -8,7 +8,7 @@
   import * as Select from "$lib/components/ui/select";
   import { Badge } from "$lib/components/ui/badge";
   import * as Label from "$lib/components/ui/label";
-  import * as Progress from "$lib/components/ui/progress";
+  import { Progress } from "$lib/components/ui/progress";
   import TagInput from "../TagInput.svelte";
   import { createEventDispatcher, onDestroy } from "svelte";
   import { auth } from "$lib/stores/AuthStore.svelte";
@@ -447,210 +447,53 @@
         </Tabs.List>
 
         <!-- Content Area - Fixed height with scrolling -->
-        <div
-          class="max-h-[calc(85vh-8rem)] overflow-y-auto overflow-x-hidden p-4"
-        >
-          <Tabs.Content value="paste" class="space-y-4">
-            <!-- Paste Area -->
-            <div class="space-y-4">
-              <Label.Root>Paste your references</Label.Root>
-              <Textarea
-                bind:value={pasteText}
-                placeholder="Paste your references here, separated by empty lines..."
-                rows={8}
-                disabled={isProcessing}
-              />
-              <Button
-                class="w-full"
-                onclick={handleProcessReferences}
-                disabled={!pasteText.trim() || isProcessing}
-              >
-                {#if isProcessing}
-                  <Loader2 class="h-4 w-4 mr-2 animate-spin" />
-                  Processing...
-                {:else}
-                  Process References
-                {/if}
-              </Button>
-            </div>
-
-            {#if isProcessing || isSaving}
-              <div class="space-y-2">
-                <Progress.Root
-                  value={isProcessing ? processingProgress : saveProgress}
+        <div class="max-h-[calc(85vh-8rem)] overflow-y-auto overflow-x-hidden">
+          <div class="p-4">
+            <Tabs.Content value="paste" class="space-y-4">
+              <!-- Paste Area -->
+              <div class="space-y-4">
+                <Label.Root>Paste your references</Label.Root>
+                <Textarea
+                  bind:value={pasteText}
+                  placeholder="Paste your references here, separated by empty lines..."
+                  rows={8}
+                  disabled={isProcessing}
+                />
+                <Button
+                  class="w-full"
+                  onclick={handleProcessReferences}
+                  disabled={!pasteText.trim() || isProcessing}
                 >
-                  <Progress.Indicator
-                    style="transform: translateX(-{100 -
-                      (isProcessing ? processingProgress : saveProgress)}%)"
+                  {#if isProcessing}
+                    <Loader2 class="h-4 w-4 mr-2 animate-spin" />
+                    Processing...
+                  {:else}
+                    Process References
+                  {/if}
+                </Button>
+              </div>
+
+              {#if isProcessing || isSaving}
+                <div class="space-y-2">
+                  <Progress
+                    value={isProcessing ? processingProgress : saveProgress}
                     class="{saveSuccess
                       ? 'bg-green-500'
                       : ''} transition-all duration-200"
                   />
-                </Progress.Root>
-                <p class="text-sm text-muted-foreground text-center">
-                  {#if isProcessing}
-                    Analyzing and extracting references...
-                  {:else if isSaving}
-                    {#if saveSuccess}
-                      References saved successfully!
-                    {:else}
-                      Saving references...
+                  <p class="text-sm text-muted-foreground text-center">
+                    {#if isProcessing}
+                      Analyzing and extracting references...
+                    {:else if isSaving}
+                      {#if saveSuccess}
+                        References saved successfully!
+                      {:else}
+                        Saving references...
+                      {/if}
                     {/if}
-                  {/if}
-                </p>
-              </div>
-            {/if}
-
-            {#if processingError}
-              <div
-                class="bg-destructive/10 text-destructive p-4 rounded-lg flex items-center space-x-2"
-              >
-                <AlertCircle class="h-5 w-5" />
-                <p>{processingError}</p>
-              </div>
-            {/if}
-
-            <!-- Extracted References -->
-            {#if extractedReferences.length > 0}
-              <div class="space-y-4">
-                <h3 class="text-lg font-semibold">
-                  Extracted References ({extractedReferences.length})
-                </h3>
-                <div class="space-y-2">
-                  {#each extractedReferences as reference}
-                    <div
-                      class="w-full flex items-start justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div class="flex-1 min-w-0 mr-4 overflow-hidden">
-                        <p class="font-medium break-words">
-                          {reference.name || "Untitled Reference"}
-                        </p>
-                        <p class="text-sm text-muted-foreground break-words">
-                          {reference.authors?.join(", ") || "No authors"}
-                        </p>
-                      </div>
-                      <div class="flex items-center gap-2 shrink-0">
-                        {#if reference.status === "success"}
-                          <Badge variant="success" class="shrink-0">
-                            <CheckCircle2 class="h-3 w-3 mr-1" />
-                            Ready
-                          </Badge>
-                        {:else}
-                          <Badge variant="destructive" class="shrink-0">
-                            <AlertCircle class="h-3 w-3 mr-1" />
-                            Needs Review
-                          </Badge>
-                        {/if}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onclick={() => (selectedReference = reference)}
-                          >Edit</Button
-                        >
-                      </div>
-                    </div>
-                  {/each}
-                </div>
-              </div>
-            {/if}
-          </Tabs.Content>
-
-          <Tabs.Content value="manual" class="space-y-4">
-            <!-- Manual Entry Form -->
-            <div class="grid gap-4">
-              <!-- Title -->
-              <div class="space-y-2">
-                <Label.Root for="name">Title</Label.Root>
-                <Input id="name" bind:value={name} placeholder="Enter title" />
-              </div>
-
-              <!-- Authors -->
-              <div class="space-y-2">
-                <Label.Root>Authors</Label.Root>
-                <TagInput
-                  tags={authors}
-                  on:change={(e) => (authors = e.detail)}
-                  placeholder="Add authors"
-                />
-              </div>
-
-              <!-- Type -->
-              <div class="space-y-2">
-                <Label.Root>Type</Label.Root>
-                <Select.Root
-                  type="single"
-                  value={type.value}
-                  onValueChange={(value) => onTypeChange(value)}
-                >
-                  <Select.Trigger>
-                    <span>{type.label}</span>
-                  </Select.Trigger>
-                  <Select.Content>
-                    {#each literatureTypes as type}
-                      <Select.Item value={type.value} label={type.label}>
-                        {#snippet children({ selected })}
-                          {type.label}
-                          {#if selected}
-                            <div class="ml-auto">✓</div>
-                          {/if}
-                        {/snippet}
-                      </Select.Item>
-                    {/each}
-                  </Select.Content>
-                </Select.Root>
-              </div>
-
-              <!-- Publication Details -->
-              <div class="grid grid-cols-2 gap-4">
-                <div class="space-y-2">
-                  <Label.Root>Publisher</Label.Root>
-                  <Input
-                    bind:value={publisher_name}
-                    placeholder="Publisher name"
-                  />
-                </div>
-                <div class="space-y-2">
-                  <Label.Root>Year</Label.Root>
-                  <Input
-                    bind:value={publish_year}
-                    placeholder="Publication year"
-                  />
-                </div>
-              </div>
-
-              <!-- Additional Fields based on type -->
-              {#if type.value === "Journal Article"}
-                <div class="grid grid-cols-2 gap-4">
-                  <div class="space-y-2">
-                    <Label.Root>Volume</Label.Root>
-                    <Input bind:value={volume} placeholder="Volume number" />
-                  </div>
-                  <div class="space-y-2">
-                    <Label.Root>Issue</Label.Root>
-                    <Input bind:value={issue} placeholder="Issue number" />
-                  </div>
+                  </p>
                 </div>
               {/if}
-
-              <!-- Link -->
-              <div class="space-y-2">
-                <Label.Root>Link</Label.Root>
-                <Input bind:value={link} placeholder="URL to the literature" />
-              </div>
-
-              <!-- Add Literature Button -->
-              <Button
-                class="w-full mt-4"
-                onclick={handleSaveLiterature}
-                disabled={isSaving}
-              >
-                {#if isSaving}
-                  <Loader2 class="h-4 w-4 mr-2 animate-spin" />
-                  Saving...
-                {:else}
-                  Add Literature
-                {/if}
-              </Button>
 
               {#if processingError}
                 <div
@@ -660,25 +503,184 @@
                   <p>{processingError}</p>
                 </div>
               {/if}
-            </div>
-          </Tabs.Content>
-        </div>
 
-        <!-- Footer -->
-        {#if extractedReferences.length > 0 && activeTab === "paste"}
-          <div class="border-t p-4 flex justify-end gap-2">
-            <Button
-              variant="default"
-              onclick={() => saveLiterature(extractedReferences)}
-              disabled={!extractedReferences.some(
-                (ref) => ref.status === "success"
-              )}
-            >
-              Save All References
-            </Button>
-            <Button variant="outline" onclick={handleClose}>Cancel</Button>
+              <!-- Extracted References -->
+              {#if extractedReferences.length > 0}
+                <div class="space-y-4">
+                  <h3 class="text-lg font-semibold">
+                    Extracted References ({extractedReferences.length})
+                  </h3>
+                  <div class="space-y-2">
+                    {#each extractedReferences as reference}
+                      <div
+                        class="w-full flex items-start justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                      >
+                        <div class="flex-1 min-w-0 mr-4 overflow-hidden">
+                          <p class="font-medium break-words">
+                            {reference.name || "Untitled Reference"}
+                          </p>
+                          <p class="text-sm text-muted-foreground break-words">
+                            {reference.authors?.join(", ") || "No authors"}
+                          </p>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                          {#if reference.status === "success"}
+                            <Badge variant="success" class="shrink-0">
+                              <CheckCircle2 class="h-3 w-3 mr-1" />
+                              Ready
+                            </Badge>
+                          {:else}
+                            <Badge variant="destructive" class="shrink-0">
+                              <AlertCircle class="h-3 w-3 mr-1" />
+                              Needs Review
+                            </Badge>
+                          {/if}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onclick={() => (selectedReference = reference)}
+                            >Edit</Button
+                          >
+                        </div>
+                      </div>
+                    {/each}
+                  </div>
+                </div>
+              {/if}
+            </Tabs.Content>
+
+            <Tabs.Content value="manual" class="space-y-4">
+              <!-- Manual Entry Form -->
+              <div class="grid gap-4">
+                <!-- Title -->
+                <div class="space-y-2">
+                  <Label.Root for="name">Title</Label.Root>
+                  <Input
+                    id="name"
+                    bind:value={name}
+                    placeholder="Enter title"
+                  />
+                </div>
+
+                <!-- Authors -->
+                <div class="space-y-2">
+                  <Label.Root>Authors</Label.Root>
+                  <TagInput
+                    tags={authors}
+                    on:change={(e) => (authors = e.detail)}
+                    placeholder="Add authors"
+                  />
+                </div>
+
+                <!-- Type -->
+                <div class="space-y-2">
+                  <Label.Root>Type</Label.Root>
+                  <Select.Root
+                    type="single"
+                    value={type.value}
+                    onValueChange={(value) => onTypeChange(value)}
+                  >
+                    <Select.Trigger>
+                      <span>{type.label}</span>
+                    </Select.Trigger>
+                    <Select.Content>
+                      {#each literatureTypes as type}
+                        <Select.Item value={type.value} label={type.label}>
+                          {#snippet children({ selected })}
+                            {type.label}
+                            {#if selected}
+                              <div class="ml-auto">✓</div>
+                            {/if}
+                          {/snippet}
+                        </Select.Item>
+                      {/each}
+                    </Select.Content>
+                  </Select.Root>
+                </div>
+
+                <!-- Publication Details -->
+                <div class="grid grid-cols-2 gap-4">
+                  <div class="space-y-2">
+                    <Label.Root>Publisher</Label.Root>
+                    <Input
+                      bind:value={publisher_name}
+                      placeholder="Publisher name"
+                    />
+                  </div>
+                  <div class="space-y-2">
+                    <Label.Root>Year</Label.Root>
+                    <Input
+                      bind:value={publish_year}
+                      placeholder="Publication year"
+                    />
+                  </div>
+                </div>
+
+                <!-- Additional Fields based on type -->
+                {#if type.value === "Journal Article"}
+                  <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                      <Label.Root>Volume</Label.Root>
+                      <Input bind:value={volume} placeholder="Volume number" />
+                    </div>
+                    <div class="space-y-2">
+                      <Label.Root>Issue</Label.Root>
+                      <Input bind:value={issue} placeholder="Issue number" />
+                    </div>
+                  </div>
+                {/if}
+
+                <!-- Link -->
+                <div class="space-y-2">
+                  <Label.Root>Link</Label.Root>
+                  <Input
+                    bind:value={link}
+                    placeholder="URL to the literature"
+                  />
+                </div>
+
+                <!-- Add Literature Button -->
+                <Button
+                  class="w-full mt-4"
+                  onclick={handleSaveLiterature}
+                  disabled={isSaving}
+                >
+                  {#if isSaving}
+                    <Loader2 class="h-4 w-4 mr-2 animate-spin" />
+                    Saving...
+                  {:else}
+                    Add Literature
+                  {/if}
+                </Button>
+
+                {#if processingError}
+                  <div
+                    class="bg-destructive/10 text-destructive p-4 rounded-lg flex items-center space-x-2"
+                  >
+                    <AlertCircle class="h-5 w-5" />
+                    <p>{processingError}</p>
+                  </div>
+                {/if}
+              </div>
+            </Tabs.Content>
           </div>
-        {/if}
+
+          <!-- Footer -->
+          {#if extractedReferences.length > 0 && activeTab === "paste"}
+            <div class="border-t p-4 flex justify-end gap-2 bg-background">
+              <Button
+                variant="default"
+                onclick={() => saveLiterature(extractedReferences)}
+                disabled={!extractedReferences.some(
+                  (ref) => ref.status === "success"
+                )}
+              >
+                Save All References
+              </Button>
+              <Button variant="outline" onclick={handleClose}>Cancel</Button>
+            </div>
+          {/if}
+        </div>
       </Tabs.Root>
     </Dialog.Content>
   </Dialog.Portal>
