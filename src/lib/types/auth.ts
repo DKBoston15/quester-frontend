@@ -65,24 +65,25 @@ export interface ResearchProduct {
 export interface Project {
   id: string;
   name: string;
-  organizationId?: string;
-  departmentId?: string;
-  userId?: string;
   description?: string | null;
+  keywords?: string[] | null;
   purpose?: string | null;
   financialInstitution?: string | null;
   financialSupport?: string | null;
-  product?: string | null; // JSON string of ResearchProduct[]
+  product?: string | null;
   researchDesign?: string | null;
   analyticDesign?: string | null;
   samplingDesign?: string | null;
   measurementDesign?: string | null;
   status?: string | null;
-  settings: Record<string, any>;
+  settings?: Record<string, any>;
   metadata?: Record<string, any> | null;
   createdAt?: string;
   updatedAt?: string;
   deletedAt?: string | null;
+  organizationId: string;
+  departmentId?: string | null;
+  userId?: string | null;
 }
 
 export interface ProjectRole {

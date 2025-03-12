@@ -5,6 +5,9 @@
   import ProjectOverview from "$lib/components/project/ProjectOverview.svelte";
   import ResearchDesigns from "$lib/components/project/ResearchDesigns.svelte";
   import PublisherScore from "$lib/components/custom-ui/dashboard/PublisherScore.svelte";
+  import ProjectKeywords from "$lib/components/project/ProjectKeywords.svelte";
+  import * as Card from "$lib/components/ui/card";
+  import { projectStore } from "$lib/stores/ProjectStore.svelte";
 </script>
 
 <div class="flex-1 w-full overflow-x-hidden">
@@ -15,6 +18,21 @@
       <!-- Left Column -->
       <div class="space-y-6">
         <ProjectOverview />
+
+        <!-- Keywords -->
+        {#if projectStore.currentProject}
+          <Card.Root
+            class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
+          >
+            <Card.Header>
+              <Card.Title>Keywords</Card.Title>
+            </Card.Header>
+            <Card.Content>
+              <ProjectKeywords project={projectStore.currentProject} />
+            </Card.Content>
+          </Card.Root>
+        {/if}
+
         <ResearchDesigns />
       </div>
 
