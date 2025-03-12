@@ -6,73 +6,58 @@
     Position,
     type NodeProps,
   } from "@xyflow/svelte";
-  import { onMount, afterUpdate } from "svelte";
+  import { onMount } from "svelte";
+  import { createEventDispatcher } from "svelte";
 
   type $$Props = NodeProps;
 
-  export let data: $$Props["data"] = {};
-  export let selected: $$Props["selected"] = false;
+  let { data = {}, selected = false, id = "", xPos = 0, yPos = 0 } = $props();
+  const dispatch = createEventDispatcher();
 
   // Local state
-  let bgColor: string;
-  let borderColor: string;
-  let textColor: string;
-  let fontSize: number;
-  let borderWidth: number;
-  let borderStyle: string;
-  let fontWeight: string;
-  let bgOpacity: number;
-  let textOpacity: number;
-  let shape: string;
-  let textAlign: string;
-  let shadowColor: string;
-  let shadowBlur: number;
-  let activeTab: "style" | "text" | "effects" = "style";
-  let transparentBg: boolean;
-  let transparentBorder: boolean;
-  let showHandles: boolean;
-
-  // Initialize values from data
-  $: {
-    bgColor = (data.bgColor as string) || "#ffffff";
-    borderColor = (data.borderColor as string) || "#374151";
-    textColor = (data.textColor as string) || "#000000";
-    fontSize = (data.fontSize as number) || 16;
-    borderWidth = (data.borderWidth as number) || 2;
-    borderStyle = (data.borderStyle as string) || "solid";
-    fontWeight = (data.fontWeight as string) || "normal";
-    bgOpacity = (data.bgOpacity as number) || 1;
-    textOpacity = (data.textOpacity as number) || 1;
-    shape = (data.shape as string) || "square";
-    textAlign = (data.textAlign as string) || "center";
-    shadowColor = (data.shadowColor as string) || "#000000";
-    shadowBlur = (data.shadowBlur as number) || 0;
-    transparentBg = (data.transparentBg as boolean) || false;
-    transparentBorder = (data.transparentBorder as boolean) || false;
-    showHandles = (data.showHandles as boolean) ?? true;
-  }
+  let bgColor = $state((data.bgColor as string) || "#ffffff");
+  let borderColor = $state((data.borderColor as string) || "#374151");
+  let textColor = $state((data.textColor as string) || "#000000");
+  let fontSize = $state((data.fontSize as number) || 16);
+  let borderWidth = $state((data.borderWidth as number) || 2);
+  let borderStyle = $state((data.borderStyle as string) || "solid");
+  let fontWeight = $state((data.fontWeight as string) || "normal");
+  let bgOpacity = $state((data.bgOpacity as number) || 1);
+  let textOpacity = $state((data.textOpacity as number) || 1);
+  let shape = $state((data.shape as string) || "square");
+  let textAlign = $state((data.textAlign as string) || "center");
+  let shadowColor = $state((data.shadowColor as string) || "#000000");
+  let shadowBlur = $state((data.shadowBlur as number) || 0);
+  let transparentBg = $state((data.transparentBg as boolean) || false);
+  let transparentBorder = $state((data.transparentBorder as boolean) || false);
+  let showHandles = $state((data.showHandles as boolean) ?? true);
+  let activeTab = $state<"style" | "text" | "effects">("style");
 
   // Update data when local state changes
-  $: data.bgColor = bgColor;
-  $: data.borderColor = borderColor;
-  $: data.textColor = textColor;
-  $: data.fontSize = fontSize;
-  $: data.borderWidth = borderWidth;
-  $: data.borderStyle = borderStyle;
-  $: data.fontWeight = fontWeight;
-  $: data.bgOpacity = bgOpacity;
-  $: data.textOpacity = textOpacity;
-  $: data.shape = shape;
-  $: data.textAlign = textAlign;
-  $: data.shadowColor = shadowColor;
-  $: data.shadowBlur = shadowBlur;
-  $: data.transparentBg = transparentBg;
-  $: data.transparentBorder = transparentBorder;
-  $: data.showHandles = showHandles;
+  $effect(() => {
+    data.bgColor = bgColor;
+    data.borderColor = borderColor;
+    data.textColor = textColor;
+    data.fontSize = fontSize;
+    data.borderWidth = borderWidth;
+    data.borderStyle = borderStyle;
+    data.fontWeight = fontWeight;
+    data.bgOpacity = bgOpacity;
+    data.textOpacity = textOpacity;
+    data.shape = shape;
+    data.textAlign = textAlign;
+    data.shadowColor = shadowColor;
+    data.shadowBlur = shadowBlur;
+    data.transparentBg = transparentBg;
+    data.transparentBorder = transparentBorder;
+    data.showHandles = showHandles;
+  });
 
   // Derived values based on transparent options
-  $: effectiveBgColor = transparentBg ? "transparent" : bgColor;
-  $: effectiveBorderColor = transparentBorder ? "transparent" : borderColor;
+  let effectiveBgColor = $derived(transparentBg ? "transparent" : bgColor);
+  let effectiveBorderColor = $derived(
+    transparentBorder ? "transparent" : borderColor
+  );
 
   // Convert hex to rgba
   function hexToRgba(hex: string, opacity: number): string {
@@ -89,16 +74,49 @@
   }
 
   // Get effective background color with opacity
-  $: effectiveBgColorWithOpacity = transparentBg
-    ? "transparent"
-    : hexToRgba(bgColor, bgOpacity);
+  let effectiveBgColorWithOpacity = $derived(
+    transparentBg ? "transparent" : hexToRgba(bgColor, bgOpacity)
+  );
 
   // Determine border radius based on shape
-  $: borderRadius = shape === "square" ? "0px" : "12px";
+  let borderRadius = $derived(shape === "square" ? "0px" : "12px");
 
   // Set tab
   function setTab(tab: "style" | "text" | "effects") {
     activeTab = tab;
+  }
+
+  function handleDuplicate() {
+    console.log("handleDuplicate");
+    const event = new CustomEvent("duplicate", {
+      detail: {
+        id,
+        type: "ResizableNode",
+        position: { x: xPos, y: yPos },
+        data: {
+          bgColor,
+          borderColor,
+          textColor,
+          fontSize,
+          borderWidth,
+          borderStyle,
+          fontWeight,
+          bgOpacity,
+          textOpacity,
+          shape,
+          textAlign,
+          shadowColor,
+          shadowBlur,
+          transparentBg,
+          transparentBorder,
+          showHandles,
+          label: data.label,
+        },
+      },
+      bubbles: true,
+      composed: true,
+    });
+    document.dispatchEvent(event);
   }
 </script>
 
@@ -106,28 +124,38 @@
   <div
     class="inline-block p-3 backdrop-blur-md bg-white/80 dark:bg-slate-800/90 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 transition-all"
   >
-    <!-- Main panel tabs -->
-    <div
-      class="flex gap-2 mb-2 border-b border-gray-200 dark:border-gray-700 pb-2"
-    >
+    <!-- Tabs -->
+    <div class="flex gap-2 mb-3">
       <button
-        class="px-3 py-1 text-xs font-medium rounded-md {activeTab === 'style'
-          ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300'
-          : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}"
-        on:click={() => setTab("style")}>Style</button
+        class="px-2 py-1 text-xs font-medium rounded {activeTab === 'style'
+          ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400'
+          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}"
+        onclick={() => setTab("style")}
       >
+        Style
+      </button>
       <button
-        class="px-3 py-1 text-xs font-medium rounded-md {activeTab === 'text'
-          ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300'
-          : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}"
-        on:click={() => setTab("text")}>Text</button
+        class="px-2 py-1 text-xs font-medium rounded {activeTab === 'text'
+          ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400'
+          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}"
+        onclick={() => setTab("text")}
       >
+        Text
+      </button>
       <button
-        class="px-3 py-1 text-xs font-medium rounded-md {activeTab === 'effects'
-          ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300'
-          : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}"
-        on:click={() => setTab("effects")}>Effects</button
+        class="px-2 py-1 text-xs font-medium rounded {activeTab === 'effects'
+          ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400'
+          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}"
+        onclick={() => setTab("effects")}
       >
+        Effects
+      </button>
+      <button
+        class="px-2 py-1 text-xs font-medium rounded text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+        onclick={handleDuplicate}
+      >
+        Duplicate
+      </button>
     </div>
 
     <!-- STYLE TAB -->

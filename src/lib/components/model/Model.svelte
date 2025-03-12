@@ -11,7 +11,7 @@
     ConnectionMode,
   } from "@xyflow/svelte";
   import { writable } from "svelte/store";
-  import { onDestroy } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import "@xyflow/svelte/dist/style.css";
   import { modelStore } from "$lib/stores/ModelStore.svelte";
   import { edgeSettings } from "./edge-settings-store";
@@ -40,6 +40,39 @@
   // Track customized edges and selected edge
   const customizedEdges = new Set<string>();
   const selectedEdge = writable<Edge | null>(null);
+
+  // Function to duplicate a node
+  function duplicateNode(node: Node) {
+    console.log("duplicateNode", node);
+    const newNode = {
+      ...node,
+      id: `${node.id}-copy-${Date.now()}`,
+      position: {
+        x: node.position.x + 50,
+        y: node.position.y + 50,
+      },
+      selected: false,
+    };
+
+    nodes.update((currentNodes) => [...currentNodes, newNode]);
+  }
+
+  // Listen for duplicate events
+  onMount(() => {
+    const handleDuplicate = (event: CustomEvent) => {
+      console.log("duplicate event received", event.detail);
+      duplicateNode(event.detail);
+    };
+
+    document.addEventListener("duplicate", handleDuplicate as EventListener);
+
+    return () => {
+      document.removeEventListener(
+        "duplicate",
+        handleDuplicate as EventListener
+      );
+    };
+  });
 
   $effect(() => {
     const modelData = modelStore.currentModel;
@@ -251,6 +284,7 @@
     on:connect={({ detail }) => onConnect(detail)}
     on:edgeclick={onEdgeClick}
     on:paneclick={onPaneClick}
+    on:duplicate={({ detail }) => duplicateNode(detail)}
   >
     {#if $showGrid}
       <Background patternColor="#aaa" gap={20} />
