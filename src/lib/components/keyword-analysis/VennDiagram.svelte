@@ -46,6 +46,18 @@
     }
   });
 
+  // Helper function to get color index based on frequency order
+  function getColorIndex(keyword: string): number {
+    // Sort keywords by frequency in descending order
+    const sortedKeywords = [...keywords].sort(
+      (a, b) =>
+        (frequencyData?.individual?.[b] || 0) -
+        (frequencyData?.individual?.[a] || 0)
+    );
+    // Return the index of the keyword in the sorted array
+    return sortedKeywords.indexOf(keyword);
+  }
+
   function getIndividualFrequency(keyword: string): number {
     if (!frequencyData?.individual) return 0;
     return frequencyData.individual[keyword] || 0;
@@ -94,8 +106,8 @@
     const r = Math.min(width, height) / 3;
     const d = r * 1.4;
 
-    const idx1 = keywords.indexOf(kw1);
-    const idx2 = keywords.indexOf(kw2);
+    const idx1 = getColorIndex(kw1);
+    const idx2 = getColorIndex(kw2);
 
     // Draw first circle
     chart
@@ -166,9 +178,9 @@
     const verticalOffset = r * 0.8;
 
     const indices = [
-      keywords.indexOf(kw1),
-      keywords.indexOf(kw2),
-      keywords.indexOf(kw3),
+      getColorIndex(kw1),
+      getColorIndex(kw2),
+      getColorIndex(kw3),
     ];
 
     // Calculate positions for three circles in an equilateral triangle
