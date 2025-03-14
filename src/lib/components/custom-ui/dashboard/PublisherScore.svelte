@@ -222,93 +222,96 @@
 </script>
 
 {#if !dialog}
-  <Dialog.Root>
-    <Card.Root>
-      <Card.Header>
-        <Card.Title class="flex justify-between items-center">
-          <h3 class="font-semibold mb-2 text-xl text-[#2383fb]">
-            Journal Suggestions For Publication:
-          </h3>
-          <Dialog.Trigger><Button size="sm">Explain</Button></Dialog.Trigger>
-        </Card.Title>
-      </Card.Header>
-      <Card.Content>
-        {#if scores && scores.journalAndReviewScores && !_.isEmpty(scores.journalAndReviewScores)}
-          <ul class="space-y-2">
-            {#each Object.entries(scores.journalAndReviewScores) as [publisher, score]}
-              <li class="flex items-center space-x-2">
-                <span class="mr-2">-</span><span class="font-semibold"
-                  >{publisher}</span
-                >
-              </li>
-            {/each}
-          </ul>
-        {:else}
-          <p>
-            No Journal Suggestions Available Yet. <br />Keep Adding Literature
-            To Gain Suggestions.
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <Dialog.Root>
+      <Card.Root>
+        <Card.Header>
+          <Card.Title class="flex justify-between items-center">
+            <h3 class="font-semibold mb-2 text-xl text-[#2383fb]">
+              Journal Suggestions For Publication:
+            </h3>
+            <Dialog.Trigger><Button size="sm">Explain</Button></Dialog.Trigger>
+          </Card.Title>
+        </Card.Header>
+        <Card.Content>
+          {#if scores && scores.journalAndReviewScores && !_.isEmpty(scores.journalAndReviewScores)}
+            <ul class="space-y-2">
+              {#each Object.entries(scores.journalAndReviewScores) as [publisher, score]}
+                <li class="flex items-center space-x-2">
+                  <span class="mr-2">-</span><span class="font-semibold"
+                    >{publisher}</span
+                  >
+                </li>
+              {/each}
+            </ul>
+          {:else}
+            <p>
+              No Journal Suggestions Available Yet. <br />Keep Adding Literature
+              To Gain Suggestions.
+            </p>
+          {/if}
+        </Card.Content>
+      </Card.Root>
+      <Dialog.Content class="max-w-[600px] mx-auto">
+        <div>
+          <h2 class="text-xl font-semibold">
+            Journal Suggestions For Publication
+          </h2>
+          <p class="dark:text-white text-lg mt-2">
+            The Journal Suggestions Utilize Weighted Assessments For Journal
+            Articles And Literature Reviews To Help Determine The Journals You
+            Should Consider Investigating For Further Research And Publication
+            Purposes. The Scores Are Calculated Based On Publication Recency,
+            Author Diversity, And Keyword Relevance.
           </p>
-        {/if}
-      </Card.Content>
-    </Card.Root>
-    <Dialog.Content class="max-w-[600px] mx-auto">
-      <div>
-        <h2 class="text-xl font-semibold">
-          Journal Suggestions For Publication
-        </h2>
-        <p class="dark:text-white text-lg mt-2">
-          The Journal Suggestions Utilize Weighted Assessments For Journal
-          Articles And Literature Reviews To Help Determine The Journals You
-          Should Consider Investigating For Further Research And Publication
-          Purposes. The Scores Are Calculated Based On Publication Recency,
-          Author Diversity, And Keyword Relevance.
-        </p>
-      </div>
-    </Dialog.Content>
-  </Dialog.Root>
-  <Dialog.Root>
-    <Card.Root class="mt-4">
-      <Card.Header>
-        <Card.Title class="flex justify-between items-center">
-          <h3 class="font-semibold mb-2 text-xl text-[#2383fb]">
-            Conference Suggestions For Presentation:
-          </h3>
-          <Dialog.Trigger><Button size="sm">Explain</Button></Dialog.Trigger>
-        </Card.Title>
-      </Card.Header>
-      <Card.Content>
-        {#if scores && scores.conferenceProceedingsScores && !_.isEmpty(scores.conferenceProceedingsScores)}
-          <ul class="space-y-2">
-            {#each Object.entries(scores.conferenceProceedingsScores) as [publisher, score]}
-              <li class="flex items-center space-x-2">
-                <span class="mr-2">-</span><span class="font-semibold"
-                  >{publisher}</span
-                >
-              </li>
-            {/each}
-          </ul>
-        {:else}
-          <p>
-            No Conference Suggestions Available Yet. <br />Keep Adding
-            Literature To Gain Suggestions.
+        </div>
+      </Dialog.Content>
+    </Dialog.Root>
+    <Dialog.Root>
+      <Card.Root>
+        <Card.Header>
+          <Card.Title class="flex justify-between items-center">
+            <h3 class="font-semibold mb-2 text-xl text-[#2383fb]">
+              Conference Suggestions For Presentation:
+            </h3>
+            <Dialog.Trigger><Button size="sm">Explain</Button></Dialog.Trigger>
+          </Card.Title>
+        </Card.Header>
+        <Card.Content>
+          {#if scores && scores.conferenceProceedingsScores && !_.isEmpty(scores.conferenceProceedingsScores)}
+            <ul class="space-y-2">
+              {#each Object.entries(scores.conferenceProceedingsScores) as [publisher, score]}
+                <li class="flex items-center space-x-2">
+                  <span class="mr-2">-</span><span class="font-semibold"
+                    >{publisher}</span
+                  >
+                </li>
+              {/each}
+            </ul>
+          {:else}
+            <p>
+              No Conference Suggestions Available Yet. <br />Keep Adding
+              Literature To Gain Suggestions.
+            </p>
+          {/if}
+        </Card.Content>
+      </Card.Root>
+      <Dialog.Content class="max-w-[600px] mx-auto">
+        <div>
+          <h2 class="text-xl font-semibold">
+            Conference Suggestions For Presentation
+          </h2>
+          <p class="dark:text-white text-lg mt-2">
+            The Conference Suggestions Utilize Weighted Assessments For
+            Conference Proceedings And Presentations To Help Determine The
+            Conferences You Should Consider Attending Or Presenting At. The
+            Scores Are Calculated Based On Publication Recency, Author
+            Diversity, And Keyword Relevance.
           </p>
-        {/if}
-      </Card.Content>
-    </Card.Root>
-    <Dialog.Content class="max-w-[600px] mx-auto">
-      <div>
-        <h2 class="text-xl font-semibold">
-          Conference Suggestions For Presentation
-        </h2>
-        <p class="dark:text-white text-lg mt-2">
-          The Conference Suggestions Utilize Weighted Assessments For Conference
-          Proceedings And Presentations To Help Determine The Conferences You
-          Should Consider Attending Or Presenting At. The Scores Are Calculated
-          Based On Publication Recency, Author Diversity, And Keyword Relevance.
-        </p>
-      </div>
-    </Dialog.Content>
-  </Dialog.Root>
+        </div>
+      </Dialog.Content>
+    </Dialog.Root>
+  </div>
 {/if}
 
 {#if dialog}

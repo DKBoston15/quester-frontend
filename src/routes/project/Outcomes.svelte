@@ -21,6 +21,7 @@
   import { cubicOut } from "svelte/easing";
   import * as Select from "$lib/components/ui/select";
   import { auth } from "$lib/stores/AuthStore.svelte";
+  import PublisherScore from "$lib/components/custom-ui/dashboard/PublisherScore.svelte";
 
   interface Outcome {
     id: string;
@@ -408,6 +409,9 @@
         {/if}
       </Card.Content>
     </Card.Root>
+    <div class="mt-4">
+      <PublisherScore />
+    </div>
   </div>
 </div>
 

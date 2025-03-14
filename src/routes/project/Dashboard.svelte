@@ -8,6 +8,7 @@
   import ProjectKeywords from "$lib/components/project/ProjectKeywords.svelte";
   import * as Card from "$lib/components/ui/card";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import NextBestActions from "$lib/components/custom-ui/project/NextBestActions.svelte";
 </script>
 
 <div class="flex-1 w-full overflow-x-hidden">
@@ -41,13 +42,11 @@
         <div class="w-full min-w-0">
           <ProjectInsights />
         </div>
-
+        <div class="w-full min-w-0">
+          <NextBestActions />
+        </div>
         <div class="w-full min-w-0">
           <ResearchProducts />
-        </div>
-
-        <div class="w-full min-w-0">
-          <PublisherScore />
         </div>
       </div>
     </div>
