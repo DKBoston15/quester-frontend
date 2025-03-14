@@ -67,8 +67,6 @@
       <div class="flex items-center justify-between">
         <h1 class="text-3xl font-bold">Literature</h1>
         <Button
-          variant="outline"
-          size="sm"
           onclick={handleAddLiterature}
           class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
         >

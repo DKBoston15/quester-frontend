@@ -12,8 +12,8 @@
 </script>
 
 <div class="flex-1 w-full overflow-x-hidden">
-  <div class="w-full py-6 px-4">
-    <h1 class="text-3xl font-bold mb-6 ml-1">Project Dashboard</h1>
+  <div class="container mx-auto py-6 px-4">
+    <h1 class="text-3xl font-bold mb-6 ml-1">Dashboard</h1>
 
     <div class="grid grid-cols-2 gap-6 w-full">
       <!-- Left Column -->
