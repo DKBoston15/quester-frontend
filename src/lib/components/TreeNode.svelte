@@ -533,6 +533,68 @@
       isJoining = { ...isJoining, [project.id]: false };
     }
   }
+
+  // For checking if user is a direct member of a department
+  function isUserDirectDepartmentMember(department: Department): boolean {
+    if (!auth.user) return false;
+
+    // If the department has a departmentRoles array with an entry for this user, they're a direct member
+    if (
+      department.departmentRoles &&
+      Array.isArray(department.departmentRoles)
+    ) {
+      return department.departmentRoles.some(
+        (role: any) => role.userId === auth.user?.id
+      );
+    }
+
+    return false;
+  }
+
+  async function joinDepartment(event: MouseEvent, department: Department) {
+    event.stopPropagation();
+
+    if (!auth.user) return;
+    if (isUserDirectDepartmentMember(department)) return;
+
+    // Set the loading state for this specific department
+    isJoining = { ...isJoining, [department.id]: true };
+    joinError = { ...joinError, [department.id]: "" };
+
+    try {
+      const response = await fetch(
+        `http://localhost:3333/team-management/department/${department.id}/self-assign`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ roleId: "member" }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to join department");
+      }
+
+      console.log(`Successfully joined department: ${department.name}`);
+
+      // Refresh the child data
+      await loadChildren();
+
+      // Notify other components about the department update
+      notifyDepartmentUpdate();
+    } catch (error) {
+      console.error("Error joining department:", error);
+      joinError = {
+        ...joinError,
+        [department.id]:
+          error instanceof Error ? error.message : "Failed to join",
+      };
+    } finally {
+      isJoining = { ...isJoining, [department.id]: false };
+    }
+  }
 </script>
 
 <!-- Add the Dialog component for moving projects -->
@@ -739,6 +801,33 @@
                 }
               }}
             />
+            {#if isDepartment(department) && !isUserDirectDepartmentMember(department)}
+              <div
+                class="pl-9 text-sm flex items-center gap-2 my-1"
+                onclick={(e: MouseEvent) => e.stopPropagation()}
+              >
+                <button
+                  class="text-xs rounded-md bg-primary/10 hover:bg-primary/20 text-primary flex items-center gap-1 px-2 py-1"
+                  onclick={(e) => joinDepartment(e, department)}
+                  disabled={isJoining[department.id]}
+                >
+                  {#if isJoining[department.id]}
+                    <div
+                      class="h-3 w-3 border-t-2 border-primary animate-spin rounded-full"
+                    ></div>
+                    Joining...
+                  {:else}
+                    <UserPlus class="h-3 w-3" />
+                    Join Department
+                  {/if}
+                </button>
+                {#if joinError[department.id]}
+                  <span class="text-xs text-red-500">
+                    {joinError[department.id]}
+                  </span>
+                {/if}
+              </div>
+            {/if}
           {/each}
         </div>
       {/if}
