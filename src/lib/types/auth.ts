@@ -48,6 +48,13 @@ export interface Organization {
       name: string;
     };
   };
+  organizationRoles?: Array<{
+    roleId: string;
+    role?: {
+      id: string;
+      name: string;
+    };
+  }>;
 }
 
 export type ResearchProductType = "professionalism" | "writing" | "analysis";

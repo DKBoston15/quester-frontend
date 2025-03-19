@@ -32,6 +32,17 @@
   let error = $state<string | null>(null);
   let isCreatingDepartment = $state(false);
 
+  // Organization owner role ID
+  const ORGANIZATION_OWNER_ROLE_ID = "e820de49-d7bd-42d7-8b05-49279cee686f";
+
+  // Helper function to check if user is organization owner
+  function isOrganizationOwner() {
+    if (!currentOrg?.organizationRoles?.length) return false;
+    return currentOrg.organizationRoles.some(
+      (role) => role.roleId === ORGANIZATION_OWNER_ROLE_ID
+    );
+  }
+
   // Helper function to check if user has pro features
   function hasProFeatures() {
     const planName = currentOrg?.subscription?.plan?.name;
@@ -82,6 +93,9 @@
         `http://localhost:3333/organizations/by-user?userId=${auth.user.id}`,
         {
           credentials: "include",
+          headers: {
+            Accept: "application/json",
+          },
         }
       );
 
@@ -105,6 +119,22 @@
             (org) => org.id === currentOrgId
           );
           orgToUse = updatedCurrentOrg || organizations[0];
+        }
+
+        // Load organization details including roles
+        const orgDetailsResponse = await fetch(
+          `http://localhost:3333/team-management/organization-structure/${orgToUse.id}`,
+          {
+            credentials: "include",
+            headers: {
+              Accept: "application/json",
+            },
+          }
+        );
+
+        if (orgDetailsResponse.ok) {
+          const orgDetails = await orgDetailsResponse.json();
+          orgToUse = { ...orgToUse, ...orgDetails.organization };
         }
 
         // Update both local state and auth store
@@ -442,7 +472,7 @@
 
             <!-- Right Column -->
             <div class="space-y-6">
-              {#if currentOrg}
+              {#if currentOrg && isOrganizationOwner()}
                 <!-- Subscription Management -->
                 {#if currentOrg.billingProviderId}
                   <Card
