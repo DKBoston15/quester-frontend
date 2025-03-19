@@ -705,6 +705,27 @@
           <Plus class="h-4 w-4" />
         </button>
       {/if}
+
+      {#if isDepartment(props.item) && !isUserDirectDepartmentMember(props.item)}
+        <button
+          class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity text-xs rounded-md bg-primary/10 hover:bg-primary/20 text-primary flex items-center gap-1 px-2 py-1"
+          onclick={(e) => {
+            e.stopPropagation();
+            joinDepartment(e, props.item);
+          }}
+          disabled={isJoining[props.item.id]}
+        >
+          {#if isJoining[props.item.id]}
+            <div
+              class="h-3 w-3 border-t-2 border-primary animate-spin rounded-full"
+            ></div>
+            Joining...
+          {:else}
+            <UserPlus class="h-3 w-3" />
+            Join Department
+          {/if}
+        </button>
+      {/if}
     </div>
   </div>
 
@@ -801,31 +822,9 @@
                 }
               }}
             />
-            {#if isDepartment(department) && !isUserDirectDepartmentMember(department)}
-              <div
-                class="pl-9 text-sm flex items-center gap-2 my-1"
-                onclick={(e: MouseEvent) => e.stopPropagation()}
-              >
-                <button
-                  class="text-xs rounded-md bg-primary/10 hover:bg-primary/20 text-primary flex items-center gap-1 px-2 py-1"
-                  onclick={(e) => joinDepartment(e, department)}
-                  disabled={isJoining[department.id]}
-                >
-                  {#if isJoining[department.id]}
-                    <div
-                      class="h-3 w-3 border-t-2 border-primary animate-spin rounded-full"
-                    ></div>
-                    Joining...
-                  {:else}
-                    <UserPlus class="h-3 w-3" />
-                    Join Department
-                  {/if}
-                </button>
-                {#if joinError[department.id]}
-                  <span class="text-xs text-red-500">
-                    {joinError[department.id]}
-                  </span>
-                {/if}
+            {#if joinError[department.id]}
+              <div class="pl-9 text-xs text-red-500 mt-1">
+                {joinError[department.id]}
               </div>
             {/if}
           {/each}
@@ -850,7 +849,7 @@
                   <span
                     class="text-xs bg-muted px-1.5 py-0.5 rounded-full text-muted-foreground"
                   >
-                    admin access
+                    Admin Access
                   </span>
                 {/if}
               </span>
@@ -881,21 +880,29 @@
               </DropdownMenu.Root>
 
               {#if !isUserDirectMember(project)}
-                <button
-                  class="opacity-0 group-hover:opacity-100 transition-opacity ml-2 p-1 text-xs rounded-md bg-primary/10 hover:bg-primary/20 text-primary flex items-center gap-1"
-                  onclick={(e) => joinProject(e, project)}
-                  disabled={isJoining[project.id]}
-                >
-                  {#if isJoining[project.id]}
-                    <div
-                      class="h-3 w-3 border-t-2 border-primary animate-spin rounded-full"
-                    ></div>
-                    Joining...
-                  {:else}
-                    <UserPlus class="h-3 w-3" />
-                    Join
-                  {/if}
-                </button>
+                {#if isDepartment(props.item) && !isUserDirectDepartmentMember(props.item)}
+                  <span
+                    class="opacity-0 group-hover:opacity-100 transition-opacity ml-2 p-1 text-xs text-muted-foreground"
+                  >
+                    Join department to access project
+                  </span>
+                {:else}
+                  <button
+                    class="opacity-0 group-hover:opacity-100 transition-opacity ml-2 p-1 text-xs rounded-md bg-primary/10 hover:bg-primary/20 text-primary flex items-center gap-1"
+                    onclick={(e) => joinProject(e, project)}
+                    disabled={isJoining[project.id]}
+                  >
+                    {#if isJoining[project.id]}
+                      <div
+                        class="h-3 w-3 border-t-2 border-primary animate-spin rounded-full"
+                      ></div>
+                      Joining...
+                    {:else}
+                      <UserPlus class="h-3 w-3" />
+                      Join Project
+                    {/if}
+                  </button>
+                {/if}
               {/if}
             </div>
             {#if joinError[project.id]}
