@@ -57,8 +57,25 @@
   // Load data on mount
   onMount(async () => {
     try {
+      // Check URL parameters for resource selection
+      const urlParams = new URLSearchParams(window.location.search);
+      const resourceType = urlParams.get("type");
+      const resourceId = urlParams.get("id");
+
       // Initialize team management store
       await teamManagement.initialize();
+
+      // If URL contains valid resource parameters, select that resource
+      if (
+        resourceType &&
+        ["organization", "department", "project"].includes(resourceType) &&
+        resourceId
+      ) {
+        teamManagement.setSelectedResource(
+          resourceType as "organization" | "department" | "project",
+          resourceId
+        );
+      }
     } catch (error) {
       console.error("Error initializing team management:", error);
     } finally {

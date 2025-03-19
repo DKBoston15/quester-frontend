@@ -4,8 +4,7 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { Badge } from "$lib/components/ui/badge";
-  import { Mail, Send, UserPlus, X } from "lucide-svelte";
-  import { auth } from "$lib/stores/AuthStore.svelte";
+  import { Mail, Send, X } from "lucide-svelte";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
 
   const props = $props<{
@@ -182,7 +181,10 @@
 
       // Filter for pending invitations only - exclude both acceptedAt and status "accepted"
       pendingInvitations = data.filter(
-        (inv: any) => !inv.acceptedAt && inv.status !== "accepted"
+        (inv: any) =>
+          !inv.acceptedAt &&
+          inv.status !== "accepted" &&
+          inv.status !== "revoked"
       );
     } catch (err) {
       invitationsError =

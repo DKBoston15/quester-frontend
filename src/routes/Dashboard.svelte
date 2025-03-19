@@ -3,6 +3,7 @@
   import { navigate } from "svelte-routing";
   import { onMount } from "svelte";
   import { auth } from "../lib/stores/AuthStore.svelte";
+  import { notifyDepartmentUpdate } from "../lib/stores/DepartmentStore.svelte";
   import { Button } from "$lib/components/ui/button";
   import {
     Card,
@@ -18,16 +19,18 @@
   import ManageSubscription from "$lib/components/ManageSubscription.svelte";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import AppSidebar from "$lib/components/AppSidebar.svelte";
-  import { Plus, Users, CreditCard } from "lucide-svelte";
+  import { Plus, Users, CreditCard, FolderTree } from "lucide-svelte";
 
   let organizations = $state<Organization[]>([]);
   let currentOrg = $state<Organization | null>(null);
   let departments = $state<Department[]>([]);
   let projects = $state<Project[]>([]);
   let newProjectName = $state("");
+  let newDepartmentName = $state("");
   let isLoading = $state(true);
   let selectedOrgId = $state<string | null>(null);
   let error = $state<string | null>(null);
+  let isCreatingDepartment = $state(false);
 
   // Helper function to check if user has pro features
   function hasProFeatures() {
@@ -41,6 +44,11 @@
       currentOrg?.subscription?.plan?.name === "Research Explorer" &&
       projects.length >= 1
     );
+  }
+
+  // Anyone can create departments regardless of subscription
+  function canCreateDepartment() {
+    return currentOrg !== null;
   }
 
   onMount(async () => {
@@ -199,6 +207,44 @@
     }
   }
 
+  async function createDepartment(e: Event) {
+    e.preventDefault();
+    if (!newDepartmentName || !currentOrg) return;
+
+    isCreatingDepartment = true;
+
+    try {
+      const response = await fetch(
+        "http://localhost:3333/departments/createDepartmentWithUser",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            name: newDepartmentName,
+            organizationId: currentOrg.id,
+            userId: auth.user?.id,
+          }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to create department");
+
+      const data = await response.json();
+      newDepartmentName = "";
+
+      // Reload departments and projects
+      await loadDepartmentsAndProjects();
+
+      // Use the store to notify components about department update
+      notifyDepartmentUpdate();
+    } catch (error) {
+      console.error("Failed to create department:", error);
+    } finally {
+      isCreatingDepartment = false;
+    }
+  }
+
   async function handleOrgChange(value: string) {
     selectedOrgId = value;
     currentOrg = organizations.find((org) => org.id === value) || null;
@@ -351,6 +397,48 @@
                 </CardContent>
               </Card>
 
+              <!-- Create Department (only if pro features and organization subscription) -->
+              {#if canCreateDepartment()}
+                <Card
+                  class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
+                >
+                  <CardHeader>
+                    <div class="flex items-center gap-2">
+                      <FolderTree class="h-5 w-5" />
+                      <CardTitle class="">Create Department</CardTitle>
+                    </div>
+                    <CardDescription>
+                      Create a new department to organize projects
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onsubmit={createDepartment} class="flex gap-2">
+                      <Input
+                        type="text"
+                        placeholder="Department name"
+                        bind:value={newDepartmentName}
+                        required
+                        class=""
+                      />
+                      <Button
+                        type="submit"
+                        disabled={isCreatingDepartment}
+                        class=""
+                      >
+                        {#if isCreatingDepartment}
+                          <div
+                            class="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin mr-2"
+                          ></div>
+                          Creating...
+                        {:else}
+                          Create
+                        {/if}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              {/if}
+
               <!-- Workspace Overview -->
               {#if currentOrg}
                 <Card
@@ -380,49 +468,6 @@
             <!-- Right Column -->
             <div class="space-y-6">
               {#if currentOrg}
-                <!-- {#if hasProFeatures()}
-                  <Card
-                    class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
-                  >
-                    <CardHeader>
-                      <div class="flex items-center gap-2">
-                        <Users class="h-5 w-5" />
-                        <CardTitle class="">Team Management</CardTitle>
-                      </div>
-                      <CardDescription
-                        >Invite and manage team members</CardDescription
-                      >
-                    </CardHeader>
-                    <CardContent>
-                      <InviteUserForm
-                        organization={currentOrg}
-                        {departments}
-                        {projects}
-                      />
-                    </CardContent>
-                  </Card>
-                {:else}
-                  <Card
-                    class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all bg-blue-50 dark:bg-blue-900/20"
-                  >
-                    <CardHeader>
-                      <div class="flex items-center gap-2">
-                        <Users class="h-5 w-5" />
-                        <CardTitle class="">Team Features</CardTitle>
-                      </div>
-                      <CardDescription>
-                        Upgrade your plan to invite team members and collaborate
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ManageSubscription
-                        organizationId={currentOrg?.id}
-                        isUpgradeCta={true}
-                      />
-                    </CardContent>
-                  </Card>
-                {/if} -->
-
                 <!-- Subscription Management -->
                 {#if currentOrg.billingProviderId}
                   <Card

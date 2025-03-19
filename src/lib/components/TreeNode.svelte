@@ -7,13 +7,33 @@
     FolderKanban,
     FileText,
     UserPlus,
+    FolderTree,
+    MoreVertical,
+    FolderInput,
+    Folder,
   } from "lucide-svelte";
   import type { Organization, Department, Project } from "$lib/types/auth";
   import { auth } from "$lib/stores/AuthStore.svelte";
+  import {
+    departmentUpdated,
+    notifyDepartmentUpdate,
+  } from "$lib/stores/DepartmentStore.svelte";
   import { navigate } from "svelte-routing";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import Self from "./TreeNode.svelte";
+  import { onMount } from "svelte";
+
+  // Import UI components properly
+  import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
+  import * as Dialog from "$lib/components/ui/dialog/index.js";
+  import { Label } from "$lib/components/ui/label";
+  import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+  } from "$lib/components/ui/select/index.js";
 
   const props = $props<{
     item: Organization | Department | Project;
@@ -30,9 +50,43 @@
   let joinError = $state<Record<string, string>>({});
   let isExpanded = $state(props.expanded || true);
   let showNewProjectForm = $state(false);
+  let showNewDepartmentForm = $state(false);
   let newProjectName = $state("");
+  let newDepartmentName = $state("");
   let prevItemId = $state<string | null>(null);
   let canCreateProject = $state(false);
+  let canCreateDepartment = $state(false);
+  let isCreatingDepartment = $state(false);
+  let lastUpdateCount = $state(0);
+
+  // For moving projects
+  let showMoveDialog = $state(false);
+  let projectToMove = $state<Project | null>(null);
+  let selectedDepartmentId = $state<string | null>(null);
+  let allDepartments = $state<Department[]>([]);
+  let isMovingProject = $state(false);
+  let moveError = $state<string | null>(null);
+
+  // This will only run once on mount and set up the subscription
+  onMount(() => {
+    // Set up a manual subscription to the store
+    const unsubscribe = departmentUpdated.subscribe((value) => {
+      // Only reload if the value changed since our last update
+      if (value !== lastUpdateCount && isOrganization(props.item)) {
+        lastUpdateCount = value;
+        // Call loadChildren, but not from within an effect to avoid infinite loops
+        loadChildren();
+      }
+    });
+
+    // Load all departments for the org when mounted
+    if (isOrganization(props.item)) {
+      loadAllDepartments();
+    }
+
+    // Clean up subscription
+    return unsubscribe;
+  });
 
   $effect(() => {
     if (!props.item) return;
@@ -48,8 +102,117 @@
     if (isExpanded) {
       loadChildren();
       checkSubscription();
+
+      // Load all departments if this is an organization
+      if (isOrganization(props.item)) {
+        loadAllDepartments();
+      }
     }
   });
+
+  // Function to load all departments for the organization
+  async function loadAllDepartments() {
+    if (!auth.user) return;
+
+    const org = isOrganization(props.item) ? props.item : props.parentOrg;
+
+    if (!org) return;
+
+    try {
+      // Use the departments/by-user endpoint which is available according to routes
+      const response = await fetch(
+        `http://localhost:3333/departments/by-user?userId=${auth.user.id}`,
+        { credentials: "include" }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to load departments");
+      }
+
+      const data = await response.json();
+      // Filter departments to only include those from the current organization
+      allDepartments = data.data.filter(
+        (d: Department) => d.organizationId === org.id
+      );
+    } catch (error) {
+      console.error("Failed to load all departments:", error);
+    }
+  }
+
+  // Function to open the move project dialog
+  function openMoveDialog(project: Project, event: MouseEvent) {
+    event.stopPropagation();
+    projectToMove = project;
+    selectedDepartmentId = project.departmentId || null;
+    showMoveDialog = true;
+    moveError = null;
+
+    // Ensure we have the latest departments when opening the dialog
+    loadAllDepartments();
+  }
+
+  // Function to close the move dialog
+  function closeMoveDialog() {
+    showMoveDialog = false;
+    projectToMove = null;
+    selectedDepartmentId = null;
+    moveError = null;
+  }
+
+  // Function to move a project to a different department
+  async function moveProject() {
+    if (!projectToMove) return;
+
+    isMovingProject = true;
+    moveError = null;
+
+    try {
+      // Get the team-management API resources to update the tree view
+      const resourcesBeforeUpdate = await fetch(
+        `http://localhost:3333/team-management/resources`,
+        { credentials: "include" }
+      );
+
+      // Use the projects update endpoint from the routes
+      const response = await fetch(
+        `http://localhost:3333/projects/${projectToMove.id}`,
+        {
+          method: "PUT", // Use PUT instead of PATCH based on API routes
+          headers: {
+            "Content-Type": "application/json",
+            // Add explicit CORS headers to request
+            Accept: "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            departmentId: selectedDepartmentId || null,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to move project");
+      }
+
+      // Close the dialog
+      showMoveDialog = false;
+
+      // Refresh the tree to show the changes
+      notifyDepartmentUpdate();
+
+      // If we're in a department view, reload the children
+      if (isDepartment(props.item)) {
+        await loadChildren();
+      }
+    } catch (error) {
+      console.error("Failed to move project:", error);
+      moveError =
+        error instanceof Error ? error.message : "Failed to move project";
+    } finally {
+      isMovingProject = false;
+    }
+  }
 
   async function checkSubscription() {
     const org =
@@ -59,7 +222,9 @@
     try {
       const subscription = org.subscription;
       if (!subscription) {
+        // Default to allowing department creation even without subscription data
         canCreateProject = false;
+        canCreateDepartment = true;
         return;
       }
 
@@ -68,9 +233,14 @@
       canCreateProject =
         subscription.status === "active" &&
         (!subscription.seatsCount || projectCount < subscription.seatsCount);
+
+      // Allow department creation for all active subscriptions
+      canCreateDepartment = subscription.status === "active";
     } catch (error) {
       console.error("Failed to check subscription:", error);
       canCreateProject = false;
+      // Default to true for department creation even on errors
+      canCreateDepartment = true;
     }
   }
 
@@ -105,8 +275,22 @@
     navigate(`/project/${project.id}`);
   }
 
+  function handleDepartmentClick(department: Department) {
+    // Comment out navigation - let the expand/collapse functionality work instead
+    // const departmentId = department.id;
+    // const url = `/team-management?type=department&id=${departmentId}`;
+    // navigate(url);
+
+    // Just expand/collapse the department
+    isExpanded = !isExpanded;
+    if (isExpanded && departments.length === 0 && projects.length === 0) {
+      loadChildren();
+    }
+  }
+
   async function createProject(e: Event) {
     e.preventDefault();
+    e.stopPropagation();
     if (!newProjectName || !auth.user) return;
 
     const org =
@@ -145,6 +329,49 @@
     }
   }
 
+  async function createDepartment(e: Event) {
+    e.preventDefault();
+    if (!newDepartmentName || !auth.user) return;
+
+    const org =
+      props.parentOrg || (isOrganization(props.item) ? props.item : null);
+    if (!org) return;
+
+    isCreatingDepartment = true;
+
+    try {
+      const response = await fetch(
+        "http://localhost:3333/departments/createDepartmentWithUser",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            name: newDepartmentName,
+            organizationId: org.id,
+            userId: auth.user.id,
+          }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to create department");
+
+      const data = await response.json();
+      newDepartmentName = "";
+      showNewDepartmentForm = false;
+
+      // Refresh the departments list
+      await loadChildren();
+
+      // Notify other components about the department update
+      notifyDepartmentUpdate();
+    } catch (error) {
+      console.error("Failed to create department:", error);
+    } finally {
+      isCreatingDepartment = false;
+    }
+  }
+
   async function loadChildren() {
     if (!props.item || isLoading || !auth.user) return;
     isLoading = true;
@@ -170,7 +397,7 @@
         const teamManagementData = await projectsResponse.json();
         console.log(
           "TreeNode - Team Management Resources:",
-          teamManagementData
+          $state.snapshot(teamManagementData)
         );
 
         // Get all projects from the organization, regardless of department
@@ -180,7 +407,10 @@
             (p: Project) =>
               p.organizationId === props.item.id && !p.departmentId // Only include projects not in a department here
           );
-          console.log("TreeNode - Projects for organization:", projects);
+          console.log(
+            "TreeNode - Projects for organization:",
+            $state.snapshot(projects)
+          );
         } else {
           // Fallback to the old method if team management API doesn't return projects
           const oldProjectsResponse = await fetch(
@@ -208,7 +438,10 @@
             projects = teamManagementData.projects.filter(
               (p: Project) => p.departmentId === props.item.id
             );
-            console.log("TreeNode - Projects for department:", projects);
+            console.log(
+              "TreeNode - Projects for department:",
+              $state.snapshot(projects)
+            );
           } else {
             throw new Error("No projects in team management data"); // Trigger fallback
           }
@@ -245,6 +478,13 @@
   function toggleNewProjectForm(event: MouseEvent) {
     event.stopPropagation();
     showNewProjectForm = !showNewProjectForm;
+    if (showNewDepartmentForm) showNewDepartmentForm = false;
+  }
+
+  function toggleNewDepartmentForm(event: MouseEvent) {
+    event.stopPropagation();
+    showNewDepartmentForm = !showNewDepartmentForm;
+    if (showNewProjectForm) showNewProjectForm = false;
   }
 
   function handleSelect() {
@@ -295,6 +535,55 @@
   }
 </script>
 
+<!-- Add the Dialog component for moving projects -->
+<Dialog.Root bind:open={showMoveDialog}>
+  <Dialog.Content class="max-w-md w-full mx-auto">
+    <Dialog.Header>
+      <Dialog.Title>Move Project</Dialog.Title>
+      <Dialog.Description>
+        Select a department to move the project to. Choose "No Department" to
+        remove it from any department.
+      </Dialog.Description>
+    </Dialog.Header>
+
+    <div class="grid gap-4 py-4">
+      <div class="grid grid-cols-4 items-center gap-4">
+        <Label for="department" class="text-right">Department</Label>
+        <div class="col-span-3">
+          <select
+            id="department"
+            class="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            bind:value={selectedDepartmentId}
+          >
+            <option value={null}>No Department</option>
+            {#each allDepartments as dept}
+              <option value={dept.id}>{dept.name}</option>
+            {/each}
+          </select>
+        </div>
+      </div>
+
+      {#if moveError}
+        <p class="text-sm text-red-500">{moveError}</p>
+      {/if}
+    </div>
+
+    <Dialog.Footer>
+      <Button variant="outline" onclick={closeMoveDialog}>Cancel</Button>
+      <Button onclick={moveProject} disabled={isMovingProject}>
+        {#if isMovingProject}
+          <div
+            class="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin mr-2"
+          ></div>
+          Moving...
+        {:else}
+          Move Project
+        {/if}
+      </Button>
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>
+
 <div
   role="button"
   tabindex="0"
@@ -320,7 +609,7 @@
         <div class="w-[32px]"></div>
       {/if}
 
-      <span class=" flex items-center gap-2">
+      <span class="flex items-center gap-2">
         {#if isOrganization(props.item)}
           <Building2 class="h-4 w-4" />
         {:else if isDepartment(props.item)}
@@ -331,11 +620,25 @@
         {props.item.name}
       </span>
 
+      {#if isOrganization(props.item) && canCreateDepartment}
+        <!-- Add department button for organizations -->
+        <button
+          class="p-1 hover:bg-accent hover:text-accent-foreground rounded-full opacity-0 group-hover:opacity-100 ml-2"
+          onclick={toggleNewDepartmentForm}
+          type="button"
+          title="Create Department"
+        >
+          <FolderTree class="h-4 w-4" />
+        </button>
+      {/if}
+
       {#if (isOrganization(props.item) || isDepartment(props.item)) && canCreateProject}
+        <!-- Add project button -->
         <button
           class="p-1 hover:bg-accent hover:text-accent-foreground rounded-full opacity-0 group-hover:opacity-100 ml-2"
           onclick={toggleNewProjectForm}
           type="button"
+          title="Create Project"
         >
           <Plus class="h-4 w-4" />
         </button>
@@ -344,7 +647,7 @@
   </div>
 
   {#if showNewProjectForm}
-    <div class="pl-9 pt-2">
+    <div class="pl-9 pt-2" onclick={(e: MouseEvent) => e.stopPropagation()}>
       <form onsubmit={createProject} class="flex gap-2">
         <Input
           type="text"
@@ -352,13 +655,63 @@
           bind:value={newProjectName}
           required
           class="text-sm"
+          onclick={(e: MouseEvent) => e.stopPropagation()}
         />
-        <Button type="submit" size="sm">Create</Button>
+        <Button
+          type="submit"
+          size="sm"
+          onclick={(e: MouseEvent) => e.stopPropagation()}>Create</Button
+        >
         <Button
           type="button"
           variant="outline"
           size="sm"
-          onclick={() => (showNewProjectForm = false)}
+          onclick={(e: MouseEvent) => {
+            e.stopPropagation();
+            showNewProjectForm = false;
+          }}
+        >
+          Cancel
+        </Button>
+      </form>
+    </div>
+  {/if}
+
+  {#if showNewDepartmentForm}
+    <div class="pl-9 pt-2" onclick={(e: MouseEvent) => e.stopPropagation()}>
+      <form onsubmit={createDepartment} class="flex gap-2">
+        <Input
+          type="text"
+          placeholder="New department name"
+          bind:value={newDepartmentName}
+          required
+          class="text-sm"
+          onclick={(e: MouseEvent) => e.stopPropagation()}
+        />
+        <Button
+          type="submit"
+          size="sm"
+          disabled={isCreatingDepartment}
+          onclick={(e: MouseEvent) => e.stopPropagation()}
+        >
+          {#if isCreatingDepartment}
+            <div
+              class="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin mr-2"
+            ></div>
+            Creating...
+          {:else}
+            Create
+          {/if}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onclick={(e: MouseEvent) => {
+            e.stopPropagation();
+            showNewDepartmentForm = false;
+          }}
+          disabled={isCreatingDepartment}
         >
           Cancel
         </Button>
@@ -371,16 +724,23 @@
       <div class="pl-9 text-sm text-muted-foreground">Loading...</div>
     {:else}
       {#if departments.length > 0}
-        {#each departments as department}
-          <Self
-            item={department}
-            level={props.level + 1}
-            parentOrg={isOrganization(props.item)
-              ? props.item
-              : props.parentOrg}
-            onSelect={props.onSelect}
-          />
-        {/each}
+        <div class="pl-9">
+          {#each departments as department}
+            <Self
+              item={department}
+              level={props.level + 1}
+              parentOrg={isOrganization(props.item)
+                ? props.item
+                : props.parentOrg}
+              onSelect={(item) => {
+                // Don't navigate to team management for departments
+                if (props.onSelect && !isDepartment(item)) {
+                  props.onSelect(item);
+                }
+              }}
+            />
+          {/each}
+        </div>
       {/if}
 
       {#if projects.length > 0}
@@ -406,9 +766,34 @@
                 {/if}
               </span>
 
+              <!-- Add dropdown menu -->
+              <DropdownMenu.Root>
+                <DropdownMenu.Trigger>
+                  <button
+                    class="opacity-0 group-hover:opacity-100 transition-opacity ml-auto p-1 rounded-md hover:bg-muted"
+                    onclick={(e) => e.stopPropagation()}
+                  >
+                    <MoreVertical class="h-4 w-4" />
+                  </button>
+                </DropdownMenu.Trigger>
+                <DropdownMenu.Content>
+                  <DropdownMenu.Label>Actions</DropdownMenu.Label>
+                  <DropdownMenu.Separator />
+                  <DropdownMenu.Item>
+                    <button
+                      class="flex items-center w-full"
+                      onclick={(e) => openMoveDialog(project, e)}
+                    >
+                      <FolderInput class="mr-2 h-4 w-4" />
+                      <span>Move to Department</span>
+                    </button>
+                  </DropdownMenu.Item>
+                </DropdownMenu.Content>
+              </DropdownMenu.Root>
+
               {#if !isUserDirectMember(project)}
                 <button
-                  class="opacity-0 group-hover:opacity-100 transition-opacity ml-auto p-1 text-xs rounded-md bg-primary/10 hover:bg-primary/20 text-primary flex items-center gap-1"
+                  class="opacity-0 group-hover:opacity-100 transition-opacity ml-2 p-1 text-xs rounded-md bg-primary/10 hover:bg-primary/20 text-primary flex items-center gap-1"
                   onclick={(e) => joinProject(e, project)}
                   disabled={isJoining[project.id]}
                 >

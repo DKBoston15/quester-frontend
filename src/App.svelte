@@ -180,6 +180,8 @@
           <Route path="/settings">
             <Settings />
           </Route>
+
+          <!-- Project Routes -->
           <Route path="/project/:projectId/literature/:literatureId" let:params>
             {#if params.projectId && params.literatureId}
               <Project
