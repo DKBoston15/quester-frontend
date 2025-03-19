@@ -38,6 +38,10 @@
   let projects = $state<any[]>([]);
   let isProjectsOpen = $state<string | undefined>("projects");
 
+  function toggleProjects() {
+    isProjectsOpen = isProjectsOpen === "projects" ? undefined : "projects";
+  }
+
   $effect(() => {
     if (auth.currentOrganization) {
       loadProjects();
@@ -133,31 +137,40 @@
       <Sidebar.GroupContent>
         <Sidebar.Menu>
           <Sidebar.MenuItem>
-            <a href="/dashboard" class="block">
-              <Sidebar.MenuButton>
-                <Tooltip.Root>
-                  <Tooltip.Trigger>
-                    <div
-                      class="flex items-center gap-3 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
+            <Sidebar.MenuButton>
+              <Tooltip.Root>
+                <Tooltip.Trigger>
+                  <div
+                    class="flex items-center gap-3 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
+                    onclick={(e) => {
+                      e.stopPropagation();
+                      toggleProjects();
+                    }}
+                  >
+                    <FolderKanban class="h-4 w-4 flex-shrink-0" />
+                    <span class="group-data-[collapsible=icon]:hidden"
+                      >Projects</span
                     >
-                      <FolderKanban class="h-4 w-4 flex-shrink-0" />
-                      <span class="group-data-[collapsible=icon]:hidden"
-                        >Projects</span
-                      >
+                    {#if isProjectsOpen === "projects"}
+                      <ChevronUp
+                        class="h-4 w-4 ml-auto group-data-[collapsible=icon]:hidden"
+                      />
+                    {:else}
                       <ChevronDown
                         class="h-4 w-4 ml-auto group-data-[collapsible=icon]:hidden"
                       />
-                    </div>
-                  </Tooltip.Trigger>
-                  <Tooltip.Content
-                    side="right"
-                    class="group-data-[collapsible=icon]:block hidden"
-                  >
-                    <span class="">Projects</span>
-                  </Tooltip.Content>
-                </Tooltip.Root>
-              </Sidebar.MenuButton>
-            </a>
+                    {/if}
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content
+                  side="right"
+                  class="group-data-[collapsible=icon]:block hidden"
+                >
+                  <span class="">Projects</span>
+                </Tooltip.Content>
+              </Tooltip.Root>
+            </Sidebar.MenuButton>
+
             <Accordion.Root
               type="single"
               value={isProjectsOpen}

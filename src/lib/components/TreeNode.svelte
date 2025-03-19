@@ -272,6 +272,7 @@
   }
 
   function handleProjectClick(project: Project) {
+    if (!isUserDirectMember(project)) return;
     navigate(`/project/${project.id}`);
   }
 
@@ -680,6 +681,13 @@
           <FileText class="h-4 w-4" />
         {/if}
         {props.item.name}
+        {#if isDepartment(props.item) && !isUserDirectDepartmentMember(props.item)}
+          <span
+            class="text-xs bg-muted px-1.5 py-0.5 rounded-full text-muted-foreground"
+          >
+            Admin Access
+          </span>
+        {/if}
       </span>
 
       {#if isOrganization(props.item) && canCreateDepartment}
@@ -845,7 +853,7 @@
               <span class="flex items-center gap-2 flex-1">
                 <FileText class="h-4 w-4" />
                 {project.name}
-                {#if !isUserDirectMember(project)}
+                {#if !isUserDirectMember(project) && (!isDepartment(props.item) || !isUserDirectDepartmentMember(props.item))}
                   <span
                     class="text-xs bg-muted px-1.5 py-0.5 rounded-full text-muted-foreground"
                   >

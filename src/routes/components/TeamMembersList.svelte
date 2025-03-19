@@ -355,14 +355,25 @@
     return null;
   }
 
+  // Count the number of owners in the team
+  function countOwners(): number {
+    if (props.resourceType !== "organization") return 0;
+
+    return props.users.filter((user: TeamMember) => isOrganizationOwner(user))
+      .length;
+  }
+
   async function handleRemoveUser(userId: string) {
     const user = props.users.find((u: TeamMember) => String(u.id) === userId);
 
     if (!user) return;
 
     if (props.resourceType === "organization" && isOrganizationOwner(user)) {
-      alert("Organization Owners cannot be removed");
-      return;
+      // Only prevent removal if this is the last owner
+      if (countOwners() <= 1) {
+        alert("Cannot remove the last organization owner");
+        return;
+      }
     }
 
     // Set the user to remove and show the dialog
@@ -436,7 +447,7 @@
                   >
                     {user.firstName?.[0]}{user.lastName?.[0]}
                   </div>
-                  <div>
+                  <div class="flex items-center gap-2">
                     <div class="font-medium">
                       {user.firstName}
                       {user.lastName}
@@ -485,7 +496,7 @@
               </td>
               <td class="p-3 text-right">
                 <div class="flex items-center justify-end gap-2">
-                  {#if props.canChangeRoles && !isCurrentUser(user) && !isOrganizationOwner(user)}
+                  {#if props.canChangeRoles && !isCurrentUser(user) && (!isOrganizationOwner(user) || (props.resourceType === "organization" && countOwners() > 1))}
                     <Button
                       variant="outline"
                       size="sm"

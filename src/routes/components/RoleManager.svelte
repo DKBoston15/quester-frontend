@@ -356,10 +356,21 @@
   });
 
   async function updateRole() {
-    // Prevent changing the role of an organization owner
-    if (isOwner) {
-      error = "Organization Owners cannot have their role changed";
-      return;
+    // Only prevent changing the role if this is the last owner
+    if (isOwner && props.resourceType === "organization") {
+      // Get the current number of owners
+      const users = teamManagement.organizationStructure?.users || [];
+      const ownerCount = users.filter(
+        (user: any) =>
+          user.organizationRoles?.some((r: any) => r.role?.name === "Owner") ||
+          user.role?.name === "Owner" ||
+          user.$extras?.roleName === "Owner"
+      ).length;
+
+      if (ownerCount <= 1) {
+        error = "The last Organization Owner's role cannot be changed";
+        return;
+      }
     }
 
     if (!selectedRoleId) {
@@ -480,15 +491,32 @@
           Select Role
         </label>
 
-        {#if isOwner}
-          <!-- Disabled select for owners -->
-          <div class="text-muted-foreground py-2">
-            Owner (cannot be changed)
-          </div>
-          <p class="text-sm text-red-500 mt-1">
-            Organization Owners cannot have their role changed for security
-            reasons
-          </p>
+        {#if isOwner && props.resourceType === "organization"}
+          {#if teamManagement.organizationStructure?.users?.filter((user: any) => user.organizationRoles?.some((r: any) => r.role?.name === "Owner") || user.role?.name === "Owner" || user.$extras?.roleName === "Owner").length <= 1}
+            <!-- Disabled select for last owner -->
+            <div class="text-muted-foreground py-2">
+              Owner (cannot be changed)
+            </div>
+            <p class="text-sm text-red-500 mt-1">
+              Organization Owner's role cannot be changed while they are the
+              last owner
+            </p>
+          {:else}
+            <select
+              id="role-select"
+              bind:value={selectedRoleId}
+              class="w-full rounded-md border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card p-2"
+            >
+              <option value="" disabled>Choose a role</option>
+              {#each availableRoles as role}
+                {#if !(isOwner && role.name === "Owner")}
+                  <option value={role.id} selected={role.id === selectedRoleId}
+                    >{role.name}</option
+                  >
+                {/if}
+              {/each}
+            </select>
+          {/if}
         {:else if availableRoles.length === 0}
           <div class="text-muted-foreground py-2">
             No roles available. Using hardcoded fallback roles.
@@ -499,8 +527,11 @@
             class="w-full rounded-md border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card p-2"
           >
             <option value="" disabled>Choose a role</option>
-            <option value="admin">Admin</option>
-            <option value="member">Member</option>
+            {#each ["admin", "member"].filter((r) => r !== selectedRoleId) as role}
+              <option value={role}
+                >{role.charAt(0).toUpperCase() + role.slice(1)}</option
+              >
+            {/each}
           </select>
         {:else}
           <select
@@ -510,7 +541,11 @@
           >
             <option value="" disabled>Choose a role</option>
             {#each availableRoles as role}
-              <option value={role.id}>{role.name}</option>
+              {#if !(isOwner && role.name === "Owner")}
+                <option value={role.id} selected={role.id === selectedRoleId}
+                  >{role.name}</option
+                >
+              {/if}
             {/each}
           </select>
         {/if}
@@ -525,7 +560,20 @@
         <Button variant="outline" onclick={closeDialog} disabled={isLoading}>
           Cancel
         </Button>
-        <Button onclick={updateRole} disabled={isLoading || isOwner}>
+        <Button
+          onclick={updateRole}
+          disabled={isLoading ||
+            (isOwner &&
+              props.resourceType === "organization" &&
+              teamManagement.organizationStructure?.users?.filter(
+                (user: any) =>
+                  user.organizationRoles?.some(
+                    (r: any) => r.role?.name === "Owner"
+                  ) ||
+                  user.role?.name === "Owner" ||
+                  user.$extras?.roleName === "Owner"
+              ).length <= 1)}
+        >
           {isLoading ? "Updating..." : "Update Role"}
         </Button>
       </div>
