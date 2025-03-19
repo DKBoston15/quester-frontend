@@ -13,10 +13,11 @@
     FolderKanban,
     Sun,
     Moon,
+    UserPlus,
   } from "lucide-svelte";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import { auth } from "$lib/stores/AuthStore.svelte";
-  import { navigate } from "svelte-routing";
+  import { navigate, Link } from "svelte-routing";
   import { DarkmodeToggle } from "$lib/components/ui/darkmode-toggle";
   import * as Tooltip from "$lib/components/ui/tooltip";
 
@@ -28,14 +29,9 @@
       icon: Home,
     },
     {
-      title: "Team",
-      url: "/team",
-      icon: Users,
-    },
-    {
-      title: "Settings",
-      url: "/settings",
-      icon: Settings,
+      title: "Team Management",
+      url: "/team-management",
+      icon: UserPlus,
     },
   ];
 
@@ -101,7 +97,7 @@
       <Sidebar.GroupContent>
         <Sidebar.Menu>
           {#each mainNavItems as item (item.title)}
-            <a href={item.url} class="block">
+            <Link to={item.url} class="block">
               <Sidebar.MenuItem>
                 <Sidebar.MenuButton>
                   <Tooltip.Root>
@@ -126,7 +122,7 @@
                   </Tooltip.Root>
                 </Sidebar.MenuButton>
               </Sidebar.MenuItem>
-            </a>
+            </Link>
           {/each}
         </Sidebar.Menu>
       </Sidebar.GroupContent>

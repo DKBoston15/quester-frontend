@@ -84,6 +84,12 @@ export interface Project {
   organizationId: string;
   departmentId?: string | null;
   userId?: string | null;
+
+  // Relations (optional since they might not always be loaded)
+  organization?: Organization;
+  department?: Department;
+  users?: User[];
+  projectRoles?: ProjectRole[];
 }
 
 export interface ProjectRole {

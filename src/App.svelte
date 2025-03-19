@@ -14,11 +14,82 @@
   import SignIn from "./routes/SignIn.svelte";
   import { navigate } from "svelte-routing";
   import { Toaster } from "$lib/components/ui/sonner";
+  import TeamManagement from "./routes/TeamManagement.svelte";
+  import Settings from "./routes/Settings.svelte";
 
   const props = $props<{ url: string }>();
 
-  onMount(() => {
-    auth.verifySession();
+  // Get the base URL from the public path
+  const base = import.meta.env.BASE_URL || "";
+
+  // Check if the user is authenticated
+  let isCheckingAuth = $state(true);
+  console.log("App.svelte initial state - isCheckingAuth:", isCheckingAuth);
+
+  onMount(async () => {
+    console.log("App mounted, checking authentication...");
+
+    // Safety timeout - force loading to false after 10 seconds
+    const safetyTimeout = setTimeout(() => {
+      console.log(
+        "Safety timeout triggered - forcing App loading state to false"
+      );
+      isCheckingAuth = false;
+      // Force a re-render
+      document.dispatchEvent(new Event("forceRerender"));
+    }, 10000);
+
+    // Create a promise that rejects after a timeout
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => {
+        reject(new Error("Auth verification timed out after 10 seconds"));
+      }, 10000); // 10 second timeout
+    });
+
+    try {
+      // Race the auth verification against the timeout
+      await Promise.race([auth.verifySession(), timeoutPromise]);
+
+      console.log("Auth verification completed:", {
+        isAuthenticated: auth.isAuthenticated,
+        isLoading: auth.isLoading,
+      });
+
+      isCheckingAuth = false;
+      console.log("App.svelte - isCheckingAuth set to:", isCheckingAuth);
+
+      // Redirect to signin if not authenticated
+      if (!auth.isAuthenticated && window.location.pathname !== "/") {
+        console.log("User not authenticated, redirecting to signin");
+        navigate("/", { replace: true });
+      } else if (auth.isAuthenticated && window.location.pathname === "/") {
+        console.log("User authenticated at root, redirecting to dashboard");
+        navigate("/dashboard", { replace: true });
+      }
+    } catch (err) {
+      console.error("Error during auth verification:", err);
+      // If we timeout or have another error, force isCheckingAuth to false
+      // and clear user to reset auth state
+      isCheckingAuth = false;
+      console.log(
+        "App.svelte - error handler - isCheckingAuth set to:",
+        isCheckingAuth
+      );
+      auth.clearUser(); // This internally sets isLoading to false
+
+      // Show a message or redirect to signin as a fallback
+      console.log("Forcing redirect to signin page due to auth error");
+      navigate("/", { replace: true });
+    } finally {
+      // Ensure the safety timeout is cleared
+      clearTimeout(safetyTimeout);
+      // Double-check the isCheckingAuth state
+      isCheckingAuth = false;
+      console.log(
+        "App.svelte - finally block - isCheckingAuth set to:",
+        isCheckingAuth
+      );
+    }
   });
 
   function login() {
@@ -43,158 +114,171 @@
   const currentOrgName = $derived(auth.currentOrganization?.name || "");
 </script>
 
-<Router url={props.url}>
-  <main class="bg-background text-foreground">
-    <Toaster />
-    {#if !auth.isAuthenticated && !auth.isLoading}
-      <SignIn onLogin={login} />
-    {:else}
-      <!-- Protected Routes -->
-      <!-- <nav
-        class="border-b-2 border-black dark:border-white bg-background py-4 px-6"
-      >
-        <div class="mx-auto flex max-w-7xl items-center justify-between">
-          <div class="flex items-center gap-8">
-            <a href="/" class="font-mono text-2xl font-bold text-foreground"
-              >Quester</a
-            >
-            {#if auth.isAuthenticated && currentOrgName}
-              <span class="font-mono text-lg text-foreground"
-                >{currentOrgName}</span
-              >
+{#if isCheckingAuth}
+  <div class="fixed inset-0 flex flex-col items-center justify-center">
+    <div
+      class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-4"
+    ></div>
+    <p class="text-muted-foreground mb-2">Checking authentication...</p>
+    <div class="text-xs text-center text-muted-foreground/70 max-w-md px-4">
+      <p>If this persists, you can try to:</p>
+      <ul class="mt-2 text-left list-disc pl-6">
+        <li>Refresh the page</li>
+        <li>Clear your browser cache</li>
+        <li>
+          <button
+            class="underline text-primary"
+            onclick={() => {
+              console.log("Manual auth reset triggered");
+              isCheckingAuth = false;
+              auth.clearUser();
+              navigate("/", { replace: true });
+            }}
+          >
+            Click here to reset authentication
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+{:else}
+  <Router url={props.url}>
+    <main class="bg-background text-foreground">
+      <Toaster />
+      {#if !auth.isAuthenticated && !auth.isLoading}
+        <SignIn onLogin={login} />
+      {:else}
+        <ProtectedLayout>
+          <Route path="/">
+            {#if auth.isAuthenticated}
+              <Dashboard />
+            {:else}
+              <div>Redirecting...</div>
             {/if}
-          </div>
-
-          <div class="flex items-center gap-6">
+          </Route>
+          <Route path="/dashboard">
+            <Dashboard />
+          </Route>
+          <Route path="/onboarding">
             {#if auth.user}
-              <span class="font-mono text-foreground"
-                >Welcome, {auth.user.firstName}!</span
-              >
-              <DarkmodeToggle />
-              <button
-                onclick={logout}
-                class="group relative inline-flex items-center justify-center border-2 border-black dark:border-white bg-background text-foreground px-6 py-3 font-mono text-lg transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)]"
-              >
-                <span class="relative">Logout</span>
-              </button>
+              {#await checkPendingInvites()}
+                <div>Loading...</div>
+              {:then hasPendingInvites}
+                {#if hasPendingInvites}
+                  <PendingInvites />
+                {:else}
+                  <Onboarding />
+                {/if}
+              {/await}
+            {:else}
+              <div>User data not loaded</div>
             {/if}
-          </div>
-        </div>
-      </nav> -->
-
-      <ProtectedLayout>
-        <Route path="/onboarding">
-          {#if auth.user}
-            {#await checkPendingInvites()}
+          </Route>
+          <Route path="/team-management">
+            <TeamManagement />
+          </Route>
+          <Route path="/settings">
+            <Settings />
+          </Route>
+          <Route path="/project/:projectId/literature/:literatureId" let:params>
+            {#if params.projectId && params.literatureId}
+              <Project
+                params={{
+                  projectId: params.projectId,
+                  view: "literature",
+                  literatureId: params.literatureId,
+                }}
+              />
+            {:else}
+              <div>Invalid project or literature ID</div>
+            {/if}
+          </Route>
+          <Route path="/project/:projectId/literature" let:params>
+            {#if params.projectId}
+              <Project
+                params={{ projectId: params.projectId, view: "literature" }}
+              />
+            {:else}
+              <div>Invalid project ID</div>
+            {/if}
+          </Route>
+          <Route path="/project/:projectId/models/:modelId" let:params>
+            {#if params.projectId && params.modelId}
+              <Project
+                params={{
+                  projectId: params.projectId,
+                  view: "models",
+                  modelId: params.modelId,
+                }}
+              />
+            {:else}
+              <div>Invalid project or model ID</div>
+            {/if}
+          </Route>
+          <Route path="/project/:projectId/models" let:params>
+            {#if params.projectId}
+              <Project
+                params={{ projectId: params.projectId, view: "models" }}
+              />
+            {:else}
+              <div>Invalid project ID</div>
+            {/if}
+          </Route>
+          <Route path="/project/:projectId/outcomes/:outcomeId" let:params>
+            {#if params.projectId && params.outcomeId}
+              <Project
+                params={{
+                  projectId: params.projectId,
+                  view: "outcomes",
+                  outcomeId: params.outcomeId,
+                }}
+              />
+            {:else}
+              <div>Invalid project or outcome ID</div>
+            {/if}
+          </Route>
+          <Route path="/project/:projectId/outcomes" let:params>
+            {#if params.projectId}
+              <Project
+                params={{ projectId: params.projectId, view: "outcomes" }}
+              />
+            {:else}
+              <div>Invalid project ID</div>
+            {/if}
+          </Route>
+          <Route path="/project/:projectId" let:params>
+            {#if params.projectId}
+              <Project params={{ projectId: params.projectId }} />
+            {:else}
+              <div>Invalid project ID</div>
+            {/if}
+          </Route>
+          <Route path="/project/:projectId/*" let:params>
+            {#if params.projectId}
+              <Project params={{ projectId: params.projectId }} />
+            {:else}
+              <div>Invalid project ID</div>
+            {/if}
+          </Route>
+          <Route path="/pricing">
+            {#if auth.isLoading}
               <div>Loading...</div>
-            {:then hasPendingInvites}
-              {#if hasPendingInvites}
-                <PendingInvites />
-              {:else}
-                <Onboarding />
-              {/if}
-            {/await}
-          {/if}
-        </Route>
-        <Route path="/dashboard">
-          <Dashboard />
-        </Route>
-        <Route path="/project/:projectId/literature/:literatureId" let:params>
-          {#if params.projectId && params.literatureId}
-            <Project
-              params={{
-                projectId: params.projectId,
-                view: "literature",
-                literatureId: params.literatureId,
-              }}
-            />
-          {:else}
-            <div>Invalid project or literature ID</div>
-          {/if}
-        </Route>
-        <Route path="/project/:projectId/literature" let:params>
-          {#if params.projectId}
-            <Project
-              params={{ projectId: params.projectId, view: "literature" }}
-            />
-          {:else}
-            <div>Invalid project ID</div>
-          {/if}
-        </Route>
-        <Route path="/project/:projectId/models/:modelId" let:params>
-          {#if params.projectId && params.modelId}
-            <Project
-              params={{
-                projectId: params.projectId,
-                view: "models",
-                modelId: params.modelId,
-              }}
-            />
-          {:else}
-            <div>Invalid project or model ID</div>
-          {/if}
-        </Route>
-        <Route path="/project/:projectId/models" let:params>
-          {#if params.projectId}
-            <Project params={{ projectId: params.projectId, view: "models" }} />
-          {:else}
-            <div>Invalid project ID</div>
-          {/if}
-        </Route>
-        <Route path="/project/:projectId/outcomes/:outcomeId" let:params>
-          {#if params.projectId && params.outcomeId}
-            <Project
-              params={{
-                projectId: params.projectId,
-                view: "outcomes",
-                outcomeId: params.outcomeId,
-              }}
-            />
-          {:else}
-            <div>Invalid project or outcome ID</div>
-          {/if}
-        </Route>
-        <Route path="/project/:projectId/outcomes" let:params>
-          {#if params.projectId}
-            <Project
-              params={{ projectId: params.projectId, view: "outcomes" }}
-            />
-          {:else}
-            <div>Invalid project ID</div>
-          {/if}
-        </Route>
-        <Route path="/project/:projectId" let:params>
-          {#if params.projectId}
-            <Project params={{ projectId: params.projectId }} />
-          {:else}
-            <div>Invalid project ID</div>
-          {/if}
-        </Route>
-        <Route path="/project/:projectId/*" let:params>
-          {#if params.projectId}
-            <Project params={{ projectId: params.projectId }} />
-          {:else}
-            <div>Invalid project ID</div>
-          {/if}
-        </Route>
-        <Route path="/pricing">
-          {#if auth.isLoading}
-            <div>Loading...</div>
-          {:else if !auth.currentOrgId}
-            {navigate("/onboarding")}
-          {:else}
-            <Pricing
-              organizationId={auth.currentOrgId}
-              mode="organization"
-              workspaceName={currentOrgName}
-              onBack={() => navigate("/dashboard")}
-            />
-          {/if}
-        </Route>
-        <Route path="/subscription/success">
-          <Success />
-        </Route>
-      </ProtectedLayout>
-    {/if}
-  </main>
-</Router>
+            {:else if !auth.currentOrgId}
+              {navigate("/onboarding")}
+            {:else}
+              <Pricing
+                organizationId={auth.currentOrgId}
+                mode="organization"
+                workspaceName={currentOrgName}
+                onBack={() => navigate("/dashboard")}
+              />
+            {/if}
+          </Route>
+          <Route path="/subscription/success">
+            <Success />
+          </Route>
+        </ProtectedLayout>
+      {/if}
+    </main>
+  </Router>
+{/if}
