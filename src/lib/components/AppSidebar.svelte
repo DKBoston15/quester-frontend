@@ -33,6 +33,11 @@
       url: "/team-management",
       icon: UserPlus,
     },
+    {
+      title: "Settings",
+      url: "/settings",
+      icon: Settings,
+    },
   ];
 
   let projects = $state<any[]>([]);

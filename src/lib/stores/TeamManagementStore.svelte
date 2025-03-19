@@ -560,26 +560,93 @@
         return false;
       }
 
+      console.log(`[TeamManagementStore] Updating setting: ${key} to`, value);
+      console.log(
+        `[TeamManagementStore] Resource: ${selectedResourceType}/${selectedResourceId}`
+      );
+
       try {
-        const response = await fetch(
-          `http://localhost:3333/settings/${selectedResourceType}/${selectedResourceId}`,
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ [key]: value }),
-          }
+        const url = `http://localhost:3333/settings/${selectedResourceType}/${selectedResourceId}`;
+        const body = JSON.stringify({ [key]: value });
+
+        console.log(`[TeamManagementStore] Making API call to: ${url}`);
+        console.log(`[TeamManagementStore] Request body: ${body}`);
+
+        const response = await fetch(url, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: body,
+        });
+
+        console.log(
+          `[TeamManagementStore] API response status:`,
+          response.status
         );
 
         if (!response.ok) {
-          throw new Error(`Failed to update setting (${response.status})`);
+          const errorData = await response.json().catch(() => ({}));
+          console.error(`[TeamManagementStore] Error response:`, errorData);
+          throw new Error(
+            `Failed to update setting (${response.status}): ${errorData.message || response.statusText}`
+          );
         }
 
-        // Update local settings
-        settings = { ...settings, [key]: value };
+        // Obtain response text first to check if there's any content
+        const responseText = await response.text();
+        console.log(`[TeamManagementStore] Response text:`, responseText);
+
+        // Only try to parse as JSON if there is content
+        let responseData = {};
+        if (responseText.trim().length > 0) {
+          try {
+            responseData = JSON.parse(responseText);
+          } catch (e) {
+            console.warn(
+              "[TeamManagementStore] Could not parse response as JSON:",
+              e
+            );
+          }
+        }
+
+        console.log(
+          `[TeamManagementStore] Parsed response data:`,
+          responseData
+        );
+
+        // Create a new settings object to trigger reactivity only once
+        const newSettings = { ...settings };
+
+        // Handle nested settings
+        if (
+          typeof value === "object" &&
+          value !== null &&
+          key in newSettings &&
+          typeof newSettings[key] === "object"
+        ) {
+          newSettings[key] = { ...newSettings[key], ...value };
+        } else {
+          newSettings[key] = value;
+        }
+
+        // Only update if there's actually a change
+        const currentValue = JSON.stringify(settings);
+        const newValue = JSON.stringify(newSettings);
+
+        if (currentValue !== newValue) {
+          console.log(
+            `[TeamManagementStore] Setting has changed, updating local state`
+          );
+          settings = newSettings;
+        } else {
+          console.log(
+            `[TeamManagementStore] No change detected in settings, skipping update`
+          );
+        }
+
         return true;
       } catch (err) {
-        console.error("Error updating setting:", err);
+        console.error("[TeamManagementStore] Error updating setting:", err);
         error = err instanceof Error ? err.message : "An error occurred";
         return false;
       }

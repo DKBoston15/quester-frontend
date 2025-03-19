@@ -317,6 +317,38 @@
 
     return "Unknown";
   }
+
+  // Check if user is an owner of the current organization
+  function isOrganizationOwner() {
+    // Only relevant for organization context or when using organization privileges
+    if (!teamManagement.organizationStructure) return false;
+
+    const currentUserId = auth.user?.id;
+    if (!currentUserId) return false;
+
+    // Find the current user in the organization
+    const orgUsers = teamManagement.organizationStructure.users || [];
+    const currentUser = orgUsers.find(
+      (u: any) => String(u.id) === String(currentUserId)
+    );
+
+    if (!currentUser) return false;
+
+    // Check if the user has the owner role
+    if (currentUser.$extras?.roleName === "Owner") return true;
+
+    // Check organization roles array as a fallback
+    if (
+      currentUser.organizationRoles &&
+      currentUser.organizationRoles.length > 0
+    ) {
+      return currentUser.organizationRoles.some(
+        (role: any) => role.role?.name === "Owner" || role.roleName === "Owner"
+      );
+    }
+
+    return false;
+  }
 </script>
 
 <Sidebar.Provider>
@@ -426,8 +458,9 @@
           {#if !teamManagement.isLoading && (teamManagement.organizationStructure || teamManagement.departmentStructure || teamManagement.projectTeam)}
             <Card>
               <CardHeader class="pb-0">
+                {#if (console.log("DEBUG - TeamManagement permissions:", teamManagement.permissions), console.log("DEBUG - TeamManagement settings:", teamManagement.settings), console.log("DEBUG - isOrganizationOwner:", isOrganizationOwner()), true)}{/if}
                 <Tabs value={activeTab} class="w-full">
-                  <TabsList class="grid grid-cols-3">
+                  <TabsList class="grid grid-cols-2">
                     <TabsTrigger
                       value="members"
                       onclick={() => (activeTab = "members")}
@@ -438,18 +471,12 @@
                     <TabsTrigger
                       value="invitations"
                       onclick={() => (activeTab = "invitations")}
-                      disabled={!teamManagement.permissions.canInviteUsers}
+                      disabled={!teamManagement.permissions.canInviteUsers &&
+                        !isOrganizationOwner() &&
+                        !teamManagement.settings?.allowMemberInvitations}
                     >
                       <UserPlus class="h-4 w-4 mr-2" />
                       Invitations
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="settings"
-                      onclick={() => (activeTab = "settings")}
-                      disabled={!teamManagement.permissions.canManage}
-                    >
-                      <Settings class="h-4 w-4 mr-2" />
-                      Settings
                     </TabsTrigger>
                   </TabsList>
                 </Tabs>
@@ -512,26 +539,28 @@
                 {/if}
 
                 <!-- Invitations Tab -->
-                {#if activeTab === "invitations" && teamManagement.permissions.canInviteUsers}
+                {#if activeTab === "invitations"}
                   <div class="py-4">
-                    <InvitationManager
-                      resourceType={teamManagement.selectedResourceType}
-                      resourceId={teamManagement.selectedResourceId}
-                      onInviteSent={refreshData}
-                    />
+                    {#if teamManagement.permissions.canInviteUsers || isOrganizationOwner() || teamManagement.settings?.allowMemberInvitations}
+                      <InvitationManager
+                        resourceType={teamManagement.selectedResourceType}
+                        resourceId={teamManagement.selectedResourceId}
+                        onInviteSent={refreshData}
+                      />
+                    {:else}
+                      <div class="text-center py-8 text-muted-foreground">
+                        <p>
+                          You don't have permission to manage invitations for
+                          this {teamManagement.selectedResourceType}
+                        </p>
+                      </div>
+                    {/if}
                   </div>
                 {/if}
 
                 {console.log(teamManagement.permissions)}
 
-                <!-- Settings Tab -->
-                {#if activeTab === "settings" && teamManagement.permissions.canManage}
-                  <div class="py-4">
-                    <TeamSettings
-                      resourceType={teamManagement.selectedResourceType}
-                    />
-                  </div>
-                {/if}
+                <!-- Settings Tab has been moved to the dedicated Settings page -->
               </CardContent>
             </Card>
           {/if}
