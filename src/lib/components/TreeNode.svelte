@@ -10,7 +10,6 @@
     FolderTree,
     MoreVertical,
     FolderInput,
-    Folder,
   } from "lucide-svelte";
   import type { Organization, Department, Project } from "$lib/types/auth";
   import { auth } from "$lib/stores/AuthStore.svelte";
@@ -23,17 +22,9 @@
   import { Input } from "$lib/components/ui/input";
   import Self from "./TreeNode.svelte";
   import { onMount } from "svelte";
-
-  // Import UI components properly
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import { Label } from "$lib/components/ui/label";
-  import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-  } from "$lib/components/ui/select/index.js";
 
   const props = $props<{
     item: Organization | Department | Project;
@@ -274,19 +265,6 @@
   function handleProjectClick(project: Project) {
     if (!isUserDirectMember(project)) return;
     navigate(`/project/${project.id}`);
-  }
-
-  function handleDepartmentClick(department: Department) {
-    // Comment out navigation - let the expand/collapse functionality work instead
-    // const departmentId = department.id;
-    // const url = `/team-management?type=department&id=${departmentId}`;
-    // navigate(url);
-
-    // Just expand/collapse the department
-    isExpanded = !isExpanded;
-    if (isExpanded && departments.length === 0 && projects.length === 0) {
-      loadChildren();
-    }
   }
 
   async function createProject(e: Event) {

@@ -14,7 +14,8 @@
   } from "$lib/components/ui/card";
   import { Input } from "$lib/components/ui/input";
   import type { Department, Organization, Project } from "../lib/types/auth";
-  import TreeNode from "$lib/components/TreeNode.svelte";
+  // import TreeNode from "$lib/components/TreeNode.svelte";
+  import OrganizationStructure from "$lib/components/OrganizationStructure.svelte";
   // import InviteUserForm from "$lib/components/InviteUserForm.svelte";
   import ManageSubscription from "$lib/components/ManageSubscription.svelte";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
@@ -122,19 +123,35 @@
         }
 
         // Load organization details including roles
-        const orgDetailsResponse = await fetch(
-          `http://localhost:3333/team-management/organization-structure/${orgToUse.id}`,
-          {
-            credentials: "include",
-            headers: {
-              Accept: "application/json",
-            },
-          }
-        );
+        try {
+          const orgDetailsResponse = await fetch(
+            `http://localhost:3333/team-management/resources`,
+            {
+              credentials: "include",
+              headers: {
+                Accept: "application/json",
+              },
+            }
+          );
 
-        if (orgDetailsResponse.ok) {
-          const orgDetails = await orgDetailsResponse.json();
-          orgToUse = { ...orgToUse, ...orgDetails.organization };
+          if (orgDetailsResponse.ok) {
+            const resourcesData = await orgDetailsResponse.json();
+            // Use the organization data from team-management/resources if available
+            if (
+              resourcesData.organizations &&
+              resourcesData.organizations.length > 0
+            ) {
+              const foundOrg = resourcesData.organizations.find(
+                (o: Organization) => o.id === orgToUse.id
+              );
+              if (foundOrg) {
+                orgToUse = { ...orgToUse, ...foundOrg };
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error loading organization details:", error);
+          // Continue even if there's an error to avoid blocking the dashboard
         }
 
         // Update both local state and auth store
@@ -288,19 +305,6 @@
 
       auth.setCurrentOrganization(currentOrg);
       await loadDepartmentsAndProjects();
-    }
-  }
-
-  function handleTreeNodeSelect(item: Organization | Department | Project) {
-    if ("slug" in item) {
-      // Organization
-      currentOrg = item;
-      loadDepartmentsAndProjects();
-    } else if (!("departmentId" in item)) {
-      // Project
-      if (!currentOrg) return;
-      const projectSlug = item.name.toLowerCase().replace(/\s+/g, "-");
-      navigate(`/org/${currentOrg.slug}/project/${projectSlug}`);
     }
   }
 </script>
@@ -525,14 +529,16 @@
             >
               <CardHeader>
                 <div class="flex items-center gap-2">
-                  <Users class="h-5 w-5" />
-                  <CardTitle class="">Workspace Overview</CardTitle>
+                  <FolderTree class="h-5 w-5" />
+                  <CardTitle class="">Organization Structure</CardTitle>
                 </div>
-                <CardDescription>View your workspace structure</CardDescription>
+                <CardDescription
+                  >Manage your departments and projects</CardDescription
+                >
               </CardHeader>
               <CardContent>
                 <div class="border rounded-lg p-4">
-                  <TreeNode item={currentOrg} onSelect={handleTreeNodeSelect} />
+                  <OrganizationStructure initialOrganization={currentOrg} />
                 </div>
               </CardContent>
             </Card>
