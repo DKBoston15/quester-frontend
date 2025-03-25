@@ -4,13 +4,19 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { Badge } from "$lib/components/ui/badge";
-  import { Mail, Send, X } from "lucide-svelte";
+  import { Mail, Send, X, Info } from "lucide-svelte";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
 
   const props = $props<{
     resourceType: "organization" | "department" | "project";
     resourceId: string | null;
     onInviteSent: () => void;
+    subscriptionLimits?: {
+      canInviteUsers: boolean;
+      maxUsers: number;
+      currentUserCount: number;
+      subscriptionPlan: string;
+    };
   }>();
 
   // Form state
@@ -24,6 +30,43 @@
   let pendingInvitations = $state<any[]>([]);
   let invitationsLoading = $state(false);
   let invitationsError = $state<string | null>(null);
+
+  // Change from $derived to $state for subscription limit calculations
+  let remainingInvitations = $state<number>(Infinity);
+  let canSendInvitations = $state(true);
+
+  // Calculate remaining invitations and permission when relevant data changes
+  $effect(() => {
+    // Calculate remaining invitations
+    if (!props.subscriptionLimits || props.subscriptionLimits.maxUsers === 0) {
+      remainingInvitations = Infinity;
+    } else {
+      const pendingCount = pendingInvitations.length;
+      remainingInvitations = Math.max(
+        0,
+        props.subscriptionLimits.maxUsers -
+          props.subscriptionLimits.currentUserCount -
+          pendingCount
+      );
+    }
+
+    // Calculate if invitations can be sent
+    if (!props.subscriptionLimits) {
+      canSendInvitations = true;
+    } else {
+      // Check if user has invitation capability from subscription
+      if (!props.subscriptionLimits.canInviteUsers) {
+        canSendInvitations = false;
+      } else {
+        // Check if user hasn't reached their limit
+        if (props.subscriptionLimits.maxUsers > 0) {
+          canSendInvitations = remainingInvitations > 0;
+        } else {
+          canSendInvitations = true;
+        }
+      }
+    }
+  });
 
   type Role = { id: string; name: string };
   let availableRoles = $state<Role[]>([]);
@@ -100,6 +143,13 @@
   async function sendInvitation() {
     if (!email || !selectedRoleId || !props.resourceId) {
       error = "Please fill in all required fields";
+      return;
+    }
+
+    if (!canSendInvitations) {
+      error = props.subscriptionLimits?.maxUsers
+        ? `You've reached the maximum number of users (${props.subscriptionLimits.maxUsers}) for your subscription plan.`
+        : "Your subscription doesn't allow sending invitations.";
       return;
     }
 
@@ -240,6 +290,40 @@
   <!-- Send invitation form -->
   <div>
     <h3 class="text-lg font-medium mb-4">Send New Invitation</h3>
+
+    {#if props.subscriptionLimits && props.subscriptionLimits.maxUsers > 0}
+      <div class="mb-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm font-medium">Available Invitations</span>
+          <span
+            class="text-sm font-medium {remainingInvitations === 0
+              ? 'text-red-500'
+              : remainingInvitations <= 1
+                ? 'text-amber-500'
+                : ''}"
+          >
+            {remainingInvitations} / {props.subscriptionLimits.maxUsers}
+          </span>
+        </div>
+        <div class="w-full bg-muted rounded-full h-2.5">
+          <div
+            class="h-2.5 rounded-full {remainingInvitations === 0
+              ? 'bg-red-500'
+              : remainingInvitations <= 1
+                ? 'bg-amber-500'
+                : 'bg-green-500'}"
+            style="width: {Math.min(
+              100,
+              ((props.subscriptionLimits.currentUserCount +
+                pendingInvitations.length) /
+                props.subscriptionLimits.maxUsers) *
+                100
+            )}%"
+          ></div>
+        </div>
+      </div>
+    {/if}
+
     <form
       class="space-y-4 border-2 border-black dark:border-dark-border p-4 rounded-md"
       onsubmit={(e) => {
@@ -257,6 +341,7 @@
             bind:value={email}
             class="border-2 border-black dark:border-dark-border"
             required
+            disabled={!canSendInvitations}
           />
         </div>
 
@@ -267,6 +352,7 @@
             bind:value={selectedRoleId}
             class="w-full rounded-md border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card p-2"
             required
+            disabled={!canSendInvitations}
           >
             <option value="" disabled>Select role...</option>
             {#each availableRoles as role}
@@ -276,7 +362,11 @@
         </div>
 
         <div class="space-y-2 flex items-end">
-          <Button type="submit" disabled={isLoading} class="w-full">
+          <Button
+            type="submit"
+            disabled={isLoading || !canSendInvitations}
+            class="w-full"
+          >
             {#if isLoading}
               <div
                 class="h-4 w-4 mr-2 border-2 border-t-transparent rounded-full animate-spin"
@@ -289,6 +379,27 @@
           </Button>
         </div>
       </div>
+
+      {#if !canSendInvitations && props.subscriptionLimits?.maxUsers > 0}
+        <div
+          class="flex items-start gap-2 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 p-2 rounded-md"
+        >
+          <Info class="h-4 w-4 mt-0.5 flex-shrink-0" />
+          <span class="text-sm">
+            You've reached your maximum of {props.subscriptionLimits.maxUsers} users
+            for the {props.subscriptionLimits.subscriptionPlan} plan.
+            {#if props.subscriptionLimits.subscriptionPlan === "Quester Pro"}
+              Upgrade to Quester Team for up to 5 users.
+            {:else if props.subscriptionLimits.subscriptionPlan === "Quester Team"}
+              Please contact support to discuss enterprise options for larger
+              teams.
+            {:else}
+              Upgrade to Quester Pro for up to 2 users or Quester Team for up to
+              5 users.
+            {/if}
+          </span>
+        </div>
+      {/if}
 
       {#if error}
         <div class="text-red-500 text-sm">{error}</div>

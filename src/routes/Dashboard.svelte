@@ -3,7 +3,6 @@
   import { navigate } from "svelte-routing";
   import { onMount } from "svelte";
   import { auth } from "../lib/stores/AuthStore.svelte";
-  import { notifyDepartmentUpdate } from "../lib/stores/DepartmentStore.svelte";
   import { Button } from "$lib/components/ui/button";
   import {
     Card,
@@ -12,26 +11,20 @@
     CardTitle,
     CardDescription,
   } from "$lib/components/ui/card";
-  import { Input } from "$lib/components/ui/input";
   import type { Department, Organization, Project } from "../lib/types/auth";
-  // import TreeNode from "$lib/components/TreeNode.svelte";
   import OrganizationStructure from "$lib/components/OrganizationStructure.svelte";
-  // import InviteUserForm from "$lib/components/InviteUserForm.svelte";
   import ManageSubscription from "$lib/components/ManageSubscription.svelte";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import AppSidebar from "$lib/components/AppSidebar.svelte";
-  import { Plus, Users, CreditCard, FolderTree } from "lucide-svelte";
+  import { CreditCard, FolderTree } from "lucide-svelte";
 
   let organizations = $state<Organization[]>([]);
   let currentOrg = $state<Organization | null>(null);
   let departments = $state<Department[]>([]);
   let projects = $state<Project[]>([]);
-  let newProjectName = $state("");
-  let newDepartmentName = $state("");
   let isLoading = $state(true);
   let selectedOrgId = $state<string | null>(null);
   let error = $state<string | null>(null);
-  let isCreatingDepartment = $state(false);
 
   // Organization owner role ID
   const ORGANIZATION_OWNER_ROLE_ID = "e820de49-d7bd-42d7-8b05-49279cee686f";
@@ -48,19 +41,6 @@
   function hasProFeatures() {
     const planName = currentOrg?.subscription?.plan?.name;
     return planName && planName !== "Research Explorer";
-  }
-
-  // Helper function to check if user has research explorer subscription and has reached project limit
-  function hasReachedResearchExplorerLimit() {
-    return (
-      currentOrg?.subscription?.plan?.name === "Research Explorer" &&
-      projects.length >= 1
-    );
-  }
-
-  // Anyone can create departments regardless of subscription
-  function canCreateDepartment() {
-    return currentOrg !== null;
   }
 
   onMount(async () => {
@@ -160,7 +140,8 @@
         await auth.setCurrentOrganization(orgToUse);
 
         // If we have an org but no billing provider, redirect to onboarding
-        if (!orgToUse.billingProviderId) {
+        // Also redirect if we have billing provider but no active subscription
+        if (!orgToUse.billingProviderId || !orgToUse.subscription) {
           navigate("/onboarding");
           return;
         }
@@ -219,86 +200,13 @@
     }
   }
 
-  async function createProject(e: Event) {
-    e.preventDefault();
-    if (!newProjectName || !currentOrg) return;
-
-    try {
-      const response = await fetch(
-        "http://localhost:3333/projects/createProjectWithUser",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            name: newProjectName,
-            organizationId: currentOrg.id,
-            userId: auth.user?.id,
-          }),
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to create project");
-
-      const data = await response.json();
-      newProjectName = "";
-
-      // Reload projects
-      await loadDepartmentsAndProjects();
-
-      // Navigate to the new project
-      const projectSlug = data.project.name.toLowerCase().replace(/\s+/g, "-");
-      navigate(`/project/${data.project.id}`);
-    } catch (error) {
-      console.error("Failed to create project:", error);
-    }
-  }
-
-  async function createDepartment(e: Event) {
-    e.preventDefault();
-    if (!newDepartmentName || !currentOrg) return;
-
-    isCreatingDepartment = true;
-
-    try {
-      const response = await fetch(
-        "http://localhost:3333/departments/createDepartmentWithUser",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            name: newDepartmentName,
-            organizationId: currentOrg.id,
-            userId: auth.user?.id,
-          }),
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to create department");
-
-      const data = await response.json();
-      newDepartmentName = "";
-
-      // Reload departments and projects
-      await loadDepartmentsAndProjects();
-
-      // Use the store to notify components about department update
-      notifyDepartmentUpdate();
-    } catch (error) {
-      console.error("Failed to create department:", error);
-    } finally {
-      isCreatingDepartment = false;
-    }
-  }
-
   async function handleOrgChange(value: string) {
     selectedOrgId = value;
     currentOrg = organizations.find((org) => org.id === value) || null;
 
     if (currentOrg) {
-      // Check if the selected org has a billing provider
-      if (!currentOrg.billingProviderId) {
+      // Check if the selected org has a billing provider and subscription
+      if (!currentOrg.billingProviderId || !currentOrg.subscription) {
         navigate("/onboarding");
         return;
       }
@@ -343,7 +251,7 @@
           {/if}
 
           <!-- Quick Stats -->
-          <div
+          <!-- <div
             class="grid grid-cols-1 md:grid-cols-{currentOrg?.subscriptionType ===
             'organization'
               ? '3'
@@ -356,8 +264,8 @@
                   >{projects.length} total projects</CardDescription
                 >
               </CardContent>
-            </Card>
-            {#if hasProFeatures()}
+            </Card> -->
+          <!-- {#if hasProFeatures()}
               <Card>
                 <CardContent class="flex flex-col items-center justify-center">
                   <CardTitle class="text-lg ">Team Members</CardTitle>
@@ -376,104 +284,11 @@
                   >
                 </CardHeader>
               </Card>
-            {/if}
-          </div>
+            {/if} -->
+          <!-- </div> -->
 
           <!-- Main Actions Grid -->
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Left Column -->
-            <div class="space-y-6">
-              <!-- Create Project -->
-              <Card
-                class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all {hasReachedResearchExplorerLimit()
-                  ? 'bg-blue-50 dark:bg-blue-900/20'
-                  : ''}"
-              >
-                <CardHeader>
-                  <div class="flex items-center gap-2">
-                    <Plus class="h-5 w-5" />
-                    <CardTitle class="">
-                      {#if hasReachedResearchExplorerLimit()}
-                        Project Limit Reached
-                      {:else}
-                        Create Project
-                      {/if}
-                    </CardTitle>
-                  </div>
-                  <CardDescription
-                    >{#if hasReachedResearchExplorerLimit()}
-                      Upgrade your plan to create more projects
-                    {:else}
-                      Start a new project in your workspace
-                    {/if}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {#if hasReachedResearchExplorerLimit()}
-                    {#if currentOrg?.id}
-                      <ManageSubscription
-                        organizationId={currentOrg.id}
-                        isUpgradeCta={true}
-                      />
-                    {/if}
-                  {:else}
-                    <form onsubmit={createProject} class="flex gap-2">
-                      <Input
-                        type="text"
-                        placeholder="Project name"
-                        bind:value={newProjectName}
-                        required
-                        class=""
-                      />
-                      <Button type="submit" class="">Create</Button>
-                    </form>
-                  {/if}
-                </CardContent>
-              </Card>
-
-              <!-- Create Department (only if pro features and organization subscription) -->
-              {#if canCreateDepartment()}
-                <Card
-                  class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
-                >
-                  <CardHeader>
-                    <div class="flex items-center gap-2">
-                      <FolderTree class="h-5 w-5" />
-                      <CardTitle class="">Create Department</CardTitle>
-                    </div>
-                    <CardDescription>
-                      Create a new department to organize projects
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <form onsubmit={createDepartment} class="flex gap-2">
-                      <Input
-                        type="text"
-                        placeholder="Department name"
-                        bind:value={newDepartmentName}
-                        required
-                        class=""
-                      />
-                      <Button
-                        type="submit"
-                        disabled={isCreatingDepartment}
-                        class=""
-                      >
-                        {#if isCreatingDepartment}
-                          <div
-                            class="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin mr-2"
-                          ></div>
-                          Creating...
-                        {:else}
-                          Create
-                        {/if}
-                      </Button>
-                    </form>
-                  </CardContent>
-                </Card>
-              {/if}
-            </div>
-
             <!-- Right Column -->
             <div class="space-y-6">
               {#if currentOrg && isOrganizationOwner()}

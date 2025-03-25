@@ -68,6 +68,16 @@
   let isMovingProject = $state(false);
   let errorMessage = $state<string | null>(null);
 
+  // State for project creation capability check
+  let projectCreationCapabilities = $state<
+    Record<string, { allowed: boolean; message?: string }>
+  >({});
+
+  // State for department creation capability check
+  let departmentCreationCapabilities = $state<
+    Record<string, { allowed: boolean; message?: string }>
+  >({});
+
   // Initialize component
   $effect(() => {
     loadData();
@@ -453,27 +463,124 @@
 
   // Get a flattened map of departments by ID for quick lookups
   $effect(() => {
+    // Only rebuild the map when departments change
     departmentsMap = departments.reduce((acc, dept) => {
       acc.set(dept.id, dept);
       return acc;
     }, new Map<string, Department>());
   });
 
+  // Process orphaned projects only once when flatProjects or departmentsMap changes
+  $effect(() => {
+    if (!flatProjects || flatProjects.length === 0 || departmentsMap.size === 0)
+      return;
+
+    // Simply log orphaned projects rather than modifying anything that could cause reactivity cycles
+    flatProjects.forEach((project) => {
+      if (project.departmentId && !departmentsMap.has(project.departmentId)) {
+        console.log(
+          `Project "${project.name}" has departmentId "${project.departmentId}" but department doesn't exist. Treating as direct project.`
+        );
+      }
+    });
+  });
+
   let departmentsMap = $state<Map<string, Department>>(new Map());
+
+  // Check if the user can create projects using the subscription capability service
+  async function checkProjectCreationCapability(
+    orgId: string
+  ): Promise<boolean> {
+    if (!auth.user) return false;
+
+    // Return cached result if available
+    if (projectCreationCapabilities[orgId] !== undefined) {
+      return projectCreationCapabilities[orgId].allowed;
+    }
+
+    try {
+      const response = await fetch(
+        "http://localhost:3333/capabilities/project_create",
+        { credentials: "include" }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to check project creation capability");
+      }
+
+      const data = await response.json();
+
+      // Store the result in the capability cache
+      projectCreationCapabilities[orgId] = {
+        allowed: data.allowed,
+        message: data.message,
+      };
+
+      return data.allowed;
+    } catch (error) {
+      console.error("Failed to check project creation capability:", error);
+      return false;
+    }
+  }
 
   // Determine if the user can create projects or departments
   function canCreateProject(orgId: string): boolean {
-    const org = organizations.find((o) => o.id === orgId);
-    if (!org || !org.subscription) return false;
-
-    return org.subscription.status === "active";
+    // Use the cached capability check result if available, otherwise default to false
+    // This synchronous function will return the cached result from the async check
+    return projectCreationCapabilities[orgId]?.allowed || false;
   }
 
-  function canCreateDepartment(orgId: string): boolean {
-    const org = organizations.find((o) => o.id === orgId);
-    if (!org || !org.subscription) return false;
+  // Check if the user can create departments using the subscription capability service
+  async function checkDepartmentCreationCapability(
+    orgId: string
+  ): Promise<boolean> {
+    if (!auth.user) return false;
 
-    return org.subscription.status === "active";
+    // Return cached result if available
+    if (departmentCreationCapabilities[orgId] !== undefined) {
+      return departmentCreationCapabilities[orgId].allowed;
+    }
+
+    try {
+      const response = await fetch(
+        "http://localhost:3333/capabilities/department_create",
+        { credentials: "include" }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to check department creation capability");
+      }
+
+      const data = await response.json();
+
+      // Store the result in the capability cache
+      departmentCreationCapabilities[orgId] = {
+        allowed: data.allowed,
+        message: data.message,
+      };
+
+      return data.allowed;
+    } catch (error) {
+      console.error("Failed to check department creation capability:", error);
+      return false;
+    }
+  }
+
+  // Initialize capability checks when component loads
+  $effect(() => {
+    if (auth.user && organizations.length > 0) {
+      // Check capabilities for each organization
+      organizations.forEach((org) => {
+        checkProjectCreationCapability(org.id);
+        checkDepartmentCreationCapability(org.id);
+      });
+    }
+  });
+
+  function canCreateDepartment(orgId: string): boolean {
+    // Use the cached capability check result if available, otherwise default to false
+    // This synchronous function will return the cached result from the async check
+    return departmentCreationCapabilities[orgId]?.allowed || false;
   }
 
   // Handle toggle change
@@ -483,6 +590,11 @@
 
   // Check if a department has any projects that match the current filters
   function filterHasMatchingProjects(departmentId: string): boolean {
+    if (!departmentId || !departmentsMap.has(departmentId)) {
+      return false;
+    }
+
+    // Make sure we don't include orphaned projects that have a departmentId but the department doesn't exist
     return filteredProjects.some((p) => p.departmentId === departmentId);
   }
 </script>
@@ -703,6 +815,28 @@
             <FolderTree class="h-4 w-4" />
             New Department
           </Button>
+        {:else}
+          <div class="relative inline-block group">
+            <Button
+              variant="outline"
+              size="sm"
+              class="flex items-center gap-1 opacity-70"
+              disabled
+            >
+              <FolderTree class="h-4 w-4" />
+              New Department
+            </Button>
+            <div
+              class="absolute right-0 bottom-full mb-2 hidden group-hover:block z-50"
+            >
+              <div
+                class="bg-popover text-popover-foreground shadow-md rounded-md p-2 text-xs w-48"
+              >
+                Your subscription plan does not allow creating departments.
+                Please upgrade to create departments.
+              </div>
+            </div>
+          </div>
         {/if}
         {#if canCreateProject(selectedOrganization.id)}
           <Button
@@ -718,6 +852,28 @@
             <Plus class="h-4 w-4" />
             New Project
           </Button>
+        {:else}
+          <div class="relative inline-block group">
+            <Button
+              variant="default"
+              size="sm"
+              class="flex items-center gap-1 opacity-70"
+              disabled
+            >
+              <Plus class="h-4 w-4" />
+              New Project
+            </Button>
+            <div
+              class="absolute right-0 bottom-full mb-2 hidden group-hover:block z-50"
+            >
+              <div
+                class="bg-popover text-popover-foreground shadow-md rounded-md p-2 text-xs w-48"
+              >
+                Project limit reached. Please upgrade your subscription for more
+                projects.
+              </div>
+            </div>
+          </div>
         {/if}
       {/if}
     </div>
@@ -790,13 +946,34 @@
                     class="flex items-center gap-1"
                     onclick={(e: MouseEvent) => {
                       e.stopPropagation();
-                      selectedOrganization = org;
                       showNewDepartmentDialog = true;
                     }}
                   >
                     <FolderTree class="h-4 w-4" />
                     New Department
                   </Button>
+                {:else}
+                  <div class="relative inline-block group">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      class="flex items-center gap-1 opacity-70"
+                      disabled
+                    >
+                      <FolderTree class="h-4 w-4" />
+                      New Department
+                    </Button>
+                    <div
+                      class="absolute right-0 bottom-full mb-2 hidden group-hover:block z-50"
+                    >
+                      <div
+                        class="bg-popover text-popover-foreground shadow-md rounded-md p-2 text-xs w-48"
+                      >
+                        Your subscription plan does not allow creating
+                        departments. Please upgrade to create departments.
+                      </div>
+                    </div>
+                  </div>
                 {/if}
 
                 {#if canCreateProject(org.id)}
@@ -806,7 +983,6 @@
                     class="flex items-center gap-1"
                     onclick={(e: MouseEvent) => {
                       e.stopPropagation();
-                      selectedOrganization = org;
                       selectedDepartmentId = null;
                       showNewProjectDialog = true;
                     }}
@@ -842,9 +1018,15 @@
                 {/each}
 
                 <!-- Direct Projects (no department) that match the filter -->
-                {#each filteredProjects.filter((p) => p.organizationId === org.id && !p.departmentId) as project}
+                {#each filteredProjects.filter((p) => p.organizationId === org.id && (!p.departmentId || !departmentsMap.has(p.departmentId))) as project}
                   <div
                     class="flex items-center gap-2 p-2 hover:bg-accent hover:text-accent-foreground rounded-md cursor-pointer ml-2 my-1 transition-colors"
+                    onclick={(e: MouseEvent) => {
+                      console.log("Direct project clicked:", project);
+                      if (isUserProjectMember(project)) {
+                        navigate(`/project/${project.id}`);
+                      }
+                    }}
                   >
                     <FileText class="h-4 w-4 text-primary" />
                     <span>{project.name}</span>
@@ -936,14 +1118,23 @@
                     onJoinDepartment={() => joinDepartment(department)}
                     onMoveProject={(p: Project) => openMoveProjectDialog(p)}
                     isUserMember={isUserDepartmentMember(department)}
+                    filteredProjects={flatProjects.filter(
+                      (p) => p.departmentId === department.id
+                    )}
                     isFiltering={false}
                   />
                 {/each}
 
                 <!-- Direct Projects (no department) -->
-                {#each projects.filter((p) => p.organizationId === org.id && !p.departmentId) as project}
+                {#each flatProjects.filter((p) => p.organizationId === org.id && (!p.departmentId || !departmentsMap.has(p.departmentId))) as project}
                   <div
                     class="flex items-center gap-2 p-2 hover:bg-accent hover:text-accent-foreground rounded-md cursor-pointer ml-2 my-1 transition-colors"
+                    onclick={(e: MouseEvent) => {
+                      console.log("Direct project clicked:", project);
+                      if (isUserProjectMember(project)) {
+                        navigate(`/project/${project.id}`);
+                      }
+                    }}
                   >
                     <FileText class="h-4 w-4 text-primary" />
                     <span>{project.name}</span>

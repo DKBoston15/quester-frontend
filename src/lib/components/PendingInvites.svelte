@@ -90,41 +90,37 @@
   }
 </script>
 
-<div class="container mx-auto py-6 max-w-2xl">
+<div class="container bg-background dark:bg-zinc-900 mx-auto py-6 max-w-2xl">
   <Card
-    class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,1)] transition-all"
+    class="border-2 border-primary/20 shadow-md dark:bg-zinc-800 dark:border-zinc-700"
   >
     <CardHeader>
-      <CardTitle class=" text-2xl">Pending Invitations</CardTitle>
+      <CardTitle class="text-2xl text-primary dark:text-primary"
+        >Pending Invitations</CardTitle
+      >
     </CardHeader>
     <CardContent>
       {#if isLoading}
-        <div
-          class="text-center py-4 text-gray-600 dark:text-dark-text-secondary"
-        >
-          Loading...
-        </div>
+        <div class="text-center py-4 text-muted-foreground">Loading...</div>
       {:else if error}
-        <div class="text-red-500 dark:text-red-400 py-4">{error}</div>
+        <div class="text-destructive py-4">{error}</div>
       {:else if invitations.length === 0}
-        <div
-          class="text-center py-4 text-gray-600 dark:text-dark-text-secondary"
-        >
+        <div class="text-center py-4 text-muted-foreground">
           No pending invitations
         </div>
       {:else}
         <div class="space-y-6">
           {#each invitations as invitation (invitation.id)}
             <div
-              class="border-2 border-black dark:border-dark-border rounded-lg p-4 bg-card dark:bg-dark-card"
+              class="border rounded-lg p-4 bg-card dark:bg-zinc-700/30 shadow-sm dark:border-zinc-700"
             >
               <div class="mb-4">
-                <h3 class="text-lg text-black dark:text-dark-text-primary">
+                <h3 class="text-lg text-foreground dark:text-zinc-100">
                   {invitation.invitedBy.firstName}
                   {invitation.invitedBy.lastName} invited you to:
                 </h3>
                 <p
-                  class="text-xl font-semibold text-black dark:text-dark-text-primary"
+                  class="text-xl font-semibold text-foreground dark:text-white"
                 >
                   {invitation.organization.name}
                 </p>
@@ -133,14 +129,12 @@
               <div class="space-y-4">
                 {#if invitation.accessMapping.departments?.length}
                   <div>
-                    <h4
-                      class=" font-medium text-black dark:text-dark-text-primary"
-                    >
+                    <h4 class="font-medium text-foreground dark:text-zinc-200">
                       Departments:
                     </h4>
                     <ul class="list-disc pl-5 mt-2 space-y-1">
                       {#each invitation.accessMapping.departments as dept}
-                        <li class="text-gray-600 dark:text-dark-text-secondary">
+                        <li class="text-muted-foreground dark:text-zinc-300">
                           {dept.name}
                         </li>
                       {/each}
@@ -150,14 +144,12 @@
 
                 {#if invitation.accessMapping.projects?.length}
                   <div>
-                    <h4
-                      class=" font-medium text-black dark:text-dark-text-primary"
-                    >
+                    <h4 class="font-medium text-foreground dark:text-zinc-200">
                       Projects:
                     </h4>
                     <ul class="list-disc pl-5 mt-2 space-y-1">
                       {#each invitation.accessMapping.projects as project}
-                        <li class="text-gray-600 dark:text-dark-text-secondary">
+                        <li class="text-muted-foreground dark:text-zinc-300">
                           {project.name}
                         </li>
                       {/each}
@@ -171,7 +163,7 @@
           <Separator class="my-6" />
 
           <div class="flex justify-end">
-            <Button onclick={acceptInvitations} disabled={isLoading} class="">
+            <Button onclick={acceptInvitations} disabled={isLoading}>
               {isLoading ? "Accepting..." : "Accept All Invitations"}
             </Button>
           </div>

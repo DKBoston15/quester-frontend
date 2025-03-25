@@ -93,7 +93,7 @@
             {auth.currentOrganization?.name || "Select Workspace"}
           </span>
         </Tooltip.Trigger>
-        <Tooltip.Content side="right">
+        <Tooltip.Content side="right" sideOffset={10} class="z-[9999]">
           <span>{auth.currentOrganization?.name || "Select Workspace"}</span>
         </Tooltip.Content>
       </Tooltip.Root>
@@ -124,7 +124,8 @@
                     </Tooltip.Trigger>
                     <Tooltip.Content
                       side="right"
-                      class="group-data-[collapsible=icon]:block hidden"
+                      sideOffset={10}
+                      class="group-data-[collapsible=icon]:block hidden z-[9999]"
                     >
                       <span class="">{item.title}</span>
                     </Tooltip.Content>
@@ -169,7 +170,8 @@
                 </Tooltip.Trigger>
                 <Tooltip.Content
                   side="right"
-                  class="group-data-[collapsible=icon]:block hidden"
+                  sideOffset={10}
+                  class="group-data-[collapsible=icon]:block hidden z-[9999]"
                 >
                   <span class="">Projects</span>
                 </Tooltip.Content>

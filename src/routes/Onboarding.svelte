@@ -59,7 +59,7 @@
 
       // Check if user has any organizations with active subscriptions
       const hasActiveSubscription = organizations.some(
-        (org) => org.billingProviderId != null
+        (org) => org.billingProviderId != null && org.subscription != null
       );
 
       if (organizations.length > 0) {
@@ -83,7 +83,7 @@
         if (hasActiveSubscription && !state?.step) {
           navigate("/dashboard");
         } else if (!state?.step) {
-          // If they have an org but no subscription, go to subscription step
+          // If they have an org but no subscription or billing provider, go to subscription step
           currentStep = 2;
         }
       }

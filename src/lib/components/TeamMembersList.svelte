@@ -3,7 +3,7 @@
   import { Badge } from "$lib/components/ui/badge";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
-  import { UserCog, Search, UserMinus } from "lucide-svelte";
+  import { UserCog, Search, UserMinus, Info } from "lucide-svelte";
   import type { User } from "$lib/types/auth";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
   import { auth } from "$lib/stores/AuthStore.svelte";
@@ -49,6 +49,12 @@
     resourceType: "organization" | "department" | "project";
     canChangeRoles: boolean;
     onUserSelect: (userId: string) => void;
+    subscriptionLimits?: {
+      canInviteUsers: boolean;
+      maxUsers: number;
+      currentUserCount: number;
+      subscriptionPlan: string;
+    };
   }>();
 
   let searchTerm = $state("");
@@ -78,6 +84,26 @@
       return fullName.includes(searchLower) || email.includes(searchLower);
     })
   );
+
+  // Calculate users limit information
+  let usersRemaining = $state(0);
+  let isFull = $state(false);
+  let isNearLimit = $state(false);
+
+  $effect(() => {
+    if (props.subscriptionLimits && props.subscriptionLimits.maxUsers > 0) {
+      usersRemaining = Math.max(
+        0,
+        props.subscriptionLimits.maxUsers - props.users.length
+      );
+      isFull = usersRemaining === 0;
+      isNearLimit = usersRemaining <= 1;
+    } else {
+      usersRemaining = Infinity;
+      isFull = false;
+      isNearLimit = false;
+    }
+  });
 
   function getRoleName(user: TeamMember): string {
     // Check all possible places where role data might be stored
@@ -412,6 +438,95 @@
       />
     </div>
   </div>
+
+  <!-- Subscription Limits -->
+  {#if props.subscriptionLimits && props.subscriptionLimits.maxUsers > 0}
+    <div class="flex items-center justify-between">
+      <div>
+        <h4 class="text-sm font-medium">Team Members</h4>
+        <p class="text-sm text-muted-foreground">
+          {props.users.length} of {props.subscriptionLimits.maxUsers} seats used
+        </p>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <div class="w-32 bg-muted rounded-full h-2">
+          <div
+            class="h-2 rounded-full {isFull
+              ? 'bg-red-500'
+              : isNearLimit
+                ? 'bg-amber-500'
+                : 'bg-green-500'}"
+            style="width: {Math.min(
+              100,
+              (props.users.length / props.subscriptionLimits.maxUsers) * 100
+            )}%"
+          ></div>
+        </div>
+
+        <span
+          class="text-xs font-medium {isFull
+            ? 'text-red-500'
+            : isNearLimit
+              ? 'text-amber-500'
+              : 'text-green-500'}"
+        >
+          {usersRemaining}
+          {usersRemaining === 1 ? "seat" : "seats"} remaining
+        </span>
+      </div>
+    </div>
+
+    {#if isFull}
+      <div
+        class="p-3 border-2 border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-900/20 rounded-md"
+      >
+        <div class="flex items-start gap-2">
+          <Info
+            class="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0"
+          />
+          <div>
+            <h4 class="font-medium text-amber-800 dark:text-amber-300">
+              User Limit Reached
+            </h4>
+            <p class="text-sm text-amber-700 dark:text-amber-400 mt-1">
+              You've reached the maximum of {props.subscriptionLimits.maxUsers} users
+              for your {props.subscriptionLimits.subscriptionPlan} plan.
+              {#if props.subscriptionLimits.subscriptionPlan === "Quester Pro"}
+                Upgrade to Quester Team to add more team members.
+              {:else if props.subscriptionLimits.subscriptionPlan === "Quester Team"}
+                Please contact support to discuss enterprise options for larger
+                teams.
+              {/if}
+            </p>
+          </div>
+        </div>
+      </div>
+    {:else if isNearLimit}
+      <div
+        class="p-3 border-2 border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-900/20 rounded-md"
+      >
+        <div class="flex items-start gap-2">
+          <Info
+            class="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0"
+          />
+          <div>
+            <h4 class="font-medium text-amber-800 dark:text-amber-300">
+              Almost at User Limit
+            </h4>
+            <p class="text-sm text-amber-700 dark:text-amber-400 mt-1">
+              You have {usersRemaining}
+              {usersRemaining === 1 ? "seat" : "seats"} remaining on your {props
+                .subscriptionLimits.subscriptionPlan} plan.
+              {#if props.subscriptionLimits.subscriptionPlan === "Quester Pro"}
+                Consider upgrading to Quester Team for up to 5 team members.
+              {/if}
+            </p>
+          </div>
+        </div>
+      </div>
+    {/if}
+  {/if}
 
   <!-- Members list -->
   <div

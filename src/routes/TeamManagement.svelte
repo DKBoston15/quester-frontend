@@ -4,27 +4,17 @@
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
   import { auth } from "$lib/stores/AuthStore.svelte";
   import { Button } from "$lib/components/ui/button";
-  import {
-    Tabs,
-    TabsList,
-    TabsTrigger,
-    TabsContent,
-  } from "$lib/components/ui/tabs";
+  import { Tabs, TabsList, TabsTrigger } from "$lib/components/ui/tabs";
   import {
     Building2,
     FolderKanban,
     FileText,
     Users,
     UserPlus,
-    UserMinus,
-    Settings,
     RefreshCw,
     Info,
+    UserCog,
   } from "lucide-svelte";
-  import ResourceSelector from "./components/ResourceSelector.svelte";
-  import TeamMembersList from "./components/TeamMembersList.svelte";
-  import RoleManager from "./components/RoleManager.svelte";
-  import InvitationManager from "./components/InvitationManager.svelte";
   import {
     Card,
     CardHeader,
@@ -41,7 +31,11 @@
   import AppSidebar from "$lib/components/AppSidebar.svelte";
   import type { User } from "$lib/types/auth";
   import { Badge } from "$lib/components/ui/badge";
-  import TeamSettings from "./components/TeamSettings.svelte";
+  import ResourceSelector from "$lib/components/ResourceSelector.svelte";
+  import ResourceUserManager from "$lib/components/ResourceUserManager.svelte";
+  import TeamMembersList from "$lib/components/TeamMembersList.svelte";
+  import InvitationManager from "$lib/components/InvitationManager.svelte";
+  import RoleManager from "$lib/components/RoleManager.svelte";
 
   // Reactive state
   let activeTab = $state("members");
@@ -53,6 +47,16 @@
   let isSelfAssigning = $state(false);
   let selfAssignError = $state<string | null>(null);
   let hasElevatedPermissions = $derived(determineElevatedPermissions());
+  let organizationId = $derived(getOrganizationId());
+
+  // Add subscription capability tracking
+  let subscriptionLimits = $state({
+    canInviteUsers: false,
+    maxUsers: 0,
+    currentUserCount: 0,
+    subscriptionPlan: "Research Explorer",
+  });
+  let checkingSubscription = $state(false);
 
   // Load data on mount
   onMount(async () => {
@@ -64,6 +68,9 @@
 
       // Initialize team management store
       await teamManagement.initialize();
+
+      // Check subscription limits
+      await checkSubscriptionLimits();
 
       // If URL contains valid resource parameters, select that resource
       if (
@@ -82,6 +89,64 @@
       isLoading = false;
     }
   });
+
+  // Add function to check subscription limits
+  async function checkSubscriptionLimits() {
+    if (!auth.user) return;
+
+    checkingSubscription = true;
+
+    try {
+      // Get user invitation capability
+      const inviteResponse = await fetch(
+        "http://localhost:3333/capabilities/user_invite",
+        {
+          credentials: "include",
+          headers: {
+            Accept: "application/json",
+          },
+        }
+      );
+
+      console.log(inviteResponse);
+
+      if (inviteResponse.ok) {
+        const inviteData = await inviteResponse.json();
+        console.log("INVITE DATA", inviteData);
+        subscriptionLimits.canInviteUsers = inviteData.allowed;
+
+        // Get plan name from capability check if available
+        if (inviteData.planName) {
+          subscriptionLimits.subscriptionPlan = inviteData.planName;
+        }
+      }
+
+      // Get usage limits to determine max users and current count
+      const limitsResponse = await fetch("http://localhost:3333/limits", {
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      if (limitsResponse.ok) {
+        const limitsData = await limitsResponse.json();
+        if (limitsData.users) {
+          subscriptionLimits.maxUsers = limitsData.users.limit || 0;
+          subscriptionLimits.currentUserCount = limitsData.users.current || 0;
+        }
+
+        // Get subscription plan name if available from limits endpoint
+        if (limitsData.plan) {
+          subscriptionLimits.subscriptionPlan = limitsData.plan;
+        }
+      }
+    } catch (error) {
+      console.error("Error checking subscription limits:", error);
+    } finally {
+      checkingSubscription = false;
+    }
+  }
 
   function getResourceName() {
     if (
@@ -114,6 +179,27 @@
       default:
         return Users;
     }
+  }
+
+  // Helper to get the organization ID for the current context
+  function getOrganizationId() {
+    if (
+      teamManagement.selectedResourceType === "organization" &&
+      teamManagement.organizationStructure
+    ) {
+      return teamManagement.organizationStructure.id;
+    } else if (
+      teamManagement.selectedResourceType === "department" &&
+      teamManagement.departmentStructure?.organization
+    ) {
+      return teamManagement.departmentStructure.organization.id;
+    } else if (
+      teamManagement.selectedResourceType === "project" &&
+      teamManagement.projectTeam?.organization
+    ) {
+      return teamManagement.projectTeam.organization.id;
+    }
+    return "";
   }
 
   function refreshData() {
@@ -349,6 +435,33 @@
 
     return false;
   }
+
+  // Determines if the "Add Users" tab should be shown
+  function canShowAddUsersTab() {
+    // Don't show for organizations (handled through invitations)
+    if (teamManagement.selectedResourceType === "organization") return false;
+
+    // Check if user has permissions to manage the resource
+    // The API provides a general 'canManage' permission instead of specific ones
+    return (
+      teamManagement.permissions?.canManage ||
+      isOrganizationOwner() ||
+      hasElevatedPermissions
+    );
+  }
+
+  // Get number of visible tabs for grid columns
+  function getVisibleTabsCount() {
+    let count = 1; // Members tab is always visible
+
+    // Add users tab
+    if (canShowAddUsersTab()) count++;
+
+    // Invitations tab (always visible but might be disabled)
+    count++;
+
+    return count;
+  }
 </script>
 
 <Sidebar.Provider>
@@ -445,8 +558,8 @@
             </Card>
           {/if}
 
-          <!-- Error Display -->
-          {#if teamManagement.error}
+          <!-- Error Display - Only show errors that aren't settings-related -->
+          {#if teamManagement.error && teamManagement.error !== teamManagement.settingsError}
             <Alert variant="destructive" class="mb-6">
               <Info class="h-4 w-4" />
               <AlertTitle>Error</AlertTitle>
@@ -458,9 +571,12 @@
           {#if !teamManagement.isLoading && (teamManagement.organizationStructure || teamManagement.departmentStructure || teamManagement.projectTeam)}
             <Card>
               <CardHeader class="pb-0">
-                {#if (console.log("DEBUG - TeamManagement permissions:", teamManagement.permissions), console.log("DEBUG - TeamManagement settings:", teamManagement.settings), console.log("DEBUG - isOrganizationOwner:", isOrganizationOwner()), true)}{/if}
                 <Tabs value={activeTab} class="w-full">
-                  <TabsList class="grid grid-cols-2">
+                  <TabsList
+                    class="grid w-full {canShowAddUsersTab()
+                      ? 'grid-cols-3'
+                      : 'grid-cols-2'}"
+                  >
                     <TabsTrigger
                       value="members"
                       onclick={() => (activeTab = "members")}
@@ -468,6 +584,17 @@
                       <Users class="h-4 w-4 mr-2" />
                       Team Members
                     </TabsTrigger>
+
+                    {#if canShowAddUsersTab()}
+                      <TabsTrigger
+                        value="add-users"
+                        onclick={() => (activeTab = "add-users")}
+                      >
+                        <UserCog class="h-4 w-4 mr-2" />
+                        Add Users
+                      </TabsTrigger>
+                    {/if}
+
                     <TabsTrigger
                       value="invitations"
                       onclick={() => (activeTab = "invitations")}
@@ -538,14 +665,89 @@
                   </div>
                 {/if}
 
+                <!-- Add Users Tab - NEW -->
+                {#if activeTab === "add-users" && canShowAddUsersTab()}
+                  <div class="py-4">
+                    <ResourceUserManager
+                      resourceType={teamManagement.selectedResourceType ===
+                      "department"
+                        ? "department"
+                        : "project"}
+                      resourceId={teamManagement.selectedResourceId || ""}
+                      {organizationId}
+                      onUserAdded={refreshData}
+                    />
+                  </div>
+                {/if}
+
                 <!-- Invitations Tab -->
                 {#if activeTab === "invitations"}
                   <div class="py-4">
                     {#if teamManagement.permissions.canInviteUsers || isOrganizationOwner() || teamManagement.settings?.allowMemberInvitations}
+                      {#if !subscriptionLimits.canInviteUsers}
+                        <div
+                          class="p-4 mb-6 border-2 border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-900/20 rounded-md"
+                        >
+                          <div class="flex items-start gap-3">
+                            <Info
+                              class="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5"
+                            />
+                            <div>
+                              <h3
+                                class="font-medium text-amber-800 dark:text-amber-300"
+                              >
+                                Subscription Required
+                              </h3>
+                              <p
+                                class="text-amber-700 dark:text-amber-400 mt-1"
+                              >
+                                Your current plan ({subscriptionLimits.subscriptionPlan})
+                                does not include the ability to invite team
+                                members. Upgrade to {subscriptionLimits.subscriptionPlan ===
+                                "Research Explorer"
+                                  ? "Quester Pro or Quester Team"
+                                  : "Quester Team"} to invite collaborators.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      {:else if subscriptionLimits.currentUserCount >= subscriptionLimits.maxUsers && subscriptionLimits.maxUsers > 0}
+                        <div
+                          class="p-4 mb-6 border-2 border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-900/20 rounded-md"
+                        >
+                          <div class="flex items-start gap-3">
+                            <Info
+                              class="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5"
+                            />
+                            <div>
+                              <h3
+                                class="font-medium text-amber-800 dark:text-amber-300"
+                              >
+                                User Limit Reached
+                              </h3>
+                              <p
+                                class="text-amber-700 dark:text-amber-400 mt-1"
+                              >
+                                You've reached the maximum of {subscriptionLimits.maxUsers}
+                                users for your {subscriptionLimits.subscriptionPlan}
+                                plan.
+                                {#if subscriptionLimits.subscriptionPlan === "Quester Pro"}
+                                  Upgrade to Quester Team to add more team
+                                  members.
+                                {:else}
+                                  Please contact support to discuss custom team
+                                  sizes.
+                                {/if}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      {/if}
                       <InvitationManager
                         resourceType={teamManagement.selectedResourceType}
                         resourceId={teamManagement.selectedResourceId}
                         onInviteSent={refreshData}
+                        {subscriptionLimits}
                       />
                     {:else}
                       <div class="text-center py-8 text-muted-foreground">
@@ -557,10 +759,6 @@
                     {/if}
                   </div>
                 {/if}
-
-                {console.log(teamManagement.permissions)}
-
-                <!-- Settings Tab has been moved to the dedicated Settings page -->
               </CardContent>
             </Card>
           {/if}

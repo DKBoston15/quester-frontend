@@ -14,6 +14,7 @@
   import { Button } from "$lib/components/ui/button";
   import { Badge } from "$lib/components/ui/badge";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
+  import { navigate } from "svelte-routing";
 
   // Props
   const props = $props<{
@@ -35,12 +36,22 @@
   // Load projects when department is expanded
   $effect(() => {
     if (isExpanded && isDepartment(props.item)) {
+      console.log(
+        "TreeNodeItem - Department expanded:",
+        props.item.id,
+        props.item.name
+      );
       if (props.isFiltering && props.filteredProjects) {
         // Use the filtered projects passed from parent
+        console.log(
+          "TreeNodeItem - Using filtered projects from parent:",
+          $state.snapshot(props.filteredProjects)
+        );
         projects = props.filteredProjects;
         isLoading = false;
       } else {
         // Load all projects
+        console.log("TreeNodeItem - Loading projects without parent filtering");
         loadProjects(props.item.id);
       }
     }
@@ -53,51 +64,15 @@
       props.filteredProjects &&
       props.filteredProjects.length > 0
     ) {
+      console.log(
+        "TreeNodeItem - Auto-expanding department due to filters:",
+        props.item.id,
+        "Projects:",
+        $state.snapshot(props.filteredProjects)
+      );
       isExpanded = true;
     }
   });
-
-  // Load projects for a department
-  async function loadProjects(departmentId: string) {
-    if (!auth.user) return;
-
-    isLoading = true;
-
-    try {
-      // Try team management API first
-      const resourcesResponse = await fetch(
-        `http://localhost:3333/team-management/resources?departmentId=${departmentId}`,
-        { credentials: "include" }
-      );
-
-      if (resourcesResponse.ok) {
-        const data = await resourcesResponse.json();
-        if (data.projects) {
-          projects = data.projects;
-          return;
-        }
-      }
-
-      // Fall back to projects API
-      const projectsResponse = await fetch(
-        `http://localhost:3333/projects/by-department?departmentId=${departmentId}`,
-        { credentials: "include" }
-      );
-
-      if (projectsResponse.ok) {
-        const data = await projectsResponse.json();
-        projects = data.data || [];
-      } else {
-        console.error("Failed to load projects for department");
-        projects = [];
-      }
-    } catch (error) {
-      console.error("Error loading projects:", error);
-      projects = [];
-    } finally {
-      isLoading = false;
-    }
-  }
 
   // Type guards
   function isDepartment(item: Department | Project): item is Department {
@@ -106,6 +81,91 @@
 
   function isProject(item: Department | Project): item is Project {
     return "projectRoles" in item;
+  }
+
+  // Check if the user is an admin of the department
+  function isUserDepartmentAdmin(department: Department): boolean {
+    if (!auth.user) return false;
+
+    // Check department roles
+    if (
+      department.departmentRoles &&
+      Array.isArray(department.departmentRoles)
+    ) {
+      return department.departmentRoles.some((role) => {
+        // Use string comparison for user IDs
+        const isUserRole = role.userId.toString() === auth.user?.id.toString();
+        // Check if role is admin or owner
+        const isAdminRole =
+          role.roleId === "7dcb0af2-2338-4c03-a797-955925405f90" || // owner
+          role.roleId === "8f3352ae-3144-473b-a795-059ea1fcc910"; // admin
+        return isUserRole && isAdminRole;
+      });
+    }
+
+    return false;
+  }
+
+  // Load projects for a department
+  async function loadProjects(departmentId: string) {
+    if (!auth.user) return;
+
+    isLoading = true;
+    console.log(
+      "TreeNodeItem - Loading projects for department:",
+      departmentId
+    );
+
+    const isDeptAdmin =
+      isDepartment(props.item) && isUserDepartmentAdmin(props.item);
+    console.log("TreeNodeItem - Is department admin:", isDeptAdmin);
+
+    try {
+      // Always use the dedicated endpoint for by-department which handles permissions correctly
+      const projectsResponse = await fetch(
+        `http://localhost:3333/projects/by-department?departmentId=${departmentId}`,
+        { credentials: "include" }
+      );
+
+      if (projectsResponse.ok) {
+        const data = await projectsResponse.json();
+        console.log("TreeNodeItem - Department projects response:", data);
+        // Extract the projects array from the paginated response
+        projects = data.data || [];
+        return;
+      } else {
+        // If the request fails, log the status
+        console.error(
+          `Failed to load projects for department. Status: ${projectsResponse.status}`
+        );
+
+        // Fall back to filtering projects from team-management resources
+        const resourcesResponse = await fetch(
+          `http://localhost:3333/team-management/resources`,
+          { credentials: "include" }
+        );
+
+        if (resourcesResponse.ok) {
+          const data = await resourcesResponse.json();
+          console.log("TreeNodeItem - Fallback to team-management resources");
+
+          if (data.projects) {
+            // Filter projects by department ID client-side
+            const filteredProjects = data.projects.filter(
+              (p: Project) => p.departmentId === departmentId
+            );
+            projects = filteredProjects;
+          }
+        } else {
+          projects = [];
+        }
+      }
+    } catch (error) {
+      console.error("Error loading projects:", error);
+      projects = [];
+    } finally {
+      isLoading = false;
+    }
   }
 
   // Check if user is a member of a project
@@ -140,10 +200,11 @@
 
   // Handle click on a project item
   function handleProjectClick(project: Project, e: MouseEvent) {
+    console.log("PROJECT CLICKED:", project);
     e.stopPropagation();
 
     if (isUserProjectMember(project)) {
-      window.location.href = `/project/${project.id}`;
+      navigate(`/project/${project.id}`);
     }
   }
 
@@ -248,7 +309,10 @@
         {#each projects as project}
           <div
             class="flex items-center gap-2 p-2 hover:bg-accent hover:text-accent-foreground rounded-md cursor-pointer my-1 transition-colors"
-            onclick={(e: MouseEvent) => handleProjectClick(project, e)}
+            onclick={(e: MouseEvent) => {
+              console.log("Project clicked:", project);
+              handleProjectClick(project, e);
+            }}
           >
             <FileText class="h-4 w-4 text-primary" />
             <span>{project.name}</span>
@@ -302,7 +366,7 @@
   {/if}
 {:else if isProject(props.item)}
   <!-- Project Item (direct, outside a department) -->
-  <div
+  <button
     class="flex items-center gap-2 p-2 hover:bg-accent hover:text-accent-foreground rounded-md cursor-pointer ml-2 my-1 transition-colors"
     onclick={(e: MouseEvent) => handleProjectClick(props.item, e)}
     role="button"
@@ -353,5 +417,5 @@
         </DropdownMenu.Content>
       </DropdownMenu.Root>
     </div>
-  </div>
+  </button>
 {/if}

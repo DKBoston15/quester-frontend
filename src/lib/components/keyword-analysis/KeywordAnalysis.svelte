@@ -3,8 +3,6 @@
   import { fade, slide } from "svelte/transition";
   import KeywordInput from "./KeywordInput.svelte";
   import AnalysisResults from "./AnalysisResults.svelte";
-  import VennDiagram from "./VennDiagram.svelte";
-  import FrequencyChart from "./FrequencyChart.svelte";
   import { Button } from "$lib/components/ui/button";
   import { Card } from "$lib/components/ui/card";
   import type { KeywordAnalysis } from "$lib/types/index";
@@ -202,10 +200,6 @@
     </div>
   {:else if currentAnalysis}
     <div class="space-y-6" transition:fade>
-      <div class="grid grid-cols-2 gap-6">
-        <VennDiagram analysis={currentAnalysis} />
-        <FrequencyChart analysis={currentAnalysis} />
-      </div>
       <AnalysisResults analysis={currentAnalysis} />
     </div>
   {:else if projectStore.currentProject}

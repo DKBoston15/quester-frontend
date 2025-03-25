@@ -16,6 +16,7 @@
   let error = $state<string | null>(null);
   let permissions = $state<Record<string, boolean>>({});
   let settings = $state<Record<string, any>>({});
+  let settingsError = $state<string | null>(null);
 
   export const teamManagement = {
     // Getters
@@ -48,6 +49,9 @@
     },
     get settings() {
       return settings;
+    },
+    get settingsError() {
+      return settingsError;
     },
 
     // Set the selected resource
@@ -529,7 +533,7 @@
       if (!selectedResourceType || !selectedResourceId) return;
 
       isLoading = true;
-      error = null;
+      settingsError = null;
 
       try {
         const response = await fetch(
@@ -540,6 +544,16 @@
         );
 
         if (!response.ok) {
+          // Check if this is a permissions error (403)
+          if (response.status === 403) {
+            // For permission errors, just set an empty settings object without showing an error
+            console.log(
+              "No permission to view settings (403) - expected for non-admin users"
+            );
+            settings = {};
+            return;
+          }
+
           throw new Error(`Failed to load settings (${response.status})`);
         }
 
@@ -547,7 +561,11 @@
         settings = data;
       } catch (err) {
         console.error("Error loading settings:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        settingsError =
+          err instanceof Error ? err.message : "An error occurred";
+        // Don't set the general error for settings issues
+        // Just use an empty settings object when there's an error
+        settings = {};
       } finally {
         isLoading = false;
       }
@@ -556,7 +574,7 @@
     // Update a specific setting
     async updateSetting(key: string, value: any) {
       if (!selectedResourceType || !selectedResourceId) {
-        error = "No resource selected";
+        settingsError = "No resource selected";
         return false;
       }
 
@@ -585,6 +603,15 @@
         );
 
         if (!response.ok) {
+          // Check if this is a permissions error (403)
+          if (response.status === 403) {
+            console.log(
+              "No permission to update settings (403) - expected for non-admin users"
+            );
+            settingsError = "You don't have permission to update settings";
+            return false;
+          }
+
           const errorData = await response.json().catch(() => ({}));
           console.error(`[TeamManagementStore] Error response:`, errorData);
           throw new Error(
@@ -647,7 +674,9 @@
         return true;
       } catch (err) {
         console.error("[TeamManagementStore] Error updating setting:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        settingsError =
+          err instanceof Error ? err.message : "An error occurred";
+        // Don't set the general error for settings issues
         return false;
       }
     },
@@ -656,18 +685,27 @@
     async refreshCurrentResource() {
       if (!selectedResourceType || !selectedResourceId) return;
 
-      switch (selectedResourceType) {
-        case "organization":
-          await this.loadOrganizationStructure(selectedResourceId);
-          break;
-        case "department":
-          await this.loadDepartmentStructure(selectedResourceId);
-          break;
-        case "project":
-          await this.loadProjectTeam(selectedResourceId);
-          break;
+      error = null; // Reset general error
+      settingsError = null; // Reset settings error
+
+      try {
+        switch (selectedResourceType) {
+          case "organization":
+            await this.loadOrganizationStructure(selectedResourceId);
+            break;
+          case "department":
+            await this.loadDepartmentStructure(selectedResourceId);
+            break;
+          case "project":
+            await this.loadProjectTeam(selectedResourceId);
+            break;
+        }
+        // Loading settings might fail due to permissions, but that's handled in loadSettings
+        await this.loadSettings();
+      } catch (err) {
+        console.error("Error refreshing resource data:", err);
+        error = err instanceof Error ? err.message : "An error occurred";
       }
-      await this.loadSettings();
     },
 
     // Clear all data
@@ -682,13 +720,21 @@
       error = null;
       permissions = {};
       settings = {};
+      settingsError = null;
     },
 
     // Initialize the store
     async initialize() {
       if (auth.currentOrganization?.id) {
-        await this.loadUserResources();
-        await this.loadSettings();
+        try {
+          await this.loadUserResources();
+
+          // If loading settings fails due to permissions, it's handled in the loadSettings method
+          await this.loadSettings();
+        } catch (err) {
+          console.error("Error initializing team management:", err);
+          error = err instanceof Error ? err.message : "An error occurred";
+        }
       } else {
         this.clear();
       }
