@@ -136,11 +136,9 @@
     if (outcome.type === "LINK") {
       // Ensure URL has a protocol
       let url = outcome.content || "";
-      console.log(outcome);
       if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
         url = "https://" + url;
       }
-      console.log(url);
       window.open(url, "_blank", "noopener,noreferrer");
     } else {
       const projectId = projectStore.currentProject?.id;
@@ -302,7 +300,6 @@
           </div>
         {:else}
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {console.log(outcomeStore.outcomes)}
             {#each outcomeStore.outcomes
               .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
               .filter((outcome) => outcome?.name

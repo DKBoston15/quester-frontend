@@ -36,22 +36,11 @@
   // Load projects when department is expanded
   $effect(() => {
     if (isExpanded && isDepartment(props.item)) {
-      console.log(
-        "TreeNodeItem - Department expanded:",
-        props.item.id,
-        props.item.name
-      );
       if (props.isFiltering && props.filteredProjects) {
         // Use the filtered projects passed from parent
-        console.log(
-          "TreeNodeItem - Using filtered projects from parent:",
-          $state.snapshot(props.filteredProjects)
-        );
         projects = props.filteredProjects;
         isLoading = false;
       } else {
-        // Load all projects
-        console.log("TreeNodeItem - Loading projects without parent filtering");
         loadProjects(props.item.id);
       }
     }
@@ -64,12 +53,6 @@
       props.filteredProjects &&
       props.filteredProjects.length > 0
     ) {
-      console.log(
-        "TreeNodeItem - Auto-expanding department due to filters:",
-        props.item.id,
-        "Projects:",
-        $state.snapshot(props.filteredProjects)
-      );
       isExpanded = true;
     }
   });
@@ -111,14 +94,9 @@
     if (!auth.user) return;
 
     isLoading = true;
-    console.log(
-      "TreeNodeItem - Loading projects for department:",
-      departmentId
-    );
 
     const isDeptAdmin =
       isDepartment(props.item) && isUserDepartmentAdmin(props.item);
-    console.log("TreeNodeItem - Is department admin:", isDeptAdmin);
 
     try {
       // Always use the dedicated endpoint for by-department which handles permissions correctly
@@ -129,7 +107,6 @@
 
       if (projectsResponse.ok) {
         const data = await projectsResponse.json();
-        console.log("TreeNodeItem - Department projects response:", data);
         // Extract the projects array from the paginated response
         projects = data.data || [];
         return;
@@ -147,7 +124,6 @@
 
         if (resourcesResponse.ok) {
           const data = await resourcesResponse.json();
-          console.log("TreeNodeItem - Fallback to team-management resources");
 
           if (data.projects) {
             // Filter projects by department ID client-side
@@ -200,7 +176,6 @@
 
   // Handle click on a project item
   function handleProjectClick(project: Project, e: MouseEvent) {
-    console.log("PROJECT CLICKED:", project);
     e.stopPropagation();
 
     if (isUserProjectMember(project)) {
@@ -310,7 +285,6 @@
           <div
             class="flex items-center gap-2 p-2 hover:bg-accent hover:text-accent-foreground rounded-md cursor-pointer my-1 transition-colors"
             onclick={(e: MouseEvent) => {
-              console.log("Project clicked:", project);
               handleProjectClick(project, e);
             }}
           >

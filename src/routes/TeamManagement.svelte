@@ -108,11 +108,8 @@
         }
       );
 
-      console.log(inviteResponse);
-
       if (inviteResponse.ok) {
         const inviteData = await inviteResponse.json();
-        console.log("INVITE DATA", inviteData);
         subscriptionLimits.canInviteUsers = inviteData.allowed;
 
         // Get plan name from capability check if available
@@ -448,19 +445,6 @@
       isOrganizationOwner() ||
       hasElevatedPermissions
     );
-  }
-
-  // Get number of visible tabs for grid columns
-  function getVisibleTabsCount() {
-    let count = 1; // Members tab is always visible
-
-    // Add users tab
-    if (canShowAddUsersTab()) count++;
-
-    // Invitations tab (always visible but might be disabled)
-    count++;
-
-    return count;
   }
 </script>
 

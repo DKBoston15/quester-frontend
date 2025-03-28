@@ -4,13 +4,7 @@
   import * as Progress from "$lib/components/ui/progress";
   import * as Accordion from "$lib/components/ui/accordion";
   import * as Tooltip from "$lib/components/ui/tooltip";
-  import {
-    AlertCircle,
-    CheckCircle2,
-    ChevronRight,
-    Sparkles,
-  } from "lucide-svelte";
-  import { Button } from "$lib/components/ui/button";
+  import { AlertCircle, CheckCircle2, Sparkles } from "lucide-svelte";
   import { slide } from "svelte/transition";
   import { quintOut } from "svelte/easing";
   import type { Literature } from "$lib/types/literature";
@@ -137,10 +131,6 @@
       );
     });
     return Math.round((completedRules.length / rules.length) * 100);
-  }
-
-  function handleActionClick(tab: string) {
-    onTabChange(tab);
   }
 
   $effect(() => {

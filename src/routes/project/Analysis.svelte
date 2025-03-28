@@ -1,7 +1,6 @@
 <script lang="ts">
   import KeywordAnalysis from "$lib/components/keyword-analysis/KeywordAnalysis.svelte";
   import { onMount } from "svelte";
-  import { auth } from "$lib/stores/AuthStore.svelte";
   import { navigate } from "svelte-routing";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
 

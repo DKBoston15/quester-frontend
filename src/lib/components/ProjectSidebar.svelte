@@ -20,7 +20,6 @@
     Building2,
     ChartNetwork,
     TextSearch,
-    MessageCircle,
     Lock,
   } from "lucide-svelte";
 
@@ -224,19 +223,6 @@
       },
     ];
   });
-
-  // Handle navigation for subscription-required features
-  function handleNavigation(e: Event, item: Route) {
-    if (item.disabled) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      // Could also navigate to an upgrade page here instead of just preventing navigation
-      console.log(
-        `Access to ${item.title} requires a subscription upgrade for ${item.subscriptionFeature}`
-      );
-    }
-  }
 
   async function handleLogout() {
     auth.logout();

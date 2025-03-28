@@ -4,7 +4,6 @@
   import { navigate } from "svelte-routing";
   import { modelStore } from "$lib/stores/ModelStore.svelte";
   import Model from "$lib/components/model/Model.svelte";
-  import { auth } from "$lib/stores/AuthStore.svelte";
 
   const props = $props<{
     modelId: string;

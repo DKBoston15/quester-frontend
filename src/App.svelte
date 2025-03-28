@@ -19,21 +19,12 @@
 
   const props = $props<{ url: string }>();
 
-  // Get the base URL from the public path
-  const base = import.meta.env.BASE_URL || "";
-
   // Check if the user is authenticated
   let isCheckingAuth = $state(true);
-  console.log("App.svelte initial state - isCheckingAuth:", isCheckingAuth);
 
   onMount(async () => {
-    console.log("App mounted, checking authentication...");
-
     // Safety timeout - force loading to false after 10 seconds
     const safetyTimeout = setTimeout(() => {
-      console.log(
-        "Safety timeout triggered - forcing App loading state to false"
-      );
       isCheckingAuth = false;
       // Force a re-render
       document.dispatchEvent(new Event("forceRerender"));
@@ -50,20 +41,12 @@
       // Race the auth verification against the timeout
       await Promise.race([auth.verifySession(), timeoutPromise]);
 
-      console.log("Auth verification completed:", {
-        isAuthenticated: auth.isAuthenticated,
-        isLoading: auth.isLoading,
-      });
-
       isCheckingAuth = false;
-      console.log("App.svelte - isCheckingAuth set to:", isCheckingAuth);
 
       // Redirect to signin if not authenticated
       if (!auth.isAuthenticated && window.location.pathname !== "/") {
-        console.log("User not authenticated, redirecting to signin");
         navigate("/", { replace: true });
       } else if (auth.isAuthenticated && window.location.pathname === "/") {
-        console.log("User authenticated at root, redirecting to dashboard");
         navigate("/dashboard", { replace: true });
       }
     } catch (err) {
@@ -71,33 +54,18 @@
       // If we timeout or have another error, force isCheckingAuth to false
       // and clear user to reset auth state
       isCheckingAuth = false;
-      console.log(
-        "App.svelte - error handler - isCheckingAuth set to:",
-        isCheckingAuth
-      );
       auth.clearUser(); // This internally sets isLoading to false
-
-      // Show a message or redirect to signin as a fallback
-      console.log("Forcing redirect to signin page due to auth error");
       navigate("/", { replace: true });
     } finally {
       // Ensure the safety timeout is cleared
       clearTimeout(safetyTimeout);
       // Double-check the isCheckingAuth state
       isCheckingAuth = false;
-      console.log(
-        "App.svelte - finally block - isCheckingAuth set to:",
-        isCheckingAuth
-      );
     }
   });
 
   function login() {
     window.location.href = "http://localhost:3333/auth/redirect";
-  }
-
-  function logout() {
-    window.location.href = "http://localhost:3333/auth/logout";
   }
 
   async function checkPendingInvites() {
@@ -129,7 +97,6 @@
           <button
             class="underline text-primary"
             onclick={() => {
-              console.log("Manual auth reset triggered");
               isCheckingAuth = false;
               auth.clearUser();
               navigate("/", { replace: true });

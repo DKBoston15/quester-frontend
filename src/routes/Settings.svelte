@@ -12,19 +12,10 @@
     CardTitle,
     CardDescription,
     CardContent,
-    CardFooter,
   } from "$lib/components/ui/card";
-  import {
-    Settings as SettingsIcon,
-    User,
-    CreditCard,
-    Shield,
-    Bell,
-    Building2,
-  } from "lucide-svelte";
+  import { Settings as SettingsIcon, User, Building2 } from "lucide-svelte";
   import * as Tabs from "$lib/components/ui/tabs";
   import TeamSettings from "$lib/components/TeamSettings.svelte";
-  import ResourceSelector from "$lib/components/ResourceSelector.svelte";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import AppSidebar from "$lib/components/AppSidebar.svelte";
   // Import tooltip components

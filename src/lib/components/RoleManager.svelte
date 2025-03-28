@@ -40,18 +40,6 @@
 
     // Check if we're using elevated permissions
     checkForElevatedPermissions();
-
-    // Debug what data we actually have
-    if (props.resourceType === "organization") {
-      console.log(
-        "Organization Structure:",
-        teamManagement.organizationStructure
-      );
-    } else if (props.resourceType === "department") {
-      console.log("Department Structure:", teamManagement.departmentStructure);
-    } else if (props.resourceType === "project") {
-      console.log("Project Team:", teamManagement.projectTeam);
-    }
   });
 
   // Try to fetch the roles directly from the backend
@@ -66,7 +54,6 @@
 
       if (response.ok) {
         const data = await response.json();
-        console.log(`Fetched ${props.resourceType} roles from backend:`, data);
 
         if (data && Array.isArray(data) && data.length > 0) {
           availableRoles = data;
@@ -86,31 +73,15 @@
       props.resourceType === "organization" &&
       teamManagement.organizationStructure
     ) {
-      console.log(
-        "Examining organization structure:",
-        teamManagement.organizationStructure
-      );
-
       // If the structure has available roles use them, otherwise extract from users
       if (teamManagement.organizationStructure.availableRoles) {
-        console.log(
-          "Found availableRoles in organization structure:",
-          teamManagement.organizationStructure.availableRoles
-        );
         availableRoles = teamManagement.organizationStructure.availableRoles;
       } else if (teamManagement.organizationStructure.users) {
-        console.log(
-          "Organization users:",
-          teamManagement.organizationStructure.users
-        );
-
         // Check if users have role information
         const usersWithRoles =
           teamManagement.organizationStructure.users.filter(
             (user: any) => user.role && user.role.id && user.role.name
           );
-
-        console.log("Users with roles:", usersWithRoles);
 
         // Extract unique roles from user data
         const uniqueRoles = new Map<string, { id: string; name: string }>();
@@ -121,7 +92,6 @@
         });
 
         const extractedRoles = Array.from(uniqueRoles.values());
-        console.log("Extracted roles from users:", extractedRoles);
 
         if (extractedRoles.length > 0) {
           availableRoles = extractedRoles;
@@ -131,18 +101,12 @@
             { id: "admin", name: "Admin" },
             { id: "member", name: "Member" },
           ];
-          console.log("Using hardcoded roles as fallback:", availableRoles);
         }
       }
     } else if (
       props.resourceType === "department" &&
       teamManagement.departmentStructure
     ) {
-      console.log(
-        "Examining department structure:",
-        teamManagement.departmentStructure
-      );
-
       if (teamManagement.departmentStructure.availableRoles) {
         availableRoles = teamManagement.departmentStructure.availableRoles;
       } else if (teamManagement.departmentStructure.users) {
@@ -165,8 +129,6 @@
         }
       }
     } else if (props.resourceType === "project" && teamManagement.projectTeam) {
-      console.log("Examining project team:", teamManagement.projectTeam);
-
       if (teamManagement.projectTeam.availableRoles) {
         availableRoles = teamManagement.projectTeam.availableRoles;
       } else if (teamManagement.projectTeam.users) {
@@ -189,13 +151,6 @@
           ];
         }
       }
-    }
-
-    // If we couldn't find any roles, log an error
-    if (availableRoles.length === 0) {
-      console.error("No roles found for", props.resourceType);
-    } else {
-      console.log("Available roles:", availableRoles);
     }
   }
 
@@ -273,11 +228,9 @@
     const user = users.find((u: any) => u.id === props.userId);
     if (user) {
       userName = `${user.firstName} ${user.lastName}`;
-      console.log("Found user:", user);
 
       // Get the user's current role ID
       if (user.role && user.role.id) {
-        console.log("User has role:", user.role);
         selectedRoleId = user.role.id;
 
         // Check if the user is an organization owner
@@ -286,9 +239,6 @@
           user.role.name === "Owner"
         ) {
           isOwner = true;
-          console.log(
-            "This user is an organization Owner and their role cannot be changed"
-          );
         }
 
         // Check if they're a project owner
@@ -296,7 +246,6 @@
           isProjectOwner = true;
         }
       } else if (user.$extras?.roleId) {
-        console.log("User has roleId in $extras:", user.$extras.roleId);
         selectedRoleId = user.$extras.roleId;
 
         // Also check for owner in extras
@@ -306,9 +255,6 @@
             user.organizationRoles?.some((r: any) => r.role?.name === "Owner"))
         ) {
           isOwner = true;
-          console.log(
-            "This user is an organization Owner and their role cannot be changed"
-          );
         }
 
         // Check if they're a project owner
@@ -331,9 +277,6 @@
         );
         if (ownerRole) {
           isOwner = true;
-          console.log(
-            "This user is an organization Owner (from organizationRoles) and their role cannot be changed"
-          );
         }
       }
 
@@ -397,8 +340,6 @@
     error = null;
 
     try {
-      console.log(`Updating user ${props.userId} to role ${selectedRoleId}`);
-
       // The backend now handles role names directly, so we can pass selectedRoleId as is
       const success = await teamManagement.updateUserRole(
         props.userId,

@@ -1,14 +1,12 @@
 <!-- src/lib/components/OrganizationStructure.svelte -->
 <script lang="ts">
   import {
-    ChevronRight,
     Plus,
     Building2,
     FolderKanban,
     FileText,
     UserPlus,
     FolderTree,
-    MoreVertical,
     FolderInput,
     Search,
     ListFilter,
@@ -28,7 +26,6 @@
   import { Label } from "$lib/components/ui/label";
   import { Badge } from "$lib/components/ui/badge";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
-  import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import * as Tabs from "$lib/components/ui/tabs/index.js";
   import TreeNode from "./TreeNodeItem.svelte";
 
@@ -474,15 +471,6 @@
   $effect(() => {
     if (!flatProjects || flatProjects.length === 0 || departmentsMap.size === 0)
       return;
-
-    // Simply log orphaned projects rather than modifying anything that could cause reactivity cycles
-    flatProjects.forEach((project) => {
-      if (project.departmentId && !departmentsMap.has(project.departmentId)) {
-        console.log(
-          `Project "${project.name}" has departmentId "${project.departmentId}" but department doesn't exist. Treating as direct project.`
-        );
-      }
-    });
   });
 
   let departmentsMap = $state<Map<string, Department>>(new Map());
@@ -1021,8 +1009,7 @@
                 {#each filteredProjects.filter((p) => p.organizationId === org.id && (!p.departmentId || !departmentsMap.has(p.departmentId))) as project}
                   <div
                     class="flex items-center gap-2 p-2 hover:bg-accent hover:text-accent-foreground rounded-md cursor-pointer ml-2 my-1 transition-colors"
-                    onclick={(e: MouseEvent) => {
-                      console.log("Direct project clicked:", project);
+                    onclick={() => {
                       if (isUserProjectMember(project)) {
                         navigate(`/project/${project.id}`);
                       }
@@ -1129,8 +1116,7 @@
                 {#each flatProjects.filter((p) => p.organizationId === org.id && (!p.departmentId || !departmentsMap.has(p.departmentId))) as project}
                   <div
                     class="flex items-center gap-2 p-2 hover:bg-accent hover:text-accent-foreground rounded-md cursor-pointer ml-2 my-1 transition-colors"
-                    onclick={(e: MouseEvent) => {
-                      console.log("Direct project clicked:", project);
+                    onclick={() => {
                       if (isUserProjectMember(project)) {
                         navigate(`/project/${project.id}`);
                       }

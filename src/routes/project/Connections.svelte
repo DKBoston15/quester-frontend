@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import TwoD from "$lib/components/graph/TwoD.svelte";
   import ThreeD from "$lib/components/graph/ThreeD.svelte";
   import * as ToggleGroup from "$lib/components/ui/toggle-group";
@@ -7,7 +7,6 @@
   import { nodeIcons, typeMap } from "$lib/components/graph/data";
   import * as Card from "$lib/components/ui/card";
   import { onMount } from "svelte";
-  import { auth } from "$lib/stores/AuthStore.svelte";
   import { navigate } from "svelte-routing";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
 
@@ -15,6 +14,9 @@
   let showControls = false;
   let isLoading = $state(true);
   let hasAccess = $state(false);
+
+  // Define the type for typeMap keys
+  type TypeMapKey = keyof typeof typeMap;
 
   function toggleControls() {
     showControls = !showControls;
@@ -134,7 +136,7 @@
                           class="w-6 h-6 mr-2 flex-shrink-0"
                         />
                         <span class="text-sm truncate"
-                          >{typeMap[key] || key}</span
+                          >{typeMap[key as TypeMapKey] || key}</span
                         >
                       </div>
                     {/if}

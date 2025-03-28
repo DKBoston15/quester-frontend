@@ -1,8 +1,6 @@
 <!-- src/routes/components/UserRoleForm.svelte -->
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
-  import * as Select from "$lib/components/ui/select";
-  import { Toaster } from "$lib/components/ui/sonner";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
 
   // Props
@@ -41,11 +39,9 @@
     user = resourceData.users?.find(
       (u: any) => String(u.id) === String(props.userId)
     );
-    console.log("Found user:", user);
 
     // Get available roles
     availableRoles = resourceData.availableRoles || [];
-    console.log("Available roles:", availableRoles);
 
     // Get the user's current role
     if (user) {

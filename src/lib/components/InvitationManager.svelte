@@ -131,13 +131,6 @@
       );
       selectedRoleId = memberRole ? memberRole.id : availableRoles[0].id;
     }
-
-    // Log what we found
-    if (availableRoles.length === 0) {
-      console.warn("No roles found for", props.resourceType);
-    } else {
-      console.log("Available roles for invitations:", availableRoles);
-    }
   }
 
   async function sendInvitation() {
@@ -178,8 +171,6 @@
           payload.projectRoleId = selectedRoleId;
           break;
       }
-
-      console.log("Sending invitation with payload:", payload);
 
       const response = await fetch("http://localhost:3333/invitations", {
         method: "POST",

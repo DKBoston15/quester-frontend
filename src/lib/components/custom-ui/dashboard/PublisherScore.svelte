@@ -3,7 +3,6 @@
   import { Button } from "$lib/components/ui/button";
   import * as Card from "$lib/components/ui/card";
   import * as Dialog from "$lib/components/ui/dialog";
-  import { auth } from "$lib/stores/AuthStore.svelte";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
   import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
   import type { Literature } from "$lib/types/literature";

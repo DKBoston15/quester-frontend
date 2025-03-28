@@ -4,7 +4,6 @@
   import ResearchProducts from "$lib/components/ResearchProducts.svelte";
   import ProjectOverview from "$lib/components/project/ProjectOverview.svelte";
   import ResearchDesigns from "$lib/components/project/ResearchDesigns.svelte";
-  import PublisherScore from "$lib/components/custom-ui/dashboard/PublisherScore.svelte";
   import ProjectKeywords from "$lib/components/project/ProjectKeywords.svelte";
   import * as Card from "$lib/components/ui/card";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";

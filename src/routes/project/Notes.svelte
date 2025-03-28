@@ -17,7 +17,6 @@
   let focusMode = $state(false);
   let selectedView = $state(""); // Default to split view
   let selectedTab = $state("literature"); // Default to literature notes
-  let note: Note;
   let rightPanelNote = $state<Note | null>(null);
 
   // Effect to sync rightPanelNote with store updates

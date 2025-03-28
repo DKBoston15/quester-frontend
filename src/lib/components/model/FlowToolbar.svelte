@@ -1,8 +1,6 @@
 <script lang="ts">
   import { writable } from "svelte/store";
   import type { Node } from "@xyflow/svelte";
-  import { Position } from "@xyflow/svelte";
-  import { currentEdgeType, type EdgeType } from "./edge-type-store";
   import { toPng } from "html-to-image";
   import { getNodesBounds, getViewportForBounds } from "@xyflow/svelte";
 

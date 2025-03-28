@@ -2,26 +2,6 @@ import { projectStore } from "$lib/stores/ProjectStore.svelte";
 import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
 import { notesStore } from "$lib/stores/NotesStore.svelte";
 
-interface LiteratureType {
-  value: string;
-  label?: string;
-}
-
-interface Literature {
-  id: string;
-  name: string;
-  authors?: string[];
-  keywords?: string[];
-  type?: LiteratureType;
-  publishYear?: string;
-  publisherName?: string;
-  researchDesign?: string;
-  analyticDesign?: string;
-  samplingDesign?: string;
-  measurementDesign?: string;
-  createdAt?: string;
-}
-
 export const groupColorMap = {
   1: "#006eff",
   2: "#0d52f5",
@@ -146,8 +126,9 @@ export async function retrieveGraphData(urlProjectId: string) {
 }
 
 export async function createGraphData(urlProjectId: string) {
-  const { literatureRecords, modelRecords, noteRecords } =
-    await retrieveGraphData(urlProjectId);
+  const { literatureRecords, noteRecords } = await retrieveGraphData(
+    urlProjectId
+  );
 
   const nodes: Array<{
     id: string;

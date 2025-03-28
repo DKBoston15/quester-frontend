@@ -13,7 +13,6 @@
   import { toast } from "svelte-sonner";
   import { Search, UserPlus } from "lucide-svelte";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
-  import type { User } from "$lib/types/auth";
 
   // Props with Svelte 5 runes
   const { resourceType, resourceId, organizationId, onUserAdded } = $props<{
@@ -55,27 +54,18 @@
 
       if (response.ok) {
         const orgData = await response.json();
-        console.log("Organization data:", orgData);
 
         // Extract users correctly - they're nested under organization.users
         const orgUsers = orgData.organization?.users || [];
 
-        // Also debug what we're getting
-        console.log("Organization users:", orgUsers);
-
         // Get current resource users to filter them out
         const currentUsers = getCurrentResourceUsers();
-        console.log("Current users:", currentUsers);
         const currentUserIds = currentUsers.map((u) => String(u.id));
-
-        console.log("Current user IDs in resource:", currentUserIds);
 
         // Filter out users who are already in the resource
         availableUsers = orgUsers.filter(
           (user: any) => !currentUserIds.includes(String(user.id))
         );
-
-        console.log("Available users to add:", availableUsers);
       } else {
         console.error(
           "Failed to load organization users:",
@@ -110,7 +100,6 @@
       if (response.ok) {
         const rolesData = await response.json();
         availableRoles = rolesData;
-        console.log("Available roles:", rolesData);
 
         // Set default role to Member if available
         const memberRole = rolesData.find(
@@ -217,8 +206,10 @@
     }
   }
 
-  function handleRoleChange(value: string) {
-    selectedRoleId = value;
+  function handleRoleChange(value: string | undefined) {
+    if (value) {
+      selectedRoleId = value;
+    }
   }
 </script>
 
@@ -269,7 +260,6 @@
           </Table.Header>
           <Table.Body>
             {#each filteredUsers as user}
-              {console.log(user)}
               <Table.Row>
                 <Table.Cell>
                   <div class="flex items-center gap-2">
@@ -288,8 +278,9 @@
                 </Table.Cell>
                 <Table.Cell>
                   <Select
+                    type="single"
                     value={selectedRoleId}
-                    onValueChange={(value: string) => handleRoleChange(value)}
+                    onValueChange={handleRoleChange}
                   >
                     <SelectTrigger class="w-[180px]">
                       <span>

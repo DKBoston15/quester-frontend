@@ -1,7 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
   import type { Edge } from "@xyflow/svelte";
-  import { getEdgeCenter } from "@xyflow/svelte";
 
   export let edge: Edge;
   export let selected = false;

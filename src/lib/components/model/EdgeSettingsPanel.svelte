@@ -1,12 +1,6 @@
 <!-- src/lib/components/model/EdgeSettingsPanel.svelte -->
 <script lang="ts">
   import { edgeSettings, type EdgeType } from "./edge-settings-store";
-  import * as Card from "$lib/components/ui/card";
-  import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import * as Select from "$lib/components/ui/select";
-  import { Checkbox } from "$lib/components/ui/checkbox";
   import { Panel } from "@xyflow/svelte";
 
   const edgeTypes: { value: EdgeType; label: string }[] = [
@@ -15,38 +9,6 @@
     { value: "smoothstep", label: "Smooth Step" },
     { value: "bezier", label: "Bezier" },
   ];
-
-  function updateEdgeType(value: string) {
-    edgeSettings.update((settings) => ({
-      ...settings,
-      type: value as EdgeType,
-    }));
-  }
-
-  function updateEdgeColor(color: string) {
-    edgeSettings.update((settings) => ({ ...settings, color }));
-  }
-
-  function updateEdgeWidth(width: number) {
-    edgeSettings.update((settings) => ({ ...settings, width }));
-  }
-
-  function toggleAnimation(animated: boolean) {
-    edgeSettings.update((settings) => ({ ...settings, animated }));
-  }
-
-  function toggleMarkerStart(markerStart: boolean) {
-    edgeSettings.update((settings) => ({ ...settings, markerStart }));
-  }
-
-  function toggleMarkerEnd(markerEnd: boolean) {
-    edgeSettings.update((settings) => ({ ...settings, markerEnd }));
-  }
-
-  function handleInputEvent(event: Event) {
-    const target = event.target as HTMLInputElement;
-    return target.value;
-  }
 
   let activeSection: "type" | "style" | "markers" | null = null;
 

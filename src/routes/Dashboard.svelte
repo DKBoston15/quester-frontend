@@ -37,12 +37,6 @@
     );
   }
 
-  // Helper function to check if user has pro features
-  function hasProFeatures() {
-    const planName = currentOrg?.subscription?.plan?.name;
-    return planName && planName !== "Research Explorer";
-  }
-
   onMount(async () => {
     try {
       // Wait for auth store to finish loading
@@ -197,22 +191,6 @@
     } catch (error) {
       console.error("Error loading departments and projects:", error);
       // We continue even if there's an error to avoid blocking the dashboard
-    }
-  }
-
-  async function handleOrgChange(value: string) {
-    selectedOrgId = value;
-    currentOrg = organizations.find((org) => org.id === value) || null;
-
-    if (currentOrg) {
-      // Check if the selected org has a billing provider and subscription
-      if (!currentOrg.billingProviderId || !currentOrg.subscription) {
-        navigate("/onboarding");
-        return;
-      }
-
-      auth.setCurrentOrganization(currentOrg);
-      await loadDepartmentsAndProjects();
     }
   }
 </script>

@@ -3,7 +3,6 @@
   import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
   import * as Card from "$lib/components/ui/card";
-  import * as Tabs from "$lib/components/ui/tabs";
   import { Button } from "$lib/components/ui/button";
   import LiteratureDetails from "$lib/components/custom-ui/literature/literatureItem/LiteratureDetails.svelte";
   import LiteratureStatus from "$lib/components/custom-ui/literature/literatureItem/LiteratureStatus.svelte";

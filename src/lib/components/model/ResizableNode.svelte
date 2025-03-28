@@ -1,18 +1,7 @@
 <script lang="ts">
-  import {
-    Handle,
-    NodeResizer,
-    NodeToolbar,
-    Position,
-    type NodeProps,
-  } from "@xyflow/svelte";
-  import { onMount } from "svelte";
-  import { createEventDispatcher } from "svelte";
-
-  type $$Props = NodeProps;
+  import { Handle, NodeResizer, NodeToolbar, Position } from "@xyflow/svelte";
 
   let { data = {}, selected = false, id = "", xPos = 0, yPos = 0 } = $props();
-  const dispatch = createEventDispatcher();
 
   // Local state
   let bgColor = $state((data.bgColor as string) || "#ffffff");
@@ -54,7 +43,6 @@
   });
 
   // Derived values based on transparent options
-  let effectiveBgColor = $derived(transparentBg ? "transparent" : bgColor);
   let effectiveBorderColor = $derived(
     transparentBorder ? "transparent" : borderColor
   );
@@ -87,7 +75,6 @@
   }
 
   function handleDuplicate() {
-    console.log("handleDuplicate");
     const event = new CustomEvent("duplicate", {
       detail: {
         id,

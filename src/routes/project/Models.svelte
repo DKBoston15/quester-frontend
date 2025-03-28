@@ -1,6 +1,6 @@
 <!-- src/routes/project/Models.svelte -->
 <script lang="ts">
-  import { onMount, onDestroy } from "svelte";
+  import { onDestroy } from "svelte";
   import { modelStore } from "$lib/stores/ModelStore.svelte";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
   import { Button } from "$lib/components/ui/button";
@@ -13,7 +13,6 @@
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { fly } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
-  import { auth } from "$lib/stores/AuthStore.svelte";
 
   interface Model {
     id: string;

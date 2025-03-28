@@ -2,19 +2,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
-  import { auth } from "$lib/stores/AuthStore.svelte";
   import { Button } from "$lib/components/ui/button";
-  import {
-    Tabs,
-    TabsList,
-    TabsTrigger,
-    TabsContent,
-  } from "$lib/components/ui/tabs";
-  import {
-    Building2,
-    Settings as SettingsIcon,
-    RefreshCw,
-  } from "lucide-svelte";
+  import { Building2, RefreshCw } from "lucide-svelte";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import AppSidebar from "$lib/components/AppSidebar.svelte";
   import {

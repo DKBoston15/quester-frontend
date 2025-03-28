@@ -4,15 +4,11 @@
   import {
     Home,
     Users,
-    Calendar,
     Settings,
     LogOut,
     ChevronDown,
     ChevronUp,
-    Plus,
     FolderKanban,
-    Sun,
-    Moon,
     UserPlus,
   } from "lucide-svelte";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";

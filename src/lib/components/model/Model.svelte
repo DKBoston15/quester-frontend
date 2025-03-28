@@ -43,7 +43,6 @@
 
   // Function to duplicate a node
   function duplicateNode(node: Node) {
-    console.log("duplicateNode", node);
     const newNode = {
       ...node,
       id: `${node.id}-copy-${Date.now()}`,
@@ -60,7 +59,6 @@
   // Listen for duplicate events
   onMount(() => {
     const handleDuplicate = (event: CustomEvent) => {
-      console.log("duplicate event received", event.detail);
       duplicateNode(event.detail);
     };
 

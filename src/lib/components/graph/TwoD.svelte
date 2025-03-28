@@ -163,20 +163,6 @@
     return acc;
   }, {});
 
-  function unstickAllNodes() {
-    Graph.graphData().nodes.forEach((node) => {
-      node.fx = undefined;
-      node.fy = undefined;
-    });
-    Graph.d3ReheatSimulation();
-  }
-  function addParticleEffects(node) {
-    Graph.linkDirectionalParticles((link) =>
-      link.source.id === node.id || link.target.id === node.id ? 4 : 0
-    );
-    Graph.linkDirectionalParticleSpeed((d) => d.value * 0.001);
-  }
-
   function renderIcons() {
     const imgCache = new Map();
     let loadedImages = 0;
@@ -360,15 +346,6 @@
     Graph.d3ReheatSimulation();
   }
 
-  function selectNode(nodeId) {
-    const node = Graph.graphData().nodes.find((node) => node.id === nodeId);
-    if (node) {
-      Graph.centerAt(node.x, node.y, 1000);
-      Graph.zoom(8, 2000);
-      handleNodeClick(node);
-    }
-  }
-
   function startTimelapse() {
     const filteredNodes = originalGraphData.nodes;
     const sortedNodes =
@@ -420,36 +397,6 @@
         clearInterval(timelapseInterval);
       }
     }, 400);
-  }
-
-  function updateGraphDataWithSelectedNodes() {
-    if (selectedNodesForRendering.size === 0) {
-      const filteredNodes = originalGraphData.nodes;
-      const filteredLinks = originalGraphData.links.filter(
-        (link) =>
-          filteredNodes.some((node) => node.id === link.source.id) &&
-          filteredNodes.some((node) => node.id === link.target.id)
-      );
-      Graph.graphData({
-        nodes: filteredNodes,
-        links: filteredLinks,
-      });
-    } else {
-      const selectedNodes = originalGraphData.nodes.filter((node) =>
-        selectedNodesForRendering.has(node.id)
-      );
-      const filteredNodes = selectedNodes;
-      const filteredLinks = originalGraphData.links.filter(
-        (link) =>
-          filteredNodes.some((node) => node.id === link.source.id) &&
-          filteredNodes.some((node) => node.id === link.target.id)
-      );
-      Graph.graphData({
-        nodes: filteredNodes,
-        links: filteredLinks,
-      });
-    }
-    Graph.d3ReheatSimulation();
   }
 </script>
 

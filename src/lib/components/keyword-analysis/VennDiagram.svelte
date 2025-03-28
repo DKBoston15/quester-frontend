@@ -5,8 +5,6 @@
   import type { KeywordAnalysis } from "$lib/types/index";
   import { Card } from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
-  import { Label } from "$lib/components/ui/label";
-  import { Select } from "$lib/components/ui/select";
 
   // Define a consistent color scheme for up to 10 keywords
   const colorScheme = [

@@ -1,6 +1,5 @@
 <!-- src/routes/components/ResourceSelector.svelte -->
 <script lang="ts">
-  import { Building2, FolderKanban, FileText } from "lucide-svelte";
   import type { Organization, Department, Project } from "$lib/types/auth";
 
   type ResourceType = "organization" | "department" | "project";
@@ -24,19 +23,6 @@
     const [type, id] = value.split(":");
     if (type && id) {
       props.onSelect(type as ResourceType, id);
-    }
-  }
-
-  function getIconComponent(type: ResourceType) {
-    switch (type) {
-      case "organization":
-        return Building2;
-      case "department":
-        return FolderKanban;
-      case "project":
-        return FileText;
-      default:
-        return Building2;
     }
   }
 </script>

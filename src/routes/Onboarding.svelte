@@ -36,12 +36,6 @@
   let hasExistingWorkspace = $state(false);
   const totalSteps = 4;
 
-  // Update price IDs with your actual Stripe price IDs
-  const PRICE_IDS = {
-    personal: "price_1Nkx1kKUlY72sBdUPNIMJoJ9", // Replace with your actual price ID
-    organization: "price_1Nkx1kKUlY72sBdUPNIMJoJ9", // Replace with your actual price ID
-  };
-
   onMount(async () => {
     try {
       // Check if we have a step in the navigation state
@@ -241,18 +235,6 @@
       error = err instanceof Error ? err.message : "An error occurred";
     } finally {
       isLoading = false;
-    }
-  }
-
-  function handleNext() {
-    if (currentStep < totalSteps) {
-      currentStep++;
-    }
-  }
-
-  function handleBack() {
-    if (currentStep > 1) {
-      currentStep--;
     }
   }
 </script>

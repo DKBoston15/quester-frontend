@@ -2,10 +2,9 @@
 <script lang="ts">
   import { Switch } from "$lib/components/ui/switch";
   import { Label } from "$lib/components/ui/label";
-  import { Button } from "$lib/components/ui/button";
   import { Separator } from "$lib/components/ui/separator";
   import { Alert, AlertDescription } from "$lib/components/ui/alert";
-  import { Info, Save, Lock } from "lucide-svelte";
+  import { Info, Lock } from "lucide-svelte";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
   import { auth } from "$lib/stores/AuthStore.svelte";
   import { Badge } from "$lib/components/ui/badge";
@@ -133,19 +132,14 @@
   // Handle settings changes
   async function updateInvitationSettings(disabled: boolean) {
     if (isUpdatingInvitationsDisabled) return; // Prevent circular updates
-
-    console.log("updateInvitationSettings called with disabled:", disabled);
     isSaving = true;
     isUpdatingInvitationsDisabled = true;
     saveError = null;
-    console.log(`Updating invitation settings - disabled: ${disabled}`);
 
     try {
-      console.log("About to call teamManagement.updateSetting");
       const success = await teamManagement.updateSetting("invitations", {
         disabled,
       });
-      console.log(`Update result: ${success ? "success" : "failed"}`);
       if (!success) {
         throw new Error(teamManagement.error || "Failed to update settings");
       }
@@ -166,14 +160,12 @@
     isSaving = true;
     isUpdatingMemberInvitations = true;
     saveError = null;
-    console.log(`Updating member invitation settings - allowed: ${allowed}`);
 
     try {
       const success = await teamManagement.updateSetting(
         "allowMemberInvitations",
         allowed
       );
-      console.log(`Update result: ${success ? "success" : "failed"}`);
       if (!success) {
         throw new Error(teamManagement.error || "Failed to update settings");
       }
@@ -195,16 +187,12 @@
     isSaving = true;
     isUpdatingMembersCreateProjects = true;
     saveError = null;
-    console.log(
-      `Updating members create projects settings - allowed: ${allowed}`
-    );
 
     try {
       const success = await teamManagement.updateSetting(
         "allowMembersToCreateProjects",
         allowed
       );
-      console.log(`Update result: ${success ? "success" : "failed"}`);
       if (!success) {
         throw new Error(teamManagement.error || "Failed to update settings");
       }
@@ -225,16 +213,12 @@
     isSaving = true;
     isUpdatingMembersCreateDepartments = true;
     saveError = null;
-    console.log(
-      `Updating members create departments settings - allowed: ${allowed}`
-    );
 
     try {
       const success = await teamManagement.updateSetting(
         "allowMembersToCreateDepartments",
         allowed
       );
-      console.log(`Update result: ${success ? "success" : "failed"}`);
       if (!success) {
         throw new Error(teamManagement.error || "Failed to update settings");
       }
@@ -255,16 +239,12 @@
     isSaving = true;
     isUpdatingAdminsCreateDepartments = true;
     saveError = null;
-    console.log(
-      `Updating admins create departments settings - allowed: ${allowed}`
-    );
 
     try {
       const success = await teamManagement.updateSetting(
         "allowAdminsToCreateDepartments",
         allowed
       );
-      console.log(`Update result: ${success ? "success" : "failed"}`);
       if (!success) {
         throw new Error(teamManagement.error || "Failed to update settings");
       }
@@ -308,7 +288,6 @@
           class="w-[44px]"
           pressed={invitationsDisabled}
           onPressedChange={(value: boolean) => {
-            console.log("Switch pressed changed to:", value);
             if (!isSaving && isOwner) {
               updateInvitationSettings(value);
             }
@@ -340,10 +319,6 @@
             class="w-[44px]"
             pressed={allowMemberInvitations}
             onPressedChange={(value: boolean) => {
-              console.log(
-                "Member invitations switch pressed changed to:",
-                value
-              );
               if (!isSaving && isOwner) {
                 updateMemberInvitationSettings(value);
               }
@@ -379,10 +354,6 @@
           class="w-[44px]"
           pressed={allowMembersToCreateProjects}
           onPressedChange={(value: boolean) => {
-            console.log(
-              "Members create projects switch pressed changed to:",
-              value
-            );
             if (!isSaving) {
               updateMembersCreateProjectsSettings(value);
             }
@@ -419,10 +390,6 @@
             class="w-[44px]"
             pressed={allowMembersToCreateDepartments}
             onPressedChange={(value: boolean) => {
-              console.log(
-                "Members create departments switch pressed changed to:",
-                value
-              );
               if (!isSaving && isOwner) {
                 updateMembersCreateDepartmentsSettings(value);
               }
@@ -456,10 +423,6 @@
             class="w-[44px]"
             pressed={allowAdminsToCreateDepartments}
             onPressedChange={(value: boolean) => {
-              console.log(
-                "Admins create departments switch pressed changed to:",
-                value
-              );
               if (!isSaving && isOwner) {
                 updateAdminsCreateDepartmentsSettings(value);
               }

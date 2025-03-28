@@ -127,5 +127,3 @@
     },
   };
 </script>
-
-// AuthStore.svelte
