@@ -23,8 +23,6 @@
   let isUpdatingMembersCreateDepartments = $state(false);
   let isUpdatingAdminsCreateDepartments = $state(false);
 
-  console.log(teamManagement.settings);
-
   // Computed values for existing settings
   let invitationsDisabled = $derived(
     teamManagement.settings?.invitations?.disabled ?? false
