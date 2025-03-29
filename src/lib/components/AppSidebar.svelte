@@ -238,7 +238,7 @@
                   {auth.user?.firstName}
                   {auth.user?.lastName}
                 </div>
-                <div class="text-sm text-muted-foreground">View profile</div>
+                <!-- <div class="text-sm text-muted-foreground">View profile</div> -->
               </div>
               <Users
                 class="h-4 w-4 hidden group-data-[collapsible=icon]:block"
@@ -249,13 +249,13 @@
             side="top"
             class="w-[--bits-dropdown-menu-anchor-width]"
           >
-            <DropdownMenu.Item class="flex items-center gap-3">
+            <!-- <DropdownMenu.Item class="flex items-center gap-3">
               <span class="">Profile</span>
             </DropdownMenu.Item>
             <DropdownMenu.Item class="flex items-center gap-3">
               <span class="">Settings</span>
             </DropdownMenu.Item>
-            <DropdownMenu.Separator />
+            <DropdownMenu.Separator /> -->
             <DropdownMenu.Item
               onclick={handleLogout}
               class="flex items-center gap-3"

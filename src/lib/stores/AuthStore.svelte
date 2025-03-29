@@ -125,5 +125,32 @@
     logout() {
       window.location.href = "http://localhost:3333/auth/logout";
     },
+
+    async updateUser(userData: Partial<User>) {
+      try {
+        const response = await fetch(
+          `http://localhost:3333/users/${user?.id}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify(userData),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to update user");
+        }
+
+        const updatedUser = await response.json();
+        await this.setUser({ ...user!, ...updatedUser });
+        return { success: true, user: updatedUser };
+      } catch (error) {
+        console.error("Failed to update user:", error);
+        throw error;
+      }
+    },
   };
 </script>

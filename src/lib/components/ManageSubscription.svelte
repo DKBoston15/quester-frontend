@@ -26,8 +26,8 @@
 
       if (!response.ok) throw new Error("Failed to create portal session");
 
-      const { url } = await response.json();
-      window.location.href = url;
+      const { portalUrl } = await response.json();
+      window.location.href = portalUrl;
     } catch (err) {
       error =
         err instanceof Error ? err.message : "Failed to create portal session";

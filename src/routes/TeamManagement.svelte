@@ -582,9 +582,10 @@
                     <TabsTrigger
                       value="invitations"
                       onclick={() => (activeTab = "invitations")}
-                      disabled={!teamManagement.permissions.canInviteUsers &&
+                      disabled={(!teamManagement.permissions.canInviteUsers &&
                         !isOrganizationOwner() &&
-                        !teamManagement.settings?.allowMemberInvitations}
+                        !teamManagement.settings?.allowMemberInvitations) ||
+                        teamManagement.settings?.invitations?.disabled}
                     >
                       <UserPlus class="h-4 w-4 mr-2" />
                       Invitations
@@ -667,7 +668,13 @@
                 <!-- Invitations Tab -->
                 {#if activeTab === "invitations"}
                   <div class="py-4">
-                    {#if teamManagement.permissions.canInviteUsers || isOrganizationOwner() || teamManagement.settings?.allowMemberInvitations}
+                    {#if teamManagement.settings?.invitations?.disabled}
+                      <div class="text-center py-8 text-muted-foreground">
+                        <p>
+                          Invitations are currently disabled for this {teamManagement.selectedResourceType}
+                        </p>
+                      </div>
+                    {:else if teamManagement.permissions.canInviteUsers || isOrganizationOwner() || teamManagement.settings?.allowMemberInvitations}
                       {#if !subscriptionLimits.canInviteUsers}
                         <div
                           class="p-4 mb-6 border-2 border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-900/20 rounded-md"

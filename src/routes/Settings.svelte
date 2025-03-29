@@ -134,8 +134,10 @@
     message = null;
 
     try {
-      // Placeholder for actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await auth.updateUser({
+        firstName,
+        lastName,
+      });
 
       message = {
         type: "success",
@@ -260,6 +262,7 @@
                   <div class="space-y-2">
                     <Label for="email">Email</Label>
                     <Input
+                      disabled
                       id="email"
                       type="email"
                       placeholder="Email"
