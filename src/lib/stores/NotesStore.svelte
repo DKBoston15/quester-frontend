@@ -870,47 +870,4 @@
 
     return processedNote as Note;
   }
-
-  // Update the filterNotes function to handle note types
-  function filterNotes(
-    notes: Note[],
-    search: string,
-    currentFilter: FilterState
-  ) {
-    // First sort all notes by updatedAt (most recent first)
-    let filtered = [...notes].sort(
-      (a, b) =>
-        new Date(b.updatedAt || 0).getTime() -
-        new Date(a.updatedAt || 0).getTime()
-    );
-
-    // Apply search filter
-    if (search.trim()) {
-      // Use highlighted notes from store if available, otherwise use local results
-      return notesStore.highlightedNotes.length > 0
-        ? notesStore.highlightedNotes
-        : localSearchResults;
-    }
-
-    // Apply note type filter
-    if (currentFilter.type !== "all") {
-      filtered = filtered.filter((note) => {
-        if (currentFilter.type === "literature") {
-          return note.type === "LITERATURE";
-        } else if (currentFilter.type === "research") {
-          return note.type === "RESEARCH";
-        }
-        return true;
-      });
-    }
-
-    // Apply literature filter if specified
-    if (activeLiteratureFilter) {
-      filtered = filtered.filter(
-        (note) => note.literatureId === activeLiteratureFilter
-      );
-    }
-
-    return filtered;
-  }
 </script>

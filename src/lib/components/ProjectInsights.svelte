@@ -4,13 +4,7 @@
   import * as Accordion from "$lib/components/ui/accordion";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
-  import {
-    AlertCircle,
-    CheckCircle2,
-    ChevronRight,
-    Sparkles,
-  } from "lucide-svelte";
-  import { Button } from "$lib/components/ui/button";
+  import { AlertCircle, CheckCircle2, Sparkles } from "lucide-svelte";
   import { navigate } from "svelte-routing";
   import { slide } from "svelte/transition";
   import { quintOut } from "svelte/easing";

@@ -1,13 +1,7 @@
 <!-- src/routes/project/Analytics.svelte -->
 <script lang="ts">
   import { onMount } from "svelte";
-  import {
-    Chart,
-    BarController,
-    CategoryScale,
-    LinearScale,
-    BarElement,
-  } from "chart.js/auto";
+  import { Chart } from "chart.js/auto";
   import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
   import { notesStore } from "$lib/stores/NotesStore.svelte";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";

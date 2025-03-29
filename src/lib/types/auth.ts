@@ -48,6 +48,13 @@ export interface Organization {
       name: string;
     };
   };
+  organizationRoles?: Array<{
+    roleId: string;
+    role?: {
+      id: string;
+      name: string;
+    };
+  }>;
 }
 
 export type ResearchProductType = "professionalism" | "writing" | "analysis";
@@ -84,6 +91,12 @@ export interface Project {
   organizationId: string;
   departmentId?: string | null;
   userId?: string | null;
+
+  // Relations (optional since they might not always be loaded)
+  organization?: Organization;
+  department?: Department;
+  users?: User[];
+  projectRoles?: ProjectRole[];
 }
 
 export interface ProjectRole {

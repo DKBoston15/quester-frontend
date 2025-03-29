@@ -133,12 +133,6 @@
       : "text-yellow-500 dark:text-yellow-400";
   }
 
-  function getSeverityBgColor(severity: "error" | "warning"): string {
-    return severity === "error"
-      ? "bg-red-100 dark:bg-red-900/20"
-      : "bg-yellow-100 dark:bg-yellow-900/20";
-  }
-
   function handleLiteratureClick(literature: Literature) {
     if (!projectStore.currentProject?.id) return;
     navigate(

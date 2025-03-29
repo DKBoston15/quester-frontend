@@ -6,7 +6,6 @@
     Position,
     type NodeProps,
   } from "@xyflow/svelte";
-  import { onMount } from "svelte";
   import { createEventDispatcher } from "svelte";
 
   type $$Props = NodeProps;

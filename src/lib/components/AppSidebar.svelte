@@ -4,19 +4,16 @@
   import {
     Home,
     Users,
-    Calendar,
     Settings,
     LogOut,
     ChevronDown,
     ChevronUp,
-    Plus,
     FolderKanban,
-    Sun,
-    Moon,
+    UserPlus,
   } from "lucide-svelte";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import { auth } from "$lib/stores/AuthStore.svelte";
-  import { navigate } from "svelte-routing";
+  import { navigate, Link } from "svelte-routing";
   import { DarkmodeToggle } from "$lib/components/ui/darkmode-toggle";
   import * as Tooltip from "$lib/components/ui/tooltip";
 
@@ -28,9 +25,9 @@
       icon: Home,
     },
     {
-      title: "Team",
-      url: "/team",
-      icon: Users,
+      title: "Team Management",
+      url: "/team-management",
+      icon: UserPlus,
     },
     {
       title: "Settings",
@@ -41,6 +38,10 @@
 
   let projects = $state<any[]>([]);
   let isProjectsOpen = $state<string | undefined>("projects");
+
+  function toggleProjects() {
+    isProjectsOpen = isProjectsOpen === "projects" ? undefined : "projects";
+  }
 
   $effect(() => {
     if (auth.currentOrganization) {
@@ -88,7 +89,7 @@
             {auth.currentOrganization?.name || "Select Workspace"}
           </span>
         </Tooltip.Trigger>
-        <Tooltip.Content side="right">
+        <Tooltip.Content side="right" sideOffset={10} class="z-[9999]">
           <span>{auth.currentOrganization?.name || "Select Workspace"}</span>
         </Tooltip.Content>
       </Tooltip.Root>
@@ -101,7 +102,7 @@
       <Sidebar.GroupContent>
         <Sidebar.Menu>
           {#each mainNavItems as item (item.title)}
-            <a href={item.url} class="block">
+            <Link to={item.url} class="block">
               <Sidebar.MenuItem>
                 <Sidebar.MenuButton>
                   <Tooltip.Root>
@@ -119,14 +120,15 @@
                     </Tooltip.Trigger>
                     <Tooltip.Content
                       side="right"
-                      class="group-data-[collapsible=icon]:block hidden"
+                      sideOffset={10}
+                      class="group-data-[collapsible=icon]:block hidden z-[9999]"
                     >
                       <span class="">{item.title}</span>
                     </Tooltip.Content>
                   </Tooltip.Root>
                 </Sidebar.MenuButton>
               </Sidebar.MenuItem>
-            </a>
+            </Link>
           {/each}
         </Sidebar.Menu>
       </Sidebar.GroupContent>
@@ -137,31 +139,41 @@
       <Sidebar.GroupContent>
         <Sidebar.Menu>
           <Sidebar.MenuItem>
-            <a href="/dashboard" class="block">
-              <Sidebar.MenuButton>
-                <Tooltip.Root>
-                  <Tooltip.Trigger>
-                    <div
-                      class="flex items-center gap-3 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
+            <Sidebar.MenuButton>
+              <Tooltip.Root>
+                <Tooltip.Trigger>
+                  <div
+                    class="flex items-center gap-3 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
+                    onclick={(e) => {
+                      e.stopPropagation();
+                      toggleProjects();
+                    }}
+                  >
+                    <FolderKanban class="h-4 w-4 flex-shrink-0" />
+                    <span class="group-data-[collapsible=icon]:hidden"
+                      >Projects</span
                     >
-                      <FolderKanban class="h-4 w-4 flex-shrink-0" />
-                      <span class="group-data-[collapsible=icon]:hidden"
-                        >Projects</span
-                      >
+                    {#if isProjectsOpen === "projects"}
+                      <ChevronUp
+                        class="h-4 w-4 ml-auto group-data-[collapsible=icon]:hidden"
+                      />
+                    {:else}
                       <ChevronDown
                         class="h-4 w-4 ml-auto group-data-[collapsible=icon]:hidden"
                       />
-                    </div>
-                  </Tooltip.Trigger>
-                  <Tooltip.Content
-                    side="right"
-                    class="group-data-[collapsible=icon]:block hidden"
-                  >
-                    <span class="">Projects</span>
-                  </Tooltip.Content>
-                </Tooltip.Root>
-              </Sidebar.MenuButton>
-            </a>
+                    {/if}
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content
+                  side="right"
+                  sideOffset={10}
+                  class="group-data-[collapsible=icon]:block hidden z-[9999]"
+                >
+                  <span class="">Projects</span>
+                </Tooltip.Content>
+              </Tooltip.Root>
+            </Sidebar.MenuButton>
+
             <Accordion.Root
               type="single"
               value={isProjectsOpen}
@@ -226,7 +238,7 @@
                   {auth.user?.firstName}
                   {auth.user?.lastName}
                 </div>
-                <div class="text-sm text-muted-foreground">View profile</div>
+                <!-- <div class="text-sm text-muted-foreground">View profile</div> -->
               </div>
               <Users
                 class="h-4 w-4 hidden group-data-[collapsible=icon]:block"
@@ -237,13 +249,13 @@
             side="top"
             class="w-[--bits-dropdown-menu-anchor-width]"
           >
-            <DropdownMenu.Item class="flex items-center gap-3">
+            <!-- <DropdownMenu.Item class="flex items-center gap-3">
               <span class="">Profile</span>
             </DropdownMenu.Item>
             <DropdownMenu.Item class="flex items-center gap-3">
               <span class="">Settings</span>
             </DropdownMenu.Item>
-            <DropdownMenu.Separator />
+            <DropdownMenu.Separator /> -->
             <DropdownMenu.Item
               onclick={handleLogout}
               class="flex items-center gap-3"

@@ -362,12 +362,6 @@
     }
 
     let components: string[] = [];
-    let currentDate = new Date();
-    let formattedDate = currentDate.toLocaleDateString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    });
 
     components.push(`${formatChicagoAuthors(citation.authors)}. `);
 

@@ -1122,7 +1122,6 @@
       error = null;
 
       try {
-        console.log("templateName", templateName);
         // If a template is specified, find and apply it
         if (templateName) {
           const templateNameStr = Array.isArray(templateName)
@@ -1131,7 +1130,6 @@
           const template = outcomeTemplates.find(
             (t) => t.name === templateNameStr
           );
-          console.log("template", template);
           if (template) {
             data.content = template.content;
             data.type = template.type;
@@ -1148,8 +1146,6 @@
             data.content = defaultTemplate.content;
           }
         }
-
-        console.log("data", data);
 
         const response = await fetch("http://localhost:3333/outcome", {
           method: "POST",

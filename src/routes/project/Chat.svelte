@@ -149,7 +149,6 @@
     if (!projectStore.currentProject?.id) return;
 
     try {
-      console.log("Loading chat session:", sessionId);
       isLoading = true;
       const response = await fetch(
         `http://localhost:3333/chat/history/${projectStore.currentProject.id}?sessionId=${sessionId}`,
@@ -167,10 +166,6 @@
         sources: msg.metadata?.sources || msg.sources,
       }));
       currentChatSession = sessionId;
-      console.log(
-        "Chat session loaded, set currentChatSession to:",
-        currentChatSession
-      );
       showHistory = false;
     } catch (e) {
       console.error("Failed to load chat session:", e);
@@ -218,14 +213,12 @@
     e.preventDefault(); // Prevent form submission from refreshing the page
     if (!inputMessage.trim() || !projectStore.currentProject?.id) return;
 
-    console.log("Sending message with session:", currentChatSession);
     isLoading = true;
     error = null;
     isTyping = false;
     streamingContent = "";
 
     const sessionToUse = currentChatSession;
-    console.log("Using session ID for request:", sessionToUse);
 
     // Store the message we're about to send
     const userMessage = inputMessage;
@@ -294,10 +287,6 @@
 
               if (parsed.type === "metadata") {
                 if (parsed.chatSessionId && !receivedSessionId) {
-                  console.log(
-                    "Received session ID from server:",
-                    parsed.chatSessionId
-                  );
                   if (!currentChatSession) {
                     currentChatSession = parsed.chatSessionId;
                   }

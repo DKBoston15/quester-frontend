@@ -1,12 +1,14 @@
-<script>
+<script lang="ts">
   import { Checkbox } from "$lib/components/ui/checkbox";
   import Label from "$lib/components/ui/label/label.svelte";
   import { typeMap } from "./data";
 
-  export let type;
-  export let checked;
-  export let onToggle;
-  export let color;
+  type TypeMapKey = keyof typeof typeMap;
+
+  export let type: TypeMapKey;
+  export let checked: boolean;
+  export let onToggle: (type: TypeMapKey) => void;
+  export let color: string;
 </script>
 
 <div

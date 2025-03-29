@@ -173,25 +173,6 @@
     }
   }
 
-  function selectNode(nodeId) {
-    const node = Graph.graphData().nodes.find((node) => node.id === nodeId);
-    if (node) {
-      const distance = 100; // Adjust this value to control the zoom level
-      const distRatio = 1 + distance / Math.hypot(node.x, node.y, node.z);
-
-      Graph.cameraPosition(
-        {
-          x: node.x * distRatio,
-          y: node.y * distRatio,
-          z: node.z * distRatio,
-        },
-        node,
-        1000
-      );
-      handleNodeClick(node);
-    }
-  }
-
   let typeVisibility = nodeTypes.reduce((acc, type) => {
     acc[type] = type === "keyword" || type === "literature"; // Show both keyword and literature by default
     return acc;

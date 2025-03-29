@@ -40,7 +40,6 @@
 
   let plans = $state<SubscriptionPlan[]>([]);
   let isYearly = $state(false);
-  let showContactForm = $state(false);
   let formSubmitted = $state(false);
   let error = $state<string | null>(null);
   let formData = $state({
@@ -207,7 +206,7 @@
       <div
         class="border-2 border-black dark:border-dark-border p-1.5 flex items-center justify-center bg-card dark:bg-dark-card shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,1)]"
       >
-        <Switch bind:checked={isYearly} />
+        <Switch bind:pressed={isYearly} />
       </div>
       <span
         class={`text-xl  text-black dark:text-dark-text-primary ${isYearly ? "font-bold" : ""}`}

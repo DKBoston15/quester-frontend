@@ -5,8 +5,6 @@
   import type { KeywordAnalysis } from "$lib/types/index";
   import { Card } from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
-  import { Label } from "$lib/components/ui/label";
-  import { Select } from "$lib/components/ui/select";
 
   // Define a consistent color scheme for up to 10 keywords
   const colorScheme = [
@@ -69,6 +67,36 @@
     const key1 = `${keyword1}:${keyword2}`;
     const key2 = `${keyword2}:${keyword1}`;
     return frequencyData.pairs[key1] || frequencyData.pairs[key2] || 0;
+  }
+
+  function getTripleFrequency(
+    keyword1: string,
+    keyword2: string,
+    keyword3: string
+  ): number {
+    if (!frequencyData?.triples) return 0;
+    // Try all possible orderings
+    const keys = [
+      `${keyword1}:${keyword2}:${keyword3}`,
+      `${keyword1}:${keyword3}:${keyword2}`,
+      `${keyword2}:${keyword1}:${keyword3}`,
+      `${keyword2}:${keyword3}:${keyword1}`,
+      `${keyword3}:${keyword1}:${keyword2}`,
+      `${keyword3}:${keyword2}:${keyword1}`,
+    ];
+
+    for (const key of keys) {
+      if (frequencyData.triples[key]) {
+        return frequencyData.triples[key];
+      }
+    }
+
+    // If no triple frequency is found, estimate it as 10% of the smallest pair overlap
+    // This is just an estimation - adjust as needed or replace with actual data
+    const pair1 = getPairFrequency(keyword1, keyword2);
+    const pair2 = getPairFrequency(keyword2, keyword3);
+    const pair3 = getPairFrequency(keyword1, keyword3);
+    return Math.round(Math.min(pair1, pair2, pair3) * 0.1);
   }
 
   function updateDimensions() {
@@ -172,28 +200,23 @@
     chart: d3.Selection<SVGGElement, unknown, null, undefined>
   ) {
     const [kw1, kw2, kw3] = selectedKeywords;
-    const r = Math.min(width, height) / 3.5;
-    const angle = (2 * Math.PI) / 3;
-    const centerOffset = r * 1.3;
-    const verticalOffset = r * 0.8;
+    const r = Math.min(width, height) / 3.8; // Slightly larger radius
+
+    // Make circles much closer together by reducing distance between centers
+    // A good Venn diagram has circles that overlap about 30-40% of their area
+    const centerDistance = r * 1.2; // Reduced distance for tighter overlap
+
+    // Position circles in a tight formation
+    const positions = [
+      { x: 0, y: -centerDistance * 0.5 }, // Top circle, moved closer
+      { x: -centerDistance * 0.65, y: r * 0.5 }, // Bottom left, moved closer
+      { x: centerDistance * 0.65, y: r * 0.5 }, // Bottom right, moved closer
+    ];
 
     const indices = [
       getColorIndex(kw1),
       getColorIndex(kw2),
       getColorIndex(kw3),
-    ];
-
-    // Calculate positions for three circles in an equilateral triangle
-    const positions = [
-      { x: 0, y: -centerOffset + verticalOffset }, // Top (shifted down)
-      {
-        x: -centerOffset * Math.sin(angle),
-        y: centerOffset * Math.cos(angle) + verticalOffset,
-      }, // Bottom left (shifted down)
-      {
-        x: centerOffset * Math.sin(angle),
-        y: centerOffset * Math.cos(angle) + verticalOffset,
-      }, // Bottom right (shifted down)
     ];
 
     // Draw circles
@@ -209,7 +232,7 @@
         .attr("stroke-width", 2);
     });
 
-    // Get the total frequencies for each circle
+    // Get frequencies
     const freqs = [
       getIndividualFrequency(kw1),
       getIndividualFrequency(kw2),
@@ -217,11 +240,27 @@
     ];
 
     // Calculate pairwise overlaps
-    const overlaps = [
-      getPairFrequency(kw1, kw2),
-      getPairFrequency(kw2, kw3),
-      getPairFrequency(kw1, kw3),
+    const pairOverlaps = [
+      getPairFrequency(kw1, kw2), // Overlap between circle 0 and 1
+      getPairFrequency(kw2, kw3), // Overlap between circle 1 and 2
+      getPairFrequency(kw1, kw3), // Overlap between circle 0 and 2
     ];
+
+    // Calculate the triple overlap where all three circles intersect
+    const tripleOverlap = getTripleFrequency(kw1, kw2, kw3);
+
+    // Calculate exclusive regions (A - B - C, B - A - C, C - A - B)
+    const exclusiveA =
+      freqs[0] - pairOverlaps[0] - pairOverlaps[2] + tripleOverlap;
+    const exclusiveB =
+      freqs[1] - pairOverlaps[0] - pairOverlaps[1] + tripleOverlap;
+    const exclusiveC =
+      freqs[2] - pairOverlaps[1] - pairOverlaps[2] + tripleOverlap;
+
+    // Calculate pairwise exclusive regions (A∩B - C, B∩C - A, A∩C - B)
+    const exclusiveAB = pairOverlaps[0] - tripleOverlap;
+    const exclusiveBC = pairOverlaps[1] - tripleOverlap;
+    const exclusiveAC = pairOverlaps[2] - tripleOverlap;
 
     // Add keyword labels
     const addLabel = (x: number, y: number, text: string) => {
@@ -247,38 +286,45 @@
         .text(value.toLocaleString());
     };
 
-    // Add labels - move individual frequencies outward by r/3 in the direction from center
+    // Add keyword labels above each circle
     positions.forEach((pos, i) => {
-      addLabel(pos.x, pos.y - r - 20, selectedKeywords[i]);
-      // Calculate direction from center to circle center
-      const dx = pos.x;
-      const dy = pos.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      // Move frequency label outward along this direction
-      const freqX = pos.x + ((dx / dist) * r) / 3;
-      const freqY = pos.y + ((dy / dist) * r) / 3;
-      addFreqLabel(freqX, freqY, freqs[i]);
+      if (i === 0) {
+        // Top circle - label above
+        addLabel(pos.x, pos.y - r - 15, selectedKeywords[i]);
+      } else if (i === 1) {
+        // Bottom left circle - label to the left
+        addLabel(pos.x - r - 90, pos.y, selectedKeywords[i]);
+      } else if (i === 2) {
+        // Bottom right circle - label to the right
+        addLabel(pos.x + r + 90, pos.y, selectedKeywords[i]);
+      }
     });
 
-    // Add overlap labels
-    const midpoints = [
-      {
-        x: (positions[0].x + positions[1].x) / 2,
-        y: (positions[0].y + positions[1].y) / 2,
-      },
-      {
-        x: (positions[1].x + positions[2].x) / 2,
-        y: (positions[1].y + positions[2].y) / 2,
-      },
-      {
-        x: (positions[0].x + positions[2].x) / 2,
-        y: (positions[0].y + positions[2].y) / 2,
-      },
-    ];
+    // Position labels for exclusive areas (regions with only one set)
+    addFreqLabel(positions[0].x, positions[0].y - r * 0.3, exclusiveA);
+    addFreqLabel(positions[1].x - r * 0.3, positions[1].y, exclusiveB);
+    addFreqLabel(positions[2].x + r * 0.3, positions[2].y, exclusiveC);
 
-    midpoints.forEach((pos, i) => {
-      addFreqLabel(pos.x, pos.y, overlaps[i]);
-    });
+    // Position labels for pairwise intersection areas
+    addFreqLabel(
+      (positions[0].x + positions[1].x) / 2 - r * 0.1,
+      (positions[0].y + positions[1].y) / 2 - r * 0.1,
+      exclusiveAB
+    );
+    addFreqLabel(
+      (positions[1].x + positions[2].x) / 2,
+      (positions[1].y + positions[2].y) / 2 + r * 0.15,
+      exclusiveBC
+    );
+    addFreqLabel(
+      (positions[0].x + positions[2].x) / 2 + r * 0.1,
+      (positions[0].y + positions[2].y) / 2 - r * 0.1,
+      exclusiveAC
+    );
+
+    // Add triple intersection label in the center
+    // TODO
+    // addFreqLabel(0, r * 0.15, tripleOverlap);
   }
 
   function handleKeywordSelection(keyword: string) {
@@ -313,14 +359,7 @@
           variant={selectedKeywords.includes(keyword) ? "default" : "outline"}
           disabled={!selectedKeywords.includes(keyword) &&
             selectedKeywords.length >= 3}
-          onclick={() => {
-            if (selectedKeywords.includes(keyword)) {
-              selectedKeywords = selectedKeywords.filter((k) => k !== keyword);
-            } else if (selectedKeywords.length < 3) {
-              selectedKeywords = [...selectedKeywords, keyword];
-            }
-            setTimeout(updateDimensions, 0);
-          }}
+          onclick={() => handleKeywordSelection(keyword)}
         >
           {keyword}
         </Button>

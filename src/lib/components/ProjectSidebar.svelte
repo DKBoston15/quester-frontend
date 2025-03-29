@@ -20,13 +20,16 @@
     Building2,
     ChartNetwork,
     TextSearch,
-    MessageCircle,
+    Lock,
   } from "lucide-svelte";
 
   type Route = {
     title: string;
     icon: any;
     link: string;
+    requiresSubscription?: boolean;
+    subscriptionFeature?: string;
+    disabled?: boolean;
   };
 
   const props = $props<{ project: any }>();
@@ -34,6 +37,13 @@
   let primaryRoutes = $state<Route[]>([]);
   let secondaryRoutes = $state<Route[]>([]);
   let tertiaryRoutes = $state<Route[]>([]);
+
+  // Add subscription capability state
+  let canAccessModels = $state(false);
+  let canAccessGraph = $state(false);
+  let canAccessAnalysis = $state(false);
+  let checkingSubscription = $state(false);
+  let planName = $state("");
 
   async function checkAchievements() {
     if (!props.project?.id) return;
@@ -55,8 +65,90 @@
     }
   }
 
+  // Add function to check subscription capabilities
+  async function checkSubscriptionCapabilities() {
+    if (!auth.user) return;
+
+    checkingSubscription = true;
+
+    try {
+      // First check if user can access model builder
+      const modelResponse = await fetch(
+        "http://localhost:3333/capabilities/model_access",
+        {
+          credentials: "include",
+          headers: {
+            Accept: "application/json",
+          },
+        }
+      );
+
+      if (modelResponse.ok) {
+        const modelData = await modelResponse.json();
+        canAccessModels = modelData.allowed;
+
+        // Get plan name if available
+        if (modelData.planName) {
+          planName = modelData.planName;
+        }
+      }
+
+      // Then check if user can access graph visualization
+      const graphResponse = await fetch(
+        "http://localhost:3333/capabilities/graph_access",
+        {
+          credentials: "include",
+          headers: {
+            Accept: "application/json",
+          },
+        }
+      );
+
+      if (graphResponse.ok) {
+        const graphData = await graphResponse.json();
+        canAccessGraph = graphData.allowed;
+
+        // Get plan name if not already set
+        if (graphData.planName && !planName) {
+          planName = graphData.planName;
+        }
+      }
+
+      // Check if user can access analysis features
+      const analysisResponse = await fetch(
+        "http://localhost:3333/capabilities/analysis_access",
+        {
+          credentials: "include",
+          headers: {
+            Accept: "application/json",
+          },
+        }
+      );
+
+      if (analysisResponse.ok) {
+        const analysisData = await analysisResponse.json();
+        canAccessAnalysis = analysisData.allowed;
+
+        // Get plan name if not already set
+        if (analysisData.planName && !planName) {
+          planName = analysisData.planName;
+        }
+      }
+    } catch (error) {
+      console.error("Error checking subscription capabilities:", error);
+      canAccessModels = false;
+      canAccessGraph = false;
+      canAccessAnalysis = false;
+    } finally {
+      checkingSubscription = false;
+    }
+  }
+
   $effect(() => {
     if (!props.project?.id) return;
+
+    // Check subscription capabilities when component loads
+    checkSubscriptionCapabilities();
 
     primaryRoutes = [
       {
@@ -83,11 +175,17 @@
         title: "Analysis",
         icon: TextSearch,
         link: `/project/${props.project.id}/analysis`,
+        requiresSubscription: true,
+        subscriptionFeature: "analysis features",
+        disabled: !canAccessAnalysis,
       },
       {
         title: "Models",
         icon: ChartNetwork,
         link: `/project/${props.project.id}/models`,
+        requiresSubscription: true,
+        subscriptionFeature: "model builder",
+        disabled: !canAccessModels,
       },
       {
         title: "Outcomes",
@@ -106,6 +204,9 @@
         title: "Connections",
         icon: Workflow,
         link: `/project/${props.project.id}/connections`,
+        requiresSubscription: true,
+        subscriptionFeature: "graph visualization",
+        disabled: !canAccessGraph,
       },
       {
         title: "Progress",
@@ -147,7 +248,7 @@
               {props.project?.name || "Project"}
             </span>
           </Tooltip.Trigger>
-          <Tooltip.Content side="right">
+          <Tooltip.Content side="right" sideOffset={10} class="z-[9999]">
             <span class="">{props.project?.name || "Project"}</span>
           </Tooltip.Content>
         </Tooltip.Root>
@@ -160,8 +261,37 @@
         <Sidebar.GroupContent>
           <Sidebar.Menu>
             {#each primaryRoutes as item (item.title)}
-              <Link to={item.link} class="block" on:click={checkAchievements}>
-                <Sidebar.MenuItem>
+              {#if !item.disabled}
+                <Link to={item.link} class="block" on:click={checkAchievements}>
+                  <Sidebar.MenuItem>
+                    <Sidebar.MenuButton>
+                      <Tooltip.Root>
+                        <Tooltip.Trigger>
+                          <div
+                            class="flex items-center gap-3 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
+                          >
+                            {#if item.icon}
+                              <item.icon class="h-4 w-4 flex-shrink-0" />
+                            {/if}
+                            <span class="group-data-[collapsible=icon]:hidden"
+                              >{item.title}</span
+                            >
+                          </div>
+                        </Tooltip.Trigger>
+                        <Tooltip.Content
+                          side="right"
+                          sideOffset={10}
+                          class="group-data-[collapsible=icon]:block hidden z-[9999]"
+                        >
+                          <span class="">{item.title}</span>
+                        </Tooltip.Content>
+                      </Tooltip.Root>
+                    </Sidebar.MenuButton>
+                  </Sidebar.MenuItem>
+                </Link>
+              {:else}
+                <!-- Disabled item with subscription tooltip -->
+                <Sidebar.MenuItem class="opacity-60">
                   <Sidebar.MenuButton>
                     <Tooltip.Root>
                       <Tooltip.Trigger>
@@ -174,18 +304,41 @@
                           <span class="group-data-[collapsible=icon]:hidden"
                             >{item.title}</span
                           >
+                          <Lock class="h-3 w-3 ml-1" />
                         </div>
                       </Tooltip.Trigger>
                       <Tooltip.Content
                         side="right"
-                        class="group-data-[collapsible=icon]:block hidden"
+                        sideOffset={10}
+                        class="w-64 z-[9999]"
                       >
-                        <span class="">{item.title}</span>
+                        {#if item.subscriptionFeature === "model builder"}
+                          Custom model builder is not available on your {planName ||
+                            "current"} plan. Upgrade to {planName ===
+                          "Research Explorer"
+                            ? "Quester Pro or Quester Team"
+                            : "Quester Team"} to access this feature.
+                        {:else if item.subscriptionFeature === "graph visualization"}
+                          Graph visualization is not available on your {planName ||
+                            "current"} plan. Upgrade to {planName ===
+                          "Research Explorer"
+                            ? "Quester Pro or Quester Team"
+                            : "Quester Team"} to access this feature.
+                        {:else if item.subscriptionFeature === "analysis features"}
+                          Analysis features are not available on your {planName ||
+                            "current"} plan. Upgrade to {planName ===
+                          "Research Explorer"
+                            ? "Quester Pro or Quester Team"
+                            : "Quester Team"} to access this feature.
+                        {:else}
+                          {item.title} requires a subscription with {item.subscriptionFeature}
+                          access.
+                        {/if}
                       </Tooltip.Content>
                     </Tooltip.Root>
                   </Sidebar.MenuButton>
                 </Sidebar.MenuItem>
-              </Link>
+              {/if}
             {/each}
           </Sidebar.Menu>
         </Sidebar.GroupContent>
@@ -198,8 +351,37 @@
         <Sidebar.GroupContent>
           <Sidebar.Menu>
             {#each secondaryRoutes as item (item.title)}
-              <Link to={item.link} class="block" on:click={checkAchievements}>
-                <Sidebar.MenuItem>
+              {#if !item.disabled}
+                <Link to={item.link} class="block" on:click={checkAchievements}>
+                  <Sidebar.MenuItem>
+                    <Sidebar.MenuButton>
+                      <Tooltip.Root>
+                        <Tooltip.Trigger>
+                          <div
+                            class="flex items-center gap-3 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
+                          >
+                            {#if item.icon}
+                              <item.icon class="h-4 w-4 flex-shrink-0" />
+                            {/if}
+                            <span class="group-data-[collapsible=icon]:hidden"
+                              >{item.title}</span
+                            >
+                          </div>
+                        </Tooltip.Trigger>
+                        <Tooltip.Content
+                          side="right"
+                          sideOffset={10}
+                          class="group-data-[collapsible=icon]:block hidden z-[9999]"
+                        >
+                          <span class="">{item.title}</span>
+                        </Tooltip.Content>
+                      </Tooltip.Root>
+                    </Sidebar.MenuButton>
+                  </Sidebar.MenuItem>
+                </Link>
+              {:else}
+                <!-- Disabled item with subscription tooltip -->
+                <Sidebar.MenuItem class="opacity-60">
                   <Sidebar.MenuButton>
                     <Tooltip.Root>
                       <Tooltip.Trigger>
@@ -212,18 +394,41 @@
                           <span class="group-data-[collapsible=icon]:hidden"
                             >{item.title}</span
                           >
+                          <Lock class="h-3 w-3 ml-1" />
                         </div>
                       </Tooltip.Trigger>
                       <Tooltip.Content
                         side="right"
-                        class="group-data-[collapsible=icon]:block hidden"
+                        sideOffset={10}
+                        class="w-64 z-[9999]"
                       >
-                        <span class="">{item.title}</span>
+                        {#if item.subscriptionFeature === "model builder"}
+                          Custom model builder is not available on your {planName ||
+                            "current"} plan. Upgrade to {planName ===
+                          "Research Explorer"
+                            ? "Quester Pro or Quester Team"
+                            : "Quester Team"} to access this feature.
+                        {:else if item.subscriptionFeature === "graph visualization"}
+                          Graph visualization is not available on your {planName ||
+                            "current"} plan. Upgrade to {planName ===
+                          "Research Explorer"
+                            ? "Quester Pro or Quester Team"
+                            : "Quester Team"} to access this feature.
+                        {:else if item.subscriptionFeature === "analysis features"}
+                          Analysis features are not available on your {planName ||
+                            "current"} plan. Upgrade to {planName ===
+                          "Research Explorer"
+                            ? "Quester Pro or Quester Team"
+                            : "Quester Team"} to access this feature.
+                        {:else}
+                          {item.title} requires a subscription with {item.subscriptionFeature}
+                          access.
+                        {/if}
                       </Tooltip.Content>
                     </Tooltip.Root>
                   </Sidebar.MenuButton>
                 </Sidebar.MenuItem>
-              </Link>
+              {/if}
             {/each}
           </Sidebar.Menu>
         </Sidebar.GroupContent>
@@ -254,7 +459,8 @@
                       </Tooltip.Trigger>
                       <Tooltip.Content
                         side="right"
-                        class="group-data-[collapsible=icon]:block hidden"
+                        sideOffset={10}
+                        class="group-data-[collapsible=icon]:block hidden z-[9999]"
                       >
                         <span class="">{item.title}</span>
                       </Tooltip.Content>
@@ -288,7 +494,8 @@
                     </Tooltip.Trigger>
                     <Tooltip.Content
                       side="right"
-                      class="group-data-[collapsible=icon]:block hidden"
+                      sideOffset={10}
+                      class="group-data-[collapsible=icon]:block hidden z-[9999]"
                     >
                       <span class="">Organization</span>
                     </Tooltip.Content>
@@ -318,7 +525,7 @@
                     {auth.user?.firstName}
                     {auth.user?.lastName}
                   </div>
-                  <div class="text-sm text-muted-foreground">View profile</div>
+                  <!-- <div class="text-sm text-muted-foreground">View profile</div> -->
                 </div>
                 <Users
                   class="h-4 w-4 hidden group-data-[collapsible=icon]:block group-data-[collapsible=icon]:mx-auto"
@@ -329,13 +536,13 @@
               side="top"
               class="w-[--bits-dropdown-menu-anchor-width]"
             >
-              <DropdownMenu.Item class="flex items-center gap-3">
+              <!-- <DropdownMenu.Item class="flex items-center gap-3">
                 <span class="">Profile</span>
               </DropdownMenu.Item>
               <DropdownMenu.Item class="flex items-center gap-3">
                 <span class="">Settings</span>
               </DropdownMenu.Item>
-              <DropdownMenu.Separator />
+              <DropdownMenu.Separator /> -->
               <DropdownMenu.Item
                 onclick={handleLogout}
                 class="flex items-center gap-3"

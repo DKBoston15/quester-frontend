@@ -12,7 +12,6 @@
   import * as Dialog from "$lib/components/ui/dialog";
   import {
     Trophy,
-    Plus,
     PenTool,
     Book,
     Calendar,
@@ -25,8 +24,7 @@
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
   import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
   import { notesStore } from "$lib/stores/NotesStore.svelte";
-  import { fade, fly } from "svelte/transition";
-  import { quintOut } from "svelte/easing";
+  import { fade } from "svelte/transition";
 
   // Level definitions with colors
   const levels = [

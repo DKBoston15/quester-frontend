@@ -10,6 +10,8 @@
   } from "$lib/components/ui/accordion";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { InfoIcon } from "lucide-svelte";
+  import VennDiagram from "./VennDiagram.svelte";
+  import FrequencyChart from "./FrequencyChart.svelte";
 
   const { analysis } = $props<{ analysis: KeywordAnalysis }>();
 
@@ -162,6 +164,24 @@
         <AccordionContent>
           <div class="mt-2 report-content">
             {@html report.report}
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+
+      <AccordionItem value="frequency-chart">
+        <AccordionTrigger>Frequency Distribution Chart</AccordionTrigger>
+        <AccordionContent>
+          <div class="mt-2">
+            <FrequencyChart {analysis} />
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+
+      <AccordionItem value="visualization">
+        <AccordionTrigger>Keyword Overlap Visualization</AccordionTrigger>
+        <AccordionContent>
+          <div class="mt-2">
+            <VennDiagram {analysis} />
           </div>
         </AccordionContent>
       </AccordionItem>

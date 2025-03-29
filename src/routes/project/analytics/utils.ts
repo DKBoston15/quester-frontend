@@ -1,6 +1,5 @@
 import type { Literature } from "$lib/types/literature";
 import type { Note } from "$lib/types";
-import { stripHtml } from "string-strip-html";
 import winkNLP from "wink-nlp";
 import model from "wink-eng-lite-web-model";
 
@@ -16,7 +15,6 @@ type LiteratureWordCountKeys =
   | "literatureNounsWordCounts"
   | "literatureVerbsWordCounts"
   | "literatureAdjectivesWordCounts";
-type ModelAddons = any;
 
 // Define proper types for wink-nlp functions
 interface ItsFunction {
@@ -294,13 +292,35 @@ export async function analyzeLiterature(
   // Process literature
   literature.forEach((lit) => {
     if (lit.keywords) {
-      analysisData.countOccurrences(lit.keywords, analysisData.keywords);
+      let keywordsArray: string[];
+      if (Array.isArray(lit.keywords)) {
+        // Filter for string elements if it's potentially any[]
+        keywordsArray = lit.keywords.filter(
+          (k): k is string => typeof k === "string"
+        );
+      } else if (typeof lit.keywords === "string") {
+        keywordsArray = [lit.keywords];
+      } else {
+        keywordsArray = []; // Handle unexpected types gracefully
+      }
+      analysisData.countOccurrences(keywordsArray, analysisData.keywords);
     }
     if (lit.name && typeof lit.name === "string" && lit.name.trim()) {
       processTextWithNLP(lit.name.trim(), analysisData, "literatureWordCounts");
     }
     if (lit.authors) {
-      analysisData.countOccurrences(lit.authors, analysisData.authors);
+      let authorsArray: string[];
+      if (Array.isArray(lit.authors)) {
+        // Filter for string elements if it's potentially any[]
+        authorsArray = lit.authors.filter(
+          (a): a is string => typeof a === "string"
+        );
+      } else if (typeof lit.authors === "string") {
+        authorsArray = [lit.authors];
+      } else {
+        authorsArray = []; // Handle unexpected types gracefully
+      }
+      analysisData.countOccurrences(authorsArray, analysisData.authors);
     }
     if (lit.publisherName) {
       analysisData.countOccurrences(
@@ -348,8 +368,6 @@ export async function analyzeLiterature(
       if (plainText.trim()) {
         processTextWithNLP(plainText.trim(), analysisData, "wordCounts");
       }
-    } else {
-      console.log("Note has no content");
     }
   });
 

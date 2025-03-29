@@ -3,7 +3,6 @@
   import { Button } from "$lib/components/ui/button";
   import { outcomeStore } from "$lib/stores/OutcomeStore.svelte";
   import ShadEditor from "$lib/components/shad-editor/shad-editor.svelte";
-  import { Trash2 } from "lucide-svelte";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { Badge } from "$lib/components/ui/badge";
   import { auth } from "$lib/stores/AuthStore.svelte";
@@ -52,8 +51,6 @@
     outcome: Outcome;
     onDelete: () => void;
   }>();
-
-  console.log(props.outcome.id);
 
   let showDeleteDialog = $state(false);
   let content = $state(parseContent(props.outcome.content));
