@@ -6,6 +6,7 @@
   import { Badge } from "$lib/components/ui/badge";
   import { Mail, Send, X, Info } from "lucide-svelte";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
+  import { API_BASE_URL } from "$lib/config";
 
   const props = $props<{
     resourceType: "organization" | "department" | "project";
@@ -172,7 +173,7 @@
           break;
       }
 
-      const response = await fetch("http://localhost:3333/invitations", {
+      const response = await fetch(`${API_BASE_URL}/invitations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -208,7 +209,7 @@
     try {
       // Use the generic invitations endpoint with query params to filter
       // Since the backend doesn't have a specific route for filtering by resource
-      let endpoint = `http://localhost:3333/invitations?${props.resourceType}Id=${props.resourceId}`;
+      let endpoint = `${API_BASE_URL}/invitations?${props.resourceType}Id=${props.resourceId}`;
 
       const response = await fetch(endpoint, {
         credentials: "include",
@@ -242,7 +243,7 @@
     try {
       // Backend uses POST to revoke, not DELETE
       const response = await fetch(
-        `http://localhost:3333/invitations/${invitationId}/revoke`,
+        `${API_BASE_URL}/invitations/${invitationId}/revoke`,
         {
           method: "POST",
           credentials: "include",

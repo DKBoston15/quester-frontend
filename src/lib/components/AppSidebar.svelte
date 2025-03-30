@@ -16,6 +16,7 @@
   import { navigate, Link } from "svelte-routing";
   import { DarkmodeToggle } from "$lib/components/ui/darkmode-toggle";
   import * as Tooltip from "$lib/components/ui/tooltip";
+  import { API_BASE_URL } from "$lib/config";
 
   // Menu items for the main navigation
   const mainNavItems = [
@@ -54,7 +55,7 @@
 
     try {
       const response = await fetch(
-        `http://localhost:3333/projects/by-user?userId=${auth.user.id}`,
+        `${API_BASE_URL}/projects/by-user?userId=${auth.user.id}`,
         { credentials: "include" }
       );
       const data = await response.json();

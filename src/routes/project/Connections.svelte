@@ -9,6 +9,7 @@
   import { onMount } from "svelte";
   import { navigate } from "svelte-routing";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { API_BASE_URL } from "$lib/config";
 
   let value = "2D";
   let showControls = false;
@@ -26,7 +27,7 @@
   async function checkGraphAccessCapability() {
     try {
       const response = await fetch(
-        "http://localhost:3333/capabilities/graph_access",
+        `${API_BASE_URL}/capabilities/graph_access`,
         { credentials: "include" }
       );
 

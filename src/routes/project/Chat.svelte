@@ -15,6 +15,7 @@
     Folder,
   } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button";
+  import { API_BASE_URL } from "$lib/config";
 
   interface Source {
     type: string;
@@ -91,7 +92,7 @@
     try {
       isLoadingHistory = true;
       const response = await fetch(
-        `http://localhost:3333/chat/history/${projectStore.currentProject.id}`,
+        `${API_BASE_URL}/chat/history/${projectStore.currentProject.id}`,
         {
           credentials: "include",
         }
@@ -106,7 +107,7 @@
         data.sessions.map(async (session: ChatSession) => {
           try {
             const messageResponse = await fetch(
-              `http://localhost:3333/chat/history/${projectStore.currentProject?.id}?sessionId=${session.chatSessionId}`,
+              `${API_BASE_URL}/chat/history/${projectStore.currentProject?.id}?sessionId=${session.chatSessionId}`,
               {
                 credentials: "include",
               }
@@ -151,7 +152,7 @@
     try {
       isLoading = true;
       const response = await fetch(
-        `http://localhost:3333/chat/history/${projectStore.currentProject.id}?sessionId=${sessionId}`,
+        `${API_BASE_URL}/chat/history/${projectStore.currentProject.id}?sessionId=${sessionId}`,
         {
           credentials: "include",
         }
@@ -234,7 +235,7 @@
       messages = [...messages, userMsg];
 
       const response = await fetch(
-        `http://localhost:3333/chat${sessionToUse ? `?chatSessionId=${sessionToUse}` : ""}`,
+        `${API_BASE_URL}/chat${sessionToUse ? `?chatSessionId=${sessionToUse}` : ""}`,
         {
           method: "POST",
           headers: {

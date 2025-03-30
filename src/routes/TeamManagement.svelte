@@ -36,6 +36,7 @@
   import TeamMembersList from "$lib/components/TeamMembersList.svelte";
   import InvitationManager from "$lib/components/InvitationManager.svelte";
   import RoleManager from "$lib/components/RoleManager.svelte";
+  import { API_BASE_URL } from "$lib/config";
 
   // Reactive state
   let activeTab = $state("members");
@@ -99,7 +100,7 @@
     try {
       // Get user invitation capability
       const inviteResponse = await fetch(
-        "http://localhost:3333/capabilities/user_invite",
+        `${API_BASE_URL}/capabilities/user_invite`,
         {
           credentials: "include",
           headers: {
@@ -119,7 +120,7 @@
       }
 
       // Get usage limits to determine max users and current count
-      const limitsResponse = await fetch("http://localhost:3333/limits", {
+      const limitsResponse = await fetch(`${API_BASE_URL}/limits`, {
         credentials: "include",
         headers: {
           Accept: "application/json",

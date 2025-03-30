@@ -7,8 +7,7 @@
   import { Card } from "$lib/components/ui/card";
   import type { KeywordAnalysis } from "$lib/types/index";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
-
-  const API_BASE = "http://localhost:3333";
+  import { API_BASE_URL } from "$lib/config";
 
   let loading = $state(false);
   let error = $state<string | null>(null);
@@ -31,7 +30,7 @@
     error = null;
     try {
       const response = await fetch(
-        `${API_BASE}/keyword_analysis/project/${projectStore.currentProject!.id}`,
+        `${API_BASE_URL}/keyword_analysis/project/${projectStore.currentProject!.id}`,
         { credentials: "include" }
       );
       if (!response.ok) {
@@ -78,7 +77,7 @@
     loading = true;
     error = null;
     try {
-      const response = await fetch(`${API_BASE}/keyword_analysis`, {
+      const response = await fetch(`${API_BASE_URL}/keyword_analysis`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -122,7 +121,7 @@
 
   async function handleDelete(id: string) {
     try {
-      const response = await fetch(`${API_BASE}/keyword_analysis/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/keyword_analysis/${id}`, {
         method: "DELETE",
         credentials: "include",
       });

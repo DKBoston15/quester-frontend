@@ -13,6 +13,7 @@
   import { toast } from "svelte-sonner";
   import { Search, UserPlus } from "lucide-svelte";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
+  import { API_BASE_URL } from "$lib/config";
 
   // Props with Svelte 5 runes
   const { resourceType, resourceId, organizationId, onUserAdded } = $props<{
@@ -46,7 +47,7 @@
     try {
       // Get users from organization structure via team management
       const response = await fetch(
-        `http://localhost:3333/team-management/organization/${organizationId}`,
+        `${API_BASE_URL}/team-management/organization/${organizationId}`,
         {
           credentials: "include",
         }
@@ -91,7 +92,7 @@
   async function loadRoles() {
     try {
       const response = await fetch(
-        `http://localhost:3333/roles?scope=${resourceType}`,
+        `${API_BASE_URL}/roles?scope=${resourceType}`,
         {
           credentials: "include",
         }
@@ -164,7 +165,7 @@
     selectedUserId = String(userId);
     try {
       const response = await fetch(
-        `http://localhost:3333/team-management/${resourceType}/${resourceId}/users`,
+        `${API_BASE_URL}/team-management/${resourceType}/${resourceId}/users`,
         {
           method: "POST",
           headers: {

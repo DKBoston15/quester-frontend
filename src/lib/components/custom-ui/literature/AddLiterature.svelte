@@ -21,8 +21,8 @@
     Plus,
     X,
   } from "lucide-svelte";
+  import { API_BASE_URL } from "$lib/config";
 
-  const API_URL = "http://localhost:3333";
   const dispatch = createEventDispatcher();
 
   const { projectId, isOpen, onOpenChange } = $props<{
@@ -220,18 +220,15 @@
         return;
       }
 
-      const response = await fetch(
-        "http://localhost:3333/ai/extract-references",
-        {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            referenceText: pasteText,
-            projectId: urlProjectId,
-          }),
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/ai/extract-references`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          referenceText: pasteText,
+          projectId: urlProjectId,
+        }),
+      });
 
       if (!response.ok) throw new Error("Failed to process references");
 
@@ -300,7 +297,7 @@
             userId: auth.user?.id,
           };
 
-          const response = await fetch(`${API_URL}/literature`, {
+          const response = await fetch(`${API_BASE_URL}/literature`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",

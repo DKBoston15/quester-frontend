@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
+  import { API_BASE_URL } from "$lib/config";
   import { CreditCard } from "lucide-svelte";
 
   const props = $props<{
@@ -15,7 +16,7 @@
       isLoading = true;
       error = null;
       const response = await fetch(
-        "http://localhost:3333/stripe/create-portal-session",
+        `${API_BASE_URL}/stripe/create-portal-session`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

@@ -16,6 +16,7 @@
     SelectTrigger,
   } from "$lib/components/ui/select";
   import LiteratureSelector from "$lib/components/custom-ui/literature/LiteratureSelector.svelte";
+  import { API_BASE_URL } from "$lib/config";
 
   // Props
   const { note, onDelete } = $props<{
@@ -88,7 +89,7 @@
       const titleToSave = title;
 
       // Make a direct API call to update just the title
-      fetch(`http://localhost:3333/note/${note.id}`, {
+      fetch(`${API_BASE_URL}/note/${note.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -163,7 +164,7 @@
 
       try {
         // Make a direct API call to update the literature connection
-        const response = await fetch(`http://localhost:3333/note/${note.id}`, {
+        const response = await fetch(`${API_BASE_URL}/note/${note.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -462,7 +463,7 @@
 
       // Make a direct API call to update the section type without going through the store's update mechanism
       // This avoids the remounting issue while ensuring the data is saved to the database
-      fetch(`http://localhost:3333/note/${note.id}`, {
+      fetch(`${API_BASE_URL}/note/${note.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -477,14 +478,6 @@
             const storeNotes = notesStore.notes;
             for (let i = 0; i < storeNotes.length; i++) {
               if (storeNotes[i].id === note.id) {
-                // Create a new object to ensure reactivity
-                const updatedNote = {
-                  ...storeNotes[i],
-                  section_type: selectedType,
-                };
-
-                // Use a direct DOM update to change the badge text
-                // This is a last resort since we can't update the store directly
                 setTimeout(() => {
                   const badgeElements = document.querySelectorAll(
                     `[data-note-id="${note.id}"] .badge-section-type`

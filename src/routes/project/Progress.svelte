@@ -25,6 +25,7 @@
   import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
   import { notesStore } from "$lib/stores/NotesStore.svelte";
   import { fade } from "svelte/transition";
+  import { API_BASE_URL } from "$lib/config";
 
   // Level definitions with colors
   const levels = [
@@ -272,7 +273,7 @@
       // Fetch and add status changes
       try {
         const response = await fetch(
-          `http://localhost:3333/events?type=project.status.changed&subjectId=${currentProject.id}`,
+          `${API_BASE_URL}/events?type=project.status.changed&subjectId=${currentProject.id}`,
           {
             credentials: "include",
           }
@@ -299,7 +300,7 @@
       // Fetch and add design changes
       try {
         const response = await fetch(
-          `http://localhost:3333/events?type=project.design.changed&subjectId=${currentProject.id}`,
+          `${API_BASE_URL}/events?type=project.design.changed&subjectId=${currentProject.id}`,
           {
             credentials: "include",
           }
@@ -330,7 +331,7 @@
       // Fetch and add model creations
       try {
         const response = await fetch(
-          `http://localhost:3333/events?type=model.created&subjectId=${currentProject.id}`,
+          `${API_BASE_URL}/events?type=model.created&subjectId=${currentProject.id}`,
           {
             credentials: "include",
           }
@@ -357,7 +358,7 @@
       // Fetch and add outcome creations
       try {
         const response = await fetch(
-          `http://localhost:3333/events?type=outcome.created&subjectId=${currentProject.id}`,
+          `${API_BASE_URL}/events?type=outcome.created&subjectId=${currentProject.id}`,
           {
             credentials: "include",
           }
@@ -588,7 +589,7 @@
 
     try {
       const response = await fetch(
-        `http://localhost:3333/achievement/project/${projectStore.currentProject.id}/status`,
+        `${API_BASE_URL}/achievement/project/${projectStore.currentProject.id}/status`,
         {
           credentials: "include",
           headers: {

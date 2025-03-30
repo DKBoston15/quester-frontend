@@ -15,6 +15,7 @@
   import { Badge } from "$lib/components/ui/badge";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import { navigate } from "svelte-routing";
+  import { API_BASE_URL } from "$lib/config";
 
   // Props
   const props = $props<{
@@ -101,7 +102,7 @@
     try {
       // Always use the dedicated endpoint for by-department which handles permissions correctly
       const projectsResponse = await fetch(
-        `http://localhost:3333/projects/by-department?departmentId=${departmentId}`,
+        `${API_BASE_URL}/projects/by-department?departmentId=${departmentId}`,
         { credentials: "include" }
       );
 
@@ -118,7 +119,7 @@
 
         // Fall back to filtering projects from team-management resources
         const resourcesResponse = await fetch(
-          `http://localhost:3333/team-management/resources`,
+          `${API_BASE_URL}/team-management/resources`,
           { credentials: "include" }
         );
 
@@ -191,7 +192,7 @@
 
     try {
       const response = await fetch(
-        `http://localhost:3333/team-management/project/${project.id}/self-assign`,
+        `${API_BASE_URL}/team-management/project/${project.id}/self-assign`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

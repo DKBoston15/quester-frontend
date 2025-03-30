@@ -11,6 +11,7 @@
   import { Button } from "$lib/components/ui/button";
   import { auth } from "../stores/AuthStore.svelte";
   import { Separator } from "$lib/components/ui/separator";
+  import { API_BASE_URL } from "$lib/config";
 
   type Invitation = {
     id: string;
@@ -41,7 +42,7 @@
   async function loadInvitations() {
     try {
       const response = await fetch(
-        `http://localhost:3333/invitations/pending?email=${encodeURIComponent(auth.user?.email || "")}`,
+        `${API_BASE_URL}/invitations/pending?email=${encodeURIComponent(auth.user?.email || "")}`,
         { credentials: "include" }
       );
 
@@ -63,7 +64,7 @@
 
     try {
       const response = await fetch(
-        "http://localhost:3333/invitations/accept-multiple",
+        `${API_BASE_URL}/invitations/accept-multiple`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

@@ -16,6 +16,7 @@
   import { Toaster } from "$lib/components/ui/sonner";
   import TeamManagement from "./routes/TeamManagement.svelte";
   import Settings from "./routes/Settings.svelte";
+  import { API_BASE_URL } from "$lib/config";
 
   const props = $props<{ url: string }>();
 
@@ -65,13 +66,13 @@
   });
 
   function login() {
-    window.location.href = "http://localhost:3333/auth/redirect";
+    window.location.href = `${API_BASE_URL}/auth/redirect`;
   }
 
   async function checkPendingInvites() {
     if (!auth.user?.email) return false;
     const response = await fetch(
-      `http://localhost:3333/invitations/pending?email=${encodeURIComponent(auth.user.email)}`,
+      `${API_BASE_URL}/invitations/pending?email=${encodeURIComponent(auth.user.email)}`,
       { credentials: "include" }
     );
     if (!response.ok) return false;

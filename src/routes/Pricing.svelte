@@ -13,6 +13,7 @@
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
+  import { API_BASE_URL } from "$lib/config";
 
   const props = $props<{
     organizationId: string;
@@ -51,7 +52,7 @@
 
   onMount(async () => {
     try {
-      const response = await fetch("http://localhost:3333/subscription-plans", {
+      const response = await fetch(`${API_BASE_URL}/subscription-plans`, {
         credentials: "include",
       });
 

@@ -1,5 +1,6 @@
 <!-- src/lib/stores/ProjectStore.svelte -->
 <script lang="ts" module>
+  import { API_BASE_URL } from "$lib/config";
   import type { Project } from "../types/auth";
 
   let currentProject = $state<Project | null>(null);
@@ -38,10 +39,10 @@
 
       try {
         const [projectResponse, designsResponse] = await Promise.all([
-          fetch(`http://localhost:3333/projects/${projectId}`, {
+          fetch(`${API_BASE_URL}/projects/${projectId}`, {
             credentials: "include",
           }),
-          fetch(`http://localhost:3333/design/project/${projectId}`, {
+          fetch(`${API_BASE_URL}/design/project/${projectId}`, {
             credentials: "include",
           }),
         ]);
@@ -76,17 +77,14 @@
 
     async updateProject(projectId: string, updateData: Partial<Project>) {
       try {
-        const response = await fetch(
-          `http://localhost:3333/projects/${projectId}`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify(updateData),
-          }
-        );
+        const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(updateData),
+        });
 
         if (!response.ok) {
           throw new Error(`Failed to update project (${response.status})`);
@@ -105,8 +103,8 @@
       try {
         const method = designs ? "PUT" : "POST";
         const endpoint = designs
-          ? `http://localhost:3333/design/project/${projectId}`
-          : "http://localhost:3333/design";
+          ? `${API_BASE_URL}/design/project/${projectId}`
+          : `${API_BASE_URL}/design`;
 
         const response = await fetch(endpoint, {
           method,

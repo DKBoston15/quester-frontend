@@ -5,6 +5,7 @@
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
   import { auth } from "$lib/stores/AuthStore.svelte";
   import { UserCog, X, Info } from "lucide-svelte";
+  import { API_BASE_URL } from "$lib/config";
 
   const props = $props<{
     userId: string;
@@ -46,7 +47,7 @@
   async function fetchRolesFromBackend() {
     try {
       const response = await fetch(
-        `http://localhost:3333/roles?scope=${props.resourceType}`,
+        `${API_BASE_URL}/roles?scope=${props.resourceType}`,
         {
           credentials: "include",
         }

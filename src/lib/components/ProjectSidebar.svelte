@@ -22,6 +22,7 @@
     TextSearch,
     Lock,
   } from "lucide-svelte";
+  import { API_BASE_URL } from "$lib/config";
 
   type Route = {
     title: string;
@@ -50,7 +51,7 @@
 
     try {
       const response = await fetch(
-        `http://localhost:3333/achievement/project/${props.project.id}/status`,
+        `${API_BASE_URL}/achievement/project/${props.project.id}/status`,
         {
           credentials: "include",
           headers: {
@@ -74,7 +75,7 @@
     try {
       // First check if user can access model builder
       const modelResponse = await fetch(
-        "http://localhost:3333/capabilities/model_access",
+        `${API_BASE_URL}/capabilities/model_access`,
         {
           credentials: "include",
           headers: {
@@ -95,7 +96,7 @@
 
       // Then check if user can access graph visualization
       const graphResponse = await fetch(
-        "http://localhost:3333/capabilities/graph_access",
+        `${API_BASE_URL}/capabilities/graph_access`,
         {
           credentials: "include",
           headers: {
@@ -116,7 +117,7 @@
 
       // Check if user can access analysis features
       const analysisResponse = await fetch(
-        "http://localhost:3333/capabilities/analysis_access",
+        `${API_BASE_URL}/capabilities/analysis_access`,
         {
           credentials: "include",
           headers: {

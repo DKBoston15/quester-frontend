@@ -1,5 +1,6 @@
 <!-- src/lib/stores/TeamManagementStore.svelte -->
 <script lang="ts" module>
+  import { API_BASE_URL } from "$lib/config";
   import { auth } from "./AuthStore.svelte";
 
   // State management
@@ -82,7 +83,7 @@
 
       try {
         const response = await fetch(
-          "http://localhost:3333/team-management/resources",
+          `${API_BASE_URL}/team-management/resources`,
           {
             credentials: "include",
           }
@@ -116,7 +117,7 @@
 
       try {
         const response = await fetch(
-          `http://localhost:3333/team-management/organization/${organizationId}`,
+          `${API_BASE_URL}/team-management/organization/${organizationId}`,
           {
             credentials: "include",
           }
@@ -195,7 +196,7 @@
 
       try {
         const response = await fetch(
-          `http://localhost:3333/team-management/department/${departmentId}`,
+          `${API_BASE_URL}/team-management/department/${departmentId}`,
           {
             credentials: "include",
           }
@@ -267,7 +268,7 @@
 
       try {
         const response = await fetch(
-          `http://localhost:3333/team-management/project/${projectId}`,
+          `${API_BASE_URL}/team-management/project/${projectId}`,
           {
             credentials: "include",
           }
@@ -341,7 +342,7 @@
 
       try {
         const response = await fetch(
-          `http://localhost:3333/team-management/${selectedResourceType}/${selectedResourceId}/users`,
+          `${API_BASE_URL}/team-management/${selectedResourceType}/${selectedResourceId}/users`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -377,7 +378,7 @@
         const payload = { roleId };
 
         const response = await fetch(
-          `http://localhost:3333/team-management/${selectedResourceType}/${selectedResourceId}/users/${userId}`,
+          `${API_BASE_URL}/team-management/${selectedResourceType}/${selectedResourceId}/users/${userId}`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
@@ -421,7 +422,7 @@
 
       try {
         const response = await fetch(
-          `http://localhost:3333/team-management/${selectedResourceType}/${selectedResourceId}/users/${userId}`,
+          `${API_BASE_URL}/team-management/${selectedResourceType}/${selectedResourceId}/users/${userId}`,
           {
             method: "DELETE",
             credentials: "include",
@@ -460,7 +461,7 @@
         const payload = { roleId };
 
         const response = await fetch(
-          `http://localhost:3333/team-management/${selectedResourceType}/${selectedResourceId}/self-assign`,
+          `${API_BASE_URL}/team-management/${selectedResourceType}/${selectedResourceId}/self-assign`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -500,7 +501,7 @@
 
       try {
         const response = await fetch(
-          `http://localhost:3333/settings/${selectedResourceType}/${selectedResourceId}`,
+          `${API_BASE_URL}/settings/${selectedResourceType}/${selectedResourceId}`,
           {
             credentials: "include",
           }
@@ -539,7 +540,7 @@
       }
 
       try {
-        const url = `http://localhost:3333/settings/${selectedResourceType}/${selectedResourceId}`;
+        const url = `${API_BASE_URL}/settings/${selectedResourceType}/${selectedResourceId}`;
         const body = JSON.stringify({ [key]: value });
 
         const response = await fetch(url, {

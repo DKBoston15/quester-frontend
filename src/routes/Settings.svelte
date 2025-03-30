@@ -20,6 +20,7 @@
   import AppSidebar from "$lib/components/AppSidebar.svelte";
   // Import tooltip components
   import * as Tooltip from "$lib/components/ui/tooltip";
+  import { API_BASE_URL } from "$lib/config";
 
   let activeTab = $state("profile");
   let isLoading = $state(false);
@@ -71,7 +72,7 @@
   async function checkOrgSettingsCapability() {
     try {
       const response = await fetch(
-        "http://localhost:3333/capabilities/org_settings_access",
+        `${API_BASE_URL}/capabilities/org_settings_access`,
         { credentials: "include" }
       );
 

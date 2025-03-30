@@ -12,6 +12,7 @@
   import DesignManager from "$lib/components/custom-ui/project/DesignManager.svelte";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
   import { toast } from "svelte-sonner";
+  import { API_BASE_URL } from "$lib/config";
 
   let projectName = $state("");
   let originalName = $state("");
@@ -73,7 +74,7 @@
     try {
       // Call the API to delete the project
       const response = await fetch(
-        `http://localhost:3333/projects/${projectStore.currentProject.id}`,
+        `${API_BASE_URL}/projects/${projectStore.currentProject.id}`,
         {
           method: "DELETE",
           credentials: "include",

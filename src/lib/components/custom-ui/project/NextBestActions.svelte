@@ -23,6 +23,7 @@
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
   import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
   import type { Literature } from "$lib/types/literature";
+  import { API_BASE_URL } from "$lib/config";
 
   const dispatch = createEventDispatcher<{
     literatureSelect: Literature;
@@ -77,7 +78,7 @@
 
     try {
       const response = await fetch(
-        `http://localhost:3333/projects/${projectStore.currentProject.id}/next-actions`,
+        `${API_BASE_URL}/projects/${projectStore.currentProject.id}/next-actions`,
         {
           credentials: "include",
         }
@@ -254,7 +255,10 @@
     </div>
   </Card.Header>
 
-  <Tabs.Root value={activeTab} onValueChange={(value) => (activeTab = value)}>
+  <Tabs.Root
+    value={activeTab}
+    onValueChange={(value: any) => (activeTab = value)}
+  >
     <Tabs.List
       class="grid grid-cols-2 mx-8 border dark:bg-background border-black dark:border-dark-border rounded-lg overflow-hidden"
     >

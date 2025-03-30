@@ -7,6 +7,7 @@
   import { Label } from "$lib/components/ui/label";
   import Pricing from "./Pricing.svelte";
   import { DarkmodeToggle } from "$lib/components/ui/darkmode-toggle";
+  import { API_BASE_URL } from "$lib/config";
 
   interface CreatedOrganization {
     id: string;
@@ -45,7 +46,7 @@
       }
 
       const response = await fetch(
-        `http://localhost:3333/organizations/by-user?userId=${auth.user?.id}`,
+        `${API_BASE_URL}/organizations/by-user?userId=${auth.user?.id}`,
         { credentials: "include" }
       );
       const data = await response.json();
@@ -120,7 +121,7 @@
 
     try {
       const response = await fetch(
-        "http://localhost:3333/organizations/createOrgWithUser",
+        `${API_BASE_URL}/organizations/createOrgWithUser`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -159,7 +160,7 @@
           .filter((dept) => dept.name.trim())
           .map(async (dept) => {
             const response = await fetch(
-              "http://localhost:3333/departments/createDepartmentWithUser",
+              `${API_BASE_URL}/departments/createDepartmentWithUser`,
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -213,7 +214,7 @@
 
     try {
       const response = await fetch(
-        "http://localhost:3333/projects/createProjectWithUser",
+        `${API_BASE_URL}/projects/createProjectWithUser`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

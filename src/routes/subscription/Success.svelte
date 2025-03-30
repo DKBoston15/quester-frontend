@@ -3,6 +3,7 @@
   import { auth } from "../../lib/stores/AuthStore.svelte";
   import { DarkmodeToggle } from "$lib/components/ui/darkmode-toggle";
   import { onMount } from "svelte";
+  import { API_BASE_URL } from "$lib/config";
 
   let isLoading = $state(true);
   let error = $state("");
@@ -28,7 +29,7 @@
     try {
       // First get the organization details to determine subscription type
       const orgResponse = await fetch(
-        `http://localhost:3333/organizations/${currentOrgId}`,
+        `${API_BASE_URL}/organizations/${currentOrgId}`,
         { credentials: "include" }
       );
 
@@ -40,7 +41,7 @@
       const isTeamSubscription = orgData.subscriptionType === "organization";
 
       // Then sync the subscription
-      const response = await fetch("http://localhost:3333/stripe/sync", {
+      const response = await fetch(`${API_BASE_URL}/stripe/sync`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,5 +1,7 @@
 <!-- src/lib/stores/OutcomeStore.svelte -->
 <script lang="ts" module>
+  import { API_BASE_URL } from "$lib/config";
+
   interface Outcome {
     id: string;
     name: string;
@@ -1050,7 +1052,7 @@
 
       try {
         const response = await fetch(
-          `http://localhost:3333/outcome/project/${projectId}`,
+          `${API_BASE_URL}/outcome/project/${projectId}`,
           {
             credentials: "include",
           }
@@ -1087,12 +1089,9 @@
       this.setError(null);
 
       try {
-        const response = await fetch(
-          `http://localhost:3333/outcome/${outcomeId}`,
-          {
-            credentials: "include",
-          }
-        );
+        const response = await fetch(`${API_BASE_URL}/outcome/${outcomeId}`, {
+          credentials: "include",
+        });
 
         if (!response.ok) {
           throw new Error(`Failed to load outcome (${response.status})`);
@@ -1147,7 +1146,7 @@
           }
         }
 
-        const response = await fetch("http://localhost:3333/outcome", {
+        const response = await fetch(`${API_BASE_URL}/outcome`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -1175,7 +1174,7 @@
 
     async updateOutcome(id: string, data: Partial<Outcome>) {
       try {
-        const response = await fetch(`http://localhost:3333/outcome/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/outcome/${id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -1212,7 +1211,7 @@
 
     async deleteOutcome(id: string) {
       try {
-        const response = await fetch(`http://localhost:3333/outcome/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/outcome/${id}`, {
           method: "DELETE",
           credentials: "include",
         });

@@ -1,4 +1,5 @@
 <script lang="ts" module>
+  import { API_BASE_URL } from "$lib/config";
   import type { Organization, User } from "../types/auth";
 
   let user: User | null = $state(null);
@@ -65,7 +66,7 @@
     async fetchUserOrganizations() {
       try {
         const response = await fetch(
-          `http://localhost:3333/organizations/by-user?userId=${user?.id}`,
+          `${API_BASE_URL}/organizations/by-user?userId=${user?.id}`,
           {
             credentials: "include",
           }
@@ -83,7 +84,7 @@
 
     async verifySession() {
       try {
-        const response = await fetch("http://localhost:3333/auth/verify", {
+        const response = await fetch(`${API_BASE_URL}/auth/verify`, {
           credentials: "include",
         });
         if (response.ok) {
@@ -119,26 +120,23 @@
     },
 
     login() {
-      window.location.href = "http://localhost:3333/auth/redirect";
+      window.location.href = `${API_BASE_URL}/auth/redirect`;
     },
 
     logout() {
-      window.location.href = "http://localhost:3333/auth/logout";
+      window.location.href = `${API_BASE_URL}/auth/logout`;
     },
 
     async updateUser(userData: Partial<User>) {
       try {
-        const response = await fetch(
-          `http://localhost:3333/users/${user?.id}`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify(userData),
-          }
-        );
+        const response = await fetch(`${API_BASE_URL}/users/${user?.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(userData),
+        });
 
         if (!response.ok) {
           throw new Error("Failed to update user");

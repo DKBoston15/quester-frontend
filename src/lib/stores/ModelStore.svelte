@@ -1,5 +1,6 @@
 <!-- src/lib/stores/ModelStore.svelte -->
 <script lang="ts" module>
+  import { API_BASE_URL } from "$lib/config";
   import type { Node, Edge } from "@xyflow/svelte";
   import { toPng } from "html-to-image";
 
@@ -48,7 +49,7 @@
 
       try {
         const response = await fetch(
-          `http://localhost:3333/model/project/${projectId}`,
+          `${API_BASE_URL}/model/project/${projectId}`,
           {
             credentials: "include",
           }
@@ -80,7 +81,7 @@
       error = null;
 
       try {
-        const response = await fetch(`http://localhost:3333/model/${modelId}`, {
+        const response = await fetch(`${API_BASE_URL}/model/${modelId}`, {
           credentials: "include",
         });
 
@@ -105,7 +106,7 @@
       error = null;
 
       try {
-        const response = await fetch("http://localhost:3333/model", {
+        const response = await fetch(`${API_BASE_URL}/model`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -144,7 +145,7 @@
           edges: data.edges ? JSON.stringify(data.edges) : undefined,
         };
 
-        const response = await fetch(`http://localhost:3333/model/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/model/${id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -180,7 +181,7 @@
 
     async deleteModel(id: string) {
       try {
-        const response = await fetch(`http://localhost:3333/model/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/model/${id}`, {
           method: "DELETE",
           credentials: "include",
         });

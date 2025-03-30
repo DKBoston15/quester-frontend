@@ -1,6 +1,7 @@
 <script lang="ts" module>
   import type { Note } from "$lib/types";
   import { auth } from "$lib/stores/AuthStore.svelte";
+  import { API_BASE_URL } from "$lib/config";
 
   type FilterType = "literature" | "research" | "all" | "unlinked" | "recent";
   type FilterState = {
@@ -403,7 +404,7 @@
 
       try {
         const response = await fetch(
-          `http://localhost:3333/note/project/${projectId}${
+          `${API_BASE_URL}/note/project/${projectId}${
             literatureId ? `?literatureId=${literatureId}` : ""
           }`,
           {
@@ -480,7 +481,7 @@
           literatureId: data.literatureId,
         } as any; // Type assertion to avoid linter errors
 
-        const response = await fetch("http://localhost:3333/note", {
+        const response = await fetch(`${API_BASE_URL}/note`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -573,7 +574,7 @@
 
         // Skip the API call for UI-only updates
         if (!uiOnlyUpdate) {
-          const response = await fetch(`http://localhost:3333/note/${id}`, {
+          const response = await fetch(`${API_BASE_URL}/note/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
@@ -658,7 +659,7 @@
       error = null;
 
       try {
-        const response = await fetch(`http://localhost:3333/note/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/note/${id}`, {
           method: "DELETE",
           credentials: "include",
         });

@@ -1,5 +1,6 @@
 <!-- src/lib/stores/LiteratureStore.svelte -->
 <script lang="ts" module>
+  import { API_BASE_URL } from "$lib/config";
   import type { Literature } from "../types/literature";
 
   let literatureData = $state<Literature[]>([]);
@@ -29,7 +30,7 @@
 
       try {
         const response = await fetch(
-          `http://localhost:3333/literature/project/${projectId}`,
+          `${API_BASE_URL}/literature/project/${projectId}`,
           {
             credentials: "include",
           }
@@ -52,7 +53,7 @@
 
     async addLiterature(literature: Partial<Literature>) {
       try {
-        const response = await fetch("http://localhost:3333/literature", {
+        const response = await fetch(`${API_BASE_URL}/literature`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -76,7 +77,7 @@
 
     async updateLiterature(id: string, updateData: Partial<Literature>) {
       try {
-        const response = await fetch(`http://localhost:3333/literature/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/literature/${id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -102,7 +103,7 @@
 
     async deleteLiterature(id: string) {
       try {
-        const response = await fetch(`http://localhost:3333/literature/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/literature/${id}`, {
           method: "DELETE",
           credentials: "include",
         });

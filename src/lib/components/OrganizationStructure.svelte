@@ -28,6 +28,7 @@
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import * as Tabs from "$lib/components/ui/tabs/index.js";
   import TreeNode from "./TreeNodeItem.svelte";
+  import { API_BASE_URL } from "$lib/config";
 
   // Props
   const props = $props<{
@@ -146,7 +147,7 @@
     try {
       // Load organizations
       const orgsResponse = await fetch(
-        `http://localhost:3333/organizations/by-user?userId=${auth.user.id}`,
+        `${API_BASE_URL}/organizations/by-user?userId=${auth.user.id}`,
         { credentials: "include" }
       );
 
@@ -159,7 +160,7 @@
 
       // Load departments and projects using team management API
       const resourcesResponse = await fetch(
-        `http://localhost:3333/team-management/resources`,
+        `${API_BASE_URL}/team-management/resources`,
         { credentials: "include" }
       );
 
@@ -181,7 +182,7 @@
       // Fall back to individual API calls if team management API doesn't return data
       if (!teamResources.departments?.length) {
         const deptsResponse = await fetch(
-          `http://localhost:3333/departments/by-user?userId=${auth.user.id}`,
+          `${API_BASE_URL}/departments/by-user?userId=${auth.user.id}`,
           { credentials: "include" }
         );
 
@@ -193,7 +194,7 @@
 
       if (!teamResources.projects?.length) {
         const projectsResponse = await fetch(
-          `http://localhost:3333/projects/by-user?userId=${auth.user.id}`,
+          `${API_BASE_URL}/projects/by-user?userId=${auth.user.id}`,
           { credentials: "include" }
         );
 
@@ -221,7 +222,7 @@
 
     try {
       const response = await fetch(
-        "http://localhost:3333/projects/createProjectWithUser",
+        `${API_BASE_URL}/projects/createProjectWithUser`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -272,7 +273,7 @@
 
     try {
       const response = await fetch(
-        "http://localhost:3333/departments/createDepartmentWithUser",
+        `${API_BASE_URL}/departments/createDepartmentWithUser`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -317,7 +318,7 @@
 
     try {
       const response = await fetch(
-        `http://localhost:3333/projects/${projectToMove.id}`,
+        `${API_BASE_URL}/projects/${projectToMove.id}`,
         {
           method: "PUT",
           headers: {
@@ -367,7 +368,7 @@
 
     try {
       const response = await fetch(
-        `http://localhost:3333/team-management/project/${project.id}/self-assign`,
+        `${API_BASE_URL}/team-management/project/${project.id}/self-assign`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -396,7 +397,7 @@
 
     try {
       const response = await fetch(
-        `http://localhost:3333/team-management/department/${department.id}/self-assign`,
+        `${API_BASE_URL}/team-management/department/${department.id}/self-assign`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -488,7 +489,7 @@
 
     try {
       const response = await fetch(
-        "http://localhost:3333/capabilities/project_create",
+        `${API_BASE_URL}/capabilities/project_create`,
         { credentials: "include" }
       );
 
@@ -531,7 +532,7 @@
 
     try {
       const response = await fetch(
-        "http://localhost:3333/capabilities/department_create",
+        `${API_BASE_URL}/capabilities/department_create`,
         { credentials: "include" }
       );
 

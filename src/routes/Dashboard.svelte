@@ -17,6 +17,7 @@
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import AppSidebar from "$lib/components/AppSidebar.svelte";
   import { CreditCard, FolderTree } from "lucide-svelte";
+  import { API_BASE_URL } from "$lib/config";
 
   let organizations = $state<Organization[]>([]);
   let currentOrg = $state<Organization | null>(null);
@@ -65,7 +66,7 @@
       if (!auth.user?.id) return;
 
       const response = await fetch(
-        `http://localhost:3333/organizations/by-user?userId=${auth.user.id}`,
+        `${API_BASE_URL}/organizations/by-user?userId=${auth.user.id}`,
         {
           credentials: "include",
           headers: {
@@ -99,7 +100,7 @@
         // Load organization details including roles
         try {
           const orgDetailsResponse = await fetch(
-            `http://localhost:3333/team-management/resources`,
+            `${API_BASE_URL}/team-management/resources`,
             {
               credentials: "include",
               headers: {
@@ -158,7 +159,7 @@
 
     try {
       const deptResponse = await fetch(
-        `http://localhost:3333/departments/by-user?userId=${auth.user.id}`,
+        `${API_BASE_URL}/departments/by-user?userId=${auth.user.id}`,
         { credentials: "include" }
       );
 
@@ -174,7 +175,7 @@
       );
 
       const projectsResponse = await fetch(
-        `http://localhost:3333/projects/by-user?userId=${auth.user.id}`,
+        `${API_BASE_URL}/projects/by-user?userId=${auth.user.id}`,
         { credentials: "include" }
       );
 

@@ -4,6 +4,7 @@
   import { navigate } from "svelte-routing";
   import { modelStore } from "$lib/stores/ModelStore.svelte";
   import Model from "$lib/components/model/Model.svelte";
+  import { API_BASE_URL } from "$lib/config";
 
   const props = $props<{
     modelId: string;
@@ -17,7 +18,7 @@
   async function checkModelAccessCapability() {
     try {
       const response = await fetch(
-        "http://localhost:3333/capabilities/model_access",
+        `${API_BASE_URL}/capabilities/model_access`,
         { credentials: "include" }
       );
 

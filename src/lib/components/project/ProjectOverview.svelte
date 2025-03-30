@@ -16,6 +16,7 @@
   import { InfoIcon, Loader2Icon, WandIcon } from "lucide-svelte";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
   import { toast } from "svelte-sonner";
+  import { API_BASE_URL } from "$lib/config";
 
   const projectStatusOptions = [
     { value: "Planning", label: "Planning" },
@@ -104,7 +105,7 @@
     streamingContent = "";
 
     try {
-      const response = await fetch("http://localhost:3333/ai/rewrite-purpose", {
+      const response = await fetch(`${API_BASE_URL}/ai/rewrite-purpose`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

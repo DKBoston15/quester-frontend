@@ -19,21 +19,18 @@
 
     try {
       isLoading = true;
-      const response = await fetch(
-        "http://localhost:3333/stripe/generate-checkout",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            organizationId,
-            priceId,
-            planId,
-          }),
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/stripe/generate-checkout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          organizationId,
+          priceId,
+          planId,
+        }),
+      });
 
       if (!response.ok) {
         throw new Error("Failed to create checkout session");
