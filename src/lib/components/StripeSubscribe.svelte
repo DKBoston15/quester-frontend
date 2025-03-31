@@ -3,6 +3,7 @@
   import type { Stripe } from "@stripe/stripe-js";
   import { loadStripe } from "@stripe/stripe-js";
   import { API_BASE_URL } from "$lib/config";
+  import { auth } from "$lib/stores/AuthStore.svelte";
 
   export let organizationId: string;
   export let priceId: string;
@@ -30,6 +31,7 @@
           organizationId,
           priceId,
           planId,
+          userEmail: auth.user?.email,
         }),
       });
 
