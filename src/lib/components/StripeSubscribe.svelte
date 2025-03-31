@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import type { Stripe } from "@stripe/stripe-js";
   import { loadStripe } from "@stripe/stripe-js";
+  import { API_BASE_URL } from "$lib/config";
 
   export let organizationId: string;
   export let priceId: string;
