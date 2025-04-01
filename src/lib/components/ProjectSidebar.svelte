@@ -45,6 +45,67 @@
   let canAccessAnalysis = $state(false);
   let checkingSubscription = $state(false);
   let planName = $state("");
+  let subscriptionChecked = $state(false);
+
+  // Load subscription data from session storage on component initialization
+  function loadSubscriptionFromSession() {
+    if (typeof window === "undefined") return; // Skip on SSR
+
+    try {
+      const stored = sessionStorage.getItem("quester_subscription_data");
+      if (stored) {
+        const data = JSON.parse(stored);
+        // Check if data is still valid (within 30 minutes)
+        const now = new Date().getTime();
+        const thirtyMinutes = 30 * 60 * 1000;
+        if (data.timestamp && now - data.timestamp < thirtyMinutes) {
+          canAccessModels = data.canAccessModels;
+          canAccessGraph = data.canAccessGraph;
+          canAccessAnalysis = data.canAccessAnalysis;
+          planName = data.planName;
+          subscriptionChecked = true;
+          return true;
+        }
+      }
+    } catch (e) {
+      console.error("Error loading subscription data from session storage:", e);
+    }
+    return false;
+  }
+
+  // Save subscription data to session storage
+  function saveSubscriptionToSession() {
+    if (typeof window === "undefined") return; // Skip on SSR
+
+    try {
+      const data = {
+        canAccessModels,
+        canAccessGraph,
+        canAccessAnalysis,
+        planName,
+        timestamp: new Date().getTime(),
+      };
+      sessionStorage.setItem("quester_subscription_data", JSON.stringify(data));
+      subscriptionChecked = true;
+    } catch (e) {
+      console.error("Error saving subscription data to session storage:", e);
+    }
+  }
+
+  // Clear subscription data from session storage
+  function clearSubscriptionFromSession() {
+    if (typeof window === "undefined") return; // Skip on SSR
+
+    try {
+      sessionStorage.removeItem("quester_subscription_data");
+      subscriptionChecked = false;
+    } catch (e) {
+      console.error(
+        "Error clearing subscription data from session storage:",
+        e
+      );
+    }
+  }
 
   async function checkAchievements() {
     if (!props.project?.id) return;
@@ -68,7 +129,19 @@
 
   // Add function to check subscription capabilities
   async function checkSubscriptionCapabilities() {
-    if (!auth.user) return;
+    if (!auth.user) {
+      // Reset capabilities if user is not logged in
+      canAccessModels = false;
+      canAccessGraph = false;
+      canAccessAnalysis = false;
+      planName = "";
+      checkingSubscription = false;
+      clearSubscriptionFromSession();
+      return;
+    }
+
+    // Skip check if already loaded from session storage
+    if (subscriptionChecked) return;
 
     checkingSubscription = true;
 
@@ -87,11 +160,12 @@
       if (modelResponse.ok) {
         const modelData = await modelResponse.json();
         canAccessModels = modelData.allowed;
-
         // Get plan name if available
         if (modelData.planName) {
           planName = modelData.planName;
         }
+      } else {
+        canAccessModels = false; // Default to false on error
       }
 
       // Then check if user can access graph visualization
@@ -108,11 +182,12 @@
       if (graphResponse.ok) {
         const graphData = await graphResponse.json();
         canAccessGraph = graphData.allowed;
-
         // Get plan name if not already set
         if (graphData.planName && !planName) {
           planName = graphData.planName;
         }
+      } else {
+        canAccessGraph = false; // Default to false on error
       }
 
       // Check if user can access analysis features
@@ -129,69 +204,108 @@
       if (analysisResponse.ok) {
         const analysisData = await analysisResponse.json();
         canAccessAnalysis = analysisData.allowed;
-
         // Get plan name if not already set
         if (analysisData.planName && !planName) {
           planName = analysisData.planName;
         }
+      } else {
+        canAccessAnalysis = false; // Default to false on error
       }
+
+      // Save to session storage when we have all data
+      saveSubscriptionToSession();
     } catch (error) {
       console.error("Error checking subscription capabilities:", error);
       canAccessModels = false;
       canAccessGraph = false;
       canAccessAnalysis = false;
+      planName = ""; // Reset plan name on error
+      clearSubscriptionFromSession();
     } finally {
       checkingSubscription = false;
     }
   }
 
+  // Effect to check subscription capabilities when auth state changes or on initial load
   $effect(() => {
-    if (!props.project?.id) return;
+    // First try to load from session storage
+    if (!loadSubscriptionFromSession()) {
+      // If not found in session storage, check capabilities
+      checkSubscriptionCapabilities();
+    }
+  });
 
-    // Check subscription capabilities when component loads
-    checkSubscriptionCapabilities();
+  // Clear subscription data when user logs out
+  $effect(() => {
+    if (!auth.user) {
+      // Reset local state
+      canAccessModels = false;
+      canAccessGraph = false;
+      canAccessAnalysis = false;
+      planName = "";
+      // Clear session storage
+      clearSubscriptionFromSession();
+    }
+  });
+
+  // Effect to update routes when project ID changes or capabilities are checked
+  $effect(() => {
+    // Access reactive state inside the effect for automatic dependency tracking
+    const projectId = props.project?.id;
+    const isLoading = checkingSubscription;
+    const hasModelAccess = canAccessModels;
+    const hasGraphAccess = canAccessGraph;
+    const hasAnalysisAccess = canAccessAnalysis;
+
+    if (!projectId) {
+      // Clear routes if no project ID
+      primaryRoutes = [];
+      secondaryRoutes = [];
+      tertiaryRoutes = [];
+      return;
+    }
 
     primaryRoutes = [
       {
         title: "Dashboard",
         icon: Home,
-        link: `/project/${props.project.id}/dashboard`,
+        link: `/project/${projectId}/dashboard`,
       },
       {
         title: "Literature",
         icon: Library,
-        link: `/project/${props.project.id}/literature`,
+        link: `/project/${projectId}/literature`,
       },
       {
         title: "Notes",
         icon: Pencil,
-        link: `/project/${props.project.id}/notes`,
+        link: `/project/${projectId}/notes`,
       },
       // {
       //   title: "Research Assistant",
       //   icon: MessageCircle,
-      //   link: `/project/${props.project.id}/chat`,
+      //   link: `/project/${projectId}/chat`,
       // },
       {
         title: "Analysis",
         icon: TextSearch,
-        link: `/project/${props.project.id}/analysis`,
+        link: `/project/${projectId}/analysis`,
         requiresSubscription: true,
         subscriptionFeature: "analysis features",
-        disabled: !canAccessAnalysis,
+        disabled: isLoading || !hasAnalysisAccess, // Use local constants
       },
       {
         title: "Models",
         icon: ChartNetwork,
-        link: `/project/${props.project.id}/models`,
+        link: `/project/${projectId}/models`,
         requiresSubscription: true,
         subscriptionFeature: "model builder",
-        disabled: !canAccessModels,
+        disabled: isLoading || !hasModelAccess, // Use local constants
       },
       {
         title: "Outcomes",
         icon: Microscope,
-        link: `/project/${props.project.id}/outcomes`,
+        link: `/project/${projectId}/outcomes`,
       },
     ];
 
@@ -199,20 +313,20 @@
       {
         title: "Analytics",
         icon: BarChartHorizontal,
-        link: `/project/${props.project.id}/analytics`,
+        link: `/project/${projectId}/analytics`,
       },
       {
         title: "Connections",
         icon: Workflow,
-        link: `/project/${props.project.id}/connections`,
+        link: `/project/${projectId}/connections`,
         requiresSubscription: true,
         subscriptionFeature: "graph visualization",
-        disabled: !canAccessGraph,
+        disabled: isLoading || !hasGraphAccess, // Use local constants
       },
       {
         title: "Progress",
         icon: Trophy,
-        link: `/project/${props.project.id}/progress`,
+        link: `/project/${projectId}/progress`,
       },
     ];
 
@@ -220,14 +334,42 @@
       {
         title: "Settings",
         icon: Settings,
-        link: `/project/${props.project.id}/project_settings`,
+        link: `/project/${projectId}/project_settings`,
       },
     ];
-  });
+  }); // No dependency array needed
 
   async function handleLogout() {
     auth.logout();
     navigate("https://app.quester.tech");
+  }
+
+  // Function to handle sidebar link clicks
+  function handleSidebarLinkClick() {
+    // Check achievements on navigation
+    checkAchievements();
+
+    // Don't refresh subscription checks - just refresh the timestamp
+    refreshSubscriptionTimestamp();
+  }
+
+  // Just update the timestamp without fetching new data
+  function refreshSubscriptionTimestamp() {
+    if (typeof window === "undefined" || !subscriptionChecked) return;
+
+    try {
+      const stored = sessionStorage.getItem("quester_subscription_data");
+      if (stored) {
+        const data = JSON.parse(stored);
+        data.timestamp = new Date().getTime();
+        sessionStorage.setItem(
+          "quester_subscription_data",
+          JSON.stringify(data)
+        );
+      }
+    } catch (e) {
+      console.error("Error refreshing subscription timestamp:", e);
+    }
   }
 </script>
 
@@ -263,7 +405,11 @@
           <Sidebar.Menu>
             {#each primaryRoutes as item (item.title)}
               {#if !item.disabled}
-                <Link to={item.link} class="block" on:click={checkAchievements}>
+                <Link
+                  to={item.link}
+                  class="block"
+                  on:click={handleSidebarLinkClick}
+                >
                   <Sidebar.MenuItem>
                     <Sidebar.MenuButton>
                       <Tooltip.Root>
@@ -353,7 +499,11 @@
           <Sidebar.Menu>
             {#each secondaryRoutes as item (item.title)}
               {#if !item.disabled}
-                <Link to={item.link} class="block" on:click={checkAchievements}>
+                <Link
+                  to={item.link}
+                  class="block"
+                  on:click={handleSidebarLinkClick}
+                >
                   <Sidebar.MenuItem>
                     <Sidebar.MenuButton>
                       <Tooltip.Root>
@@ -442,7 +592,11 @@
         <Sidebar.GroupContent>
           <Sidebar.Menu>
             {#each tertiaryRoutes as item (item.title)}
-              <Link to={item.link} class="block" on:click={checkAchievements}>
+              <Link
+                to={item.link}
+                class="block"
+                on:click={handleSidebarLinkClick}
+              >
                 <Sidebar.MenuItem>
                   <Sidebar.MenuButton>
                     <Tooltip.Root>
@@ -479,7 +633,11 @@
       <Sidebar.Group>
         <Sidebar.GroupContent>
           <Sidebar.Menu>
-            <Link to="/dashboard" class="block">
+            <Link
+              to="/dashboard"
+              class="block"
+              on:click={handleSidebarLinkClick}
+            >
               <Sidebar.MenuItem>
                 <Sidebar.MenuButton>
                   <Tooltip.Root>
