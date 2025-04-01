@@ -22,7 +22,7 @@
     class="p-3 backdrop-blur-md bg-white/80 dark:bg-slate-800/90 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 transition-all"
   >
     <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
-      Default Edge Settings
+      Default Connection Settings
     </h3>
 
     <!-- Type Section -->
@@ -31,7 +31,9 @@
         class="w-full py-2 flex justify-between items-center text-left"
         on:click={() => toggleSection("type")}
       >
-        <span class="text-sm text-gray-700 dark:text-gray-300">Edge Type</span>
+        <span class="text-sm text-gray-700 dark:text-gray-300"
+          >Connection Type</span
+        >
         <svg
           class="w-4 h-4 transform transition-transform {activeSection ===
           'type'

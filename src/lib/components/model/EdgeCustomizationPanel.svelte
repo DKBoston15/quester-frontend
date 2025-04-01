@@ -73,7 +73,7 @@
     >
       <div class="flex justify-between items-center mb-3">
         <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">
-          Edge Settings
+          Connection Settings
         </h3>
         <button
           class="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
