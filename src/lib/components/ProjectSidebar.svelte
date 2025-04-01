@@ -287,9 +287,9 @@
       //   link: `/project/${projectId}/chat`,
       // },
       {
-        title: "Analysis",
+        title: "Insights",
         icon: TextSearch,
-        link: `/project/${projectId}/analysis`,
+        link: `/project/${projectId}/insights`,
         requiresSubscription: true,
         subscriptionFeature: "analysis features",
         disabled: isLoading || !hasAnalysisAccess, // Use local constants
@@ -472,7 +472,7 @@
                             ? "Quester Pro or Quester Team"
                             : "Quester Team"} to access this feature.
                         {:else if item.subscriptionFeature === "analysis features"}
-                          Analysis features are not available on your {planName ||
+                          Insight features are not available on your {planName ||
                             "current"} plan. Upgrade to {planName ===
                           "Research Explorer"
                             ? "Quester Pro or Quester Team"
@@ -566,7 +566,7 @@
                             ? "Quester Pro or Quester Team"
                             : "Quester Team"} to access this feature.
                         {:else if item.subscriptionFeature === "analysis features"}
-                          Analysis features are not available on your {planName ||
+                          Insight features are not available on your {planName ||
                             "current"} plan. Upgrade to {planName ===
                           "Research Explorer"
                             ? "Quester Pro or Quester Team"

@@ -15,7 +15,7 @@
   import Connections from "./project/Connections.svelte";
   import Progress from "./project/Progress.svelte";
   import Settings from "./project/Settings.svelte";
-  import Analysis from "./project/Analysis.svelte";
+  import Insights from "./project/Insights.svelte";
   import OutcomeView from "./project/OutcomeView.svelte";
   import Chat from "./project/Chat.svelte";
   type SectionKey =
@@ -25,7 +25,7 @@
     | "notes"
     | "outcomes"
     | "analytics"
-    | "analysis"
+    | "insights"
     | "connections"
     | "progress"
     | "project_settings"
@@ -38,7 +38,7 @@
     notes: Notes,
     outcomes: Outcomes,
     analytics: Analytics,
-    analysis: Analysis,
+    insights: Insights,
     connections: Connections,
     progress: Progress,
     project_settings: Settings,

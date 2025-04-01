@@ -26,7 +26,7 @@
       // If user doesn't have access, redirect to dashboard
       if (!hasAccess) {
         console.warn(
-          "User attempted to access Analysis page without permission"
+          "User attempted to access Insights page without permission"
         );
         if (projectStore.currentProject?.id) {
           navigate(`/project/${projectStore.currentProject.id}/dashboard`);
@@ -63,11 +63,11 @@
     <div class="container mx-auto py-6 px-4">
       <div class="mb-8">
         <div>
-          <h1 class="text-3xl font-bold">Analysis</h1>
+          <h1 class="text-3xl font-bold">Insights</h1>
         </div>
         <p class="text-muted-foreground mt-2">
-          Analyze keyword patterns and relationships across your research
-          documents
+          Gain insights into keyword patterns and relationships across your
+          research
         </p>
       </div>
       <KeywordAnalysis />
