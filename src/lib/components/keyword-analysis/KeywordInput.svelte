@@ -29,8 +29,8 @@
       return;
     }
 
-    if (keywords.length >= 10) {
-      error = "Maximum 10 keywords allowed";
+    if (keywords.length >= 7) {
+      error = "Maximum 7 keywords allowed";
       return;
     }
 
@@ -96,7 +96,7 @@
     <p>Tips:</p>
     <ul class="list-disc list-inside">
       <li>Press Enter or comma to add a keyword</li>
-      <li>Add up to 10 keywords for best results</li>
+      <li>Add up to 7 keywords for best results</li>
       <li>Use specific, research-focused terms</li>
     </ul>
   </div>

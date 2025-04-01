@@ -149,6 +149,61 @@
       };
     });
   }
+
+  // New function to get triple frequency and URL
+  function getTripleFrequencyData(kw1: string, kw2: string, kw3: string) {
+    if (!frequencyData?.triples) return { count: 0, url: "" };
+
+    const keys = [
+      `${kw1}:${kw2}:${kw3}`,
+      `${kw1}:${kw3}:${kw2}`,
+      `${kw2}:${kw1}:${kw3}`,
+      `${kw2}:${kw3}:${kw1}`,
+      `${kw3}:${kw1}:${kw2}`,
+      `${kw3}:${kw2}:${kw1}`,
+    ];
+
+    let count = 0;
+    for (const key of keys) {
+      if (frequencyData.triples[key] !== undefined) {
+        count = frequencyData.triples[key];
+        break;
+      }
+    }
+
+    const query = `"${encodeURIComponent(kw1)}" AND "${encodeURIComponent(kw2)}" AND "${encodeURIComponent(kw3)}"`;
+    const url = `https://scholar.google.com/scholar?hl=en&q=${query}`;
+
+    return { count, url };
+  }
+
+  interface TripleStats {
+    kw1: string;
+    kw2: string;
+    kw3: string;
+    frequency: number;
+    url: string;
+  }
+
+  // New function to calculate all triple combinations and their stats
+  function calculateTripleStats(): TripleStats[] {
+    if (!keywords || keywords.length < 3 || !frequencyData?.triples) return [];
+
+    const triples: TripleStats[] = [];
+    for (let i = 0; i < keywords.length; i++) {
+      for (let j = i + 1; j < keywords.length; j++) {
+        for (let k = j + 1; k < keywords.length; k++) {
+          const kw1 = keywords[i];
+          const kw2 = keywords[j];
+          const kw3 = keywords[k];
+          const { count, url } = getTripleFrequencyData(kw1, kw2, kw3);
+          triples.push({ kw1, kw2, kw3, frequency: count, url });
+        }
+      }
+    }
+    // Optional: Sort by frequency descending
+    return triples.sort((a, b) => b.frequency - a.frequency);
+  }
 </script>
 
 <Card class="p-6">
@@ -315,6 +370,71 @@
           </div>
         </AccordionContent>
       </AccordionItem>
+
+      <!-- New Accordion Item for Triple Distribution -->
+      {#if keywords.length >= 3}
+        <AccordionItem value="triple-distribution">
+          <AccordionTrigger>Triple Distribution</AccordionTrigger>
+          <AccordionContent>
+            <div class="flex items-baseline gap-2 mt-4">
+              <h2 class="font-bold italic">Table 3</h2>
+              <Tooltip.Root>
+                <Tooltip.Trigger>
+                  <InfoIcon class="h-4 w-4" />
+                </Tooltip.Trigger>
+                <Tooltip.Content>
+                  <p class="text-sm max-w-xs">
+                    Numbers may differ from Google Scholar UI as we display
+                    exact values from the database, while Scholar's UI shows
+                    approximations.
+                  </p>
+                </Tooltip.Content>
+              </Tooltip.Root>
+            </div>
+            <h2 class="font-bold italic mb-2">
+              Triple Distribution of Key Terms
+            </h2>
+            <div class="overflow-x-auto">
+              <table class="min-w-full border-collapse rounded-md border">
+                <thead>
+                  <tr>
+                    <th class="p-2 border bg-muted text-left">Keyword 1</th>
+                    <th class="p-2 border bg-muted text-left">Keyword 2</th>
+                    <th class="p-2 border bg-muted text-left">Keyword 3</th>
+                    <th class="p-2 border bg-muted text-right">Frequency</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {#each calculateTripleStats() as stat}
+                    <tr>
+                      <td class="p-2 border font-medium">{stat.kw1}</td>
+                      <td class="p-2 border font-medium">{stat.kw2}</td>
+                      <td class="p-2 border font-medium">{stat.kw3}</td>
+                      <td class="p-2 border text-right">
+                        <a
+                          href={stat.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="text-blue-500 hover:underline"
+                        >
+                          {formatNumber(stat.frequency)}
+                        </a>
+                      </td>
+                    </tr>
+                  {/each}
+                  {#if calculateTripleStats().length === 0}
+                    <tr>
+                      <td class="p-2 border text-center italic" colspan="4"
+                        >No triple combinations found or data unavailable.</td
+                      >
+                    </tr>
+                  {/if}
+                </tbody>
+              </table>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      {/if}
 
       {#if report.keywordsSuggested}
         <AccordionItem value="suggestions">

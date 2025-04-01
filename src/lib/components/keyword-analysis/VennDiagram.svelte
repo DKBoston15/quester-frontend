@@ -86,17 +86,13 @@
     ];
 
     for (const key of keys) {
-      if (frequencyData.triples[key]) {
+      if (frequencyData.triples[key] !== undefined) {
         return frequencyData.triples[key];
       }
     }
 
-    // If no triple frequency is found, estimate it as 10% of the smallest pair overlap
-    // This is just an estimation - adjust as needed or replace with actual data
-    const pair1 = getPairFrequency(keyword1, keyword2);
-    const pair2 = getPairFrequency(keyword2, keyword3);
-    const pair3 = getPairFrequency(keyword1, keyword3);
-    return Math.round(Math.min(pair1, pair2, pair3) * 0.1);
+    // If no triple frequency is found for any permutation, return 0
+    return 0;
   }
 
   function updateDimensions() {
@@ -323,8 +319,7 @@
     );
 
     // Add triple intersection label in the center
-    // TODO
-    // addFreqLabel(0, r * 0.15, tripleOverlap);
+    addFreqLabel(0, r * 0.15, tripleOverlap);
   }
 
   function handleKeywordSelection(keyword: string) {
