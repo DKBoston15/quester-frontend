@@ -11,7 +11,7 @@
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
   import { API_BASE_URL } from "$lib/config";
 
-  let value = "2D";
+  let value = $state("2D");
   let showControls = false;
   let isLoading = $state(true);
   let hasAccess = $state(false);
@@ -72,15 +72,22 @@
   </div>
 {:else if hasAccess}
   <div
-    class={`overflow-hidden relative  ${document.documentElement.classList.contains("dark") ? "bg-[#121317]" : "bg-white"}`}
+    class={`overflow-hidden relative  ${document.documentElement.classList.contains("dark") ? "bg-[#1A1A1A]" : "bg-white"}`}
   >
     <div class="flex justify-between dark:bg-[#1A1A1A] bg-white">
       <div class="flex flex-col items-start z-50 p-4">
-        <ToggleGroup.Root variant="outline" bind:value type="single" class="">
+        <ToggleGroup.Root
+          variant="outline"
+          {value}
+          type="single"
+          class=""
+          onValueChange={(val) => {
+            if (val) value = val;
+          }}
+        >
           <ToggleGroup.Item
             value="2D"
             aria-label="Toggle 2D"
-            disabled={value === "2D"}
             class="w-[6rem] border-2 data-[state=on]:bg-black data-[state=on]:text-white dark:data-[state=on]:bg-white dark:data-[state=on]:text-black border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
           >
             2D
@@ -88,7 +95,6 @@
           <ToggleGroup.Item
             value="3D"
             aria-label="Toggle 3D"
-            disabled={value === "3D"}
             class="w-[6rem] border-2 data-[state=on]:bg-black data-[state=on]:text-white dark:data-[state=on]:bg-white dark:data-[state=on]:text-black border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
           >
             3D

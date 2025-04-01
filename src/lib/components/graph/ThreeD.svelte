@@ -527,7 +527,7 @@
                     <div class="space-y-4 dark:bg-[#1F2024]">
                       {#each nodeTypes as type}
                         <div
-                          class="flex items-center space-x-2 dark:bg-[#1F2024]"
+                          class="flex items-center space-x-2 dark:bg-red-400"
                         >
                           <TypeCheckbox
                             {type}
