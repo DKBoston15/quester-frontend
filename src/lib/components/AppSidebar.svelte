@@ -185,27 +185,37 @@
                   <Sidebar.Menu>
                     {#if projects.length > 0}
                       {#each projects as project}
-                        <a
-                          href={`/project/${project.id}`}
-                          class="block"
-                          onclick={(e) => {
-                            e.preventDefault();
-                            navigate(`/project/${project.id}`);
-                          }}
-                        >
-                          <Sidebar.MenuItem>
-                            <Sidebar.MenuButton>
-                              <div
-                                class="flex ml-4 items-center gap-3 px-4 py-2"
-                              >
-                                <div
-                                  class="w-2 h-2 rounded-full bg-foreground/70 flex-shrink-0"
-                                ></div>
-                                <span class="">{project.name}</span>
-                              </div>
-                            </Sidebar.MenuButton>
-                          </Sidebar.MenuItem>
-                        </a>
+                        <Tooltip.Root>
+                          <Tooltip.Trigger class="block w-full text-left">
+                            <a
+                              href={`/project/${project.id}`}
+                              class="block"
+                              onclick={(e) => {
+                                e.preventDefault();
+                                navigate(`/project/${project.id}`);
+                              }}
+                            >
+                              <Sidebar.MenuItem>
+                                <Sidebar.MenuButton>
+                                  <div
+                                    class="flex ml-4 items-center px-4 py-2 overflow-hidden"
+                                  >
+                                    <div
+                                      class="w-2 h-2 rounded-full bg-foreground/70 flex-shrink-0"
+                                    ></div>
+                                    <span
+                                      class="ml-4 truncate pr-2 text-ellipsis"
+                                      >{project.name}</span
+                                    >
+                                  </div>
+                                </Sidebar.MenuButton>
+                              </Sidebar.MenuItem>
+                            </a>
+                          </Tooltip.Trigger>
+                          <Tooltip.Content side="right" sideOffset={10}>
+                            <span>{project.name}</span>
+                          </Tooltip.Content>
+                        </Tooltip.Root>
                       {/each}
                     {:else}
                       <div class="px-4 py-2 text-sm text-muted-foreground">
