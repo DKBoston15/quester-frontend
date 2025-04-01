@@ -1,6 +1,6 @@
 <!-- VennDiagram.svelte -->
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, createEventDispatcher } from "svelte";
   import * as d3 from "d3";
   import type { KeywordAnalysis } from "$lib/types/index";
   import { Card } from "$lib/components/ui/card";
@@ -29,6 +29,10 @@
   let frequencyData = $state<any>(null);
   let keywords = $state<string[]>([]);
   let container: HTMLDivElement;
+
+  const dispatch = createEventDispatcher<{
+    filter: { include: string[]; exclude: string[]; url: string };
+  }>();
 
   $effect(() => {
     if (analysis) {
@@ -93,6 +97,62 @@
 
     // If no triple frequency is found for any permutation, return 0
     return 0;
+  }
+
+  function getKeywordFrequency(keyword: string) {
+    if (!frequencyData?.individual) return { count: 0, url: "" };
+    return {
+      count: frequencyData.individual[keyword] || 0,
+      url: `https://scholar.google.com/scholar?hl=en&q=${encodeURIComponent(keyword)}`,
+    };
+  }
+
+  function getCooccurrenceData(keyword1: string, keyword2: string) {
+    if (!frequencyData?.pairs) return { count: 0, url: "" };
+
+    // If same keyword, return its individual frequency (though unlikely needed in Venn)
+    if (keyword1 === keyword2) {
+      return {
+        count: frequencyData.individual?.[keyword1] || 0,
+        url: `https://scholar.google.com/scholar?hl=en&q=${encodeURIComponent(keyword1)}`,
+      };
+    }
+
+    // Try both orderings of the keywords
+    const key1 = `${keyword1}:${keyword2}`;
+    const key2 = `${keyword2}:${keyword1}`;
+    const count = frequencyData.pairs[key1] || frequencyData.pairs[key2] || 0;
+
+    return {
+      count,
+      url: `https://scholar.google.com/scholar?hl=en&q="${encodeURIComponent(keyword1)}"+AND+"${encodeURIComponent(keyword2)}"`,
+    };
+  }
+
+  function getTripleFrequencyData(kw1: string, kw2: string, kw3: string) {
+    if (!frequencyData?.triples) return { count: 0, url: "" };
+
+    const keys = [
+      `${kw1}:${kw2}:${kw3}`,
+      `${kw1}:${kw3}:${kw2}`,
+      `${kw2}:${kw1}:${kw3}`,
+      `${kw2}:${kw3}:${kw1}`,
+      `${kw3}:${kw1}:${kw2}`,
+      `${kw3}:${kw2}:${kw1}`,
+    ];
+
+    let count = 0;
+    for (const key of keys) {
+      if (frequencyData.triples[key] !== undefined) {
+        count = frequencyData.triples[key];
+        break;
+      }
+    }
+
+    const query = `"${encodeURIComponent(kw1)}" AND "${encodeURIComponent(kw2)}" AND "${encodeURIComponent(kw3)}"`;
+    const url = `https://scholar.google.com/scholar?hl=en&q=${query}`;
+
+    return { count, url };
   }
 
   function updateDimensions() {
@@ -173,23 +233,57 @@
     };
 
     // Add frequency labels
-    const addFreqLabel = (x: number, y: number, value: number) => {
-      chart
+    const addFreqLabel = (
+      x: number,
+      y: number,
+      value: number,
+      includeKeywords: string[],
+      excludeKeywords: string[],
+      url: string
+    ) => {
+      const group = chart.append("g").style("cursor", "pointer"); // Add cursor pointer to the group
+
+      group
         .append("text")
         .attr("x", x)
         .attr("y", y)
         .attr("text-anchor", "middle")
         .attr("dominant-baseline", "middle")
-        .attr("class", "font-semibold dark:fill-white")
-        .text(value.toLocaleString());
+        .attr("class", "font-semibold dark:fill-white hover:underline") // Add hover effect
+        .text(value.toLocaleString())
+        .on("click", () =>
+          handleFilterClick(includeKeywords, excludeKeywords, url)
+        ); // Add click handler directly
     };
 
     // Add labels - move individual frequencies outward by r/3
     addLabel(-d / 2, -r - 20, kw1);
     addLabel(d / 2, -r - 20, kw2);
-    addFreqLabel(-d / 2 - r / 3, 0, freq1);
-    addFreqLabel(d / 2 + r / 3, 0, freq2);
-    addFreqLabel(0, 0, overlap);
+    // Frequency labels
+    addFreqLabel(
+      -d / 2 - r / 3,
+      0,
+      freq1 - overlap,
+      [kw1],
+      [kw2],
+      getKeywordFrequency(kw1).url
+    ); // Exclusive kw1
+    addFreqLabel(
+      d / 2 + r / 3,
+      0,
+      freq2 - overlap,
+      [kw2],
+      [kw1],
+      getKeywordFrequency(kw2).url
+    ); // Exclusive kw2
+    addFreqLabel(
+      0,
+      0,
+      overlap,
+      [kw1, kw2],
+      [],
+      getCooccurrenceData(kw1, kw2).url
+    ); // Overlap kw1 & kw2
   }
 
   function renderThreeSetVenn(
@@ -271,15 +365,27 @@
     };
 
     // Add frequency labels
-    const addFreqLabel = (x: number, y: number, value: number) => {
-      chart
+    const addFreqLabel = (
+      x: number,
+      y: number,
+      value: number,
+      includeKeywords: string[],
+      excludeKeywords: string[],
+      url: string
+    ) => {
+      const group = chart.append("g").style("cursor", "pointer"); // Add cursor pointer
+
+      group
         .append("text")
         .attr("x", x)
         .attr("y", y)
         .attr("text-anchor", "middle")
         .attr("dominant-baseline", "middle")
-        .attr("class", "font-semibold dark:fill-white")
-        .text(value.toLocaleString());
+        .attr("class", "font-semibold dark:fill-white hover:underline") // Add hover effect
+        .text(value.toLocaleString())
+        .on("click", () =>
+          handleFilterClick(includeKeywords, excludeKeywords, url)
+        ); // Add click handler
     };
 
     // Add keyword labels above each circle
@@ -297,29 +403,66 @@
     });
 
     // Position labels for exclusive areas (regions with only one set)
-    addFreqLabel(positions[0].x, positions[0].y - r * 0.3, exclusiveA);
-    addFreqLabel(positions[1].x - r * 0.3, positions[1].y, exclusiveB);
-    addFreqLabel(positions[2].x + r * 0.3, positions[2].y, exclusiveC);
+    addFreqLabel(
+      positions[0].x,
+      positions[0].y - r * 0.3,
+      exclusiveA,
+      [kw1],
+      [kw2, kw3],
+      getKeywordFrequency(kw1).url
+    );
+    addFreqLabel(
+      positions[1].x - r * 0.3,
+      positions[1].y,
+      exclusiveB,
+      [kw2],
+      [kw1, kw3],
+      getKeywordFrequency(kw2).url
+    );
+    addFreqLabel(
+      positions[2].x + r * 0.3,
+      positions[2].y,
+      exclusiveC,
+      [kw3],
+      [kw1, kw2],
+      getKeywordFrequency(kw3).url
+    );
 
     // Position labels for pairwise intersection areas
     addFreqLabel(
       (positions[0].x + positions[1].x) / 2 - r * 0.1,
       (positions[0].y + positions[1].y) / 2 - r * 0.1,
-      exclusiveAB
+      exclusiveAB,
+      [kw1, kw2], // Include kw1 and kw2
+      [kw3], // Exclude kw3
+      getCooccurrenceData(kw1, kw2).url
     );
     addFreqLabel(
       (positions[1].x + positions[2].x) / 2,
       (positions[1].y + positions[2].y) / 2 + r * 0.15,
-      exclusiveBC
+      exclusiveBC,
+      [kw2, kw3], // Include kw2 and kw3
+      [kw1], // Exclude kw1
+      getCooccurrenceData(kw2, kw3).url
     );
     addFreqLabel(
       (positions[0].x + positions[2].x) / 2 + r * 0.1,
       (positions[0].y + positions[2].y) / 2 - r * 0.1,
-      exclusiveAC
+      exclusiveAC,
+      [kw1, kw3], // Include kw1 and kw3
+      [kw2], // Exclude kw2
+      getCooccurrenceData(kw1, kw3).url
     );
 
     // Add triple intersection label in the center
-    addFreqLabel(0, r * 0.15, tripleOverlap);
+    addFreqLabel(
+      0,
+      r * 0.15,
+      tripleOverlap,
+      [kw1, kw2, kw3],
+      [],
+      getTripleFrequencyData(kw1, kw2, kw3).url
+    );
   }
 
   function handleKeywordSelection(keyword: string) {
@@ -330,6 +473,18 @@
     }
     // Force update dimensions and render
     setTimeout(updateDimensions, 0);
+  }
+
+  function handleFilterClick(
+    includeKeywords: string[],
+    excludeKeywords: string[],
+    url: string
+  ) {
+    dispatch("filter", {
+      include: includeKeywords,
+      exclude: excludeKeywords,
+      url,
+    });
   }
 
   $effect(() => {

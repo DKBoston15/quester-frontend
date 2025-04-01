@@ -204,6 +204,18 @@
     // Optional: Sort by frequency descending
     return triples.sort((a, b) => b.frequency - a.frequency);
   }
+
+  function handleVennFilter(
+    event: CustomEvent<{ include: string[]; exclude: string[]; url: string }>
+  ) {
+    const { url } = event.detail;
+
+    if (url) {
+      window.open(url, "_blank");
+    } else {
+      console.warn("Venn diagram filter event did not provide a URL.");
+    }
+  }
 </script>
 
 <Card class="p-6">
@@ -236,7 +248,7 @@
         <AccordionTrigger>Keyword Overlap Visualization</AccordionTrigger>
         <AccordionContent>
           <div class="mt-2">
-            <VennDiagram {analysis} />
+            <VennDiagram {analysis} on:filter={handleVennFilter} />
           </div>
         </AccordionContent>
       </AccordionItem>
