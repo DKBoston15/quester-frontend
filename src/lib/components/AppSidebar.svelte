@@ -83,9 +83,9 @@
         class="h-8 w-8 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 p-2 rounded-sm"
       />
       <Tooltip.Root>
-        <Tooltip.Trigger>
+        <Tooltip.Trigger class="overflow-hidden">
           <span
-            class="font-bold text-lg truncate group-data-[collapsible=icon]:hidden"
+            class="block font-bold text-lg truncate group-data-[collapsible=icon]:hidden pr-2"
           >
             {auth.currentOrganization?.name || "Select Workspace"}
           </span>
