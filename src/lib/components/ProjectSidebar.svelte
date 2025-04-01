@@ -227,7 +227,7 @@
 
   async function handleLogout() {
     auth.logout();
-    navigate("/login");
+    navigate("https://app.quester.tech");
   }
 </script>
 
