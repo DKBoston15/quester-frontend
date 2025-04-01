@@ -123,10 +123,15 @@
           throw new Error(`Failed to create model (${response.status})`);
         }
 
-        const { model } = await response.json();
-        models = [model, ...models];
-        currentModel = model;
-        return model;
+        const newModel: Model = await response.json();
+
+        if (!newModel?.id) {
+          throw new Error("Received invalid model data from API");
+        }
+
+        models = [newModel, ...models];
+        currentModel = newModel;
+        return newModel;
       } catch (err) {
         console.error("Error creating model:", err);
         error = err instanceof Error ? err.message : "An error occurred";
