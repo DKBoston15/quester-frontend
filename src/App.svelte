@@ -71,13 +71,21 @@
 
   async function checkPendingInvites() {
     if (!auth.user?.email) return false;
+    const userEmail = auth.user.email; // Store email for filtering
     const response = await fetch(
-      `${API_BASE_URL}/invitations/pending?email=${encodeURIComponent(auth.user.email)}`,
+      `${API_BASE_URL}/invitations/pending?email=${encodeURIComponent(userEmail)}`, // Keep sending email param
       { credentials: "include" }
     );
     if (!response.ok) return false;
     const invitations = await response.json();
-    return invitations.length > 0;
+
+    // Filter invitations to only include those for the current user's email
+    const userPendingInvites = invitations.filter(
+      (invite) => invite.email === userEmail
+    );
+
+    // Return true only if there are pending invites specifically for this user
+    return userPendingInvites.length > 0;
   }
 
   const currentOrgName = $derived(auth.currentOrganization?.name || "");
