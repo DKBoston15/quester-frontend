@@ -134,7 +134,9 @@
             class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
             on:change={applyCustomSettings}
           />
-          <span class="text-xs text-gray-600 dark:text-gray-400">Animated</span>
+          <span class="text-xs text-gray-600 dark:text-gray-400 mt-2"
+            >Animated</span
+          >
         </label>
 
         <!-- Markers -->
@@ -146,8 +148,8 @@
               class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
               on:change={applyCustomSettings}
             />
-            <span class="text-xs text-gray-600 dark:text-gray-400"
-              >Start Arrow</span
+            <span class="text-xs text-gray-600 dark:text-gray-400 mt-2"
+              >Marker One</span
             >
           </label>
           <label class="flex items-center gap-2">
@@ -157,8 +159,8 @@
               class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
               on:change={applyCustomSettings}
             />
-            <span class="text-xs text-gray-600 dark:text-gray-400"
-              >End Arrow</span
+            <span class="text-xs text-gray-600 dark:text-gray-400 mt-2"
+              >Marker Two</span
             >
           </label>
         </div>

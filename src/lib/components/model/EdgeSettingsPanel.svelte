@@ -69,7 +69,7 @@
               bind:checked={$edgeSettings.animated}
               class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
             />
-            <span class="text-xs text-gray-600 dark:text-gray-400"
+            <span class="text-xs mt-2 text-gray-600 dark:text-gray-400"
               >Animated</span
             >
           </label>
@@ -160,8 +160,8 @@
                 bind:checked={$edgeSettings.markerStart}
                 class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
               />
-              <span class="text-xs text-gray-600 dark:text-gray-400"
-                >Start Arrow</span
+              <span class="text-xs mt-2 text-gray-600 dark:text-gray-400"
+                >Marker One</span
               >
             </label>
             <label class="flex items-center gap-2">
@@ -170,8 +170,8 @@
                 bind:checked={$edgeSettings.markerEnd}
                 class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
               />
-              <span class="text-xs text-gray-600 dark:text-gray-400"
-                >End Arrow</span
+              <span class="text-xs mt-2 text-gray-600 dark:text-gray-400"
+                >Marker Two</span
               >
             </label>
           </div>
