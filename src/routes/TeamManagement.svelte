@@ -50,6 +50,10 @@
   let hasElevatedPermissions = $derived(determineElevatedPermissions());
   let organizationId = $derived(getOrganizationId());
 
+  let showInvitationsTab = $derived(
+    teamManagement.selectedResourceType === "organization"
+  );
+
   // Add subscription capability tracking
   let subscriptionLimits = $state({
     canInviteUsers: false,
@@ -558,9 +562,9 @@
               <CardHeader class="pb-0">
                 <Tabs value={activeTab} class="w-full">
                   <TabsList
-                    class="grid w-full {canShowAddUsersTab()
-                      ? 'grid-cols-3'
-                      : 'grid-cols-2'}"
+                    class="grid w-full grid-cols-{1 +
+                      (canShowAddUsersTab() ? 1 : 0) +
+                      (showInvitationsTab ? 1 : 0)}"
                   >
                     <TabsTrigger
                       value="members"
@@ -580,17 +584,15 @@
                       </TabsTrigger>
                     {/if}
 
-                    <TabsTrigger
-                      value="invitations"
-                      onclick={() => (activeTab = "invitations")}
-                      disabled={(!teamManagement.permissions.canInviteUsers &&
-                        !isOrganizationOwner() &&
-                        !teamManagement.settings?.allowMemberInvitations) ||
-                        teamManagement.settings?.invitations?.disabled}
-                    >
-                      <UserPlus class="h-4 w-4 mr-2" />
-                      Invitations
-                    </TabsTrigger>
+                    {#if showInvitationsTab}
+                      <TabsTrigger
+                        value="invitations"
+                        onclick={() => (activeTab = "invitations")}
+                      >
+                        <UserPlus class="h-4 w-4 mr-2" />
+                        Invitations
+                      </TabsTrigger>
+                    {/if}
                   </TabsList>
                 </Tabs>
               </CardHeader>
@@ -667,7 +669,7 @@
                 {/if}
 
                 <!-- Invitations Tab -->
-                {#if activeTab === "invitations"}
+                {#if activeTab === "invitations" && showInvitationsTab}
                   <div class="py-4">
                     {#if teamManagement.settings?.invitations?.disabled}
                       <div class="text-center py-8 text-muted-foreground">
@@ -726,9 +728,11 @@
                                 {#if subscriptionLimits.subscriptionPlan === "Quester Pro"}
                                   Upgrade to Quester Team to add more team
                                   members.
-                                {:else}
+                                {:else if subscriptionLimits.subscriptionPlan === "Quester Team"}
                                   Please contact support to discuss custom team
                                   sizes.
+                                {:else}
+                                  Upgrade your plan to invite users.
                                 {/if}
                               </p>
                             </div>
