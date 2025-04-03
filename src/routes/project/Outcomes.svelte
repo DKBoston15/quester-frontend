@@ -246,7 +246,7 @@
         </Button>
       </div>
       <p class="text-muted-foreground mt-2">
-        Create and manage your research outcomes
+        Create and manage your project outcomes
       </p>
     </div>
 
