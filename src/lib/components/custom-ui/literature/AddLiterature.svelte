@@ -448,27 +448,29 @@
           <div class="p-4">
             <Tabs.Content value="paste" class="space-y-4">
               <!-- Paste Area -->
-              <div class="space-y-4">
-                <Label.Root>Paste your references</Label.Root>
-                <Textarea
-                  bind:value={pasteText}
-                  placeholder="Paste your references here, separated by empty lines..."
-                  rows={8}
-                  disabled={isProcessing}
-                />
-                <Button
-                  class="w-full"
-                  onclick={handleProcessReferences}
-                  disabled={!pasteText.trim() || isProcessing}
-                >
-                  {#if isProcessing}
-                    <Loader2 class="h-4 w-4 mr-2 animate-spin" />
-                    Processing...
-                  {:else}
-                    Process References
-                  {/if}
-                </Button>
-              </div>
+              {#if extractedReferences.length === 0}
+                <div class="space-y-4">
+                  <Label.Root>Paste your references</Label.Root>
+                  <Textarea
+                    bind:value={pasteText}
+                    placeholder="Paste your references here, separated by empty lines..."
+                    rows={8}
+                    disabled={isProcessing}
+                  />
+                  <Button
+                    class="w-full"
+                    onclick={handleProcessReferences}
+                    disabled={!pasteText.trim() || isProcessing}
+                  >
+                    {#if isProcessing}
+                      <Loader2 class="h-4 w-4 mr-2 animate-spin" />
+                      Processing...
+                    {:else}
+                      Process References
+                    {/if}
+                  </Button>
+                </div>
+              {/if}
 
               {#if isProcessing || isSaving}
                 <div class="space-y-2">
