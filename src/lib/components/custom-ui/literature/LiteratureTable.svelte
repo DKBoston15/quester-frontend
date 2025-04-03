@@ -164,6 +164,52 @@
         closeOnApply: true,
       },
     },
+    {
+      field: "createdAt",
+      headerName: "Added On",
+      width: 150,
+      sortable: true,
+      filter: "agDateColumnFilter",
+      filterParams: {
+        buttons: ["reset", "apply"],
+        closeOnApply: true,
+        suppressAndOrCondition: true,
+        comparator: (filterLocalDateAtMidnight: Date, cellValue: string) => {
+          const cellDate = new Date(cellValue);
+
+          if (isNaN(cellDate.getTime())) return -1;
+          if (isNaN(filterLocalDateAtMidnight.getTime())) return -1;
+
+          const cellDateMidnight = new Date(
+            cellDate.getFullYear(),
+            cellDate.getMonth(),
+            cellDate.getDate()
+          );
+
+          if (cellDateMidnight < filterLocalDateAtMidnight) {
+            return -1;
+          } else if (cellDateMidnight > filterLocalDateAtMidnight) {
+            return 1;
+          } else {
+            return 0;
+          }
+        },
+      },
+      valueFormatter: (params: ValueFormatterParams<Literature>) => {
+        if (params.value) {
+          try {
+            // Assuming params.value is an ISO string like "2024-07-25T10:30:00.000Z"
+            const date = new Date(params.value);
+            return date.toLocaleDateString("en-CA"); // Format as YYYY-MM-DD
+          } catch (e) {
+            console.error("Error formatting date:", e);
+            return params.value; // Return original value if formatting fails
+          }
+        }
+        return "";
+      },
+      suppressMenu: true,
+    },
   ];
 
   const gridOptions: GridOptions<Literature> = {

@@ -195,7 +195,8 @@
 >
   <CardHeader>
     <div class="flex items-center justify-between">
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
+        <CardTitle class=" text-xl">Project Products</CardTitle>
         <Tooltip.Root>
           <Tooltip.Trigger>
             <InfoIcon class="h-5 w-5 text-gray-500 dark:text-gray-400" />
@@ -206,7 +207,6 @@
             </p>
           </Tooltip.Content>
         </Tooltip.Root>
-        <CardTitle class=" text-xl">Project Products</CardTitle>
       </div>
       {#if !editMode}
         <Button

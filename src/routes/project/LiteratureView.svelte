@@ -146,6 +146,14 @@
                   literature = detail.literature;
                 }}
               />
+              <p class="text-sm text-muted-foreground mt-4">
+                Added on:
+                {new Date(literature.createdAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </p>
             </Card.Content>
           </Card.Root>
 
