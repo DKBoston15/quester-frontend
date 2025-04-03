@@ -263,14 +263,11 @@
               color: textColor,
               stepSize: 1,
               // @ts-ignore
-              callback: function (value: number | string) {
-                if (isYearsChart) {
-                  const labels = originalChart.data.labels;
-                  if (!Array.isArray(labels)) return value;
-                  return labels[Number(value)] || value;
-                }
-                const numValue = Number(value);
-                return Number.isInteger(numValue) ? numValue : null;
+              callback: function (this: any, value: number | string) {
+                // Get the labels from the chart instance
+                const labels = this.chart.data.labels;
+                // Return the label corresponding to the index (value)
+                return labels[Number(value)] || value;
               },
               maxRotation: 0,
               minRotation: 0,
@@ -560,12 +557,12 @@
                 ticks: {
                   color: textColor,
                   stepSize: 1,
+                  // @ts-ignore
                   callback: function (this: any, value: number | string) {
-                    const numValue = Number(value);
-                    if (Number.isInteger(numValue)) {
-                      return numValue;
-                    }
-                    return null;
+                    // Get the labels from the chart instance
+                    const labels = this.chart.data.labels;
+                    // Return the label corresponding to the index (value)
+                    return labels[Number(value)] || value;
                   },
                   maxRotation: 0,
                   minRotation: 0,
@@ -634,12 +631,12 @@
                 ticks: {
                   color: textColor,
                   stepSize: 1,
+                  // @ts-ignore
                   callback: function (this: any, value: number | string) {
-                    const numValue = Number(value);
-                    if (Number.isInteger(numValue)) {
-                      return numValue;
-                    }
-                    return null;
+                    // Get the labels from the chart instance
+                    const labels = this.chart.data.labels;
+                    // Return the label corresponding to the index (value)
+                    return labels[Number(value)] || value;
                   },
                   maxRotation: 0,
                   minRotation: 0,
