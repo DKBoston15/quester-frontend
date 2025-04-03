@@ -920,68 +920,14 @@
       <div class="border rounded-md overflow-hidden bg-background">
         {#each organizations as org}
           <div class="border-b last:border-0">
-            <div
-              class="flex items-center gap-2 p-3 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors"
+            <button
+              type="button"
+              class="flex w-full items-center gap-2 p-3 text-left hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors"
               onclick={() => (selectedOrganization = org)}
             >
-              <Building2 class="h-5 w-5 text-muted-foreground" />
-              <span class="font-medium">{org.name}</span>
-
-              <div class="ml-auto flex gap-2">
-                {#if canCreateDepartment(org.id)}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    class="flex items-center gap-1"
-                    onclick={(e: MouseEvent) => {
-                      e.stopPropagation();
-                      showNewDepartmentDialog = true;
-                    }}
-                  >
-                    <FolderTree class="h-4 w-4" />
-                    New Department
-                  </Button>
-                {:else}
-                  <div class="relative inline-block group">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      class="flex items-center gap-1 opacity-70"
-                      disabled
-                    >
-                      <FolderTree class="h-4 w-4" />
-                      New Department
-                    </Button>
-                    <div
-                      class="absolute right-0 bottom-full mb-2 hidden group-hover:block z-50"
-                    >
-                      <div
-                        class="bg-popover text-popover-foreground shadow-md rounded-md p-2 text-xs w-48"
-                      >
-                        Your subscription plan does not allow creating
-                        departments. Please upgrade to create departments.
-                      </div>
-                    </div>
-                  </div>
-                {/if}
-
-                {#if canCreateProject(org.id)}
-                  <Button
-                    variant="default"
-                    size="sm"
-                    class="flex items-center gap-1"
-                    onclick={(e: MouseEvent) => {
-                      e.stopPropagation();
-                      selectedDepartmentId = null;
-                      showNewProjectDialog = true;
-                    }}
-                  >
-                    <Plus class="h-4 w-4" />
-                    New Project
-                  </Button>
-                {/if}
-              </div>
-            </div>
+              <Building2 class="h-5 w-5 text-muted-foreground shrink-0" />
+              <span class="font-medium flex-grow">{org.name}</span>
+            </button>
 
             <div class="ml-4 border-l pl-4 pb-2">
               <!-- Calculate filtered departments (only show departments with matching projects if search is active) -->

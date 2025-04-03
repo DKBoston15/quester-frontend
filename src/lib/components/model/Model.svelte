@@ -78,14 +78,38 @@
     };
 
     // Add optional properties if they exist
-    if (width !== undefined && width !== null) {
+    if (typeof width === "number") {
       newNode.width = width;
     }
-    if (height !== undefined && height !== null) {
+    if (typeof height === "number") {
       newNode.height = height;
     }
-    if (nodeToDuplicate.style && typeof nodeToDuplicate.style === "object") {
-      newNode.style = { ...nodeToDuplicate.style };
+    // Handle style property (string or object)
+    if (nodeToDuplicate.style) {
+      if (typeof nodeToDuplicate.style === "string") {
+        newNode.style = nodeToDuplicate.style;
+      } else if (
+        typeof nodeToDuplicate.style === "object" &&
+        nodeToDuplicate.style !== null
+      ) {
+        // Attempt to convert style object to CSS string
+        try {
+          newNode.style = Object.entries(nodeToDuplicate.style)
+            .map(
+              ([key, value]) =>
+                `${key.replace(/([A-Z])/g, "-$1").toLowerCase()}: ${value};`
+            )
+            .join(" ");
+        } catch (e) {
+          console.warn(
+            "Could not convert style object to string:",
+            e,
+            nodeToDuplicate.style
+          );
+          // Optionally assign an empty string or default style if conversion fails
+          newNode.style = "";
+        }
+      }
     }
     if (nodeToDuplicate.sourcePosition) {
       newNode.sourcePosition = nodeToDuplicate.sourcePosition;
