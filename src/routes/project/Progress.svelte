@@ -19,6 +19,8 @@
     Network,
     Star,
     Expand,
+    Plus,
+    Minus,
   } from "lucide-svelte";
   import { onDestroy, onMount } from "svelte";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
@@ -191,6 +193,8 @@
     { id: "project", content: "Project", order: 1 },
     { id: "literature", content: "Literature", order: 2 },
     { id: "notes", content: "Notes", order: 3 },
+    { id: "models", content: "Models", order: 4 },
+    { id: "outcomes", content: "Outcomes", order: 5 },
   ];
 
   onMount(async () => {
@@ -342,7 +346,7 @@
             const changeDate = new Date(event.createdAt);
             timelineItems.push({
               id: `model_${event.id}`,
-              group: "project",
+              group: "models",
               content: `Created Model: ${event.data.name}`,
               start: changeDate,
               type: "point",
@@ -369,7 +373,7 @@
             const changeDate = new Date(event.createdAt);
             timelineItems.push({
               id: `outcome_${event.id}`,
-              group: "project",
+              group: "outcomes",
               content: `Created ${event.data.type} Outcome: ${event.data.name}`,
               start: changeDate,
               type: "point",
@@ -455,7 +459,6 @@
 
       // Initialize timeline with proper typing
       const options = {
-        height: "400px",
         min: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
         max: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days in future
         zoomMin: 1000 * 60 * 60 * 24, // One day
@@ -561,11 +564,32 @@
           showDialog = true;
         }
       });
+
+      // Prevent default wheel scroll behavior (for zooming)
+      timelineContainer.addEventListener(
+        "wheel",
+        (event) => {
+          event.preventDefault();
+        },
+        { passive: false }
+      );
     } catch (error) {
       console.error("Error initializing timeline:", error);
       isInitialized = false;
     } finally {
       isTimelineLoading = false;
+    }
+  }
+
+  function zoomTimeline(factor: number) {
+    console.log("Zooming timeline with factor:", factor);
+    if (timeline) {
+      if (factor > 0) {
+        timeline.zoomIn(factor);
+      } else {
+        // Use zoomOut for negative factors (adjust magnitude if needed)
+        timeline.zoomOut(Math.abs(factor));
+      }
     }
   }
 
@@ -738,6 +762,24 @@
           <CardTitle>Project Timeline</CardTitle>
         </CardHeader>
         <CardContent>
+          <div class="flex justify-end gap-2 mb-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onclick={() => zoomTimeline(0.2)}
+            >
+              <Plus class="h-4 w-4" />
+              <span class="sr-only">Zoom In</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onclick={() => zoomTimeline(-0.2)}
+            >
+              <Minus class="h-4 w-4" />
+              <span class="sr-only">Zoom Out</span>
+            </Button>
+          </div>
           <div bind:this={timelineContainer} class="w-full timeline-container">
             {#if isTimelineLoading}
               <div class="flex justify-center items-center min-h-[400px]">
@@ -871,7 +913,8 @@
     background: var(--background);
     border-radius: 0.5rem;
     padding: 1rem;
-    min-height: 400px;
+    min-height: 200px; /* Keep a minimum height */
+    overflow-x: hidden; /* Keep horizontal scroll prevention */
   }
 
   :global(.vis-timeline) {
@@ -934,8 +977,42 @@
     background-color: var(--primary) !important;
   }
 
+  :global(.vis-left .vis-group) {
+    display: flex !important;
+    align-items: center !important;
+    height: 100% !important; /* Ensure it takes full height of its row */
+    text-align: left !important;
+    padding-left: 10px !important; /* Adjust padding as needed */
+  }
+
+  /* Style the container for labels in the left panel */
+  :global(.vis-panel.vis-left .vis-label) {
+    display: flex !important; /* Use flexbox to align children */
+    align-items: center !important; /* Vertically center the .vis-inner child */
+    padding-left: 10px !important; /* Add some padding */
+  }
+
+  /* Style the actual text inside the label */
+  :global(.vis-panel.vis-left .vis-label .vis-inner) {
+    font-weight: 600 !important; /* Bolder text */
+    color: hsl(
+      var(--muted-foreground)
+    ) !important; /* Brighter color for contrast */
+    line-height: normal !important; /* Ensure line height doesn't interfere */
+  }
+
+  /* Style the time axis labels (top) */
+  :global(.vis-panel.vis-top .vis-time-axis .vis-text) {
+    color: var(--foreground) !important; /* Ensure good contrast */
+    font-weight: 500; /* Slightly bolder than default */
+  }
+
+  :global(.vis-panel.vis-top .vis-time-axis .vis-text.vis-major) {
+    font-weight: 600; /* Make major labels (month/year) even bolder */
+  }
+
   :global(.vis-group) {
-    font-weight: 500;
+    /* font-weight: 500; */ /* Moved weight to label */
     color: var(--foreground);
   }
 
