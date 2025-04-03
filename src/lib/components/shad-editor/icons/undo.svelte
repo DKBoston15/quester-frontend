@@ -8,6 +8,33 @@
     editor,
     toolTipProps = { delayDuration: 0, disabled: false },
   }: ToolBarIconProps = $props();
+
+  // Local reactive state for disabled status
+  let isDisabled = $state(true);
+
+  // Effect to update isDisabled when editor state changes
+  $effect(() => {
+    function updateDisabledState() {
+      const canUndo = editor?.can().chain().focus().undo().run();
+      console.log(
+        "Undo button: updateDisabledState called. Can undo:",
+        canUndo
+      );
+      isDisabled = !canUndo;
+    }
+
+    // Initial check
+    if (editor) {
+      updateDisabledState();
+      // Listen for transaction updates
+      editor.on("transaction", updateDisabledState);
+    }
+
+    // Cleanup function
+    return () => {
+      editor?.off("transaction", updateDisabledState);
+    };
+  });
 </script>
 
 <Tooltip.Provider {...toolTipProps}>
@@ -16,8 +43,8 @@
       <Button
         variant="ghost"
         class="size-8 p-0"
-        onclick={() => editor.chain().focus().undo().run()}
-        disabled={!editor.can().chain().focus().undo().run()}
+        onclick={() => editor?.chain().focus().undo().run()}
+        disabled={isDisabled}
       >
         <Undo size={16} />
       </Button>
