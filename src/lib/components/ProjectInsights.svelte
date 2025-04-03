@@ -67,6 +67,18 @@
       // },
     },
     {
+      field: "keywords",
+      severity: "warning",
+      message: "Missing Project Keywords",
+      description:
+        "Add relevant keywords to improve project discoverability and categorization.",
+      checkFn: (project) => !project.keywords || project.keywords.length === 0,
+      // action: {
+      //   label: "Add Keywords",
+      //   route: "project_settings",
+      // },
+    },
+    {
       field: "status",
       severity: "error",
       message: "Project Status Not Set",
