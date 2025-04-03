@@ -10,6 +10,7 @@
     ChevronUp,
     FolderKanban,
     UserPlus,
+    ChartBar,
   } from "lucide-svelte";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import { auth } from "$lib/stores/AuthStore.svelte";
@@ -29,6 +30,11 @@
       title: "Team Management",
       url: "/team-management",
       icon: UserPlus,
+    },
+    {
+      title: "Organization Analytics",
+      url: "/organization-analytics ",
+      icon: ChartBar,
     },
     {
       title: "Settings",

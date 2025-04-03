@@ -5,6 +5,7 @@
   import { onMount } from "svelte";
   import { auth } from "./lib/stores/AuthStore.svelte";
   import Dashboard from "./routes/Dashboard.svelte";
+  import OrganizationAnalytics from "./routes/OrganizationAnalytics.svelte";
   import ProtectedLayout from "./lib/components/ProtectedLayout.svelte";
   import Onboarding from "./routes/Onboarding.svelte";
   import Project from "./routes/Project.svelte";
@@ -152,6 +153,9 @@
           </Route>
           <Route path="/team-management">
             <TeamManagement />
+          </Route>
+          <Route path="/organization-analytics">
+            <OrganizationAnalytics />
           </Route>
           <Route path="/settings">
             <Settings />
