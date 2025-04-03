@@ -43,7 +43,10 @@
       {#if props.resources.organizations?.length}
         <optgroup label="Organizations">
           {#each props.resources.organizations as org}
-            <option value={`organization:${org.id}`}>{org.name}</option>
+            <option
+              value={`organization:${org.id}`}
+              class="whitespace-normal min-w-full">{org.name}</option
+            >
           {/each}
         </optgroup>
       {/if}
@@ -51,7 +54,10 @@
       {#if props.resources.departments?.length}
         <optgroup label="Departments">
           {#each props.resources.departments as dept}
-            <option value={`department:${dept.id}`}>{dept.name}</option>
+            <option
+              value={`department:${dept.id}`}
+              class="whitespace-normal min-w-full">{dept.name}</option
+            >
           {/each}
         </optgroup>
       {/if}
@@ -59,10 +65,25 @@
       {#if props.resources.projects?.length}
         <optgroup label="Projects">
           {#each props.resources.projects as project}
-            <option value={`project:${project.id}`}>{project.name}</option>
+            <option
+              value={`project:${project.id}`}
+              class="whitespace-normal min-w-full">{project.name}</option
+            >
           {/each}
         </optgroup>
       {/if}
     </select>
   </div>
 </div>
+
+<style>
+  select option {
+    width: 100%;
+    min-width: 100%;
+    padding-right: 1rem;
+  }
+
+  select optgroup {
+    max-width: none;
+  }
+</style>
