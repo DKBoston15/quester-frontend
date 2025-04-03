@@ -136,7 +136,7 @@
     <Accordion.Item value="insights">
       <div class="flex items-center justify-between px-6 pt-6">
         <div class="flex items-center gap-2">
-          <Card.Title class=" text-xl flex items-center gap-2">
+          <Card.Title class="text-xl flex items-center gap-2">
             Project Health
             {#if completionPercentage === 100}
               <Tooltip.Provider>
