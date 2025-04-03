@@ -81,7 +81,7 @@
 
     // Filter invitations to only include those for the current user's email
     const userPendingInvites = invitations.filter(
-      (invite) => invite.email === userEmail
+      (invite: { email: string }) => invite.email === userEmail
     );
 
     // Return true only if there are pending invites specifically for this user

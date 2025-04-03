@@ -25,7 +25,7 @@
             class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
           >
             <Card.Header>
-              <Card.Title>Keywords</Card.Title>
+              <Card.Title>Project Keywords</Card.Title>
             </Card.Header>
             <Card.Content>
               <ProjectKeywords project={projectStore.currentProject} />
@@ -33,7 +33,12 @@
           </Card.Root>
         {/if}
 
-        <ResearchDesigns />
+        <div class="w-full min-w-0">
+          <ResearchDesigns />
+        </div>
+        <div class="w-full min-w-0">
+          <ResearchProducts />
+        </div>
       </div>
 
       <!-- Right Column -->
@@ -43,9 +48,6 @@
         </div>
         <div class="w-full min-w-0">
           <NextBestActions />
-        </div>
-        <div class="w-full min-w-0">
-          <ResearchProducts />
         </div>
       </div>
     </div>

@@ -238,16 +238,15 @@
   <CardHeader>
     <div class="flex justify-between items-center">
       <CardTitle class="flex items-center gap-2">
-        Manage Project Research Designs
+        Manage Project Designs
         <Tooltip.Root>
           <Tooltip.Trigger>
             <InfoIcon class="h-5 w-5" />
           </Tooltip.Trigger>
           <Tooltip.Content>
             <p class="text-sm max-w-xs">
-              Add, edit, or remove design options for the current project. These
-              designs will be available for selection in this project and its
-              literature items.
+              The design options below will be available for describing both the
+              current project and the literature associated with this project.
             </p>
           </Tooltip.Content>
         </Tooltip.Root>

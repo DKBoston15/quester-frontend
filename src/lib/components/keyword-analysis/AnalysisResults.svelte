@@ -236,7 +236,7 @@
       </AccordionItem>
 
       <AccordionItem value="frequency-chart">
-        <AccordionTrigger>Frequency Distribution Chart</AccordionTrigger>
+        <AccordionTrigger>Frequency Distribution Figure</AccordionTrigger>
         <AccordionContent>
           <div class="mt-2">
             <FrequencyChart {analysis} />
@@ -245,7 +245,7 @@
       </AccordionItem>
 
       <AccordionItem value="visualization">
-        <AccordionTrigger>Keyword Overlap Visualization</AccordionTrigger>
+        <AccordionTrigger>Keyword Venn Diagram Figures</AccordionTrigger>
         <AccordionContent>
           <div class="mt-2">
             <VennDiagram {analysis} on:filter={handleVennFilter} />
@@ -383,10 +383,10 @@
         </AccordionContent>
       </AccordionItem>
 
-      <!-- New Accordion Item for Triple Distribution -->
+      <!-- New Accordion Item for Three-way Distribution -->
       {#if keywords.length >= 3}
         <AccordionItem value="triple-distribution">
-          <AccordionTrigger>Triple Distribution</AccordionTrigger>
+          <AccordionTrigger>Three-way Distribution</AccordionTrigger>
           <AccordionContent>
             <div class="flex items-baseline gap-2 mt-4">
               <h2 class="font-bold italic">Table 3</h2>
@@ -404,7 +404,7 @@
               </Tooltip.Root>
             </div>
             <h2 class="font-bold italic mb-2">
-              Triple Distribution of Key Terms
+              Three-way Distribution of Key Terms
             </h2>
             <div class="overflow-x-auto">
               <table class="min-w-full border-collapse rounded-md border">

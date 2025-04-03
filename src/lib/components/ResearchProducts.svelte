@@ -206,7 +206,7 @@
             </p>
           </Tooltip.Content>
         </Tooltip.Root>
-        <CardTitle class=" text-xl">Research Products</CardTitle>
+        <CardTitle class=" text-xl">Project Products</CardTitle>
       </div>
       {#if !editMode}
         <Button

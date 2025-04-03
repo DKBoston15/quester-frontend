@@ -724,7 +724,7 @@
     <Tabs.List class="inline-flex h-10 items-center justify-center gap-4">
       <Tabs.Trigger value="timeline" class="tab-button">
         <Calendar class="h-4 w-4 mr-2" />
-        Timeline
+        Project Timeline
       </Tabs.Trigger>
       <Tabs.Trigger value="achievements" class="tab-button">
         <Trophy class="h-4 w-4 mr-2" />

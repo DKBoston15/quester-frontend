@@ -75,7 +75,7 @@
         </Button>
       </div>
       <p class="text-muted-foreground mt-2">
-        Manage and organize your research literature
+        Manage and organize your project literature
       </p>
     </div>
 

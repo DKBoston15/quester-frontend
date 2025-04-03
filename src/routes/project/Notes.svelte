@@ -8,8 +8,9 @@
   import NoteEditor from "$lib/components/notes/NoteEditor.svelte";
   import { Button } from "$lib/components/ui/button";
   import { Tabs, TabsList, TabsTrigger } from "$lib/components/ui/tabs";
-  import { Layout, Maximize2, Minimize2, Plus } from "lucide-svelte";
+  import { Layout, Maximize2, Minimize2, Plus, Info } from "lucide-svelte";
   import { auth } from "$lib/stores/AuthStore.svelte";
+  import * as Tooltip from "$lib/components/ui/tooltip";
   // Props
   const { literatureId = undefined } = $props();
 
@@ -150,20 +151,45 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<div class="h-screen flex flex-col">
-  <!-- Top Bar -->
-  <header
-    class="border-b p-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+<div class="flex flex-col h-screen">
+  <!-- Combined Page Header and Control Bar -->
+  <div
+    class="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10"
   >
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-4">
-        <div class="flex items-center gap-2">
+    <div class="container mx-auto py-4 px-4">
+      <div class="flex items-center justify-between">
+        <!-- Left Side: Title & Description -->
+        <div class="flex-1 min-w-0 mr-4">
+          <div class="flex items-center gap-2 mb-1">
+            <h1 class="text-3xl font-bold truncate">Notes</h1>
+            <Tooltip.Root delayDuration={300}>
+              <Tooltip.Trigger>
+                <Info class="h-5 w-5 text-muted-foreground flex-shrink-0" />
+              </Tooltip.Trigger>
+              <Tooltip.Content>
+                <p class="text-sm max-w-xs">
+                  Create, manage, and organize your research and literature
+                  notes. Use split view and focus mode for enhanced
+                  productivity. (Toggle focus mode: Cmd/Ctrl+B)
+                </p>
+              </Tooltip.Content>
+            </Tooltip.Root>
+          </div>
+          <p class="text-muted-foreground text-sm truncate">
+            Create, manage, and organize your research and literature notes.
+          </p>
+        </div>
+
+        <!-- Right Side: Controls -->
+        <div class="flex items-center gap-4 flex-shrink-0">
+          <!-- View Toggle Buttons -->
           <Button
             variant="ghost"
             size="sm"
             onclick={() =>
               handleViewChange(selectedView === "split" ? "single" : "split")}
             class={selectedView === "split" ? "bg-secondary h-8" : "h-8"}
+            title="Toggle split view"
           >
             <Layout class="h-4 w-4" />
           </Button>
@@ -174,6 +200,7 @@
             onclick={() => {
               focusMode = !focusMode;
             }}
+            title="Toggle focus mode (Cmd/Ctrl+B)"
           >
             {#if focusMode}
               <Minimize2 class="h-4 w-4" />
@@ -181,24 +208,24 @@
               <Maximize2 class="h-4 w-4" />
             {/if}
           </Button>
+
+          <!-- Tabs -->
+          <Tabs value={selectedTab} onValueChange={handleTabChange}>
+            <TabsList>
+              <TabsTrigger value="literature">Literature Notes</TabsTrigger>
+              <TabsTrigger value="research">Research Notes</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          <!-- New Note Button -->
+          <Button onclick={createNote} disabled={!projectStore.currentProject}>
+            <Plus class="h-4 w-4 mr-2" />
+            New Note
+          </Button>
         </div>
-
-        <Tabs value={selectedTab} onValueChange={handleTabChange}>
-          <TabsList>
-            <TabsTrigger value="literature">Literature Notes</TabsTrigger>
-            <TabsTrigger value="research">Research Notes</TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
-
-      <div class="flex items-center gap-4">
-        <Button onclick={createNote} disabled={!projectStore.currentProject}>
-          <Plus class="h-4 w-4 mr-2" />
-          New Note
-        </Button>
       </div>
     </div>
-  </header>
+  </div>
 
   <!-- Main Content -->
   {#if notesStore.isLoading}
@@ -206,11 +233,11 @@
       <div class="text-center text-muted-foreground">Loading notes...</div>
     </div>
   {:else}
-    <div class="flex-1 flex">
+    <div class="flex-1 flex overflow-hidden">
       {#if !focusMode}
         <!-- Sidebar -->
         <aside
-          class="w-80 border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+          class="w-80 border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-[calc(77px)] h-[calc(100vh-77px)] overflow-y-auto"
         >
           <NoteList
             onNoteSelect={handleNoteSelect}
@@ -221,9 +248,9 @@
 
       <!-- Editor Area -->
       <main
-        class={selectedView === "split"
-          ? "flex-1 flex overflow-hidden"
-          : "flex-1 bg-background overflow-hidden"}
+        class="{selectedView === 'split'
+          ? 'flex-1 flex'
+          : 'flex-1 bg-background'} overflow-hidden"
       >
         {#if selectedView === "split"}
           <!-- Left Panel -->
@@ -281,27 +308,29 @@
           </div>
         {:else}
           <!-- Single Panel View -->
-          {#if notesStore.activeNoteId && notesStore.notes.length > 0}
-            {#each notesStore.notes.filter((n) => n.id === notesStore.activeNoteId) as activeNote (activeNote.id)}
-              <NoteEditor note={activeNote} onDelete={handleNoteDelete} />
-            {/each}
-          {:else}
-            <div class="h-full flex items-center justify-center">
-              <div class="text-center">
-                <h3 class="text-lg font-medium mb-2">No Note Selected</h3>
-                <p class="text-muted-foreground mb-4">
-                  Select a note from the sidebar or create a new one
-                </p>
-                <Button
-                  onclick={createNote}
-                  disabled={!projectStore.currentProject}
-                >
-                  <Plus class="h-4 w-4 mr-2" />
-                  Create New Note
-                </Button>
+          <div class="flex-1 h-full overflow-y-auto">
+            {#if notesStore.activeNoteId && notesStore.notes.length > 0}
+              {#each notesStore.notes.filter((n) => n.id === notesStore.activeNoteId) as activeNote (activeNote.id)}
+                <NoteEditor note={activeNote} onDelete={handleNoteDelete} />
+              {/each}
+            {:else}
+              <div class="h-full flex items-center justify-center">
+                <div class="text-center">
+                  <h3 class="text-lg font-medium mb-2">No Note Selected</h3>
+                  <p class="text-muted-foreground mb-4">
+                    Select a note from the sidebar or create a new one
+                  </p>
+                  <Button
+                    onclick={createNote}
+                    disabled={!projectStore.currentProject}
+                  >
+                    <Plus class="h-4 w-4 mr-2" />
+                    Create New Note
+                  </Button>
+                </div>
               </div>
-            </div>
-          {/if}
+            {/if}
+          </div>
         {/if}
       </main>
     </div>

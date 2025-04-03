@@ -173,7 +173,7 @@
       class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
     >
       <Card.Title class="text-xl sm:text-2xl truncate py-2">
-        {activeTab === "needs-attention" ? "Up Next" : "Recent Updates"}
+        {activeTab === "needs-attention" ? "Project Reading" : "Recent Updates"}
       </Card.Title>
       {#if activeTab === "needs-attention"}
         <div class="flex items-center gap-2 w-full sm:w-auto">
