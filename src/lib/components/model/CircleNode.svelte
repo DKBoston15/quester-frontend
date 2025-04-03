@@ -10,7 +10,16 @@
 
   type $$Props = NodeProps;
 
-  let { data = {}, selected = false, id = "", xPos = 0, yPos = 0 } = $props();
+  let {
+    data = {},
+    selected = false,
+    id = "",
+    position = { x: 0, y: 0 },
+    width = 100,
+    height = 100,
+    sourcePosition,
+    targetPosition,
+  } = $props();
   const dispatch = createEventDispatcher();
 
   // Local state
@@ -81,11 +90,17 @@
   }
 
   function handleDuplicate() {
+    const newPosition = { x: position.x + 20, y: position.y + 20 };
+    console.log(
+      `CircleNode (${id}): Duplicating. Original pos: (${position.x}, ${position.y}), New pos:`,
+      newPosition
+    );
+
     const event = new CustomEvent("duplicate", {
       detail: {
         id,
         type: "CircleNode",
-        position: { x: xPos, y: yPos },
+        position: newPosition,
         data: {
           bgColor,
           borderColor,
@@ -103,7 +118,11 @@
           transparentBorder,
           showHandles,
           label: data.label,
+          width,
+          height,
         },
+        sourcePosition,
+        targetPosition,
       },
       bubbles: true,
       composed: true,

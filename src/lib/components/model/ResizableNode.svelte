@@ -1,7 +1,16 @@
 <script lang="ts">
   import { Handle, NodeResizer, NodeToolbar, Position } from "@xyflow/svelte";
 
-  let { data = {}, selected = false, id = "", xPos = 0, yPos = 0 } = $props();
+  let {
+    data = {},
+    selected = false,
+    id = "",
+    position = { x: 0, y: 0 },
+    width = 150, // Default width if not provided
+    height = 50, // Default height if not provided
+    sourcePosition,
+    targetPosition,
+  } = $props();
 
   // Local state
   let bgColor = $state((data.bgColor as string) || "#ffffff");
@@ -75,31 +84,9 @@
   }
 
   function handleDuplicate() {
+    console.log(`ResizableNode (${id}): Dispatching duplicate request.`);
     const event = new CustomEvent("duplicate", {
-      detail: {
-        id,
-        type: "ResizableNode",
-        position: { x: xPos, y: yPos },
-        data: {
-          bgColor,
-          borderColor,
-          textColor,
-          fontSize,
-          borderWidth,
-          borderStyle,
-          fontWeight,
-          bgOpacity,
-          textOpacity,
-          shape,
-          textAlign,
-          shadowColor,
-          shadowBlur,
-          transparentBg,
-          transparentBorder,
-          showHandles,
-          label: data.label,
-        },
-      },
+      detail: { id },
       bubbles: true,
       composed: true,
     });

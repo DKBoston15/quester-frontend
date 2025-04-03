@@ -42,16 +42,63 @@
   const selectedEdge = writable<Edge | null>(null);
 
   // Function to duplicate a node
-  function duplicateNode(node: Node) {
-    const newNode = {
-      ...node,
-      id: `${node.id}-copy-${Date.now()}`,
-      position: {
-        x: node.position.x + 50,
-        y: node.position.y + 50,
-      },
+  function duplicateNode(nodeToDuplicate: Node) {
+    if (!nodeToDuplicate) {
+      console.error("Duplicate Error: Could not find node to duplicate.");
+      return;
+    }
+
+    // --- Get Position Safely ---
+    let currentPosition = { x: 0, y: 0 };
+    if (nodeToDuplicate.position) {
+      currentPosition = nodeToDuplicate.position;
+    } else {
+      console.warn(
+        `Duplicate Warning: Position missing for node ${nodeToDuplicate.id}. Using (0,0).`
+      );
+    }
+    const newPosition = {
+      x: currentPosition.x + 20,
+      y: currentPosition.y + 20,
+    };
+
+    // --- Get Size Safely ---
+    // Check top-level first, then data as fallback
+    const width = nodeToDuplicate.width ?? nodeToDuplicate.data?.width;
+    const height = nodeToDuplicate.height ?? nodeToDuplicate.data?.height;
+
+    // --- Construct newNode Safely ---
+    // Base properties first
+    const newNode: Node = {
+      id: `${nodeToDuplicate.id}-copy-${Date.now()}`,
+      type: nodeToDuplicate.type,
+      position: newPosition,
+      data: { ...nodeToDuplicate.data }, // Copy data first
       selected: false,
     };
+
+    // Add optional properties if they exist
+    if (width !== undefined && width !== null) {
+      newNode.width = width;
+    }
+    if (height !== undefined && height !== null) {
+      newNode.height = height;
+    }
+    if (nodeToDuplicate.style && typeof nodeToDuplicate.style === "object") {
+      newNode.style = { ...nodeToDuplicate.style };
+    }
+    if (nodeToDuplicate.sourcePosition) {
+      newNode.sourcePosition = nodeToDuplicate.sourcePosition;
+    }
+    if (nodeToDuplicate.targetPosition) {
+      newNode.targetPosition = nodeToDuplicate.targetPosition;
+    }
+    if (nodeToDuplicate.parentId) {
+      newNode.parentId = nodeToDuplicate.parentId;
+    }
+    if (nodeToDuplicate.extent) {
+      newNode.extent = nodeToDuplicate.extent;
+    }
 
     nodes.update((currentNodes) => [...currentNodes, newNode]);
   }
@@ -59,7 +106,26 @@
   // Listen for duplicate events
   onMount(() => {
     const handleDuplicate = (event: CustomEvent) => {
-      duplicateNode(event.detail);
+      // Extract the id from the event detail
+      const detail = event.detail;
+      const nodeIdToDuplicate = detail?.id;
+
+      if (!nodeIdToDuplicate || typeof nodeIdToDuplicate !== "string") {
+        console.error(
+          "Duplicate event received without a valid node ID.",
+          detail
+        );
+        return;
+      }
+
+      // Find the node in the current state using the ID
+      const currentNode = $nodes.find((n) => n.id === nodeIdToDuplicate);
+
+      if (currentNode) {
+        duplicateNode(currentNode); // Pass the found node object
+      } else {
+        console.error(`Node with ID ${nodeIdToDuplicate} not found in store.`);
+      }
     };
 
     document.addEventListener("duplicate", handleDuplicate as EventListener);
