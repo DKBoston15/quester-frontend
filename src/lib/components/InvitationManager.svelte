@@ -380,14 +380,16 @@
           <span class="text-sm">
             You've reached your maximum of {props.subscriptionLimits.maxUsers} users
             for the {props.subscriptionLimits.subscriptionPlan} plan.
-            {#if props.subscriptionLimits.subscriptionPlan === "Quester Pro"}
+            {#if props.subscriptionLimits.subscriptionPlan === "Enterprise"}
+              Please contact support to adjust your seat count.
+            {:else if props.subscriptionLimits.subscriptionPlan === "Quester Pro"}
               Upgrade to Quester Team for up to 5 users.
             {:else if props.subscriptionLimits.subscriptionPlan === "Quester Team"}
               Please contact support to discuss enterprise options for larger
               teams.
             {:else}
-              Upgrade to Quester Pro for up to 2 users or Quester Team for up to
-              5 users.
+              // Default / Research Explorer Upgrade to Quester Pro for up to 2
+              users or Quester Team for up to 5 users.
             {/if}
           </span>
         </div>

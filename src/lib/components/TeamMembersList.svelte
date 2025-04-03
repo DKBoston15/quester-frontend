@@ -492,11 +492,16 @@
             <p class="text-sm text-amber-700 dark:text-amber-400 mt-1">
               You've reached the maximum of {props.subscriptionLimits.maxUsers} users
               for your {props.subscriptionLimits.subscriptionPlan} plan.
-              {#if props.subscriptionLimits.subscriptionPlan === "Quester Pro"}
+              {#if props.subscriptionLimits.subscriptionPlan === "Enterprise"}
+                Please contact support to adjust your seat count.
+              {:else if props.subscriptionLimits.subscriptionPlan === "Quester Pro"}
                 Upgrade to Quester Team to add more team members.
               {:else if props.subscriptionLimits.subscriptionPlan === "Quester Team"}
                 Please contact support to discuss enterprise options for larger
                 teams.
+              {:else}
+                <!-- Default / Research Explorer -->
+                Upgrade your plan to invite users.
               {/if}
             </p>
           </div>
@@ -518,7 +523,9 @@
               You have {usersRemaining}
               {usersRemaining === 1 ? "seat" : "seats"} remaining on your {props
                 .subscriptionLimits.subscriptionPlan} plan.
-              {#if props.subscriptionLimits.subscriptionPlan === "Quester Pro"}
+              {#if props.subscriptionLimits.subscriptionPlan === "Enterprise"}
+                <!-- No specific message needed when near limit for Enterprise, maybe contact support if concerned -->
+              {:else if props.subscriptionLimits.subscriptionPlan === "Quester Pro"}
                 Consider upgrading to Quester Team for up to 5 team members.
               {/if}
             </p>

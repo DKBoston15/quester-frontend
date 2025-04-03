@@ -725,7 +725,10 @@
                                 You've reached the maximum of {subscriptionLimits.maxUsers}
                                 users for your {subscriptionLimits.subscriptionPlan}
                                 plan.
-                                {#if subscriptionLimits.subscriptionPlan === "Quester Pro"}
+                                {#if subscriptionLimits.subscriptionPlan === "Enterprise"}
+                                  Please contact support to adjust your seat
+                                  count.
+                                {:else if subscriptionLimits.subscriptionPlan === "Quester Pro"}
                                   Upgrade to Quester Team to add more team
                                   members.
                                 {:else if subscriptionLimits.subscriptionPlan === "Quester Team"}
