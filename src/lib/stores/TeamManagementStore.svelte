@@ -130,11 +130,15 @@
         if (!selectedResourceId && data.organizations?.length > 0) {
           this.setSelectedResource("organization", data.organizations[0].id);
         }
+
+        // Return the data so we can work with it
+        return data;
       } catch (err) {
         console.error("Error loading user resources:", err);
         error = err instanceof Error ? err.message : "An error occurred";
         userLoginStatsMap = null;
         loginStatUsers = null;
+        throw err; // Re-throw to allow caller to catch
       } finally {
         isLoading = false;
       }

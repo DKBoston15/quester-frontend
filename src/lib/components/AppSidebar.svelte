@@ -14,13 +14,22 @@
   } from "lucide-svelte";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import { auth } from "$lib/stores/AuthStore.svelte";
+  import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
   import { navigate, Link } from "svelte-routing";
   import { DarkmodeToggle } from "$lib/components/ui/darkmode-toggle";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { API_BASE_URL } from "$lib/config";
 
+  // Define MenuItem type
+  interface MenuItem {
+    title: string;
+    url: string;
+    icon: typeof Home | typeof UserPlus | typeof ChartBar | typeof Settings;
+    requiresAdmin?: boolean;
+  }
+
   // Menu items for the main navigation
-  const mainNavItems = [
+  const mainNavItems: MenuItem[] = [
     {
       title: "Dashboard",
       url: "/dashboard",
@@ -33,8 +42,9 @@
     },
     {
       title: "Organization Analytics",
-      url: "/organization-analytics ",
+      url: "/organization-analytics",
       icon: ChartBar,
+      requiresAdmin: true,
     },
     {
       title: "Settings",
@@ -46,13 +56,144 @@
   let projects = $state<any[]>([]);
   let isProjectsOpen = $state<string | undefined>("projects");
 
+  let canViewOrgAnalytics = $state(false);
+
+  // Function to check admin roles
+  function checkAdminRoles() {
+    console.log("[Sidebar Check] Starting canViewOrgAnalytics check");
+
+    const userId = auth.user?.id;
+    const orgId = auth.currentOrganization?.id;
+    const resources = teamManagement.userResources;
+
+    console.log("[Sidebar Check] User ID:", userId);
+    console.log("[Sidebar Check] Org ID:", orgId);
+    console.log("[Sidebar Check] Resources available:", !!resources);
+
+    if (!userId || !orgId || !resources) {
+      console.log(
+        "[Sidebar Check] Exiting early: Missing userId, orgId, or resources."
+      );
+      return false;
+    }
+
+    const ADMIN_ROLES = new Set(["admin", "owner", "manager"]);
+    console.log("[Sidebar Check] Admin roles required:", ADMIN_ROLES);
+
+    // Check organization roles
+    const currentOrg = resources.organizations?.find(
+      (org: any) => org.id === orgId
+    );
+    console.log("[Sidebar Check] Found currentOrg:", currentOrg);
+    if (currentOrg) {
+      const hasOrgAdminRole = currentOrg.organizationRoles?.some(
+        (roleInfo: any) =>
+          roleInfo.userId === userId &&
+          ADMIN_ROLES.has(roleInfo.role?.name?.toLowerCase())
+      );
+      console.log("[Sidebar Check] User has Org Admin Role:", hasOrgAdminRole);
+      if (hasOrgAdminRole) {
+        console.log(
+          "[Sidebar Check] Granting access based on Organization role."
+        );
+        return true;
+      }
+    } else {
+      console.log(
+        "[Sidebar Check] Current organization not found in resources."
+      );
+    }
+
+    // Check department roles
+    const relevantDepartments = resources.departments?.filter(
+      (dept: any) => dept.organizationId === orgId
+    );
+    console.log(
+      "[Sidebar Check] Found relevantDepartments:",
+      relevantDepartments
+    );
+
+    if (relevantDepartments?.length > 0) {
+      const hasDeptAdminRole = relevantDepartments.some((dept: any) =>
+        dept.departmentRoles?.some(
+          (roleInfo: any) =>
+            roleInfo.userId === userId &&
+            ADMIN_ROLES.has(roleInfo.role?.name?.toLowerCase())
+        )
+      );
+      console.log(
+        "[Sidebar Check] User has Dept Admin Role in any relevant department:",
+        hasDeptAdminRole
+      );
+      if (hasDeptAdminRole) {
+        console.log(
+          "[Sidebar Check] Granting access based on Department role."
+        );
+        return true;
+      }
+    } else {
+      console.log(
+        "[Sidebar Check] No relevant departments found or user has no roles in them."
+      );
+    }
+
+    console.log("[Sidebar Check] No qualifying roles found. Denying access.");
+    return false;
+  }
+
+  // Calculate visible nav items based on permissions
+  function getVisibleNavItems(): MenuItem[] {
+    console.log(
+      "[Sidebar] Calculating visible items, canViewOrgAnalytics =",
+      canViewOrgAnalytics
+    );
+    return mainNavItems.filter((item) => {
+      // If an item requires admin privileges, only show it if the user has those privileges
+      if (item.requiresAdmin) {
+        return canViewOrgAnalytics;
+      }
+      // Show all other items
+      return true;
+    });
+  }
+
+  // Array to store the filtered nav items
+  let visibleNavItems = $state<MenuItem[]>([]);
+
   function toggleProjects() {
     isProjectsOpen = isProjectsOpen === "projects" ? undefined : "projects";
   }
 
   $effect(() => {
+    console.log("[Sidebar] Component initialized");
+    console.log("[Sidebar] Current organization:", auth.currentOrganization);
+
     if (auth.currentOrganization) {
+      console.log("[Sidebar] Loading resources...");
+      teamManagement.loadUserResources();
       loadProjects();
+
+      // Wait for resources to be loaded before checking roles
+      setTimeout(() => {
+        canViewOrgAnalytics = checkAdminRoles();
+        visibleNavItems = getVisibleNavItems();
+        console.log(
+          "[Sidebar] Visible nav items updated:",
+          visibleNavItems.map((i) => i.title)
+        );
+      }, 300);
+    }
+  });
+
+  // Update visible items when permissions change
+  $effect(() => {
+    visibleNavItems = getVisibleNavItems();
+  });
+
+  // Update permissions when resources change
+  $effect(() => {
+    if (teamManagement.userResources) {
+      canViewOrgAnalytics = checkAdminRoles();
     }
   });
 
@@ -108,7 +249,7 @@
     <Sidebar.Group>
       <Sidebar.GroupContent>
         <Sidebar.Menu>
-          {#each mainNavItems as item (item.title)}
+          {#each visibleNavItems as item (item.title)}
             <Link to={item.url} class="block">
               <Sidebar.MenuItem>
                 <Sidebar.MenuButton>
@@ -117,9 +258,10 @@
                       <div
                         class="flex items-center gap-3 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
                       >
-                        {#if item.icon}
-                          <item.icon class="h-4 w-4 flex-shrink-0" />
-                        {/if}
+                        <svelte:component
+                          this={item.icon}
+                          class="h-4 w-4 flex-shrink-0"
+                        />
                         <span class="group-data-[collapsible=icon]:hidden"
                           >{item.title}</span
                         >

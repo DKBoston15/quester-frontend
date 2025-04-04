@@ -2,6 +2,7 @@
   import AppSidebar from "$lib/components/AppSidebar.svelte";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
+  import { auth } from "$lib/stores/AuthStore.svelte";
   import ProjectActivityChart from "$lib/components/ProjectActivityChart.svelte";
   import { onMount } from "svelte";
   // Runes are globally available in Svelte 5
@@ -26,7 +27,9 @@
     LineChart,
     CalendarClock,
     Calendar,
+    ShieldAlert,
   } from "lucide-svelte"; // Import sorting and icon components
+  import { navigate } from "svelte-routing";
 
   // Define the structure for the daily activity counts
   interface DailyActivityCount {
@@ -76,9 +79,98 @@
   let sortColumn = $state<SortColumn>("user"); // Default sort by user name
   let sortDirection = $state<"asc" | "desc">("asc"); // Default ascending
 
+  // Access control state
+  let hasAccess = $state(false);
+  let accessChecked = $state(false);
+  let isCheckingAccess = $state(true);
+
+  // Function to check if user has admin access
+  function checkAdminAccess() {
+    console.log("[Analytics] Checking admin access");
+    isCheckingAccess = true;
+
+    const userId = auth.user?.id;
+    const orgId = auth.currentOrganization?.id;
+    const resources = teamManagement.userResources;
+
+    if (!userId || !orgId || !resources) {
+      console.log(
+        "[Analytics] Missing userId, orgId, or resources, denying access"
+      );
+      isCheckingAccess = false;
+      accessChecked = true;
+      return false;
+    }
+
+    const ADMIN_ROLES = new Set(["admin", "owner", "manager"]);
+
+    // Check organization roles
+    const currentOrg = resources.organizations?.find(
+      (org: any) => org.id === orgId
+    );
+
+    if (currentOrg) {
+      const hasOrgAdminRole = currentOrg.organizationRoles?.some(
+        (roleInfo: any) =>
+          roleInfo.userId === userId &&
+          ADMIN_ROLES.has(roleInfo.role?.name?.toLowerCase())
+      );
+
+      if (hasOrgAdminRole) {
+        console.log("[Analytics] User has org admin role, granting access");
+        isCheckingAccess = false;
+        accessChecked = true;
+        return true;
+      }
+    }
+
+    // Check department roles
+    const relevantDepartments = resources.departments?.filter(
+      (dept: any) => dept.organizationId === orgId
+    );
+
+    if (relevantDepartments?.length > 0) {
+      const hasDeptAdminRole = relevantDepartments.some((dept: any) =>
+        dept.departmentRoles?.some(
+          (roleInfo: any) =>
+            roleInfo.userId === userId &&
+            ADMIN_ROLES.has(roleInfo.role?.name?.toLowerCase())
+        )
+      );
+
+      if (hasDeptAdminRole) {
+        console.log("[Analytics] User has dept admin role, granting access");
+        isCheckingAccess = false;
+        accessChecked = true;
+        return true;
+      }
+    }
+
+    console.log(
+      "[Analytics] User does not have required admin roles, denying access"
+    );
+    isCheckingAccess = false;
+    accessChecked = true;
+    return false;
+  }
+
   // Initialize data loading only once at component mount
-  teamManagement.loadUserResources(true, true);
-  teamManagement.loadSettings();
+  onMount(() => {
+    console.log("[Analytics] Component mounted, loading resources");
+    teamManagement.loadUserResources(true, true).then(() => {
+      console.log("[Analytics] Resources loaded, checking access");
+      hasAccess = checkAdminAccess();
+
+      if (hasAccess) {
+        console.log("[Analytics] User has access, loading settings");
+        teamManagement.loadSettings();
+      } else {
+        console.log("[Analytics] User does not have access, redirecting");
+        // You can choose to redirect or just show an access denied message
+        // navigate("/dashboard");
+      }
+    });
+  });
 
   // Helper function to safely clone reactive objects
   function safeClone(obj: any) {
@@ -132,6 +224,11 @@
 
   // Derived state to prepare user login data for the table
   let userLoginTableData = $derived.by(() => {
+    // Don't attempt to process data if user doesn't have access
+    if (!hasAccess || !accessChecked) {
+      return [];
+    }
+
     const statsMap = teamManagement.userLoginStatsMap;
     const usersWithDetails = teamManagement.loginStatUsers;
     // Add detailed logs at the start
@@ -348,8 +445,28 @@
           <!-- Date Range Selector (moved to Project Activity section) -->
         </div>
 
-        <!-- Loading State -->
-        {#if teamManagement?.isLoading}
+        <!-- Access Denied State -->
+        {#if accessChecked && !hasAccess}
+          <div
+            class="text-center p-8 bg-destructive/10 border border-destructive rounded-md"
+          >
+            <ShieldAlert class="w-12 h-12 text-destructive mx-auto mb-4" />
+            <h2 class="text-xl font-bold mb-2">Access Denied</h2>
+            <p class="mb-4">
+              You don't have permission to view organization analytics. This
+              page requires organization admin, owner, or department admin
+              privileges.
+            </p>
+            <a
+              href="/dashboard"
+              class="inline-flex items-center justify-center text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 rounded-md"
+            >
+              Return to Dashboard
+            </a>
+          </div>
+
+          <!-- Loading State -->
+        {:else if isCheckingAccess || teamManagement?.isLoading}
           <div class="text-center p-8">
             <div
               class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite] mb-4"
@@ -363,7 +480,7 @@
             <h3 class="font-semibold mb-2">Error Loading Data</h3>
             <p>{teamManagement.error}</p>
           </div>
-        {:else}
+        {:else if hasAccess}
           <!-- Summary Metrics Cards -->
           {#if userLoginTableData?.length}
             <div
@@ -477,7 +594,7 @@
             </div>
           {/if}
 
-          <div class="p-4">
+          <div>
             {#if !teamManagement?.userResources?.projects?.length}
               <div
                 class="text-center p-8 bg-muted/50 border border-border rounded-md"
