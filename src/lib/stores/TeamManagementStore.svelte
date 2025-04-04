@@ -2,6 +2,8 @@
 <script lang="ts" module>
   import { API_BASE_URL } from "$lib/config";
   import { auth } from "./AuthStore.svelte";
+  // Remove the incorrect backend import
+  // import type { LoginStatUserJson } from "../../app/services/permission_service";
 
   // State management
   let selectedResourceType = $state<"organization" | "department" | "project">(
@@ -17,6 +19,9 @@
   let permissions = $state<Record<string, boolean>>({});
   let settings = $state<Record<string, any>>({});
   let settingsError = $state<string | null>(null);
+  let userLoginStatsMap = $state<Record<string, any> | null>(null);
+  // Revert type to any[] or keep as is if it works
+  let loginStatUsers = $state<any[] | null>(null);
 
   export const teamManagement = {
     // Getters
@@ -53,6 +58,12 @@
     get settingsError() {
       return settingsError;
     },
+    get userLoginStatsMap() {
+      return userLoginStatsMap;
+    },
+    get loginStatUsers() {
+      return loginStatUsers;
+    },
 
     // Set the selected resource
     setSelectedResource(
@@ -77,14 +88,24 @@
     },
 
     // Load resources that the user has access to
-    async loadUserResources(includeStats: boolean = false) {
+    async loadUserResources(
+      includeStats: boolean = false,
+      includeLoginStats: boolean = false
+    ) {
       isLoading = true;
       error = null;
 
       try {
         let apiUrl = `${API_BASE_URL}/team-management/resources`;
+        const queryParams = [];
         if (includeStats) {
-          apiUrl += "?includeStats=true";
+          queryParams.push("includeStats=true");
+        }
+        if (includeLoginStats) {
+          queryParams.push("includeLoginStats=true");
+        }
+        if (queryParams.length > 0) {
+          apiUrl += `?${queryParams.join("&")}`;
         }
 
         const response = await fetch(apiUrl, {
@@ -96,7 +117,14 @@
         }
 
         const data = await response.json();
-        userResources = data;
+        userResources = {
+          organizations: data.organizations,
+          departments: data.departments,
+          projects: data.projects,
+          projectStats: data.projectStats,
+        };
+        userLoginStatsMap = data.userLoginStatsMap || null;
+        loginStatUsers = data.loginStatUsers || null;
 
         // If no resource is selected and we have organizations, select the first one
         if (!selectedResourceId && data.organizations?.length > 0) {
@@ -105,6 +133,8 @@
       } catch (err) {
         console.error("Error loading user resources:", err);
         error = err instanceof Error ? err.message : "An error occurred";
+        userLoginStatsMap = null;
+        loginStatUsers = null;
       } finally {
         isLoading = false;
       }
@@ -655,6 +685,8 @@
       permissions = {};
       settings = {};
       settingsError = null;
+      userLoginStatsMap = null;
+      loginStatUsers = null;
     },
 
     // Initialize the store

@@ -8,6 +8,17 @@
   import * as RadioGroup from "$lib/components/ui/radio-group";
   import { Label } from "$lib/components/ui/label";
   import * as Tooltip from "$lib/components/ui/tooltip";
+  import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+  } from "$lib/components/ui/table";
+  import { DateTime } from "luxon";
+  import { writable } from "svelte/store"; // Needed for sorting state if not using runes for everything
+  import { ChevronDown, ChevronUp, ChevronsUpDown } from "lucide-svelte"; // Import sorting icons
 
   // Define the structure for the daily activity counts
   interface DailyActivityCount {
@@ -17,11 +28,48 @@
     outcomes: number;
   }
 
+  // Define the structure for user login stats from the backend
+  interface UserLoginStats {
+    lastLoginDate: string | null; // Comes as ISO string
+    distinctLoginDaysLast7: number;
+    distinctLoginDaysLast14: number;
+    distinctLoginDaysLast30: number;
+    distinctLoginDaysAllTime: number;
+  }
+
+  // Define the user details structure locally
+  interface LoginStatUserJson {
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+    email: string;
+  }
+
+  // Combined data structure for the table
+  interface UserLoginTableRow {
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+    email: string;
+    stats: UserLoginStats;
+  }
+
   // State for selected date range
   let selectedRange = $state<"7" | "14" | "30" | "all">("all");
 
+  // Sorting State
+  type SortColumn =
+    | "user"
+    | "lastLogin"
+    | "days7"
+    | "days14"
+    | "days30"
+    | "daysAll";
+  let sortColumn = $state<SortColumn>("user"); // Default sort by user name
+  let sortDirection = $state<"asc" | "desc">("asc"); // Default ascending
+
   // Initialize data loading only once at component mount
-  teamManagement.loadUserResources(true);
+  teamManagement.loadUserResources(true, true);
   teamManagement.loadSettings();
 
   // Helper function to safely clone reactive objects
@@ -74,9 +122,164 @@
     return hasAnyActivity;
   }
 
+  // Derived state to prepare user login data for the table
+  let userLoginTableData = $derived.by(() => {
+    const statsMap = teamManagement.userLoginStatsMap;
+    const usersWithDetails = teamManagement.loginStatUsers;
+    // Add detailed logs at the start
+    console.log("[Derived Start] statsMap:", safeClone(statsMap)); // Use safeClone for logging proxies
+    console.log(
+      "[Derived Start] usersWithDetails:",
+      safeClone(usersWithDetails)
+    );
+
+    // Strict check including checking if usersWithDetails is an array and has length
+    if (
+      !statsMap ||
+      !Array.isArray(usersWithDetails) ||
+      usersWithDetails.length === 0
+    ) {
+      console.log(
+        "[Derived] Exiting early - missing statsMap or usersWithDetails is not a non-empty array."
+      );
+      return [];
+    }
+
+    // 1. Create map from usersWithDetails
+    const userDetailsMap = new Map<string, LoginStatUserJson>();
+    usersWithDetails.forEach((user) => {
+      // Add check for valid user object before setting
+      if (user && user.id) {
+        userDetailsMap.set(user.id, user);
+      } else {
+        console.warn(
+          "[Derived] Skipping invalid user object in usersWithDetails:",
+          user
+        );
+      }
+    });
+    console.log("[Derived] Populated userDetailsMap:", userDetailsMap); // Log the created map
+
+    // 2. Iterate through the statsMap and combine with user details
+    let tableData: UserLoginTableRow[] = [];
+    for (const [userId, stats] of Object.entries(statsMap)) {
+      console.log(`[Derived Loop] Processing userId from statsMap: ${userId}`); // Log current key from statsMap
+      const userDetails = userDetailsMap.get(userId); // THE LOOKUP
+      // Log the specific result of the lookup
+      console.log(
+        `[Derived Loop] Result of userDetailsMap.get(${userId}):`,
+        userDetails
+      );
+
+      if (userDetails) {
+        // User details found, combine with stats
+        tableData.push({
+          id: userDetails.id,
+          firstName: userDetails.firstName,
+          lastName: userDetails.lastName,
+          email: userDetails.email,
+          stats: stats as UserLoginStats, // Cast stats to the correct type
+        });
+      } else {
+        // User details not found (edge case), use ID/email from statsMap key if possible
+        console.warn(
+          `[Derived] User details not found for userId: ${userId}. Using default.`
+        );
+        tableData.push({
+          id: userId,
+          firstName: "Unknown",
+          lastName: "User",
+          email: `ID: ${userId}`,
+          stats: stats as UserLoginStats, // Cast stats to the correct type
+        });
+      }
+    }
+    console.log("[Derived] Combined tableData (before sort):", tableData);
+
+    // 3. Apply Sorting based on component state
+    const sortCol = sortColumn;
+    const sortDir = sortDirection;
+
+    tableData.sort((a, b) => {
+      let valA: any, valB: any;
+
+      switch (sortCol) {
+        case "user":
+          valA = `${a.lastName || ""} ${a.firstName || ""}`
+            .toLowerCase()
+            .trim();
+          valB = `${b.lastName || ""} ${b.firstName || ""}`
+            .toLowerCase()
+            .trim();
+          // Handle N/A users
+          if (a.firstName === "N/A" && b.firstName !== "N/A") return 1;
+          if (a.firstName !== "N/A" && b.firstName === "N/A") return -1;
+          break;
+        case "lastLogin":
+          // Handle null dates - sort nulls last when ascending
+          valA = a.stats.lastLoginDate
+            ? DateTime.fromISO(a.stats.lastLoginDate).toMillis()
+            : Infinity;
+          valB = b.stats.lastLoginDate
+            ? DateTime.fromISO(b.stats.lastLoginDate).toMillis()
+            : Infinity;
+          break;
+        case "days7":
+          valA = a.stats.distinctLoginDaysLast7;
+          valB = b.stats.distinctLoginDaysLast7;
+          break;
+        case "days14":
+          valA = a.stats.distinctLoginDaysLast14;
+          valB = b.stats.distinctLoginDaysLast14;
+          break;
+        case "days30":
+          valA = a.stats.distinctLoginDaysLast30;
+          valB = b.stats.distinctLoginDaysLast30;
+          break;
+        case "daysAll":
+          valA = a.stats.distinctLoginDaysAllTime;
+          valB = b.stats.distinctLoginDaysAllTime;
+          break;
+        default:
+          return 0; // Should not happen
+      }
+
+      // Comparison logic
+      if (valA < valB) return sortDir === "asc" ? -1 : 1;
+      if (valA > valB) return sortDir === "asc" ? 1 : -1;
+      return 0;
+    });
+    console.log("[Derived] Sorted tableData:", tableData);
+
+    return tableData;
+  });
+
+  // Helper to format dates nicely, handling null
+  function formatDateTime(isoString: string | null): string {
+    if (!isoString) return "Never";
+    try {
+      return DateTime.fromISO(isoString).toLocaleString(DateTime.DATETIME_MED);
+    } catch (e) {
+      console.error("Error formatting date:", isoString, e);
+      return "Invalid Date";
+    }
+  }
+
+  // Event Handlers
+  function handleSortClick(column: SortColumn) {
+    if (sortColumn === column) {
+      sortDirection = sortDirection === "asc" ? "desc" : "asc";
+    } else {
+      sortColumn = column;
+      sortDirection = "asc";
+    }
+  }
+
   // Log state changes for debugging
   $effect(() => {
     console.log("Selected range changed to:", selectedRange);
+    // Log when user login data is derived
+    console.log("User login table data derived:", userLoginTableData);
   });
 
   // Add debug logging
@@ -242,6 +445,164 @@
                   </div>
                 {/if}
               </div>
+
+              <!-- New User Login Activity Section -->
+              <div class="mb-6">
+                <h2 class="text-xl font-bold mb-4">User Login Activity</h2>
+                {#if !userLoginTableData?.length}
+                  <div
+                    class="text-center p-8 bg-muted/50 border border-border rounded-md"
+                  >
+                    <p class="text-muted-foreground">
+                      No user login data available.
+                    </p>
+                  </div>
+                {:else}
+                  <div class="border rounded-lg">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead
+                            class="cursor-pointer hover:bg-muted/50"
+                            onclick={() => handleSortClick("user")}
+                          >
+                            <div class="flex items-center gap-1">
+                              User
+                              {#if sortColumn === "user"}
+                                {#if sortDirection === "asc"}<ChevronUp
+                                    class="h-4 w-4"
+                                  />{:else}<ChevronDown class="h-4 w-4" />{/if}
+                              {:else}
+                                <ChevronsUpDown
+                                  class="h-4 w-4 text-muted-foreground/50"
+                                />
+                              {/if}
+                            </div>
+                          </TableHead>
+                          <TableHead
+                            class="cursor-pointer hover:bg-muted/50"
+                            onclick={() => handleSortClick("lastLogin")}
+                          >
+                            <div class="flex items-center gap-1">
+                              Last Login
+                              {#if sortColumn === "lastLogin"}
+                                {#if sortDirection === "asc"}<ChevronUp
+                                    class="h-4 w-4"
+                                  />{:else}<ChevronDown class="h-4 w-4" />{/if}
+                              {:else}
+                                <ChevronsUpDown
+                                  class="h-4 w-4 text-muted-foreground/50"
+                                />
+                              {/if}
+                            </div>
+                          </TableHead>
+                          <TableHead
+                            class="text-right cursor-pointer hover:bg-muted/50"
+                            onclick={() => handleSortClick("days7")}
+                          >
+                            <div class="flex items-center justify-end gap-1">
+                              Active Days (7d)
+                              {#if sortColumn === "days7"}
+                                {#if sortDirection === "asc"}<ChevronUp
+                                    class="h-4 w-4"
+                                  />{:else}<ChevronDown class="h-4 w-4" />{/if}
+                              {:else}
+                                <ChevronsUpDown
+                                  class="h-4 w-4 text-muted-foreground/50"
+                                />
+                              {/if}
+                            </div>
+                          </TableHead>
+                          <TableHead
+                            class="text-right cursor-pointer hover:bg-muted/50"
+                            onclick={() => handleSortClick("days14")}
+                          >
+                            <div class="flex items-center justify-end gap-1">
+                              Active Days (14d)
+                              {#if sortColumn === "days14"}
+                                {#if sortDirection === "asc"}<ChevronUp
+                                    class="h-4 w-4"
+                                  />{:else}<ChevronDown class="h-4 w-4" />{/if}
+                              {:else}
+                                <ChevronsUpDown
+                                  class="h-4 w-4 text-muted-foreground/50"
+                                />
+                              {/if}
+                            </div>
+                          </TableHead>
+                          <TableHead
+                            class="text-right cursor-pointer hover:bg-muted/50"
+                            onclick={() => handleSortClick("days30")}
+                          >
+                            <div class="flex items-center justify-end gap-1">
+                              Active Days (30d)
+                              {#if sortColumn === "days30"}
+                                {#if sortDirection === "asc"}<ChevronUp
+                                    class="h-4 w-4"
+                                  />{:else}<ChevronDown class="h-4 w-4" />{/if}
+                              {:else}
+                                <ChevronsUpDown
+                                  class="h-4 w-4 text-muted-foreground/50"
+                                />
+                              {/if}
+                            </div>
+                          </TableHead>
+                          <TableHead
+                            class="text-right cursor-pointer hover:bg-muted/50"
+                            onclick={() => handleSortClick("daysAll")}
+                          >
+                            <div class="flex items-center justify-end gap-1">
+                              Active Days (All)
+                              {#if sortColumn === "daysAll"}
+                                {#if sortDirection === "asc"}<ChevronUp
+                                    class="h-4 w-4"
+                                  />{:else}<ChevronDown class="h-4 w-4" />{/if}
+                              {:else}
+                                <ChevronsUpDown
+                                  class="h-4 w-4 text-muted-foreground/50"
+                                />
+                              {/if}
+                            </div>
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {#each userLoginTableData as row (row.id)}
+                          <TableRow>
+                            <TableCell>
+                              <div class="font-medium">
+                                {row.firstName || ""}
+                                {row.lastName || ""}
+                              </div>
+                              <div class="text-sm text-muted-foreground">
+                                {row.email}
+                              </div>
+                            </TableCell>
+                            <TableCell
+                              >{formatDateTime(
+                                row.stats.lastLoginDate
+                              )}</TableCell
+                            >
+                            <TableCell class="text-right"
+                              >{row.stats.distinctLoginDaysLast7}</TableCell
+                            >
+                            <TableCell class="text-right"
+                              >{row.stats.distinctLoginDaysLast14}</TableCell
+                            >
+                            <TableCell class="text-right"
+                              >{row.stats.distinctLoginDaysLast30}</TableCell
+                            >
+                            <TableCell class="text-right"
+                              >{row.stats.distinctLoginDaysAllTime}</TableCell
+                            >
+                          </TableRow>
+                        {/each}
+                      </TableBody>
+                    </Table>
+                  </div>
+                {/if}
+              </div>
+              <!-- End New User Login Activity Section -->
             {/if}
           </div>
         {/if}
