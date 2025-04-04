@@ -77,17 +77,19 @@
     },
 
     // Load resources that the user has access to
-    async loadUserResources() {
+    async loadUserResources(includeStats: boolean = false) {
       isLoading = true;
       error = null;
 
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/team-management/resources`,
-          {
-            credentials: "include",
-          }
-        );
+        let apiUrl = `${API_BASE_URL}/team-management/resources`;
+        if (includeStats) {
+          apiUrl += "?includeStats=true";
+        }
+
+        const response = await fetch(apiUrl, {
+          credentials: "include",
+        });
 
         if (!response.ok) {
           throw new Error(`Failed to load resources (${response.status})`);
