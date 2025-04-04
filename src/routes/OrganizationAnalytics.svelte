@@ -18,7 +18,15 @@
   } from "$lib/components/ui/table";
   import { DateTime } from "luxon";
   import { writable } from "svelte/store"; // Needed for sorting state if not using runes for everything
-  import { ChevronDown, ChevronUp, ChevronsUpDown } from "lucide-svelte"; // Import sorting icons
+  import {
+    ChevronDown,
+    ChevronUp,
+    ChevronsUpDown,
+    Users,
+    LineChart,
+    CalendarClock,
+    Calendar,
+  } from "lucide-svelte"; // Import sorting and icon components
 
   // Define the structure for the daily activity counts
   interface DailyActivityCount {
@@ -254,6 +262,45 @@
     return tableData;
   });
 
+  // Derived state for summary metrics
+  let summaryMetrics = $derived.by(() => {
+    // Return early if no data
+    if (!userLoginTableData?.length) {
+      return {
+        totalUsers: 0,
+        activeUsersLast7Days: 0,
+        activeUsersLast30Days: 0,
+        averageActivePercentage: 0,
+      };
+    }
+
+    const totalUsers = userLoginTableData.length;
+    const activeUsersLast7Days = userLoginTableData.filter(
+      (user) => user.stats.distinctLoginDaysLast7 > 0
+    ).length;
+    const activeUsersLast30Days = userLoginTableData.filter(
+      (user) => user.stats.distinctLoginDaysLast30 > 0
+    ).length;
+
+    // Calculate average active percentage (active days / total possible days)
+    const totalPossibleDays = totalUsers * 7;
+    const totalActiveDaysLast7 = userLoginTableData.reduce(
+      (sum, user) => sum + user.stats.distinctLoginDaysLast7,
+      0
+    );
+    const averageActivePercentage =
+      totalPossibleDays > 0
+        ? Math.round((totalActiveDaysLast7 / totalPossibleDays) * 100)
+        : 0;
+
+    return {
+      totalUsers,
+      activeUsersLast7Days,
+      activeUsersLast30Days,
+      averageActivePercentage,
+    };
+  });
+
   // Helper to format dates nicely, handling null
   function formatDateTime(isoString: string | null): string {
     if (!isoString) return "Never";
@@ -281,49 +328,6 @@
     // Log when user login data is derived
     console.log("User login table data derived:", userLoginTableData);
   });
-
-  // Add debug logging
-  // onMount(() => {
-  //   const checkProjects = () => {
-  //     if (teamManagement?.userResources?.projects) {
-  //       // Use safeClone to avoid Svelte 5 proxy warnings
-  //       const projectsSnapshot = safeClone(teamManagement.userResources.projects);
-  //       console.log("[DEBUG] All projects data:", projectsSnapshot);
-
-  //       const projectsWithActivity =
-  //         teamManagement.userResources.projects.filter(hasActivity);
-  //       // Create a clean snapshot of projects with activity
-  //       const projectsWithActivitySnapshot = safeClone(projectsWithActivity);
-  //       console.log(
-  //         "[DEBUG] Projects with activity:",
-  //         projectsWithActivitySnapshot.map((p: any) => p.name)
-  //       );
-  //       console.log(
-  //         "[DEBUG] Projects with activity count:",
-  //         projectsWithActivity.length
-  //       );
-
-  //       if (projectsWithActivity.length > 0) {
-  //         const firstProject = projectsWithActivity[0];
-  //         const firstProjectSnapshot = safeClone(firstProject);
-  //         const extras = firstProjectSnapshot.$extras || {};
-  //         const dailyCounts = extras.dailyActivityCounts || {};
-
-  //         console.log("[DEBUG] First project with activity details:", {
-  //           name: firstProjectSnapshot.name,
-  //           dailyActivityCountsKeys: Object.keys(dailyCounts),
-  //           rawData: dailyCounts,
-  //         });
-  //       }
-  //     }
-  //   };
-
-  //   // Initial check
-  //   setTimeout(checkProjects, 1000);
-
-  //   // Check again after data might have loaded
-  //   setTimeout(checkProjects, 3000);
-  // });
 </script>
 
 <Sidebar.Provider>
@@ -331,57 +335,25 @@
     <AppSidebar />
     <main class="flex-1 overflow-y-auto p-4">
       <div class="container mx-auto py-6 px-4">
-        <!-- Header Section -->
-        <div class="mb-8 flex items-center justify-between">
+        <!-- Header Section with Date Range Selector -->
+        <div
+          class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+        >
           <div>
-            <!-- Wrapper for title and description -->
             <h1 class="text-3xl font-bold mb-2">Organization Analytics</h1>
             <p class="text-muted-foreground">
-              Activity overview across your projects.
+              Activity overview across your projects and users.
             </p>
           </div>
-          <!-- Date Range Selector Moved Here -->
-          <div class="flex">
-            <RadioGroup.Root
-              bind:value={selectedRange}
-              class="flex gap-2 rounded-md bg-card p-1"
-            >
-              <RadioGroup.Item value="7" id="r7" class="peer sr-only" />
-              {console.log("selectedRange", selectedRange)}
-              <Label
-                for="r7"
-                class={`flex items-center justify-center rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${selectedRange === "7" ? "bg-primary text-white dark:text-black" : "bg-card text-card-foreground"}`}
-              >
-                7 Days
-              </Label>
-              <RadioGroup.Item value="14" id="r14" class="peer sr-only" />
-              <Label
-                for="r14"
-                class={`flex items-center justify-center rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${selectedRange === "14" ? "bg-primary text-white dark:text-black" : "bg-card text-card-foreground"}`}
-              >
-                14 Days
-              </Label>
-              <RadioGroup.Item value="30" id="r30" class="peer sr-only" />
-              <Label
-                for="r30"
-                class={`flex items-center justify-center rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${selectedRange === "30" ? "bg-primary text-white dark:text-black" : "bg-card text-card-foreground"}`}
-              >
-                30 Days
-              </Label>
-              <RadioGroup.Item value="all" id="rAll" class="peer sr-only" />
-              <Label
-                for="rAll"
-                class={`flex items-center justify-center rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${selectedRange === "all" ? "bg-primary text-white dark:text-black" : "bg-card text-card-foreground"}`}
-              >
-                All Time
-              </Label>
-            </RadioGroup.Root>
-          </div>
+          <!-- Date Range Selector (moved to Project Activity section) -->
         </div>
 
         <!-- Loading State -->
         {#if teamManagement?.isLoading}
           <div class="text-center p-8">
+            <div
+              class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite] mb-4"
+            ></div>
             <p>Loading analytics data...</p>
           </div>
         {:else if teamManagement?.error}
@@ -392,6 +364,119 @@
             <p>{teamManagement.error}</p>
           </div>
         {:else}
+          <!-- Summary Metrics Cards -->
+          {#if userLoginTableData?.length}
+            <div
+              class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
+            >
+              <!-- Total Users Card -->
+              <Tooltip.Root>
+                <Tooltip.Trigger>
+                  <div
+                    class="bg-card rounded-lg border shadow-sm p-6 flex items-start gap-4 cursor-help"
+                  >
+                    <div class="p-3 rounded-full bg-primary/10">
+                      <Users class="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                      <p class="text-muted-foreground text-sm font-medium">
+                        Total Users
+                      </p>
+                      <h3 class="text-left text-2xl font-bold">
+                        {summaryMetrics.totalUsers}
+                      </h3>
+                    </div>
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content side="bottom" class="max-w-xs">
+                  <p>Total number of all users in your organization.</p>
+                </Tooltip.Content>
+              </Tooltip.Root>
+
+              <!-- Active Last 7 Days Card -->
+              <Tooltip.Root>
+                <Tooltip.Trigger>
+                  <div
+                    class="bg-card rounded-lg border shadow-sm p-6 flex items-start gap-4"
+                  >
+                    <div class="p-3 rounded-full bg-green-500/10">
+                      <Calendar class="w-6 h-6 text-green-500" />
+                    </div>
+                    <div>
+                      <p class="text-muted-foreground text-sm font-medium">
+                        Active Users (7 Days)
+                      </p>
+                      <h3 class="text-left text-2xl font-bold">
+                        {summaryMetrics.activeUsersLast7Days}
+                      </h3>
+                    </div>
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content side="bottom" class="max-w-xs">
+                  <p>
+                    Number of users who logged in at least once during the past
+                    7 days.
+                  </p>
+                </Tooltip.Content>
+              </Tooltip.Root>
+
+              <!-- Active Last 30 Days Card -->
+              <Tooltip.Root>
+                <Tooltip.Trigger>
+                  <div
+                    class="bg-card rounded-lg border shadow-sm p-6 flex items-start gap-4 cursor-help"
+                  >
+                    <div class="p-3 rounded-full bg-blue-500/10">
+                      <CalendarClock class="w-6 h-6 text-blue-500" />
+                    </div>
+                    <div>
+                      <p class="text-muted-foreground text-sm font-medium">
+                        Active Users (30 Days)
+                      </p>
+                      <h3 class="text-left text-2xl font-bold">
+                        {summaryMetrics.activeUsersLast30Days}
+                      </h3>
+                    </div>
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content side="bottom" class="max-w-xs">
+                  <p>
+                    Number of users who logged in at least once during the past
+                    30 days.
+                  </p>
+                </Tooltip.Content>
+              </Tooltip.Root>
+
+              <!-- Activity Rate Card -->
+              <Tooltip.Root>
+                <Tooltip.Trigger>
+                  <div
+                    class="bg-card rounded-lg border shadow-sm p-6 flex items-start gap-4 cursor-help"
+                  >
+                    <div class="p-3 rounded-full bg-purple-500/10">
+                      <LineChart class="w-6 h-6 text-purple-500" />
+                    </div>
+                    <div>
+                      <p class="text-muted-foreground text-sm font-medium">
+                        Activity Rate (7d)
+                      </p>
+                      <h3 class="text-left text-2xl font-bold">
+                        {summaryMetrics.averageActivePercentage}%
+                      </h3>
+                    </div>
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content side="bottom" class="max-w-xs">
+                  <p>
+                    Percentage of total possible user-days with login activity
+                    in the last 7 days. Calculated as: (total active days /
+                    (total users × 7 days)) × 100%.
+                  </p>
+                </Tooltip.Content>
+              </Tooltip.Root>
+            </div>
+          {/if}
+
           <div class="p-4">
             {#if !teamManagement?.userResources?.projects?.length}
               <div
@@ -400,209 +485,298 @@
                 <p class="text-muted-foreground">No projects available.</p>
               </div>
             {:else}
-              <!-- Date Range Selector Removed From Here -->
-
-              <div class="mb-6">
-                <h2 class="text-xl font-bold mb-2">
-                  Projects with Activity (Content Added)
-                </h2>
-
-                {#if !teamManagement.userResources.projects.filter(hasActivity)?.length}
+              <div class="space-y-8">
+                <!-- Projects with Activity Section -->
+                <div>
                   <div
-                    class="text-center p-8 bg-muted/50 border border-border rounded-md"
+                    class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4"
                   >
-                    <p class="text-muted-foreground">
-                      No projects with activity data found for this
-                      organization.
-                    </p>
-                    <p class="text-sm text-muted-foreground mt-2">
-                      Activity data is collected when team members create or
-                      modify resources in a project.
-                    </p>
-                  </div>
-                {:else}
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {#each teamManagement.userResources.projects.filter(hasActivity) as project (project.id)}
-                      <div class="bg-card rounded-lg border shadow-sm p-4">
-                        <Tooltip.Root>
-                          <Tooltip.Trigger class="w-full text-left">
-                            <h3 class="text-lg font-semibold mb-2 truncate">
-                              {project.name}
-                            </h3>
-                          </Tooltip.Trigger>
-                          <Tooltip.Content side="top">
-                            <span>{project.name}</span>
-                          </Tooltip.Content>
-                        </Tooltip.Root>
-                        <ProjectActivityChart
-                          dailyActivityCounts={project.$extras
-                            ?.dailyActivityCounts || {}}
-                          projectName={project.name}
-                          dateRange={selectedRange}
+                    <h2 class="text-xl font-bold flex items-center gap-2">
+                      <LineChart class="w-5 h-5 text-primary" />
+                      <span>Project Activity</span>
+                    </h2>
+
+                    <!-- Date Range Selector (moved here) -->
+                    <div class="flex">
+                      <RadioGroup.Root
+                        bind:value={selectedRange}
+                        class="flex gap-2 rounded-md bg-card p-1 shadow-sm"
+                      >
+                        <RadioGroup.Item
+                          value="7"
+                          id="r7"
+                          class="peer sr-only"
                         />
-                      </div>
-                    {/each}
+                        <Label
+                          for="r7"
+                          class={`flex items-center justify-center rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${selectedRange === "7" ? "bg-primary text-white dark:text-black" : "bg-card text-card-foreground"}`}
+                        >
+                          7 Days
+                        </Label>
+                        <RadioGroup.Item
+                          value="14"
+                          id="r14"
+                          class="peer sr-only"
+                        />
+                        <Label
+                          for="r14"
+                          class={`flex items-center justify-center rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${selectedRange === "14" ? "bg-primary text-white dark:text-black" : "bg-card text-card-foreground"}`}
+                        >
+                          14 Days
+                        </Label>
+                        <RadioGroup.Item
+                          value="30"
+                          id="r30"
+                          class="peer sr-only"
+                        />
+                        <Label
+                          for="r30"
+                          class={`flex items-center justify-center rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${selectedRange === "30" ? "bg-primary text-white dark:text-black" : "bg-card text-card-foreground"}`}
+                        >
+                          30 Days
+                        </Label>
+                        <RadioGroup.Item
+                          value="all"
+                          id="rAll"
+                          class="peer sr-only"
+                        />
+                        <Label
+                          for="rAll"
+                          class={`flex items-center justify-center rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${selectedRange === "all" ? "bg-primary text-white dark:text-black" : "bg-card text-card-foreground"}`}
+                        >
+                          All Time
+                        </Label>
+                      </RadioGroup.Root>
+                    </div>
                   </div>
-                {/if}
-              </div>
 
-              <!-- New User Login Activity Section -->
-              <div class="mb-6">
-                <h2 class="text-xl font-bold mb-4">User Login Activity</h2>
-                {#if !userLoginTableData?.length}
-                  <div
-                    class="text-center p-8 bg-muted/50 border border-border rounded-md"
-                  >
-                    <p class="text-muted-foreground">
-                      No user login data available.
-                    </p>
-                  </div>
-                {:else}
-                  <div class="border rounded-lg">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead
-                            class="cursor-pointer hover:bg-muted/50"
-                            onclick={() => handleSortClick("user")}
-                          >
-                            <div class="flex items-center gap-1">
-                              User
-                              {#if sortColumn === "user"}
-                                {#if sortDirection === "asc"}<ChevronUp
-                                    class="h-4 w-4"
-                                  />{:else}<ChevronDown class="h-4 w-4" />{/if}
-                              {:else}
-                                <ChevronsUpDown
-                                  class="h-4 w-4 text-muted-foreground/50"
-                                />
-                              {/if}
-                            </div>
-                          </TableHead>
-                          <TableHead
-                            class="cursor-pointer hover:bg-muted/50"
-                            onclick={() => handleSortClick("lastLogin")}
-                          >
-                            <div class="flex items-center gap-1">
-                              Last Login
-                              {#if sortColumn === "lastLogin"}
-                                {#if sortDirection === "asc"}<ChevronUp
-                                    class="h-4 w-4"
-                                  />{:else}<ChevronDown class="h-4 w-4" />{/if}
-                              {:else}
-                                <ChevronsUpDown
-                                  class="h-4 w-4 text-muted-foreground/50"
-                                />
-                              {/if}
-                            </div>
-                          </TableHead>
-                          <TableHead
-                            class="text-right cursor-pointer hover:bg-muted/50"
-                            onclick={() => handleSortClick("days7")}
-                          >
-                            <div class="flex items-center justify-end gap-1">
-                              Active Days (7d)
-                              {#if sortColumn === "days7"}
-                                {#if sortDirection === "asc"}<ChevronUp
-                                    class="h-4 w-4"
-                                  />{:else}<ChevronDown class="h-4 w-4" />{/if}
-                              {:else}
-                                <ChevronsUpDown
-                                  class="h-4 w-4 text-muted-foreground/50"
-                                />
-                              {/if}
-                            </div>
-                          </TableHead>
-                          <TableHead
-                            class="text-right cursor-pointer hover:bg-muted/50"
-                            onclick={() => handleSortClick("days14")}
-                          >
-                            <div class="flex items-center justify-end gap-1">
-                              Active Days (14d)
-                              {#if sortColumn === "days14"}
-                                {#if sortDirection === "asc"}<ChevronUp
-                                    class="h-4 w-4"
-                                  />{:else}<ChevronDown class="h-4 w-4" />{/if}
-                              {:else}
-                                <ChevronsUpDown
-                                  class="h-4 w-4 text-muted-foreground/50"
-                                />
-                              {/if}
-                            </div>
-                          </TableHead>
-                          <TableHead
-                            class="text-right cursor-pointer hover:bg-muted/50"
-                            onclick={() => handleSortClick("days30")}
-                          >
-                            <div class="flex items-center justify-end gap-1">
-                              Active Days (30d)
-                              {#if sortColumn === "days30"}
-                                {#if sortDirection === "asc"}<ChevronUp
-                                    class="h-4 w-4"
-                                  />{:else}<ChevronDown class="h-4 w-4" />{/if}
-                              {:else}
-                                <ChevronsUpDown
-                                  class="h-4 w-4 text-muted-foreground/50"
-                                />
-                              {/if}
-                            </div>
-                          </TableHead>
-                          <TableHead
-                            class="text-right cursor-pointer hover:bg-muted/50"
-                            onclick={() => handleSortClick("daysAll")}
-                          >
-                            <div class="flex items-center justify-end gap-1">
-                              Active Days (All)
-                              {#if sortColumn === "daysAll"}
-                                {#if sortDirection === "asc"}<ChevronUp
-                                    class="h-4 w-4"
-                                  />{:else}<ChevronDown class="h-4 w-4" />{/if}
-                              {:else}
-                                <ChevronsUpDown
-                                  class="h-4 w-4 text-muted-foreground/50"
-                                />
-                              {/if}
-                            </div>
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {#each userLoginTableData as row (row.id)}
-                          <TableRow>
-                            <TableCell>
-                              <div class="font-medium">
-                                {row.firstName || ""}
-                                {row.lastName || ""}
-                              </div>
-                              <div class="text-sm text-muted-foreground">
-                                {row.email}
-                              </div>
-                            </TableCell>
-                            <TableCell
-                              >{formatDateTime(
-                                row.stats.lastLoginDate
-                              )}</TableCell
-                            >
-                            <TableCell class="text-right"
-                              >{row.stats.distinctLoginDaysLast7}</TableCell
-                            >
-                            <TableCell class="text-right"
-                              >{row.stats.distinctLoginDaysLast14}</TableCell
-                            >
-                            <TableCell class="text-right"
-                              >{row.stats.distinctLoginDaysLast30}</TableCell
-                            >
-                            <TableCell class="text-right"
-                              >{row.stats.distinctLoginDaysAllTime}</TableCell
-                            >
-                          </TableRow>
-                        {/each}
-                      </TableBody>
-                    </Table>
-                  </div>
-                {/if}
+                  {#if !teamManagement.userResources.projects.filter(hasActivity)?.length}
+                    <div
+                      class="text-center p-8 bg-muted/50 border border-border rounded-md"
+                    >
+                      <p class="text-muted-foreground">
+                        No projects with activity data found for this
+                        organization.
+                      </p>
+                      <p class="text-sm text-muted-foreground mt-2">
+                        Activity data is collected when team members create or
+                        modify resources in a project.
+                      </p>
+                    </div>
+                  {:else}
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {#each teamManagement.userResources.projects.filter(hasActivity) as project (project.id)}
+                        <div
+                          class="bg-card rounded-lg border shadow-sm p-4 hover:shadow-md transition-shadow"
+                        >
+                          <Tooltip.Root>
+                            <Tooltip.Trigger class="w-full text-left">
+                              <h3 class="text-lg font-semibold mb-2 truncate">
+                                {project.name}
+                              </h3>
+                            </Tooltip.Trigger>
+                            <Tooltip.Content side="top">
+                              <span>{project.name}</span>
+                            </Tooltip.Content>
+                          </Tooltip.Root>
+                          <ProjectActivityChart
+                            dailyActivityCounts={project.$extras
+                              ?.dailyActivityCounts || {}}
+                            projectName={project.name}
+                            dateRange={selectedRange}
+                          />
+                        </div>
+                      {/each}
+                    </div>
+                  {/if}
+                </div>
+
+                <!-- User Login Activity Section -->
+                <div>
+                  <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                    <Users class="w-5 h-5 text-primary" />
+                    <span>User Login Activity</span>
+                  </h2>
+
+                  {#if !userLoginTableData?.length}
+                    <div
+                      class="text-center p-8 bg-muted/50 border border-border rounded-md"
+                    >
+                      <p class="text-muted-foreground">
+                        No user login data available.
+                      </p>
+                    </div>
+                  {:else}
+                    <div class="border rounded-lg overflow-hidden shadow-sm">
+                      <div class="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead
+                                class="cursor-pointer hover:bg-muted/50"
+                                onclick={() => handleSortClick("user")}
+                              >
+                                <div class="flex items-center gap-1">
+                                  User
+                                  {#if sortColumn === "user"}
+                                    {#if sortDirection === "asc"}<ChevronUp
+                                        class="h-4 w-4"
+                                      />{:else}<ChevronDown
+                                        class="h-4 w-4"
+                                      />{/if}
+                                  {:else}
+                                    <ChevronsUpDown
+                                      class="h-4 w-4 text-muted-foreground/50"
+                                    />
+                                  {/if}
+                                </div>
+                              </TableHead>
+                              <TableHead
+                                class="cursor-pointer hover:bg-muted/50"
+                                onclick={() => handleSortClick("lastLogin")}
+                              >
+                                <div class="flex items-center gap-1">
+                                  Last Login
+                                  {#if sortColumn === "lastLogin"}
+                                    {#if sortDirection === "asc"}<ChevronUp
+                                        class="h-4 w-4"
+                                      />{:else}<ChevronDown
+                                        class="h-4 w-4"
+                                      />{/if}
+                                  {:else}
+                                    <ChevronsUpDown
+                                      class="h-4 w-4 text-muted-foreground/50"
+                                    />
+                                  {/if}
+                                </div>
+                              </TableHead>
+                              <TableHead
+                                class="text-right cursor-pointer hover:bg-muted/50"
+                                onclick={() => handleSortClick("days7")}
+                              >
+                                <div
+                                  class="flex items-center justify-end gap-1"
+                                >
+                                  Active Days (7d)
+                                  {#if sortColumn === "days7"}
+                                    {#if sortDirection === "asc"}<ChevronUp
+                                        class="h-4 w-4"
+                                      />{:else}<ChevronDown
+                                        class="h-4 w-4"
+                                      />{/if}
+                                  {:else}
+                                    <ChevronsUpDown
+                                      class="h-4 w-4 text-muted-foreground/50"
+                                    />
+                                  {/if}
+                                </div>
+                              </TableHead>
+                              <TableHead
+                                class="text-right cursor-pointer hover:bg-muted/50"
+                                onclick={() => handleSortClick("days14")}
+                              >
+                                <div
+                                  class="flex items-center justify-end gap-1"
+                                >
+                                  Active Days (14d)
+                                  {#if sortColumn === "days14"}
+                                    {#if sortDirection === "asc"}<ChevronUp
+                                        class="h-4 w-4"
+                                      />{:else}<ChevronDown
+                                        class="h-4 w-4"
+                                      />{/if}
+                                  {:else}
+                                    <ChevronsUpDown
+                                      class="h-4 w-4 text-muted-foreground/50"
+                                    />
+                                  {/if}
+                                </div>
+                              </TableHead>
+                              <TableHead
+                                class="text-right cursor-pointer hover:bg-muted/50"
+                                onclick={() => handleSortClick("days30")}
+                              >
+                                <div
+                                  class="flex items-center justify-end gap-1"
+                                >
+                                  Active Days (30d)
+                                  {#if sortColumn === "days30"}
+                                    {#if sortDirection === "asc"}<ChevronUp
+                                        class="h-4 w-4"
+                                      />{:else}<ChevronDown
+                                        class="h-4 w-4"
+                                      />{/if}
+                                  {:else}
+                                    <ChevronsUpDown
+                                      class="h-4 w-4 text-muted-foreground/50"
+                                    />
+                                  {/if}
+                                </div>
+                              </TableHead>
+                              <TableHead
+                                class="text-right cursor-pointer hover:bg-muted/50"
+                                onclick={() => handleSortClick("daysAll")}
+                              >
+                                <div
+                                  class="flex items-center justify-end gap-1"
+                                >
+                                  Active Days (All)
+                                  {#if sortColumn === "daysAll"}
+                                    {#if sortDirection === "asc"}<ChevronUp
+                                        class="h-4 w-4"
+                                      />{:else}<ChevronDown
+                                        class="h-4 w-4"
+                                      />{/if}
+                                  {:else}
+                                    <ChevronsUpDown
+                                      class="h-4 w-4 text-muted-foreground/50"
+                                    />
+                                  {/if}
+                                </div>
+                              </TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {#each userLoginTableData as row (row.id)}
+                              <TableRow>
+                                <TableCell>
+                                  <div class="font-medium">
+                                    {row.firstName || ""}
+                                    {row.lastName || ""}
+                                  </div>
+                                  <div class="text-sm text-muted-foreground">
+                                    {row.email}
+                                  </div>
+                                </TableCell>
+                                <TableCell
+                                  >{formatDateTime(
+                                    row.stats.lastLoginDate
+                                  )}</TableCell
+                                >
+                                <TableCell class="text-right"
+                                  >{row.stats.distinctLoginDaysLast7}</TableCell
+                                >
+                                <TableCell class="text-right"
+                                  >{row.stats
+                                    .distinctLoginDaysLast14}</TableCell
+                                >
+                                <TableCell class="text-right"
+                                  >{row.stats
+                                    .distinctLoginDaysLast30}</TableCell
+                                >
+                                <TableCell class="text-right"
+                                  >{row.stats
+                                    .distinctLoginDaysAllTime}</TableCell
+                                >
+                              </TableRow>
+                            {/each}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </div>
+                  {/if}
+                </div>
               </div>
-              <!-- End New User Login Activity Section -->
             {/if}
           </div>
         {/if}
