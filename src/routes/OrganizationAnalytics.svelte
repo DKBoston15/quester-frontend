@@ -493,7 +493,7 @@
                   >
                     <h2 class="text-xl font-bold flex items-center gap-2">
                       <LineChart class="w-5 h-5 text-primary" />
-                      <span>Project Activity</span>
+                      <span>Project Activity (Content Added)</span>
                     </h2>
 
                     <!-- Date Range Selector (moved here) -->
