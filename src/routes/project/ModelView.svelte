@@ -29,13 +29,13 @@
       const data = await response.json();
       hasAccess = data.allowed;
 
-      // If user doesn't have access, redirect to dashboard
+      // If user doesn't have access, redirect to overview
       if (!hasAccess) {
         console.warn("User attempted to access Model view without permission");
         if (props.projectId) {
-          navigate(`/project/${props.projectId}/dashboard`);
+          navigate(`/project/${props.projectId}/overview`);
         } else {
-          navigate("/dashboard");
+          navigate("/overview");
         }
         return false;
       }
@@ -44,7 +44,7 @@
       console.error("Failed to check model access capability:", error);
       hasAccess = false;
       // Redirect on error as well
-      navigate("/dashboard");
+      navigate("/overview");
       return false;
     } finally {
       isLoadingCapability = false;

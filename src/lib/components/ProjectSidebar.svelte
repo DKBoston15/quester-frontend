@@ -267,9 +267,9 @@
 
     primaryRoutes = [
       {
-        title: "Dashboard",
+        title: "Overview",
         icon: Home,
-        link: `/project/${projectId}/dashboard`,
+        link: `/project/${projectId}/overview`,
       },
       {
         title: "Literature",
@@ -634,7 +634,7 @@
         <Sidebar.GroupContent>
           <Sidebar.Menu>
             <Link
-              to="/dashboard"
+              to="/overview"
               class="block"
               on:click={handleSidebarLinkClick}
             >

@@ -23,15 +23,15 @@
       const data = await response.json();
       hasAccess = data.allowed;
 
-      // If user doesn't have access, redirect to dashboard
+      // If user doesn't have access, redirect to overview
       if (!hasAccess) {
         console.warn(
           "User attempted to access Insights page without permission"
         );
         if (projectStore.currentProject?.id) {
-          navigate(`/project/${projectStore.currentProject.id}/dashboard`);
+          navigate(`/project/${projectStore.currentProject.id}/overview`);
         } else {
-          navigate("/dashboard");
+          navigate("/overview");
         }
         return false;
       }
@@ -40,7 +40,7 @@
       console.error("Failed to check analysis access capability:", error);
       hasAccess = false;
       // Redirect on error as well
-      navigate("/dashboard");
+      navigate("/overview");
       return false;
     } finally {
       isLoadingCapability = false;

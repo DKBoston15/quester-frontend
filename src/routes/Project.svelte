@@ -4,7 +4,7 @@
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import ProjectSidebar from "$lib/components/ProjectSidebar.svelte";
   import { useLocation } from "svelte-routing";
-  import Dashboard from "./project/Dashboard.svelte";
+  import Overview from "./project/Overview.svelte";
   import Literature from "./project/Literature.svelte";
   import LiteratureView from "./project/LiteratureView.svelte";
   import Models from "./project/Models.svelte";
@@ -19,7 +19,7 @@
   import OutcomeView from "./project/OutcomeView.svelte";
   import Chat from "./project/Chat.svelte";
   type SectionKey =
-    | "dashboard"
+    | "overview"
     | "literature"
     | "models"
     | "notes"
@@ -32,7 +32,7 @@
     | "chat";
 
   const components: Record<SectionKey, any> = {
-    dashboard: Dashboard,
+    overview: Overview,
     literature: Literature,
     models: Models,
     notes: Notes,
@@ -105,7 +105,7 @@
           />
         {:else}
           {@const section = getCurrentSection()}
-          {@const Component = components[section] || components.dashboard}
+          {@const Component = components[section] || components.overview}
           <Component project={projectStore.currentProject} />
         {/if}
       {/if}
