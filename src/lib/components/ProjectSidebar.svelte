@@ -634,7 +634,7 @@
         <Sidebar.GroupContent>
           <Sidebar.Menu>
             <Link
-              to="/overview"
+              to="/dashboard"
               class="block"
               on:click={handleSidebarLinkClick}
             >
@@ -647,7 +647,7 @@
                       >
                         <Building2 class="h-4 w-4 flex-shrink-0" />
                         <span class="group-data-[collapsible=icon]:hidden"
-                          >Organization</span
+                          >Workspace</span
                         >
                       </div>
                     </Tooltip.Trigger>
@@ -656,7 +656,7 @@
                       sideOffset={10}
                       class="group-data-[collapsible=icon]:block hidden z-[9999]"
                     >
-                      <span class="">Organization</span>
+                      <span class="">Workspace</span>
                     </Tooltip.Content>
                   </Tooltip.Root>
                 </Sidebar.MenuButton>
