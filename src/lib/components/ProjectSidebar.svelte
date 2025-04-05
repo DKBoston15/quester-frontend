@@ -376,9 +376,9 @@
 <Tooltip.Provider delayDuration={0}>
   <Sidebar.Root
     collapsible="icon"
-    class="border-r-2 border-black dark:border-dark-border bg-card dark:bg-dark-card shadow-[4px_0px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_0px_0px_0px_rgba(44,46,51,0.1)]"
+    class="border-r-2  dark:border-dark-border bg-card dark:bg-dark-card shadow-[4px_0px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_0px_0px_0px_rgba(44,46,51,0.1)]"
   >
-    <Sidebar.Header class="border-b-2 border-black dark:border-dark-border">
+    <Sidebar.Header class="border-b-2  dark:border-dark-border">
       <div class="flex items-center gap-2 py-2">
         <Sidebar.Trigger
           class="h-8 w-8 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 p-2 rounded-sm"
@@ -667,7 +667,7 @@
       </Sidebar.Group>
     </div>
 
-    <Sidebar.Footer class="border-t-2 border-black dark:border-dark-border">
+    <Sidebar.Footer class="border-t-2  dark:border-dark-border">
       <div
         class="flex items-center gap-2 group-data-[collapsible=icon]:flex-col-reverse group-data-[collapsible=icon]:items-center"
       >
@@ -724,10 +724,10 @@
 
     <!-- Decorative corners -->
     <div
-      class="absolute -top-1 -right-1 w-2 h-2 bg-blue-400 dark:bg-dark-accent-blue border border-black dark:border-dark-border"
+      class="absolute -top-1 -right-1 w-2 h-2 bg-blue-400 dark:bg-dark-accent-blue border dark:border-dark-border"
     ></div>
     <div
-      class="absolute -bottom-1 -left-1 w-2 h-2 bg-yellow-400 dark:bg-dark-accent-yellow border border-black dark:border-dark-border"
+      class="absolute -bottom-1 -left-1 w-2 h-2 bg-yellow-400 dark:bg-dark-accent-yellow border dark:border-dark-border"
     ></div>
   </Sidebar.Root>
 </Tooltip.Provider>

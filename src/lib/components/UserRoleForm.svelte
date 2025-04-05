@@ -125,7 +125,7 @@
             id="role"
             bind:value={selectedRoleId}
             disabled={isLoading}
-            class="w-full border-2 border-black dark:border-dark-border rounded-md p-2"
+            class="w-full border-2 dark:border-dark-border rounded-md p-2"
           >
             <option value={undefined}>Select a role</option>
             {#each availableRoles as role}
@@ -143,7 +143,7 @@
             variant="outline"
             onclick={props.onCancel}
             disabled={isLoading}
-            class="border-2 border-black dark:border-dark-border"
+            class="border-2  dark:border-dark-border"
           >
             Cancel
           </Button>
@@ -169,7 +169,7 @@
     <Button
       variant="outline"
       onclick={props.onCancel}
-      class="border-2 border-black dark:border-dark-border"
+      class="border-2  dark:border-dark-border"
     >
       Cancel
     </Button>

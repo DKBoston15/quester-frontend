@@ -68,7 +68,7 @@
         <h1 class="text-3xl font-bold">Literature</h1>
         <Button
           onclick={handleAddLiterature}
-          class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
+          class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
         >
           <Plus class="h-4 w-4 mr-2" />
           Add Literature
@@ -80,7 +80,7 @@
     </div>
 
     <Card.Root
-      class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
+      class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
     >
       <Card.Content class="space-y-6">
         <div class="flex flex-col space-y-4">
@@ -90,7 +90,7 @@
               placeholder="Search literature..."
               value={searchQuery}
               oninput={handleSearch}
-              class="flex h-10 w-full md:w-[350px] rounded-md border border-black dark:border-dark-border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              class="flex h-10 w-full md:w-[350px] rounded-md border dark:border-dark-border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
 
@@ -118,7 +118,7 @@
             </div>
           {:else}
             <div
-              class="border border-black dark:border-dark-border rounded-lg overflow-hidden"
+              class="border dark:border-dark-border rounded-lg overflow-hidden"
             >
               <LiteratureTable
                 data={literatureStore.data}

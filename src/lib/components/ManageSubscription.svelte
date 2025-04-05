@@ -48,7 +48,7 @@
     variant="outline"
     disabled={isLoading}
     onclick={handleManageSubscription}
-    class="w-full border-2 border-black dark:border-dark-border  hover:bg-accent hover:text-accent-foreground"
+    class="w-full border-2 dark:border-dark-border  hover:bg-accent hover:text-accent-foreground"
   >
     <CreditCard class="mr-2 h-4 w-4" />
     {isLoading

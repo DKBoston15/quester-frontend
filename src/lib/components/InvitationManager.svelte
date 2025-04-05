@@ -317,7 +317,7 @@
     {/if}
 
     <form
-      class="space-y-4 border-2 border-black dark:border-dark-border p-4 rounded-md"
+      class="space-y-4 border-2 dark:border-dark-border p-4 rounded-md"
       onsubmit={(e) => {
         e.preventDefault();
         sendInvitation();
@@ -331,7 +331,7 @@
             type="email"
             placeholder="user@example.com"
             bind:value={email}
-            class="border-2 border-black dark:border-dark-border"
+            class="border-2  dark:border-dark-border"
             required
             disabled={!canSendInvitations}
           />
@@ -342,7 +342,7 @@
           <select
             id="role"
             bind:value={selectedRoleId}
-            class="w-full rounded-md border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card p-2"
+            class="w-full rounded-md border-2 dark:border-dark-border bg-card dark:bg-dark-card p-2"
             required
             disabled={!canSendInvitations}
           >
@@ -408,9 +408,7 @@
   <div>
     <h3 class="text-lg font-medium mb-4">Pending Invitations</h3>
     {#if invitationsLoading}
-      <div
-        class="text-center p-6 border-2 border-black dark:border-dark-border rounded-md"
-      >
+      <div class="text-center p-6 border-2 dark:border-dark-border rounded-md">
         <div
           class="animate-spin inline-block h-6 w-6 border-2 border-primary border-t-transparent rounded-full"
         ></div>
@@ -427,14 +425,12 @@
       </div>
     {:else if pendingInvitations.length === 0}
       <div
-        class="text-center p-6 border-2 border-black dark:border-dark-border rounded-md text-muted-foreground"
+        class="text-center p-6 border-2 dark:border-dark-border rounded-md text-muted-foreground"
       >
         No pending invitations
       </div>
     {:else}
-      <div
-        class="border-2 border-black dark:border-dark-border rounded-md overflow-hidden"
-      >
+      <div class="border-2 dark:border-dark-border rounded-md overflow-hidden">
         <table class="w-full">
           <thead class="bg-accent text-accent-foreground">
             <tr>
@@ -446,9 +442,7 @@
           </thead>
           <tbody>
             {#each pendingInvitations as invitation (invitation.id)}
-              <tr
-                class="border-t border-black dark:border-dark-border hover:bg-accent/20"
-              >
+              <tr class="border-t dark:border-dark-border hover:bg-accent/20">
                 <td class="p-3">
                   <div class="flex items-center gap-2">
                     <Mail class="h-4 w-4 text-muted-foreground" />

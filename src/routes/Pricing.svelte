@@ -205,7 +205,7 @@
         >Monthly</span
       >
       <div
-        class="border-2 border-black dark:border-dark-border p-1.5 flex items-center justify-center bg-card dark:bg-dark-card shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,1)]"
+        class="border-2 dark:border-dark-border p-1.5 flex items-center justify-center bg-card dark:bg-dark-card shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,1)]"
       >
         <Switch bind:pressed={isYearly} />
       </div>
@@ -214,7 +214,7 @@
         >Yearly</span
       >
       <span
-        class="hidden sm:inline-block text-base font-bold bg-blue-400 dark:bg-dark-accent-blue dark:text-black px-3 py-1.5 border-2 border-black dark:border-dark-border"
+        class="hidden sm:inline-block text-base font-bold bg-blue-400 dark:bg-dark-accent-blue dark:text-black px-3 py-1.5 border-2 dark:border-dark-border"
         >Save up to 17%</span
       >
     </div>
@@ -224,7 +224,7 @@
         >Workspace:</span
       >
       <span
-        class=" font-bold text-black dark:text-dark-text-primary px-2 py-1 bg-blue-400/20 dark:bg-dark-accent-blue/20 border-2 border-black dark:border-dark-border text-sm"
+        class=" font-bold text-black dark:text-dark-text-primary px-2 py-1 bg-blue-400/20 dark:bg-dark-accent-blue/20 border-2 dark:border-dark-border text-sm"
       >
         {props.workspaceName}
       </span>
@@ -233,7 +233,7 @@
   <!-- Show savings badge on mobile -->
   <div class="sm:hidden flex justify-center mb-8">
     <span
-      class="text-base font-bold bg-blue-400 dark:bg-dark-accent-blue dark:text-black px-3 py-1.5 border-2 border-black dark:border-dark-border"
+      class="text-base font-bold bg-blue-400 dark:bg-dark-accent-blue dark:text-black px-3 py-1.5 border-2 dark:border-dark-border"
       >Save up to 17%</span
     >
   </div>
@@ -260,7 +260,7 @@
           {#if plan.tag}
             <div class="absolute -top-5 left-6 z-10">
               <div
-                class="bg-blue-400 dark:text-black dark:bg-dark-accent-blue px-4 py-1.5 border-2 border-black dark:border-dark-border text-base font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,1)]"
+                class="bg-blue-400 dark:text-black dark:bg-dark-accent-blue px-4 py-1.5 border-2 dark:border-dark-border text-base font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,1)]"
               >
                 {plan.tag}
               </div>
@@ -268,13 +268,13 @@
           {/if}
 
           <div
-            class="border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)]
+            class="border-2 dark:border-dark-border bg-card dark:bg-dark-card shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)]
                            group-hover:translate-x-0.5 group-hover:translate-y-0.5 group-hover:shadow-none
                            transition-all overflow-hidden flex flex-col h-full
                            {plan.highlight ? 'border-4' : 'border-2'}"
           >
             <CardHeader
-              class="p-4 pt-6 border-b-2 border-black dark:border-dark-border {plan.highlight
+              class="p-4 pt-6 border-b-2  dark:border-dark-border {plan.highlight
                 ? `bg-blue-400/20 dark:bg-dark-accent-blue/20`
                 : ''} min-h-[140px]"
             >
@@ -307,7 +307,7 @@
                     >
                     {#if isYearly && plan.type !== "free"}
                       <span
-                        class="text-base font-bold bg-{plan.accentColor} dark:bg-dark-accent-blue px-2 py-1 border border-black dark:border-dark-border ml-2"
+                        class="text-base font-bold bg-{plan.accentColor} dark:bg-dark-accent-blue px-2 py-1 border dark:border-dark-border ml-2"
                       >
                         Save {calculateSavings(
                           plan.priceMonthly,
@@ -323,7 +323,7 @@
                 {#each plan.features as feature}
                   <li class="flex items-start group">
                     <div
-                      class="w-6 h-6 border-2 border-black dark:border-dark-border bg-black dark:bg-dark-accent-blue flex-shrink-0 mr-4 group-hover:translate-x-0.5 group-hover:translate-y-0.5 transition-transform"
+                      class="w-6 h-6 border-2 dark:border-dark-border bg-black dark:bg-dark-accent-blue flex-shrink-0 mr-4 group-hover:translate-x-0.5 group-hover:translate-y-0.5 transition-transform"
                     >
                       <Check
                         class="text-white dark:text-dark-text-primary w-5 h-5"
@@ -340,7 +340,7 @@
             </CardContent>
 
             <CardFooter
-              class="p-4 border-t-2 border-black dark:border-dark-border mt-auto {plan.highlight
+              class="p-4 border-t-2  dark:border-dark-border mt-auto {plan.highlight
                 ? `bg-blue-400/20 dark:bg-dark-accent-blue/20`
                 : ' dark:bg-dark-card-secondary'}"
             >
@@ -348,7 +348,7 @@
                 <AlertDialog.Root>
                   <AlertDialog.Trigger class="w-full">
                     <button
-                      class="w-full bg-black dark:bg-dark-accent-blue text-white dark:text-dark-text-primary font-bold py-3 px-6 border-2 border-black dark:border-dark-border
+                      class="w-full bg-black dark:bg-dark-accent-blue text-white dark:text-dark-text-primary font-bold py-3 px-6 border-2 dark:border-dark-border
                                      shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] hover:translate-x-0.5
                                      hover:translate-y-0.5 hover:shadow-none transition-all"
                     >
@@ -356,7 +356,7 @@
                     </button>
                   </AlertDialog.Trigger>
                   <AlertDialog.Content
-                    class="sm:max-w-[425px] border-4 border-black dark:border-dark-border bg-card dark:bg-dark-card shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(44,46,51,1)]"
+                    class="sm:max-w-[425px] border-4  dark:border-dark-border bg-card dark:bg-dark-card shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(44,46,51,1)]"
                   >
                     {#if formSubmitted}
                       <div class="p-6 text-center">
@@ -373,7 +373,7 @@
                         </p>
                         <AlertDialog.Cancel class="w-full">
                           <button
-                            class="w-full bg-blue-400 dark:bg-dark-accent-blue text-black dark:text-dark-text-primary font-bold py-3 px-6 border-2 border-black dark:border-dark-border
+                            class="w-full bg-blue-400 dark:bg-dark-accent-blue text-black dark:text-dark-text-primary font-bold py-3 px-6 border-2 dark:border-dark-border
                                    shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] hover:translate-x-0.5
                                    hover:translate-y-0.5 hover:shadow-none transition-all"
                             onclick={() => {
@@ -410,7 +410,7 @@
                             placeholder="your@email.com"
                             bind:value={formData.email}
                             required
-                            class="border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary"
+                            class="border-2  dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary"
                           />
                         </div>
                         <div class="space-y-2">
@@ -425,7 +425,7 @@
                             placeholder="John"
                             bind:value={formData.firstName}
                             required
-                            class="border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary"
+                            class="border-2  dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary"
                           />
                         </div>
                         <div class="space-y-2">
@@ -440,7 +440,7 @@
                             placeholder="Doe"
                             bind:value={formData.lastName}
                             required
-                            class="border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary"
+                            class="border-2  dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary"
                           />
                         </div>
                         <div class="space-y-2">
@@ -455,12 +455,12 @@
                             placeholder="Acme Inc."
                             bind:value={formData.companyUniversity}
                             required
-                            class="border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary"
+                            class="border-2  dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary"
                           />
                         </div>
                         <button
                           type="submit"
-                          class="w-full bg-black dark:bg-dark-accent-blue text-white dark:text-dark-text-primary font-bold py-3 px-6 border-2 border-black dark:border-dark-border
+                          class="w-full bg-black dark:bg-dark-accent-blue text-white dark:text-dark-text-primary font-bold py-3 px-6 border-2 dark:border-dark-border
                                                      shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] hover:translate-x-0.5
                                                      hover:translate-y-0.5 hover:shadow-none transition-all"
                         >
@@ -478,7 +478,7 @@
                          {plan.type === 'free'
                     ? 'text-white dark:text-dark-text-primary'
                     : 'text-black dark:text-dark-text-primary'} 
-                         font-bold py-3 px-6 border-2 border-black dark:border-dark-border
+                         font-bold py-3 px-6 border-2 dark:border-dark-border
                          shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] hover:translate-x-0.5
                          hover:translate-y-0.5 hover:shadow-none transition-all"
                 >
@@ -493,10 +493,10 @@
 
             <!-- Decorative corners -->
             <div
-              class="absolute -top-1 -right-1 w-2 h-2 bg-blue-400 dark:bg-dark-accent-blue border border-black dark:border-dark-border"
+              class="absolute -top-1 -right-1 w-2 h-2 bg-blue-400 dark:bg-dark-accent-blue border dark:border-dark-border"
             ></div>
             <div
-              class="absolute -bottom-1 -left-1 w-2 h-2 bg-blue-400 dark:bg-dark-accent-blue border border-black dark:border-dark-border"
+              class="absolute -bottom-1 -left-1 w-2 h-2 bg-blue-400 dark:bg-dark-accent-blue border dark:border-dark-border"
             ></div>
           </div>
         </div>

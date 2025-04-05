@@ -180,7 +180,7 @@
         {:else}
           <!-- Settings Tabs -->
           <Card
-            class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
+            class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
           >
             <CardHeader class="pb-0">
               <Tabs.Root value={activeTab}>
@@ -246,7 +246,7 @@
                         id="firstName"
                         placeholder="First Name"
                         bind:value={firstName}
-                        class="border-2 border-black dark:border-dark-border"
+                        class="border-2  dark:border-dark-border"
                       />
                     </div>
                     <div class="space-y-2">
@@ -255,7 +255,7 @@
                         id="lastName"
                         placeholder="Last Name"
                         bind:value={lastName}
-                        class="border-2 border-black dark:border-dark-border"
+                        class="border-2  dark:border-dark-border"
                       />
                     </div>
                   </div>
@@ -268,7 +268,7 @@
                       type="email"
                       placeholder="Email"
                       bind:value={email}
-                      class="border-2 border-black dark:border-dark-border"
+                      class="border-2  dark:border-dark-border"
                     />
                   </div>
 
@@ -306,7 +306,7 @@
                     </div>
                   {:else if auth.currentOrganization}
                     <!-- Team Settings Component -->
-                    <Card class="border-2 border-black dark:border-dark-border">
+                    <Card class="border-2  dark:border-dark-border">
                       <CardHeader>
                         <CardTitle>Organization Settings</CardTitle>
                         <CardDescription>

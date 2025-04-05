@@ -190,7 +190,7 @@
 <!-- Delete Dialog -->
 <AlertDialog.Root bind:open={showDeleteDialog}>
   <AlertDialog.Content
-    class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
+    class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
   >
     <AlertDialog.Header>
       <AlertDialog.Title>Delete Outcome</AlertDialog.Title>
@@ -204,7 +204,7 @@
         <Button
           variant="outline"
           onclick={() => (showDeleteDialog = false)}
-          class="border-2 border-black dark:border-dark-border"
+          class="border-2  dark:border-dark-border"
         >
           Cancel
         </Button>

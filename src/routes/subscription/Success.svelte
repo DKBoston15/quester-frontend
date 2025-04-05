@@ -93,15 +93,15 @@
 
   <!-- Decorative elements -->
   <div
-    class="absolute top-20 right-20 w-4 h-4 border-2 border-black dark:border-dark-border bg-yellow-400 dark:bg-dark-accent-yellow rotate-12 hidden sm:block"
+    class="absolute top-20 right-20 w-4 h-4 border-2 dark:border-dark-border bg-yellow-400 dark:bg-dark-accent-yellow rotate-12 hidden sm:block"
   ></div>
   <div
-    class="absolute bottom-20 left-20 w-4 h-4 border-2 border-black dark:border-dark-border bg-blue-400 dark:bg-dark-accent-blue -rotate-12 hidden sm:block"
+    class="absolute bottom-20 left-20 w-4 h-4 border-2 dark:border-dark-border bg-blue-400 dark:bg-dark-accent-blue -rotate-12 hidden sm:block"
   ></div>
 
   <div class="relative mx-auto max-w-2xl px-4 sm:px-6 py-4 sm:py-8 mt-12">
     <div
-      class="border-2 mt-8 border-black dark:border-dark-border bg-card dark:bg-dark-card p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] transition-all duration-300 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,1)]"
+      class="border-2 mt-8 dark:border-dark-border bg-card dark:bg-dark-card p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] transition-all duration-300 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,1)]"
     >
       <div class="mb-6 relative">
         <h2

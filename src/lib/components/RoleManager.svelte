@@ -384,7 +384,7 @@
   >
     <!-- Modal content -->
     <div
-      class="bg-card dark:bg-dark-card border-2 border-black dark:border-dark-border rounded-lg shadow-lg w-full max-w-md p-6"
+      class="bg-card dark:bg-dark-card border-2 dark:border-dark-border rounded-lg shadow-lg w-full max-w-md p-6"
       onclick={(e) => e.stopPropagation()}
     >
       <!-- Header -->
@@ -447,7 +447,7 @@
             <select
               id="role-select"
               bind:value={selectedRoleId}
-              class="w-full rounded-md border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card p-2"
+              class="w-full rounded-md border-2 dark:border-dark-border bg-card dark:bg-dark-card p-2"
             >
               <option value="" disabled>Choose a role</option>
               {#each availableRoles as role}
@@ -466,7 +466,7 @@
           <select
             id="role-select"
             bind:value={selectedRoleId}
-            class="w-full rounded-md border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card p-2"
+            class="w-full rounded-md border-2 dark:border-dark-border bg-card dark:bg-dark-card p-2"
           >
             <option value="" disabled>Choose a role</option>
             {#each ["admin", "member"].filter((r) => r !== selectedRoleId) as role}
@@ -479,7 +479,7 @@
           <select
             id="role-select"
             bind:value={selectedRoleId}
-            class="w-full rounded-md border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card p-2"
+            class="w-full rounded-md border-2 dark:border-dark-border bg-card dark:bg-dark-card p-2"
           >
             <option value="" disabled>Choose a role</option>
             {#each availableRoles as role}

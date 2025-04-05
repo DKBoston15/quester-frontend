@@ -36,7 +36,7 @@
     <select
       value={selectedItem}
       onchange={handleSelectionChange}
-      class="w-full rounded-md border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card p-2"
+      class="w-full rounded-md border-2 dark:border-dark-border bg-card dark:bg-dark-card p-2"
     >
       <option value="" disabled>Select a resource</option>
 

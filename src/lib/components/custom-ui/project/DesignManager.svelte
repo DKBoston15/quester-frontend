@@ -233,7 +233,7 @@
 </script>
 
 <Card
-  class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
+  class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
 >
   <CardHeader>
     <div class="flex justify-between items-center">
@@ -270,12 +270,12 @@
   <CardContent>
     <Tabs.Root value={currentTab}>
       <Tabs.List
-        class="grid grid-cols-4 border dark:bg-background border-black dark:border-dark-border rounded-lg overflow-hidden"
+        class="grid grid-cols-4 border dark:bg-background  dark:border-dark-border rounded-lg overflow-hidden"
       >
         {#each designTypes as type}
           <Tabs.Trigger
             value={type}
-            class="capitalize px-4 data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]:border-black dark:data-[state=active]:border-dark-border data-[state=active]:font-medium"
+            class="capitalize px-4 data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]: dark:data-[state=active]:border-dark-border data-[state=active]:font-medium"
           >
             {type}
           </Tabs.Trigger>
@@ -317,7 +317,7 @@
 
             <!-- List of designs -->
             <div
-              class="border border-black dark:border-dark-border rounded-lg overflow-hidden"
+              class="border dark:border-dark-border rounded-lg overflow-hidden"
             >
               {#if localDesigns[type].length === 0}
                 <div class="p-4 text-center text-muted-foreground">

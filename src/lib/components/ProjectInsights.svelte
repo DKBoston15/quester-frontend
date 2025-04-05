@@ -142,7 +142,7 @@
 </script>
 
 <Card.Root
-  class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
+  class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
 >
   <Accordion.Root value={accordionValue} type="multiple" class="w-full">
     <Accordion.Item value="insights">
@@ -236,7 +236,7 @@
                   </h3>
                   {#each insights.filter((i) => i.severity === "error") as insight, i}
                     <div
-                      class="group border-2 border-black dark:border-dark-border p-4 rounded-lg hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] transition-all duration-300"
+                      class="group border-2 dark:border-dark-border p-4 rounded-lg hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] transition-all duration-300"
                       in:slide={{ duration: 300, delay: 150 + i * 50 }}
                     >
                       <div class="flex items-start gap-3">
@@ -286,7 +286,7 @@
                   </h3>
                   {#each insights.filter((i) => i.severity === "warning") as insight, i}
                     <div
-                      class="group border-2 border-black dark:border-dark-border p-4 rounded-lg hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] transition-all duration-300"
+                      class="group border-2 dark:border-dark-border p-4 rounded-lg hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] transition-all duration-300"
                       in:slide={{ duration: 300, delay: 150 + i * 50 }}
                     >
                       <div class="flex items-start gap-3">

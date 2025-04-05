@@ -239,7 +239,7 @@
         </div>
         <Button
           onclick={() => (showCreateDialog = true)}
-          class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] transition-all"
+          class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] transition-all"
         >
           <Plus class="h-4 w-4 mr-2" />
           Create Outcome
@@ -251,14 +251,14 @@
     </div>
 
     <Card.Root
-      class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] relative overflow-hidden"
+      class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] relative overflow-hidden"
     >
       <!-- Decorative corners -->
       <div
-        class="absolute -top-1 -right-1 w-2 h-2 bg-blue-400 dark:bg-dark-accent-blue border border-black dark:border-dark-border"
+        class="absolute -top-1 -right-1 w-2 h-2 bg-blue-400 dark:bg-dark-accent-blue border dark:border-dark-border"
       ></div>
       <div
-        class="absolute -bottom-1 -left-1 w-2 h-2 bg-yellow-400 dark:bg-dark-accent-yellow border border-black dark:border-dark-border"
+        class="absolute -bottom-1 -left-1 w-2 h-2 bg-yellow-400 dark:bg-dark-accent-yellow border dark:border-dark-border"
       ></div>
 
       <Card.Header class="pb-0">
@@ -270,7 +270,7 @@
             type="text"
             placeholder="Search outcomes..."
             bind:value={searchQuery}
-            class="pl-9 flex h-10 w-full rounded-md border-2 border-black dark:border-dark-border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            class="pl-9 flex h-10 w-full rounded-md border-2 dark:border-dark-border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           />
         </div>
       </Card.Header>
@@ -292,7 +292,7 @@
             <Button
               variant="outline"
               onclick={() => (showCreateDialog = true)}
-              class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] transition-all"
+              class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] transition-all"
             >
               <Plus class="h-4 w-4 mr-2" />
               Create your first outcome
@@ -317,7 +317,7 @@
                 }}
               >
                 <Card.Root
-                  class="h-full pb-4 border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all relative overflow-hidden"
+                  class="h-full pb-4 border-2  dark:border-dark-border bg-card dark:bg-dark-card shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all relative overflow-hidden"
                 >
                   <Card.Header class="pb-2">
                     <div class="flex justify-between items-start gap-4">
@@ -339,7 +339,7 @@
                         <Button
                           variant="outline"
                           size="icon"
-                          class="h-8 w-8 border-2 border-black dark:border-dark-border bg-background shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,0.15)] dark:hover:shadow-[3px_3px_0px_0px_rgba(44,46,51,0.15)] hover:translate-y-[-1px] hover:translate-x-[-1px] transition-all"
+                          class="h-8 w-8 border-2  dark:border-dark-border bg-background shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,0.15)] dark:hover:shadow-[3px_3px_0px_0px_rgba(44,46,51,0.15)] hover:translate-y-[-1px] hover:translate-x-[-1px] transition-all"
                           onclick={stopPropagation(() =>
                             handleRenameClick(outcome)
                           )}
@@ -352,7 +352,7 @@
                         <Button
                           variant="outline"
                           size="icon"
-                          class="h-8 w-8 border-2 border-black dark:border-dark-border bg-background shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[3px_3px_0px_0px_rgba(220,38,38,0.15)] dark:hover:shadow-[3px_3px_0px_0px_rgba(220,38,38,0.15)] hover:border-destructive dark:hover:border-destructive hover:translate-y-[-1px] hover:translate-x-[-1px] transition-all"
+                          class="h-8 w-8 border-2  dark:border-dark-border bg-background shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[3px_3px_0px_0px_rgba(220,38,38,0.15)] dark:hover:shadow-[3px_3px_0px_0px_rgba(220,38,38,0.15)] hover:border-destructive dark:hover:border-destructive hover:translate-y-[-1px] hover:translate-x-[-1px] transition-all"
                           onclick={stopPropagation(() =>
                             handleDeleteClick(outcome)
                           )}
@@ -394,10 +394,10 @@
                   </Card.Header>
 
                   <div
-                    class="absolute -top-1 -right-1 w-2 h-2 bg-green-400 dark:bg-dark-accent-green border border-black dark:border-dark-border"
+                    class="absolute -top-1 -right-1 w-2 h-2 bg-green-400 dark:bg-dark-accent-green border dark:border-dark-border"
                   ></div>
                   <div
-                    class="absolute -bottom-1 -left-1 w-2 h-2 bg-pink-400 dark:bg-dark-accent-pink border border-black dark:border-dark-border"
+                    class="absolute -bottom-1 -left-1 w-2 h-2 bg-pink-400 dark:bg-dark-accent-pink border dark:border-dark-border"
                   ></div>
                 </Card.Root>
               </button>
@@ -415,7 +415,7 @@
 <!-- Create Outcome Dialog -->
 <Root bind:open={showCreateDialog}>
   <Content
-    class="sm:max-w-[425px] border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
+    class="sm:max-w-[425px] border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
   >
     <div class="flex flex-col space-y-1.5 text-center sm:text-left">
       <Title>Create New Outcome</Title>
@@ -447,7 +447,7 @@
           id="name"
           bind:value={newOutcomeName}
           placeholder="Enter a name"
-          class="col-span-3 flex h-10 w-full rounded-md border-2 border-black dark:border-dark-border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          class="col-span-3 flex h-10 w-full rounded-md border-2 dark:border-dark-border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         />
       </div>
       {#if selectedType === "LINK"}
@@ -457,7 +457,7 @@
             id="url"
             bind:value={linkUrl}
             placeholder="https://example.com"
-            class="col-span-3 flex h-10 w-full rounded-md border-2 border-black dark:border-dark-border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            class="col-span-3 flex h-10 w-full rounded-md border-2 dark:border-dark-border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           />
         </div>
       {:else}
@@ -489,13 +489,13 @@
       <Button
         variant="outline"
         onclick={() => (showCreateDialog = false)}
-        class="border-2 border-black dark:border-dark-border"
+        class="border-2  dark:border-dark-border"
       >
         Cancel
       </Button>
       <Button
         onclick={handleCreateOutcome}
-        class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] transition-all"
+        class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] transition-all"
       >
         Create Outcome
       </Button>
@@ -506,7 +506,7 @@
 <!-- Delete Outcome Dialog -->
 <AlertDialog.Root bind:open={showDeleteDialog}>
   <AlertDialog.Content
-    class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
+    class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
   >
     <AlertDialog.Header>
       <AlertDialog.Title>Delete Outcome</AlertDialog.Title>
@@ -520,7 +520,7 @@
         <Button
           variant="outline"
           onclick={() => (showDeleteDialog = false)}
-          class="border-2 border-black dark:border-dark-border"
+          class="border-2  dark:border-dark-border"
         >
           Cancel
         </Button>
@@ -539,7 +539,7 @@
 <!-- Rename Outcome Dialog -->
 <Root bind:open={showRenameDialog}>
   <Content
-    class="sm:max-w-[425px] border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
+    class="sm:max-w-[425px] border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
   >
     <div class="flex flex-col space-y-1.5 text-center sm:text-left">
       <Title>Edit Outcome</Title>
@@ -554,7 +554,7 @@
         <input
           id="rename"
           bind:value={renameValue}
-          class="col-span-3 flex h-10 w-full rounded-md border-2 border-black dark:border-dark-border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          class="col-span-3 flex h-10 w-full rounded-md border-2 dark:border-dark-border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         />
       </div>
       {#if outcomeToRename?.type === "LINK"}
@@ -564,7 +564,7 @@
             id="editUrl"
             bind:value={editLinkUrl}
             placeholder="https://example.com"
-            class="col-span-3 flex h-10 w-full rounded-md border-2 border-black dark:border-dark-border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            class="col-span-3 flex h-10 w-full rounded-md border-2 dark:border-dark-border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           />
         </div>
       {/if}
@@ -573,13 +573,13 @@
       <Button
         variant="outline"
         onclick={() => (showRenameDialog = false)}
-        class="border-2 border-black dark:border-dark-border"
+        class="border-2  dark:border-dark-border"
       >
         Cancel
       </Button>
       <Button
         onclick={handleRenameOutcome}
-        class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] transition-all"
+        class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] transition-all"
       >
         Save Changes
       </Button>

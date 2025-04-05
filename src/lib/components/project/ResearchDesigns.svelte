@@ -70,7 +70,7 @@
 </script>
 
 <Card
-  class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
+  class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
 >
   <CardHeader>
     <div class="flex justify-between items-center">
@@ -95,12 +95,12 @@
   <CardContent>
     <Tabs.Root value={currentTab}>
       <Tabs.List
-        class="grid grid-cols-4 border dark:bg-background border-black dark:border-dark-border rounded-lg overflow-hidden"
+        class="grid grid-cols-4 border dark:bg-background  dark:border-dark-border rounded-lg overflow-hidden"
       >
         {#each designTypes as type}
           <Tabs.Trigger
             value={type}
-            class="capitalize px-4 data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]:border-black dark:data-[state=active]:border-dark-border data-[state=active]:font-medium"
+            class="capitalize px-4 data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]: dark:data-[state=active]:border-dark-border data-[state=active]:font-medium"
           >
             {type}
           </Tabs.Trigger>
@@ -110,7 +110,7 @@
         <Tabs.Content value={type} class="pt-4">
           {#if editMode}
             <select
-              class="flex h-10 w-full items-center justify-between rounded-md border border-black dark:border-dark-border bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              class="flex h-10 w-full items-center justify-between rounded-md border dark:border-dark-border bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               value={localDesigns[type]}
               onchange={(e) => handleDesignChange(type, e.currentTarget.value)}
             >

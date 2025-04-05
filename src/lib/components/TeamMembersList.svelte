@@ -433,7 +433,7 @@
       <Input
         type="text"
         placeholder="Search members..."
-        class="pl-8 border-2 border-black dark:border-dark-border"
+        class="pl-8 border-2  dark:border-dark-border"
         bind:value={searchTerm}
       />
     </div>
@@ -536,9 +536,7 @@
   {/if}
 
   <!-- Members list -->
-  <div
-    class="border-2 border-black dark:border-dark-border rounded-md overflow-hidden"
-  >
+  <div class="border-2 dark:border-dark-border rounded-md overflow-hidden">
     <table class="w-full">
       <thead class="bg-accent text-accent-foreground">
         <tr>
@@ -559,9 +557,7 @@
           </tr>
         {:else}
           {#each filteredUsers as user (user.id)}
-            <tr
-              class="border-t border-black dark:border-dark-border hover:bg-accent/20"
-            >
+            <tr class="border-t dark:border-dark-border hover:bg-accent/20">
               <td class="p-3">
                 <div class="flex items-center gap-2">
                   <div
@@ -658,7 +654,7 @@
 <!-- Delete Dialog -->
 <AlertDialog.Root bind:open={showDeleteDialog}>
   <AlertDialog.Content
-    class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
+    class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
   >
     <AlertDialog.Header>
       <AlertDialog.Title>Remove Team Member</AlertDialog.Title>
@@ -680,7 +676,7 @@
             showDeleteDialog = false;
             userToRemove = null;
           }}
-          class="border-2 border-black dark:border-dark-border"
+          class="border-2  dark:border-dark-border"
         >
           Cancel
         </Button>

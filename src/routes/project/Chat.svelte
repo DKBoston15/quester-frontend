@@ -357,11 +357,9 @@
   }
 </script>
 
-<Card.Root
-  class="flex flex-col h-full border-2 border-black dark:border-dark-border"
->
+<Card.Root class="flex flex-col h-full border-2  dark:border-dark-border">
   <Card.Header
-    class="px-6 py-4 flex w-full justify-between border-b-2 border-black dark:border-dark-border bg-background"
+    class="px-6 py-4 flex w-full justify-between border-b-2  dark:border-dark-border bg-background"
   >
     <div class="flex justify-between items-center gap-3">
       <div class="flex items-center gap-3">
@@ -379,7 +377,7 @@
         <Button
           variant="outline"
           onclick={() => (showHistory = !showHistory)}
-          class="border-2 border-black dark:border-dark-border shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[1px_1px_0px_0px_rgba(44,46,51,0.1)] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all {showHistory
+          class="border-2  dark:border-dark-border shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[1px_1px_0px_0px_rgba(44,46,51,0.1)] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all {showHistory
             ? 'bg-secondary'
             : ''}"
         >
@@ -389,7 +387,7 @@
         <Button
           variant="outline"
           onclick={startNewChat}
-          class="border-2 border-black dark:border-dark-border shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[1px_1px_0px_0px_rgba(44,46,51,0.1)] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all"
+          class="border-2  dark:border-dark-border shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[1px_1px_0px_0px_rgba(44,46,51,0.1)] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all"
         >
           <RefreshCcw class="h-4 w-4 mr-2" />
           <span class="hidden sm:inline">New Chat</span>
@@ -446,7 +444,7 @@
                 class="group max-w-[80%] rounded-lg p-4 border-2 {message.role ===
                 'user'
                   ? 'border-blue-500 bg-blue-500 text-white'
-                  : 'border-black dark:border-dark-border bg-background'} transition-all duration-200 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)]"
+                  : ' dark:border-dark-border bg-background'} transition-all duration-200 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)]"
               >
                 <div class="relative">
                   <p class="whitespace-pre-wrap min-h-[1.5em]">
@@ -476,7 +474,7 @@
         {#if isLoading}
           <div class="flex items-center gap-2 text-gray-500" transition:fade>
             <div
-              class="flex items-center gap-2 border-2 border-black dark:border-dark-border px-4 py-2 rounded-lg transition-all duration-200 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
+              class="flex items-center gap-2 border-2 dark:border-dark-border px-4 py-2 rounded-lg transition-all duration-200 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
             >
               <div
                 class="w-2 h-2 bg-current rounded-full loading-spinner"
@@ -521,7 +519,7 @@
                 type="text"
                 placeholder="Search conversations..."
                 bind:value={searchTerm}
-                class="w-full pl-9 p-2 text-sm rounded-lg border-2 border-black dark:border-dark-border bg-background focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:focus:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] transition-all duration-200"
+                class="w-full pl-9 p-2 text-sm rounded-lg border-2 dark:border-dark-border bg-background focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:focus:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] transition-all duration-200"
               />
             </div>
           </div>
@@ -543,7 +541,7 @@
               {#each filteredSessions as session}
                 <button
                   transition:fade={{ duration: 200 }}
-                  class="w-full p-3 text-left rounded-lg border-2 border-black dark:border-dark-border hover:bg-white dark:hover:bg-gray-800 transition-all duration-200 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] {currentChatSession ===
+                  class="w-full p-3 text-left rounded-lg border-2 dark:border-dark-border hover:bg-white dark:hover:bg-gray-800 transition-all duration-200 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] {currentChatSession ===
                   session.chatSessionId
                     ? 'bg-white dark:bg-gray-800 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]'
                     : ''}"
@@ -594,7 +592,7 @@
           bind:value={inputMessage}
           oninput={handleInput}
           placeholder="Ask a question about your project..."
-          class="w-full p-2 pr-16 rounded-lg border-2 border-black dark:border-dark-border bg-background focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:focus:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all duration-200"
+          class="w-full p-2 pr-16 rounded-lg border-2 dark:border-dark-border bg-background focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:focus:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all duration-200"
           disabled={isLoading}
         />
         {#if isTyping}
@@ -609,7 +607,7 @@
       <button
         type="submit"
         disabled={isLoading || !inputMessage.trim()}
-        class="px-4 py-2 border-2 border-black dark:border-dark-border bg-blue-500 text-white rounded-lg hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-none transition-all duration-200"
+        class="px-4 py-2 border-2 dark:border-dark-border bg-blue-500 text-white rounded-lg hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-none transition-all duration-200"
       >
         Send
       </button>

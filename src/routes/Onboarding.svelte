@@ -256,10 +256,10 @@
 
   <!-- Decorative elements -->
   <div
-    class="absolute top-20 right-20 w-4 h-4 border-2 border-black dark:border-dark-border bg-yellow-400 dark:bg-dark-accent-yellow rotate-12 hidden sm:block"
+    class="absolute top-20 right-20 w-4 h-4 border-2 dark:border-dark-border bg-yellow-400 dark:bg-dark-accent-yellow rotate-12 hidden sm:block"
   ></div>
   <div
-    class="absolute bottom-20 left-20 w-4 h-4 border-2 border-black dark:border-dark-border bg-blue-400 dark:bg-dark-accent-blue -rotate-12 hidden sm:block"
+    class="absolute bottom-20 left-20 w-4 h-4 border-2 dark:border-dark-border bg-blue-400 dark:bg-dark-accent-blue -rotate-12 hidden sm:block"
   ></div>
 
   <div
@@ -270,7 +270,7 @@
         : 'max-w-2xl'} px-4 sm:px-6 py-4 sm:py-8 mt-12"
   >
     <div
-      class="border-2 mt-8 border-black dark:border-dark-border bg-card dark:bg-dark-card {currentStep ===
+      class="border-2 mt-8 dark:border-dark-border bg-card dark:bg-dark-card {currentStep ===
       2
         ? 'pb-0'
         : 'p-6'} shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] transition-all duration-300 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,1)]"
@@ -326,7 +326,7 @@
               bind:value={orgName}
               required
               disabled={hasExistingWorkspace}
-              class="border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3  w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue {hasExistingWorkspace
+              class="border-2  dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3  w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue {hasExistingWorkspace
                 ? 'opacity-50 cursor-not-allowed'
                 : ''}"
             />
@@ -346,7 +346,7 @@
             <div class="space-y-4">
               <button
                 type="button"
-                class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card p-4 text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] {subscriptionType ===
+                class="relative w-full border-2 dark:border-dark-border bg-card dark:bg-dark-card p-4 text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] {subscriptionType ===
                 'personal'
                   ? 'border-4 bg-blue-50 dark:bg-blue-900/20 translate-x-[-2px] translate-y-[-2px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)]'
                   : ''}"
@@ -361,7 +361,7 @@
 
               <button
                 type="button"
-                class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card p-4 text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] {subscriptionType ===
+                class="relative w-full border-2 dark:border-dark-border bg-card dark:bg-dark-card p-4 text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] {subscriptionType ===
                 'organization'
                   ? 'border-4 bg-blue-50 dark:bg-blue-900/20 translate-x-[-2px] translate-y-[-2px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)]'
                   : ''}"
@@ -379,7 +379,7 @@
           <button
             type="submit"
             disabled={isLoading || (!hasExistingWorkspace && !orgName.trim())}
-            class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] disabled:opacity-50 disabled:cursor-not-allowed"
+            class="relative w-full border-2 dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading
               ? "Creating..."
@@ -416,7 +416,7 @@
                 max="10"
                 bind:value={departmentInputValue}
                 oninput={(e) => updateDepartmentCount(e.currentTarget.value)}
-                class="border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3  w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
+                class="border-2  dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3  w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
               />
             </div>
 
@@ -433,7 +433,7 @@
                   id={`dept${i}`}
                   bind:value={dept.name}
                   required
-                  class="border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3  w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
+                  class="border-2  dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3  w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
                 />
               </div>
             {/each}
@@ -441,7 +441,7 @@
             <button
               type="submit"
               disabled={isLoading}
-              class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] disabled:opacity-50 disabled:cursor-not-allowed"
+              class="relative w-full border-2 dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? "Creating..." : "Continue to Project Creation"}
             </button>
@@ -461,14 +461,14 @@
                 id="projectName"
                 bind:value={projectName}
                 required
-                class="border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3  w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
+                class="border-2  dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3  w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
               />
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] disabled:opacity-50 disabled:cursor-not-allowed"
+              class="relative w-full border-2 dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? "Creating..." : "Create Project"}
             </button>
@@ -489,7 +489,7 @@
               id="projectName"
               bind:value={projectName}
               required
-              class="border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3  w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
+              class="border-2  dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3  w-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
             />
           </div>
 
@@ -504,7 +504,7 @@
               <select
                 id="departmentSelect"
                 bind:value={selectedDepartmentId}
-                class="w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
+                class="w-full border-2 dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
               >
                 <option value="">Select a department...</option>
                 {#each departments as dept}
@@ -519,7 +519,7 @@
           <button
             type="submit"
             disabled={isLoading}
-            class="relative w-full border-2 border-black dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] disabled:opacity-50 disabled:cursor-not-allowed"
+            class="relative w-full border-2 dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? "Creating..." : "Create Project"}
           </button>

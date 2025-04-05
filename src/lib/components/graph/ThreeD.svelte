@@ -570,5 +570,6 @@
     overflow-x: hidden;
     padding: 0 !important;
     margin: 0 !important;
+    background-color: red;
   }
 </style>

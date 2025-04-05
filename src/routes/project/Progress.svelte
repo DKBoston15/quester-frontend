@@ -679,70 +679,81 @@
       0
     )}
     {@const levelInfo = getCurrentLevel(totalPoints)}
-    <div class="level-progress-container" in:fade={{ duration: 300 }}>
-      <div class="flex items-center gap-4 mb-2">
-        <div class={`level-badge bg-gradient-to-br ${levelInfo.current.color}`}>
-          <span class="text-xl font-bold">{levelInfo.index}</span>
-        </div>
-        <div class="flex-1">
-          <div class="flex justify-between items-center mb-1">
-            <h3
-              class={`text-lg font-semibold bg-gradient-to-r ${levelInfo.current.color} bg-clip-text text-transparent`}
-            >
-              {levelInfo.current.name}
-            </h3>
-            <span
-              class={`text-lg font-bold bg-gradient-to-r ${levelInfo.current.color} bg-clip-text text-transparent`}
-            >
-              {formatNumber(totalPoints)} Points
-            </span>
-          </div>
-          <div class="relative">
-            <Progress.Root
-              value={levelInfo.progress}
-              class={`h-2.5 level-progress ${levelInfo.current.color}`}
-            />
-            {#if levelInfo.next}
-              <div class="flex justify-between text-sm mt-1">
-                <span
-                  class={`bg-gradient-to-r ${levelInfo.current.color} bg-clip-text text-transparent font-medium`}
-                >
-                  {formatNumber(levelInfo.current.minXP)}
-                </span>
-                <span
-                  class={`bg-gradient-to-r ${levelInfo.next.color} bg-clip-text text-transparent font-medium`}
-                >
-                  {formatNumber(levelInfo.next.minXP)}
-                </span>
+    <div in:fade={{ duration: 300 }}>
+      <Card class="border-2">
+        <CardHeader>
+          <CardTitle>Research Level</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div class="level-progress-container">
+            <div class="flex items-center gap-4 mb-2">
+              <div
+                class={`level-badge bg-gradient-to-br ${levelInfo.current.color}`}
+              >
+                <span class="text-xl font-bold">{levelInfo.index}</span>
               </div>
+              <div class="flex-1">
+                <div class="flex justify-between items-center mb-1">
+                  <h3
+                    class={`text-lg font-semibold bg-gradient-to-r ${levelInfo.current.color} bg-clip-text text-transparent`}
+                  >
+                    {levelInfo.current.name}
+                  </h3>
+                  <span
+                    class={`text-lg font-bold bg-gradient-to-r ${levelInfo.current.color} bg-clip-text text-transparent`}
+                  >
+                    {formatNumber(totalPoints)} Points
+                  </span>
+                </div>
+                <div class="relative">
+                  <Progress.Root
+                    value={levelInfo.progress}
+                    class={`h-2.5 level-progress ${levelInfo.current.color}`}
+                  />
+                  {#if levelInfo.next}
+                    <div class="flex justify-between text-sm mt-1">
+                      <span
+                        class={`bg-gradient-to-r ${levelInfo.current.color} bg-clip-text text-transparent font-medium`}
+                      >
+                        {formatNumber(levelInfo.current.minXP)}
+                      </span>
+                      <span
+                        class={`bg-gradient-to-r ${levelInfo.next.color} bg-clip-text text-transparent font-medium`}
+                      >
+                        {formatNumber(levelInfo.next.minXP)}
+                      </span>
+                    </div>
+                  {/if}
+                </div>
+              </div>
+            </div>
+            {#if levelInfo.next}
+              <p class="text-sm text-center mt-3">
+                <span class="text-muted-foreground"
+                  >{formatNumber(levelInfo.next.minXP - totalPoints)} points until</span
+                >
+                <span
+                  class={`ml-1 font-medium bg-gradient-to-r ${levelInfo.next.color} bg-clip-text text-transparent`}
+                >
+                  {levelInfo.next.name}
+                </span>
+              </p>
+            {:else}
+              <p
+                class={`text-sm font-medium text-center mt-3 bg-gradient-to-r ${levelInfo.current.color} bg-clip-text text-transparent`}
+              >
+                Maximum Level Achieved!
+              </p>
             {/if}
           </div>
-        </div>
-      </div>
-      {#if levelInfo.next}
-        <p class="text-sm text-center mt-3">
-          <span class="text-muted-foreground"
-            >{formatNumber(levelInfo.next.minXP - totalPoints)} points until</span
-          >
-          <span
-            class={`ml-1 font-medium bg-gradient-to-r ${levelInfo.next.color} bg-clip-text text-transparent`}
-          >
-            {levelInfo.next.name}
-          </span>
-        </p>
-      {:else}
-        <p
-          class={`text-sm font-medium text-center mt-3 bg-gradient-to-r ${levelInfo.current.color} bg-clip-text text-transparent`}
-        >
-          Maximum Level Achieved!
-        </p>
-      {/if}
+        </CardContent>
+      </Card>
     </div>
   {/if}
 
   <Tabs.Root
     value={activeTab}
-    onValueChange={(value) => (activeTab = value)}
+    onValueChange={(value: string) => (activeTab = value)}
     class="space-y-6"
   >
     <Tabs.List class="inline-flex h-10 items-center justify-center gap-4">
@@ -1086,13 +1097,7 @@
   }
 
   .level-progress-container {
-    @apply bg-card/50 backdrop-blur-sm rounded-lg p-6 border-2 relative overflow-hidden;
-    border-image: linear-gradient(
-        to right,
-        hsl(var(--primary) / 0.3),
-        transparent
-      )
-      1;
+    /* @apply bg-background rounded-lg relative overflow-hidden; */
   }
 
   .level-progress-container::before {

@@ -109,7 +109,7 @@
         <!-- Status Card -->
         <div class="mt-4 mb-6">
           <Card.Root
-            class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
+            class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
           >
             <Card.Content class="py-4">
               <LiteratureStatus {literature} />
@@ -134,7 +134,7 @@
         <!-- Left Column: Details -->
         <div class="space-y-6">
           <Card.Root
-            class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
+            class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
           >
             <Card.Header>
               <Card.Title>Details</Card.Title>
@@ -169,7 +169,7 @@
 
           <!-- Keywords -->
           <Card.Root
-            class="border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
+            class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
           >
             <Card.Header>
               <Card.Title>Keywords</Card.Title>
