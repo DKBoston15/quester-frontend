@@ -21,6 +21,7 @@
     Expand,
     Plus,
     Minus,
+    Info,
   } from "lucide-svelte";
   import { onDestroy, onMount } from "svelte";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
@@ -36,42 +37,55 @@
       minXP: 0,
       maxXP: 1000,
       color: "from-amber-500 to-orange-600",
+      description:
+        "The beginning of your research journey, where questions start to form.",
     },
     {
       name: "Illuminator",
       minXP: 1001,
       maxXP: 2000,
       color: "from-blue-500 to-indigo-600",
+      description:
+        "Shedding light on new ideas and connections within your research.",
     },
     {
       name: "Knowledge Weaver",
       minXP: 2001,
       maxXP: 3000,
       color: "from-purple-500 to-fuchsia-600",
+      description:
+        "Connecting threads of information into a cohesive understanding.",
     },
     {
       name: "Insight Architect",
       minXP: 3001,
       maxXP: 4000,
       color: "from-emerald-500 to-teal-600",
+      description:
+        "Building frameworks of understanding from collected knowledge.",
     },
     {
       name: "Wisdom Sculptor",
       minXP: 4001,
       maxXP: 5000,
       color: "from-rose-500 to-pink-600",
+      description:
+        "Shaping raw information into refined insights and theories.",
     },
     {
       name: "Enlightenment Explorer",
       minXP: 5001,
       maxXP: 6000,
       color: "from-cyan-500 to-blue-600",
+      description: "Venturing beyond established knowledge into new territory.",
     },
     {
       name: "Sage of Scholars",
       minXP: 6001,
       maxXP: Infinity,
       color: "from-violet-500 to-purple-600",
+      description:
+        "The pinnacle of research mastery, where expertise guides others.",
     },
   ];
 
@@ -111,6 +125,7 @@
   let showDialog = $state(false);
   let dialogTitle = $state("");
   let dialogContent = $state<string[]>([]);
+  let showLevelsDialog = $state(false);
 
   // Achievement related state and types
   let achievements = $state<Achievement[]>([]);
@@ -673,7 +688,18 @@
     <div in:fade={{ duration: 300 }}>
       <Card class="border-2">
         <CardHeader>
-          <CardTitle>Research Level</CardTitle>
+          <CardTitle class="flex items-center justify-between">
+            Research Level
+            <Button
+              variant="outline"
+              size="sm"
+              class="ml-2"
+              onclick={() => (showLevelsDialog = true)}
+            >
+              <Trophy class="h-4 w-4 mr-2" />
+              View All Levels
+            </Button>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div class="level-progress-container">
@@ -913,6 +939,72 @@
   </Dialog.Content>
 </Dialog.Root>
 
+<!-- New Levels Info Dialog -->
+<Dialog.Root bind:open={showLevelsDialog}>
+  <Dialog.Content class="sm:max-w-[800px]">
+    <div class="flex flex-col space-y-1.5 p-6">
+      <Dialog.Title>Research Levels</Dialog.Title>
+      <Dialog.Description>
+        Your journey through research mastery
+      </Dialog.Description>
+    </div>
+    <div class="px-6 pb-4 max-h-[70vh] overflow-y-auto">
+      <div class="grid gap-6 md:grid-cols-2">
+        {#each levels as level, index}
+          <div
+            class="level-card relative overflow-hidden p-4 rounded-lg border-2 backdrop-blur-sm"
+          >
+            <div
+              class="absolute inset-0 opacity-10 bg-gradient-to-br {level.color}"
+            ></div>
+            <div class="relative z-10 flex gap-4 items-center">
+              <div class={`level-badge bg-gradient-to-br ${level.color}`}>
+                <span class="text-xl font-bold">{index + 1}</span>
+              </div>
+              <div class="flex-1">
+                <h3
+                  class={`text-lg font-semibold bg-gradient-to-r ${level.color} bg-clip-text text-transparent`}
+                >
+                  {level.name}
+                </h3>
+                <p class="text-sm text-muted-foreground mt-1">
+                  {level.description}
+                </p>
+                <div class="flex justify-between items-center mt-2">
+                  <span
+                    class={`text-sm font-medium bg-gradient-to-r ${level.color} bg-clip-text text-transparent`}
+                  >
+                    {formatNumber(level.minXP)} XP
+                  </span>
+                  {#if level.maxXP !== Infinity}
+                    <span class="text-sm text-muted-foreground">→</span>
+                    <span
+                      class={`text-sm font-medium bg-gradient-to-r ${level.color} bg-clip-text text-transparent`}
+                    >
+                      {formatNumber(level.maxXP)} XP
+                    </span>
+                  {:else}
+                    <span
+                      class={`text-sm font-medium bg-gradient-to-r ${level.color} bg-clip-text text-transparent`}
+                    >
+                      and beyond
+                    </span>
+                  {/if}
+                </div>
+              </div>
+            </div>
+          </div>
+        {/each}
+      </div>
+    </div>
+    <div class="flex justify-end p-6 pt-0">
+      <Button variant="outline" onclick={() => (showLevelsDialog = false)}
+        >Close</Button
+      >
+    </div>
+  </Dialog.Content>
+</Dialog.Root>
+
 <style>
   :global(.timeline-container) {
     background: var(--background);
@@ -1118,5 +1210,25 @@
     background-color: #10b981 !important;
     border-color: #059669 !important;
     color: white;
+  }
+
+  .level-card {
+    @apply transition-all duration-300 hover:shadow-lg;
+    border-image: linear-gradient(
+        to bottom right,
+        hsl(var(--muted-foreground) / 0.3),
+        transparent
+      )
+      1;
+  }
+
+  .level-card:hover {
+    @apply transform -translate-y-0.5;
+    border-image: linear-gradient(
+        to bottom right,
+        hsl(var(--primary)),
+        hsl(var(--primary) / 0.2)
+      )
+      1;
   }
 </style>
