@@ -220,7 +220,7 @@
       }
 
       const data = await response.json();
-
+      console.log("invitations", data);
       // Filter for pending invitations only - exclude both acceptedAt and status "accepted"
       pendingInvitations = data.filter(
         (inv: any) =>
@@ -451,7 +451,17 @@
                 </td>
                 <td class="p-3">
                   <Badge variant="secondary">
-                    {invitation.role?.name || invitation.roleId || "Member"}
+                    {(props.resourceType === "organization"
+                      ? invitation.accessMapping?.organization?.roleName
+                      : props.resourceType === "department"
+                        ? invitation.accessMapping?.departments?.find(
+                            (d: any) => d.id === props.resourceId
+                          )?.roleName
+                        : props.resourceType === "project"
+                          ? invitation.accessMapping?.projects?.find(
+                              (p: any) => p.id === props.resourceId
+                            )?.roleName
+                          : undefined) || "Member"}
                   </Badge>
                 </td>
                 <td class="p-3 text-muted-foreground">
