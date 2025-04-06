@@ -190,6 +190,14 @@
       projects = projectsData.data.filter(
         (p: Project) => p.organizationId === currentOrg?.id
       );
+
+      // Check if user has projects after loading
+      if (projects.length === 0) {
+        // Determine the correct onboarding step based on subscription type
+        const step = currentOrg.subscriptionType === "organization" ? 4 : 3;
+        navigate("/onboarding", { state: { step: step } });
+        return; // Prevent dashboard from rendering further
+      }
     } catch (error) {
       console.error("Error loading departments and projects:", error);
       // We continue even if there's an error to avoid blocking the dashboard
