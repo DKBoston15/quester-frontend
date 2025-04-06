@@ -2,6 +2,7 @@
 <script lang="ts">
   import type { KeywordAnalysis } from "$lib/types/index";
   import { Card } from "$lib/components/ui/card";
+  import { Button } from "$lib/components/ui/button";
   import {
     Accordion,
     AccordionContent,
@@ -9,7 +10,7 @@
     AccordionTrigger,
   } from "$lib/components/ui/accordion";
   import * as Tooltip from "$lib/components/ui/tooltip";
-  import { InfoIcon } from "lucide-svelte";
+  import { InfoIcon, DownloadIcon } from "lucide-svelte";
   import VennDiagram from "./VennDiagram.svelte";
   import FrequencyChart from "./FrequencyChart.svelte";
 
@@ -216,6 +217,110 @@
       console.warn("Venn diagram filter event did not provide a URL.");
     }
   }
+
+  // --- CSV Download Functions ---
+
+  // Helper to escape CSV fields
+  function escapeCsvField(field: any): string {
+    const stringField = String(field);
+    // Escape double quotes by doubling them and wrap in quotes if contains comma, newline, or double quote
+    if (
+      stringField.includes('"') ||
+      stringField.includes(",") ||
+      stringField.includes("\n") ||
+      stringField.includes("\r")
+    ) {
+      return `"${stringField.replace(/"/g, '""')}"`;
+    }
+    return stringField;
+  }
+
+  // Helper to trigger download
+  function triggerDownload(filename: string, csvContent: string) {
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    if (link.download !== undefined) {
+      // Feature detection
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", filename);
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } else {
+      console.error("Browser does not support automatic download triggering.");
+      // Provide fallback or message
+    }
+  }
+
+  // 1. Download Frequency Distribution CSV
+  function downloadFrequencyCSV() {
+    const stats = calculateFrequencyStats();
+    if (stats.length === 0) return;
+
+    const headers = [
+      "Key Term",
+      "Frequency",
+      "Percentage (%)",
+      "Cumulative Percentage (%)",
+    ];
+    let csvString = headers.map(escapeCsvField).join(",") + "\r\n";
+
+    stats.forEach((stat) => {
+      const row = [stat.term, stat.frequency, stat.percentage, stat.cumulative];
+      csvString += row.map(escapeCsvField).join(",") + "\r\n";
+    });
+
+    // Add Total row
+    const total = stats.reduce((sum, stat) => sum + stat.frequency, 0);
+    const totalRow = ["Total", total, "100.00", "100.00"];
+    csvString += totalRow.map(escapeCsvField).join(",") + "\r\n";
+
+    triggerDownload("frequency_distribution.csv", csvString);
+  }
+
+  // 2. Download Cross Distribution CSV
+  function downloadCrossDistCSV() {
+    if (!keywords || keywords.length === 0) return;
+
+    const headers = ["Key term", ...keywords];
+    let csvString = headers.map(escapeCsvField).join(",") + "\r\n";
+
+    keywords.forEach((rowKeyword: string, i: number) => {
+      const row = [rowKeyword];
+      keywords.forEach((colKeyword: string, j: number) => {
+        if (i <= j) {
+          const cooccurrence = getCooccurrenceData(rowKeyword, colKeyword);
+          row.push(cooccurrence.count);
+        } else {
+          row.push(""); // Fill lower triangle with empty strings
+        }
+      });
+      csvString += row.map(escapeCsvField).join(",") + "\r\n";
+    });
+
+    triggerDownload("cross_distribution.csv", csvString);
+  }
+
+  // 3. Download Three-way Distribution CSV
+  function downloadTripleCSV() {
+    const stats = calculateTripleStats();
+    if (stats.length === 0) return;
+
+    const headers = ["Keyword 1", "Keyword 2", "Keyword 3", "Frequency"];
+    let csvString = headers.map(escapeCsvField).join(",") + "\r\n";
+
+    stats.forEach((stat) => {
+      const row = [stat.kw1, stat.kw2, stat.kw3, stat.frequency];
+      csvString += row.map(escapeCsvField).join(",") + "\r\n";
+    });
+
+    triggerDownload("three_way_distribution.csv", csvString);
+  }
+
+  // --- End CSV Download Functions ---
 </script>
 
 <Card class="p-6">
@@ -256,20 +361,25 @@
       <AccordionItem value="frequency-distribution">
         <AccordionTrigger>Frequency Distribution</AccordionTrigger>
         <AccordionContent>
-          <div class="flex items-baseline gap-2 mt-4">
-            <h2 class="font-bold italic">Table 1</h2>
-            <Tooltip.Root>
-              <Tooltip.Trigger>
-                <InfoIcon class="h-4 w-4" />
-              </Tooltip.Trigger>
-              <Tooltip.Content>
-                <p class="text-sm max-w-xs">
-                  Numbers may differ from Google Scholar UI as we display exact
-                  values from the database, while Scholar's UI shows
-                  approximations.
-                </p>
-              </Tooltip.Content>
-            </Tooltip.Root>
+          <div class="flex justify-between items-center mt-4 mb-2">
+            <div class="flex items-baseline gap-2">
+              <h2 class="font-bold italic">Table 1</h2>
+              <Tooltip.Root>
+                <Tooltip.Trigger>
+                  <InfoIcon class="h-4 w-4" />
+                </Tooltip.Trigger>
+                <Tooltip.Content>
+                  <p class="text-sm max-w-xs">
+                    Numbers may differ from Google Scholar UI as we display
+                    exact values from the database, while Scholar's UI shows
+                    approximations.
+                  </p>
+                </Tooltip.Content>
+              </Tooltip.Root>
+            </div>
+            <Button variant="outline" size="sm" onclick={downloadFrequencyCSV}>
+              <DownloadIcon class="h-4 w-4 mr-2" /> Download CSV
+            </Button>
           </div>
           <h2 class="font-bold italic mb-2">
             Frequency Distribution of Key Terms
@@ -325,20 +435,25 @@
       <AccordionItem value="cross-distribution">
         <AccordionTrigger>Cross Distribution</AccordionTrigger>
         <AccordionContent>
-          <div class="flex items-baseline gap-2 mt-4">
-            <h2 class="font-bold italic">Table 2</h2>
-            <Tooltip.Root>
-              <Tooltip.Trigger>
-                <InfoIcon class="h-4 w-4" />
-              </Tooltip.Trigger>
-              <Tooltip.Content>
-                <p class="text-sm max-w-xs">
-                  Numbers may differ from Google Scholar UI as we display exact
-                  values from the database, while Scholar's UI shows
-                  approximations.
-                </p>
-              </Tooltip.Content>
-            </Tooltip.Root>
+          <div class="flex justify-between items-center mt-4 mb-2">
+            <div class="flex items-baseline gap-2">
+              <h2 class="font-bold italic">Table 2</h2>
+              <Tooltip.Root>
+                <Tooltip.Trigger>
+                  <InfoIcon class="h-4 w-4" />
+                </Tooltip.Trigger>
+                <Tooltip.Content>
+                  <p class="text-sm max-w-xs">
+                    Numbers may differ from Google Scholar UI as we display
+                    exact values from the database, while Scholar's UI shows
+                    approximations.
+                  </p>
+                </Tooltip.Content>
+              </Tooltip.Root>
+            </div>
+            <Button variant="outline" size="sm" onclick={downloadCrossDistCSV}>
+              <DownloadIcon class="h-4 w-4 mr-2" /> Download CSV
+            </Button>
           </div>
           <h2 class="font-bold italic mb-2">Cross Distribution of Key Terms</h2>
           <div class="overflow-x-auto">
@@ -388,20 +503,25 @@
         <AccordionItem value="triple-distribution">
           <AccordionTrigger>Three-way Distribution</AccordionTrigger>
           <AccordionContent>
-            <div class="flex items-baseline gap-2 mt-4">
-              <h2 class="font-bold italic">Table 3</h2>
-              <Tooltip.Root>
-                <Tooltip.Trigger>
-                  <InfoIcon class="h-4 w-4" />
-                </Tooltip.Trigger>
-                <Tooltip.Content>
-                  <p class="text-sm max-w-xs">
-                    Numbers may differ from Google Scholar UI as we display
-                    exact values from the database, while Scholar's UI shows
-                    approximations.
-                  </p>
-                </Tooltip.Content>
-              </Tooltip.Root>
+            <div class="flex justify-between items-center mt-4 mb-2">
+              <div class="flex items-baseline gap-2">
+                <h2 class="font-bold italic">Table 3</h2>
+                <Tooltip.Root>
+                  <Tooltip.Trigger>
+                    <InfoIcon class="h-4 w-4" />
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>
+                    <p class="text-sm max-w-xs">
+                      Numbers may differ from Google Scholar UI as we display
+                      exact values from the database, while Scholar's UI shows
+                      approximations.
+                    </p>
+                  </Tooltip.Content>
+                </Tooltip.Root>
+              </div>
+              <Button variant="outline" size="sm" onclick={downloadTripleCSV}>
+                <DownloadIcon class="h-4 w-4 mr-2" /> Download CSV
+              </Button>
             </div>
             <h2 class="font-bold italic mb-2">
               Three-way Distribution of Key Terms
