@@ -208,15 +208,15 @@
     await loadAchievements();
   });
 
-  $effect(() => {
-    if (
-      timelineContainer &&
-      projectStore.currentProject?.id &&
-      !isInitialized
-    ) {
-      initializeTimeline();
-    }
-  });
+  // $effect(() => {
+  //   if (
+  //     timelineContainer &&
+  //     projectStore.currentProject?.id &&
+  //     !isInitialized
+  //   ) {
+  //     initializeTimeline();
+  //   }
+  // });
 
   async function initializeTimeline() {
     if (!timelineContainer || !projectStore.currentProject) return;
@@ -228,8 +228,8 @@
         const link = document.createElement("link");
         link.rel = "stylesheet";
         link.type = "text/css";
-        link.href =
-          "https://unpkg.com/vis-timeline/standalone/umd/vis-timeline-graph2d.min.css";
+        // link.href =
+        //   "https://unpkg.com/vis-timeline/standalone/umd/vis-timeline-graph2d.min.css";
         document.head.appendChild(link);
       }
 
@@ -564,15 +564,6 @@
           showDialog = true;
         }
       });
-
-      // Prevent default wheel scroll behavior (for zooming)
-      timelineContainer.addEventListener(
-        "wheel",
-        (event) => {
-          event.preventDefault();
-        },
-        { passive: false }
-      );
     } catch (error) {
       console.error("Error initializing timeline:", error);
       isInitialized = false;
@@ -753,7 +744,10 @@
 
   <Tabs.Root
     value={activeTab}
-    onValueChange={(value: string) => (activeTab = value)}
+    onValueChange={(value: string) => {
+      console.log("Value changed to:", value);
+      activeTab = value;
+    }}
     class="space-y-6"
   >
     <Tabs.List class="inline-flex h-10 items-center justify-center gap-4">
@@ -1097,17 +1091,7 @@
   }
 
   .level-progress-container {
-    /* @apply bg-background rounded-lg relative overflow-hidden; */
-  }
-
-  .level-progress-container::before {
-    content: "";
-    @apply absolute inset-0 opacity-5;
-    background: radial-gradient(
-      circle at top left,
-      currentColor,
-      transparent 70%
-    );
+    @apply relative overflow-hidden;
   }
 
   .level-badge {

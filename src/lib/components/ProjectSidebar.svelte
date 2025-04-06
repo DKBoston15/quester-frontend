@@ -23,6 +23,7 @@
     Lock,
   } from "lucide-svelte";
   import { API_BASE_URL } from "$lib/config";
+  import { DateTime } from "luxon"; // Import DateTime
 
   type Route = {
     title: string;
@@ -245,6 +246,73 @@
       planName = "";
       // Clear session storage
       clearSubscriptionFromSession();
+    }
+  });
+
+  // Function to get current date as YYYY-MM-DD string
+  function getCurrentDateString(): string {
+    return DateTime.now().toISODate();
+  }
+
+  // Function to record project view (once per day)
+  async function recordProjectView() {
+    const userId = auth.user?.id;
+    const projectId = props.project?.id;
+
+    if (!userId || !projectId || typeof window === "undefined") {
+      // Need user, project, and window context (for localStorage)
+      return;
+    }
+
+    const currentDate = getCurrentDateString();
+    const storageKey = `projectView_${userId}_${projectId}`;
+
+    try {
+      const lastViewDate = localStorage.getItem(storageKey);
+
+      if (lastViewDate === currentDate) {
+        // Already viewed today, do nothing.
+        // console.log(`Project ${projectId} already viewed today by user ${userId}.`);
+        return;
+      }
+
+      // Not viewed today, call backend
+      const response = await fetch(
+        `${API_BASE_URL}/projects/${projectId}/viewed`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json", // Important even for empty body sometimes
+          },
+          // No body needed for this request
+        }
+      );
+
+      if (response.ok) {
+        // Successfully recorded on backend, update localStorage
+        localStorage.setItem(storageKey, currentDate);
+        console.log(
+          `Recorded project view for ${projectId} by user ${userId} on ${currentDate}.`
+        );
+      } else {
+        // Handle potential errors like 401 Unauthorized, 404 Not Found, 500 Server Error
+        console.error(
+          `Failed to record project view. Status: ${response.status}`
+        );
+        // Optional: Implement retry logic or user notification
+      }
+    } catch (error) {
+      console.error("Error recording project view:", error);
+      // Handle network errors etc.
+    }
+  }
+
+  // Effect to record project view when user or project changes
+  $effect(() => {
+    if (auth.user?.id && props.project?.id) {
+      recordProjectView();
     }
   });
 
