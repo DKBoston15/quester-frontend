@@ -20,6 +20,7 @@
   let hasChanges = $state(false);
   let showDeleteDialog = $state(false);
   let isDeleting = $state(false);
+  let isExporting = $state(false);
 
   // Load the current project name when the component mounts
   $effect(() => {
@@ -60,6 +61,32 @@
       toast.error("Failed to update project name");
     } finally {
       isUpdating = false;
+    }
+  }
+
+  // Export project function
+  async function exportProject() {
+    if (!projectStore.currentProject?.id) {
+      toast.error("No project selected");
+      return;
+    }
+
+    isExporting = true;
+    try {
+      const exportUrl = `${API_BASE_URL}/projects/${projectStore.currentProject.id}/export`;
+      // Trigger download by navigating
+      window.location.href = exportUrl;
+
+      // Optionally show a success toast, though the browser handles the download itself
+      // toast.success("Project export started...");
+    } catch (error) {
+      console.error("Failed to initiate project export:", error);
+      toast.error("Failed to start project export");
+    } finally {
+      // Reset exporting state after a short delay to allow navigation
+      setTimeout(() => {
+        isExporting = false;
+      }, 1000); // Adjust delay as needed
     }
   }
 
@@ -147,14 +174,44 @@
       <CardHeader>
         <CardTitle class="text-red-600">Danger Zone</CardTitle>
       </CardHeader>
-      <CardContent>
-        <Button
-          variant="destructive"
-          disabled={!projectStore.currentProject}
-          onclick={() => (showDeleteDialog = true)}
-        >
-          Delete Project
-        </Button>
+      <CardContent class="space-y-4">
+        <div>
+          <h3 class="font-medium mb-2">Export Project Data</h3>
+          <p class="text-sm text-muted-foreground mb-3">
+            Download all your project data, including literature, notes,
+            outcomes, and analyses, as a zip file.
+          </p>
+          <Button
+            variant="outline"
+            disabled={!projectStore.currentProject || isExporting}
+            onclick={exportProject}
+          >
+            {#if isExporting}
+              <span class="animate-spin mr-2">⏳</span> Exporting...
+            {:else}
+              Export Data
+            {/if}
+          </Button>
+        </div>
+        <hr class="my-4" />
+        <div>
+          <h3 class="font-medium mb-2 text-red-600">Delete Project</h3>
+          <p class="text-sm text-muted-foreground mb-3">
+            Permanently remove this project and all its associated data. This
+            action cannot be undone.
+          </p>
+          <Button
+            variant="destructive"
+            disabled={!projectStore.currentProject || isDeleting}
+            onclick={() => (showDeleteDialog = true)}
+          >
+            {#if isDeleting}
+              <span class="animate-spin mr-2">⏳</span> Deleting...
+            {:else}
+              Delete Project
+            {/if}
+          </Button>
+        </div>
         {#if !projectStore.currentProject}
           <p class="text-sm text-red-500 mt-2">
             No project selected. Please select a project first.
