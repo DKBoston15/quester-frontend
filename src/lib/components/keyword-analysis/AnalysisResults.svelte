@@ -10,9 +10,10 @@
     AccordionTrigger,
   } from "$lib/components/ui/accordion";
   import * as Tooltip from "$lib/components/ui/tooltip";
-  import { InfoIcon, DownloadIcon } from "lucide-svelte";
+  import { InfoIcon, DownloadIcon, ClipboardCopyIcon } from "lucide-svelte";
   import VennDiagram from "./VennDiagram.svelte";
   import FrequencyChart from "./FrequencyChart.svelte";
+  import { toast } from "svelte-sonner";
 
   const { analysis } = $props<{ analysis: KeywordAnalysis }>();
 
@@ -218,6 +219,22 @@
     }
   }
 
+  // --- Copy Summary Function ---
+  let summaryElement: HTMLDivElement;
+
+  async function copySummaryText() {
+    if (!summaryElement) return;
+
+    try {
+      await navigator.clipboard.writeText(summaryElement.innerText);
+      toast.success("Summary copied to clipboard!");
+    } catch (err) {
+      console.error("Failed to copy summary text: ", err);
+      toast.error("Failed to copy summary.");
+    }
+  }
+  // --- End Copy Summary Function ---
+
   // --- CSV Download Functions ---
 
   // Helper to escape CSV fields
@@ -334,7 +351,12 @@
       <AccordionItem value="summary">
         <AccordionTrigger>Summary</AccordionTrigger>
         <AccordionContent>
-          <div class="mt-2 report-content">
+          <div class="flex justify-end mb-2">
+            <Button variant="outline" size="sm" onclick={copySummaryText}>
+              <ClipboardCopyIcon class="h-4 w-4 mr-2" /> Copy Text
+            </Button>
+          </div>
+          <div bind:this={summaryElement} class="mt-2 report-content">
             {@html report.report}
           </div>
         </AccordionContent>

@@ -1,10 +1,10 @@
-<!-- FrequencyChart.svelte -->
 <script lang="ts">
   import { onMount } from "svelte";
-  //@ts-ignore
   import * as d3 from "d3";
   import type { KeywordAnalysis } from "$lib/types/index";
   import { Card } from "$lib/components/ui/card";
+  import { Button } from "$lib/components/ui/button";
+  import { DownloadIcon } from "lucide-svelte";
 
   const { analysis } = $props<{ analysis: KeywordAnalysis }>();
 
@@ -124,7 +124,7 @@
     function addLabels(selection: d3.Selection<any, any, any, any>) {
       selection
         .append("text")
-        .attr("class", "frequency-label theme-text")
+        .attr("class", "frequency-label")
         .attr("x", function (d: any) {
           return x(d.keyword)! + x.bandwidth() / 2;
         })
@@ -137,7 +137,14 @@
         .text(function (d: any) {
           return d.frequency.toLocaleString();
         })
-        .style("opacity", 0); // Start hidden
+        .style("opacity", 0) // Start hidden
+        // Set fill color based on theme
+        .attr(
+          "fill",
+          document.documentElement.classList.contains("dark")
+            ? "white"
+            : "black"
+        );
       return selection;
     }
 
@@ -177,10 +184,82 @@
       .attr("transform", `translate(${margin.left},0)`)
       .call(d3.axisLeft(y).ticks(5, ".0s"));
   }
+
+  // --- Download PNG Function ---
+  function downloadFrequencyChartPNG() {
+    if (!svg) return;
+
+    // 1. Serialize the SVG
+    const serializer = new XMLSerializer();
+    let svgString = serializer.serializeToString(svg);
+
+    // Ensure namespace for proper rendering as image source
+    if (!svgString.includes('xmlns="http://www.w3.org/2000/svg"')) {
+      svgString = svgString.replace(
+        "<svg",
+        '<svg xmlns="http://www.w3.org/2000/svg"'
+      );
+    }
+
+    // 2. Create an Image object with the SVG data URL
+    const img = new Image();
+    const svgBlob = new Blob([svgString], {
+      type: "image/svg+xml;charset=utf-8",
+    });
+    const url = URL.createObjectURL(svgBlob);
+
+    img.onload = () => {
+      // 3. Draw SVG onto Canvas
+      const canvas = document.createElement("canvas");
+      const svgRect = svg.getBoundingClientRect();
+      canvas.width = svgRect.width * 2; // Increase resolution
+      canvas.height = svgRect.height * 2;
+      const ctx = canvas.getContext("2d");
+
+      if (ctx) {
+        // Set a white background for the PNG
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.scale(2, 2); // Scale for resolution
+        ctx.drawImage(img, 0, 0, svgRect.width, svgRect.height);
+
+        // 4. Trigger PNG Download
+        const pngUrl = canvas.toDataURL("image/png");
+        const link = document.createElement("a");
+        link.href = pngUrl;
+        link.download = "frequency_chart.png";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      URL.revokeObjectURL(url);
+    };
+
+    img.onerror = (error) => {
+      console.error("Error loading SVG image for frequency chart:", error);
+      URL.revokeObjectURL(url);
+    };
+
+    img.src = url;
+  }
+  // --- End Download PNG Function ---
 </script>
 
 <Card class="p-4">
-  <h3 class="text-lg font-semibold mb-4">Frequency Distribution</h3>
+  <div class="flex justify-between items-center mb-4">
+    <h3 class="text-lg font-semibold">Frequency Distribution</h3>
+    <Button
+      variant="outline"
+      size="sm"
+      onclick={downloadFrequencyChartPNG}
+      title="Download Frequency Chart as PNG"
+    >
+      <DownloadIcon class="h-4 w-4 mr-2" />
+      Download PNG
+    </Button>
+  </div>
   <div class="relative w-full aspect-[4/3]">
     <svg
       bind:this={svg}
@@ -192,12 +271,5 @@
 </Card>
 
 <style>
-  /* Theme-aware styling for the frequency labels */
-  :global(.theme-text) {
-    fill: black;
-  }
-
-  :global(:root.dark .theme-text) {
-    fill: white;
-  }
+  /* No styles needed here, but the block prevents a build issue. */
 </style>

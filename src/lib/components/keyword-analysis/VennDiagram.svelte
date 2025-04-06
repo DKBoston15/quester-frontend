@@ -5,6 +5,7 @@
   import type { KeywordAnalysis } from "$lib/types/index";
   import { Card } from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
+  import { DownloadIcon } from "lucide-svelte";
 
   // Define a consistent color scheme for up to 10 keywords
   const colorScheme = [
@@ -498,6 +499,61 @@
     window.addEventListener("resize", updateDimensions);
     return () => window.removeEventListener("resize", updateDimensions);
   });
+
+  // --- Download PNG Function ---
+  function downloadVennDiagramPNG() {
+    if (!svg || selectedKeywords.length < 2) return;
+
+    // 1. Serialize the SVG
+    const serializer = new XMLSerializer();
+    const svgString = serializer.serializeToString(svg);
+
+    // 2. Create an Image object with the SVG data URL
+    const img = new Image();
+    const svgBlob = new Blob([svgString], {
+      type: "image/svg+xml;charset=utf-8",
+    });
+    const url = URL.createObjectURL(svgBlob);
+
+    img.onload = () => {
+      // 3. Draw SVG onto Canvas
+      const canvas = document.createElement("canvas");
+      // Use the SVG's intrinsic dimensions or the container size
+      const svgRect = svg.getBoundingClientRect();
+      canvas.width = svgRect.width * 2; // Increase resolution for better quality
+      canvas.height = svgRect.height * 2;
+      const ctx = canvas.getContext("2d");
+
+      if (ctx) {
+        // Clear canvas (optional, default is transparent)
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Scale context for higher resolution
+        ctx.scale(2, 2);
+        // Draw the image
+        ctx.drawImage(img, 0, 0, svgRect.width, svgRect.height);
+
+        // 4. Trigger PNG Download
+        const pngUrl = canvas.toDataURL("image/png");
+        const link = document.createElement("a");
+        link.href = pngUrl;
+        link.download = "venn_diagram.png";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      // Clean up the object URL
+      URL.revokeObjectURL(url);
+    };
+
+    img.onerror = (error) => {
+      console.error("Error loading SVG image:", error);
+      URL.revokeObjectURL(url); // Clean up even on error
+    };
+
+    img.src = url;
+  }
+  // --- End Download PNG Function ---
 </script>
 
 <Card class="p-4">
@@ -514,6 +570,20 @@
           {keyword}
         </Button>
       {/each}
+    </div>
+
+    <!-- Add Download Button -->
+    <div class="flex justify-end">
+      <Button
+        variant="outline"
+        size="sm"
+        onclick={downloadVennDiagramPNG}
+        disabled={selectedKeywords.length < 2}
+        title="Download Venn Diagram as PNG"
+      >
+        <DownloadIcon class="h-4 w-4 mr-2" />
+        Download PNG
+      </Button>
     </div>
 
     <div
