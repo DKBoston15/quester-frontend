@@ -176,7 +176,7 @@
             </Tooltip.Root>
           </div>
           <p class="text-muted-foreground text-sm truncate">
-            Create, manage, and organize your research and literature notes.
+            Create, manage, and organize your research and literature notes
           </p>
         </div>
 

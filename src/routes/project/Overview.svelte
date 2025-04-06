@@ -12,7 +12,10 @@
 
 <div class="flex-1 w-full overflow-x-hidden">
   <div class="container mx-auto py-6 px-4">
-    <h1 class="text-3xl font-bold mb-6 ml-1">Project Overview</h1>
+    <h1 class="text-3xl font-bold ml-1">Project Overview</h1>
+    <p class="text-muted-foreground mt-2 mb-6 ml-1">
+      Get a high-level view of your project's status and key components.
+    </p>
 
     <div class="grid grid-cols-2 gap-6 w-full">
       <!-- Left Column -->
