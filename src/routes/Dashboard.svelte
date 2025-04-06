@@ -143,10 +143,11 @@
 
         await loadDepartmentsAndProjects();
       } else {
-        // If no organizations found, clear the current org
+        // If no organizations found, clear the current org and redirect to onboarding
         currentOrg = null;
         selectedOrgId = null;
         await auth.setCurrentOrganization(null);
+        navigate("/onboarding");
       }
     } catch (err) {
       console.error("Failed to load organizations:", err);
