@@ -201,16 +201,43 @@
     if (!auth.user?.id || !auth.currentOrganization?.id) return;
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/projects/by-user?userId=${auth.user.id}`,
-        { credentials: "include" }
-      );
-      const data = await response.json();
-      projects = data.data.filter(
-        (p: any) => p.organizationId === auth.currentOrganization?.id
-      );
+      let allProjects: any[] = [];
+      let currentPage = 1;
+      let hasMorePages = true;
+
+      while (hasMorePages) {
+        const response = await fetch(
+          `${API_BASE_URL}/projects/by-user?userId=${auth.user.id}&page=${currentPage}&limit=50`, // Fetch 50 per page
+          { credentials: "include" }
+        );
+
+        if (!response.ok) {
+          console.error(
+            `Failed to load projects page ${currentPage}. Status: ${response.status}`
+          );
+          throw new Error("Failed to load projects"); // Stop if a page fails
+        }
+
+        const data = await response.json();
+        const pageProjects = data.data || [];
+
+        // Filter for the current organization *after* fetching
+        const orgProjects = pageProjects.filter(
+          (p: any) => p.organizationId === auth.currentOrganization?.id
+        );
+        allProjects = [...allProjects, ...orgProjects];
+
+        // Check pagination meta data
+        if (data.meta && data.meta.lastPage > data.meta.currentPage) {
+          currentPage++;
+        } else {
+          hasMorePages = false;
+        }
+      }
+      projects = allProjects;
     } catch (error) {
       console.error("Failed to load projects:", error);
+      projects = []; // Ensure projects is empty on error
     }
   }
 
@@ -330,7 +357,9 @@
             >
               <Accordion.Item value="projects">
                 <Accordion.Content>
-                  <Sidebar.Menu>
+                  <Sidebar.Menu
+                    class="max-h-[calc(100vh-400px)] overflow-y-auto pr-2"
+                  >
                     {#if projects.length > 0}
                       {#each projects as project}
                         <Tooltip.Root>

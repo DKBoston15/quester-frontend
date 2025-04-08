@@ -95,51 +95,68 @@
     if (!auth.user) return;
 
     isLoading = true;
-
-    const isDeptAdmin =
-      isDepartment(props.item) && isUserDepartmentAdmin(props.item);
+    projects = []; // Clear existing projects before loading
+    let allProjects: Project[] = [];
+    let currentPage = 1;
+    let hasMorePages = true;
 
     try {
-      // Always use the dedicated endpoint for by-department which handles permissions correctly
-      const projectsResponse = await fetch(
-        `${API_BASE_URL}/projects/by-department?departmentId=${departmentId}`,
-        { credentials: "include" }
-      );
-
-      if (projectsResponse.ok) {
-        const data = await projectsResponse.json();
-        // Extract the projects array from the paginated response
-        projects = data.data || [];
-        return;
-      } else {
-        // If the request fails, log the status
-        console.error(
-          `Failed to load projects for department. Status: ${projectsResponse.status}`
-        );
-
-        // Fall back to filtering projects from team-management resources
-        const resourcesResponse = await fetch(
-          `${API_BASE_URL}/team-management/resources`,
+      while (hasMorePages) {
+        // Always use the dedicated endpoint for by-department which handles permissions correctly
+        const projectsResponse = await fetch(
+          `${API_BASE_URL}/projects/by-department?departmentId=${departmentId}&page=${currentPage}`,
           { credentials: "include" }
         );
 
-        if (resourcesResponse.ok) {
-          const data = await resourcesResponse.json();
+        if (projectsResponse.ok) {
+          const data = await projectsResponse.json();
+          const pageProjects = data.data || [];
+          allProjects = [...allProjects, ...pageProjects];
 
-          if (data.projects) {
-            // Filter projects by department ID client-side
-            const filteredProjects = data.projects.filter(
-              (p: Project) => p.departmentId === departmentId
-            );
-            projects = filteredProjects;
+          // Check pagination meta data
+          if (data.meta && data.meta.lastPage > data.meta.currentPage) {
+            currentPage++;
+          } else {
+            hasMorePages = false;
           }
         } else {
-          projects = [];
+          // If the request fails, log the status and stop trying
+          console.error(
+            `Failed to load projects page ${currentPage} for department. Status: ${projectsResponse.status}`
+          );
+          hasMorePages = false; // Stop pagination on error
+
+          // Attempt fallback only if the first page failed and we haven't loaded any projects yet
+          if (currentPage === 1 && allProjects.length === 0) {
+            console.warn(
+              "Falling back to /team-management/resources for projects."
+            );
+            const resourcesResponse = await fetch(
+              `${API_BASE_URL}/team-management/resources`,
+              { credentials: "include" }
+            );
+
+            if (resourcesResponse.ok) {
+              const resourceData = await resourcesResponse.json();
+              if (resourceData.projects) {
+                // Filter projects by department ID client-side as fallback
+                allProjects = resourceData.projects.filter(
+                  (p: Project) => p.departmentId === departmentId
+                );
+              }
+            }
+          }
+
+          // If fallback also failed or wasn't applicable, keep projects empty
+          if (allProjects.length === 0) {
+            projects = [];
+          }
         }
       }
+      projects = allProjects; // Assign all loaded projects
     } catch (error) {
       console.error("Error loading projects:", error);
-      projects = [];
+      projects = []; // Ensure projects is empty on error
     } finally {
       isLoading = false;
     }
