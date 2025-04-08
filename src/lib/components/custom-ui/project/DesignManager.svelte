@@ -268,7 +268,7 @@
   </CardHeader>
 
   <CardContent>
-    <Tabs.Root value={currentTab}>
+    <Tabs.Root bind:value={currentTab}>
       <Tabs.List
         class="grid grid-cols-4 border dark:bg-background  dark:border-dark-border rounded-lg overflow-hidden"
       >
