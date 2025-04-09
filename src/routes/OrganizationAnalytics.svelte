@@ -35,6 +35,15 @@
   import { Input } from "$lib/components/ui/input";
   import { Button } from "$lib/components/ui/button";
   import ProjectUsersModal from "$lib/components/ProjectUsersModal.svelte";
+  import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNextButton,
+    PaginationPrevButton,
+  } from "$lib/components/ui/pagination/index.js";
 
   // Define the structure for the daily activity counts
   interface DailyActivityCount {
@@ -123,6 +132,10 @@
   // State for viewing project users modal
   let viewingProjectUsersId = $state<string | null>(null);
 
+  // State for Project Activity Table Pagination
+  let projectCurrentPage = $state(1);
+  const projectItemsPerPage = 10;
+
   // Function to check if user has admin access
   function checkAdminAccess() {
     console.log("[Analytics] Checking admin access");
@@ -199,6 +212,7 @@
     teamManagement.loadUserResources(true, true).then(() => {
       console.log("[Analytics] Resources loaded, checking access");
       hasAccess = checkAdminAccess();
+      console.log(`[Analytics] Access check result: hasAccess = ${hasAccess}`);
 
       if (hasAccess) {
         console.log("[Analytics] User has access, loading settings");
@@ -337,11 +351,12 @@
     // Strict check including checking if usersWithDetails is an array and has length
     if (
       !statsMap ||
+      Object.keys(statsMap).length === 0 || // Also check if statsMap is empty
       !Array.isArray(usersWithDetails) ||
       usersWithDetails.length === 0
     ) {
       console.log(
-        "[Derived] Exiting early - missing statsMap or usersWithDetails is not a non-empty array."
+        "[User Derived] Exiting early - missing or empty statsMap or usersWithDetails."
       );
       return [];
     }
@@ -399,6 +414,10 @@
 
     // 3. Filter by user search term (case-insensitive)
     const lowerUserSearch = userSearchTerm.toLowerCase();
+    console.log(
+      "[User Derived] Combined tableData (before search filter):",
+      safeClone(tableData)
+    ); // Log before search filter
     const filteredUserData = lowerUserSearch
       ? tableData.filter((user) => {
           const fullName =
@@ -410,6 +429,10 @@
           );
         })
       : tableData;
+    console.log(
+      "[User Derived] User data after search filter:",
+      safeClone(filteredUserData)
+    ); // Log after search filter
 
     // 4. Apply Sorting based on component state
     const sortCol = sortColumn;
@@ -465,6 +488,10 @@
       return 0;
     });
     console.log("[Derived] Sorted tableData:", filteredUserData);
+    console.log(
+      "[User Derived] Final sorted user data:",
+      safeClone(filteredUserData)
+    ); // Log final result
 
     return filteredUserData;
   });
@@ -476,9 +503,17 @@
     }
 
     // 1. Filter projects that have activity
+    console.log(
+      "[Project Derived] Raw projects from store:",
+      safeClone(teamManagement.userResources?.projects)
+    ); // Log raw projects
     const projectsWithActivity = teamManagement.userResources.projects.filter(
       (p: any) => hasActivity(p)
     );
+    console.log(
+      "[Project Derived] Projects after hasActivity filter:",
+      safeClone(projectsWithActivity)
+    ); // Log after activity filter
 
     // 2. Filter by search term (case-insensitive)
     const lowerSearchTerm = projectSearchTerm.toLowerCase();
@@ -487,6 +522,10 @@
           (project.name || "").toLowerCase().includes(lowerSearchTerm)
         )
       : projectsWithActivity; // No filtering if search term is empty
+    console.log(
+      "[Project Derived] Projects after search filter:",
+      safeClone(filteredProjects)
+    ); // Log after search filter
 
     // 3. Map to aggregated data structure
     let tableData: AggregatedProjectActivity[] = filteredProjects.map(
@@ -545,17 +584,11 @@
       return 0;
     });
 
+    console.log(
+      "[Project Derived] Final sorted project table data (before pagination):",
+      safeClone(tableData)
+    ); // Log before return
     return tableData;
-  });
-
-  // Derived state to get the data for the selected projects charts
-  let selectedProjectsData = $derived.by(() => {
-    if (selectedProjectIds.size === 0) return [];
-
-    // Create a map for faster lookup if needed, though filtering might be fine for typical numbers of projects
-    const selectedIds = selectedProjectIds; // Use the reactive set directly
-
-    return projectActivityTableData.filter((p) => selectedIds.has(p.projectId));
   });
 
   // Derived state to get the full project object for the user view modal
@@ -672,6 +705,34 @@
   function closeProjectUsersModal() {
     viewingProjectUsersId = null;
   }
+
+  // --- Project Activity Table Pagination Logic ---
+  let projectTotalPages = $derived(
+    Math.ceil(projectActivityTableData.length / projectItemsPerPage)
+  );
+
+  // Effect to reset page number when filters/sort change
+  $effect(() => {
+    // Watching these dependencies will trigger a reset
+    const _searchTerm = projectSearchTerm;
+    const _sortCol = projectSortColumn;
+    const _sortDir = projectSortDirection;
+    const _range = selectedRange;
+
+    console.log("[Pagination Effect] Filters changed, resetting page to 1");
+    projectCurrentPage = 1;
+  });
+
+  // Explicitly type the event here
+  function handleProjectPageChange(event: CustomEvent<{ page: number }>) {
+    const newPage = event.detail.page;
+    if (newPage >= 1 && newPage <= projectTotalPages) {
+      projectCurrentPage = newPage;
+      // Deselect projects when changing page to avoid confusion
+      selectedProjectIds = new Set();
+    }
+  }
+  // --- End Project Activity Table Pagination Logic ---
 </script>
 
 <Sidebar.Provider>
@@ -1086,73 +1147,135 @@
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {#each projectActivityTableData as project (project.projectId)}
-                              <TableRow
-                                class="transition-colors data-[state=selected]:bg-muted/50 hover:bg-muted/20"
-                                data-state={selectedProjectIds.has(
-                                  project.projectId
-                                )
-                                  ? "selected"
-                                  : "unselected"}
-                                onclick={() =>
-                                  toggleProjectSelection(project.projectId)}
-                              >
-                                <TableCell class="cursor-pointer">
-                                  <Checkbox
-                                    checked={selectedProjectIds.has(
-                                      project.projectId
-                                    )}
-                                    onCheckedChange={() => {
+                            {#each projectActivityTableData as project, index (project.projectId)}
+                              {#if index >= (projectCurrentPage - 1) * projectItemsPerPage && index < projectCurrentPage * projectItemsPerPage}
+                                <TableRow
+                                  class="transition-colors data-[state=selected]:bg-muted/50 hover:bg-muted/20"
+                                  data-state={selectedProjectIds.has(
+                                    project.projectId
+                                  )
+                                    ? "selected"
+                                    : "unselected"}
+                                  onclick={(event) => {
+                                    // Check if the click target is inside the checkbox cell
+                                    // We identify the cell by adding a specific data attribute
+                                    const checkboxCell = (
+                                      event.target as Element
+                                    )?.closest('[data-checkbox-cell="true"]');
+                                    // If the click was NOT inside the checkbox cell, toggle selection
+                                    if (!checkboxCell) {
                                       toggleProjectSelection(project.projectId);
-                                    }}
-                                    aria-label={`Select project ${project.projectName}`}
-                                  />
-                                </TableCell>
-                                <TableCell
-                                  class="font-medium truncate max-w-xs cursor-pointer"
+                                    }
+                                  }}
                                 >
-                                  <Tooltip.Provider>
-                                    <Tooltip.Root>
-                                      <Tooltip.Trigger>
-                                        {project.projectName}
-                                      </Tooltip.Trigger>
-                                      <Tooltip.Content>
-                                        {project.projectName}
-                                      </Tooltip.Content>
-                                    </Tooltip.Root>
-                                  </Tooltip.Provider>
-                                </TableCell>
-                                <TableCell class="text-right">
-                                  {project.literature}
-                                </TableCell>
-                                <TableCell class="text-right">
-                                  {project.notes}
-                                </TableCell>
-                                <TableCell class="text-right">
-                                  {project.models}
-                                </TableCell>
-                                <TableCell class="text-right">
-                                  {project.outcomes}
-                                </TableCell>
-                                <TableCell class="text-right">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    class="h-8 px-2"
-                                    onclick={() =>
-                                      openProjectUsersModal(project.projectId)}
+                                  <TableCell
+                                    class="cursor-pointer"
+                                    data-checkbox-cell="true"
                                   >
-                                    View Users
-                                  </Button>
-                                </TableCell>
-                              </TableRow>
+                                    <Checkbox
+                                      checked={selectedProjectIds.has(
+                                        project.projectId
+                                      )}
+                                      onCheckedChange={() => {
+                                        toggleProjectSelection(
+                                          project.projectId
+                                        );
+                                      }}
+                                      aria-label={`Select project ${project.projectName}`}
+                                    />
+                                  </TableCell>
+                                  <TableCell
+                                    class="font-medium truncate max-w-xs cursor-pointer"
+                                  >
+                                    <Tooltip.Provider>
+                                      <Tooltip.Root>
+                                        <Tooltip.Trigger>
+                                          {project.projectName}
+                                        </Tooltip.Trigger>
+                                        <Tooltip.Content>
+                                          {project.projectName}
+                                        </Tooltip.Content>
+                                      </Tooltip.Root>
+                                    </Tooltip.Provider>
+                                  </TableCell>
+                                  <TableCell class="text-right">
+                                    {project.literature}
+                                  </TableCell>
+                                  <TableCell class="text-right">
+                                    {project.notes}
+                                  </TableCell>
+                                  <TableCell class="text-right">
+                                    {project.models}
+                                  </TableCell>
+                                  <TableCell class="text-right">
+                                    {project.outcomes}
+                                  </TableCell>
+                                  <TableCell class="text-right">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      class="h-8 px-2"
+                                      onclick={() =>
+                                        openProjectUsersModal(
+                                          project.projectId
+                                        )}
+                                    >
+                                      View Users
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
+                              {/if}
                             {/each}
                           </TableBody>
                         </Table>
                       </div>
                     </div>
 
+                    <!-- Project Activity Pagination -->
+                    {#if projectTotalPages > 1}
+                      <div class="mt-4 flex justify-center">
+                        <Pagination
+                          count={projectTotalPages}
+                          page={projectCurrentPage}
+                          onPageChange={handleProjectPageChange}
+                          let:pages
+                          showFirstLastButtons
+                          siblingCount={1}
+                        >
+                          <PaginationContent>
+                            <PaginationItem>
+                              <PaginationPrevButton />
+                            </PaginationItem>
+                            {#each pages as page (page.key)}
+                              {#if page.type === "page"}
+                                <PaginationItem>
+                                  <PaginationLink
+                                    {page}
+                                    isActive={projectCurrentPage === page.value}
+                                  >
+                                    {page.value}
+                                  </PaginationLink>
+                                </PaginationItem>
+                              {:else}
+                                <PaginationItem>
+                                  <PaginationEllipsis />
+                                </PaginationItem>
+                              {/if}
+                            {/each}
+                            <PaginationItem>
+                              <PaginationNextButton />
+                            </PaginationItem>
+                          </PaginationContent>
+                        </Pagination>
+                      </div>
+                    {/if}
+
                     <!-- Selected Project Chart -->
+                    <!-- Filter data for selected charts -->
+                    {@const selectedProjectsData =
+                      projectActivityTableData.filter((p) =>
+                        selectedProjectIds.has(p.projectId)
+                      )}
                     {#if selectedProjectsData.length > 0}
                       <div class="mt-6 space-y-6">
                         <h3 class="text-lg font-semibold">
