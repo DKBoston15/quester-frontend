@@ -913,9 +913,16 @@
                   <div
                     class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4"
                   >
-                    <h2 class="text-xl font-bold flex items-center gap-2">
-                      <LineChart class="w-5 h-5 text-primary" />
-                      <span>Project Activity (Content Added)</span>
+                    <h2 class="text-xl font-bold flex flex-col items-start">
+                      <div class="flex items-center gap-2">
+                        <LineChart class="w-5 h-5 text-primary" />
+                        <span>Project Activity (Content Added)</span>
+                      </div>
+                      <p class="text-sm text-muted-foreground mt-2">
+                        Click on project rows to view their activity charts
+                        below. You can select multiple projects to compare their
+                        activity.
+                      </p>
                     </h2>
 
                     <!-- Date Range Selector (moved here) -->
