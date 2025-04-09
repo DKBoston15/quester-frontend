@@ -507,20 +507,8 @@
       safeClone(projectsWithActivity)
     ); // Log after activity filter
 
-    // 2. Filter by search term (case-insensitive)
-    const lowerSearchTerm = projectSearchTerm.toLowerCase();
-    const filteredProjects = lowerSearchTerm
-      ? projectsWithActivity.filter((project: any) =>
-          (project.name || "").toLowerCase().includes(lowerSearchTerm)
-        )
-      : projectsWithActivity; // No filtering if search term is empty
-    console.log(
-      "[Project Derived] Projects after search filter:",
-      safeClone(filteredProjects)
-    ); // Log after search filter
-
-    // 3. Map to aggregated data structure
-    let tableData: AggregatedProjectActivity[] = filteredProjects.map(
+    // Map to aggregated data structure
+    let tableData: AggregatedProjectActivity[] = projectsWithActivity.map(
       (project: any) => {
         const dailyCounts = project.$extras?.dailyActivityCounts || {};
         const aggregatedCounts = aggregateProjectActivity(
@@ -539,7 +527,7 @@
       }
     );
 
-    // 4. Apply Sorting
+    // Apply Sorting
     const sortCol = projectSortColumn;
     const sortDir = projectSortDirection;
 
@@ -576,11 +564,18 @@
       return 0;
     });
 
-    console.log(
-      "[Project Derived] Final sorted project table data (before pagination):",
-      safeClone(tableData)
-    ); // Log before return
     return tableData;
+  });
+
+  // Separate derived store for filtered table data
+  let filteredProjectTableData = $derived.by(() => {
+    // Filter by search term (case-insensitive)
+    const lowerSearchTerm = projectSearchTerm.toLowerCase();
+    return lowerSearchTerm
+      ? projectActivityTableData.filter((project) =>
+          project.projectName.toLowerCase().includes(lowerSearchTerm)
+        )
+      : projectActivityTableData;
   });
 
   // Derived state to get the full project object for the user view modal
@@ -1148,7 +1143,7 @@
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {#each projectActivityTableData as project, index (project.projectId)}
+                            {#each filteredProjectTableData as project, index (project.projectId)}
                               {#if index >= (projectCurrentPage - 1) * projectItemsPerPage && index < projectCurrentPage * projectItemsPerPage}
                                 <TableRow
                                   class="transition-colors data-[state=selected]:bg-muted/50 hover:bg-muted/20"
@@ -1276,7 +1271,7 @@
                     {/if}
 
                     <!-- Selected Project Chart -->
-                    <!-- Filter data for selected charts -->
+                    <!-- Use unfiltered data for charts -->
                     {@const selectedProjectsData =
                       projectActivityTableData.filter((p) =>
                         selectedProjectIds.has(p.projectId)
