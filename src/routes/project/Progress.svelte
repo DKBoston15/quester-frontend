@@ -942,50 +942,50 @@
 <!-- New Levels Info Dialog -->
 <Dialog.Root bind:open={showLevelsDialog}>
   <Dialog.Content class="sm:max-w-[800px]">
-    <div class="flex flex-col space-y-1.5 p-6">
-      <Dialog.Title>Research Levels</Dialog.Title>
-      <Dialog.Description>
+    <div class="flex flex-col space-y-1.5 p-4">
+      <Dialog.Title class="text-2xl">Research Levels</Dialog.Title>
+      <Dialog.Description class="text-muted-foreground">
         Your journey through research mastery
       </Dialog.Description>
     </div>
-    <div class="px-6 pb-4 max-h-[70vh] overflow-y-auto">
-      <div class="grid gap-6 md:grid-cols-2">
+    <div class="px-4 pb-4 pt-3 max-h-[70vh] overflow-y-auto">
+      <div class="grid gap-4 md:grid-cols-2">
         {#each levels as level, index}
           <div
-            class="level-card relative overflow-hidden p-4 rounded-lg border-2 backdrop-blur-sm"
+            class="level-card relative overflow-hidden p-3 rounded-lg border backdrop-blur-sm"
           >
             <div
               class="absolute inset-0 opacity-10 bg-gradient-to-br {level.color}"
             ></div>
-            <div class="relative z-10 flex gap-4 items-center">
-              <div class={`level-badge bg-gradient-to-br ${level.color}`}>
-                <span class="text-xl font-bold">{index + 1}</span>
+            <div class="relative z-10 flex gap-3 items-start">
+              <div class={`level-badge-small bg-gradient-to-br ${level.color}`}>
+                <span class="text-base font-bold">{index + 1}</span>
               </div>
-              <div class="flex-1">
+              <div class="flex-1 min-w-0">
                 <h3
-                  class={`text-lg font-semibold bg-gradient-to-r ${level.color} bg-clip-text text-transparent`}
+                  class={`text-base font-semibold bg-gradient-to-r ${level.color} bg-clip-text text-transparent truncate`}
                 >
                   {level.name}
                 </h3>
-                <p class="text-sm text-muted-foreground mt-1">
+                <p class="text-xs text-muted-foreground mt-0.5 line-clamp-2">
                   {level.description}
                 </p>
-                <div class="flex justify-between items-center mt-2">
+                <div class="flex justify-between items-center mt-1.5 text-xs">
                   <span
-                    class={`text-sm font-medium bg-gradient-to-r ${level.color} bg-clip-text text-transparent`}
+                    class={`font-medium bg-gradient-to-r ${level.color} bg-clip-text text-transparent`}
                   >
                     {formatNumber(level.minXP)} XP
                   </span>
                   {#if level.maxXP !== Infinity}
-                    <span class="text-sm text-muted-foreground">→</span>
+                    <span class="text-muted-foreground mx-1">→</span>
                     <span
-                      class={`text-sm font-medium bg-gradient-to-r ${level.color} bg-clip-text text-transparent`}
+                      class={`font-medium bg-gradient-to-r ${level.color} bg-clip-text text-transparent`}
                     >
                       {formatNumber(level.maxXP)} XP
                     </span>
                   {:else}
                     <span
-                      class={`text-sm font-medium bg-gradient-to-r ${level.color} bg-clip-text text-transparent`}
+                      class={`font-medium bg-gradient-to-r ${level.color} bg-clip-text text-transparent`}
                     >
                       and beyond
                     </span>
@@ -997,7 +997,7 @@
         {/each}
       </div>
     </div>
-    <div class="flex justify-end p-6 pt-0">
+    <div class="flex justify-end p-4 pt-0">
       <Button variant="outline" onclick={() => (showLevelsDialog = false)}
         >Close</Button
       >
@@ -1213,22 +1213,42 @@
   }
 
   .level-card {
-    @apply transition-all duration-300 hover:shadow-lg;
-    border-image: linear-gradient(
-        to bottom right,
-        hsl(var(--muted-foreground) / 0.3),
-        transparent
-      )
-      1;
+    @apply transition-all duration-300 hover:shadow-lg rounded-xl border border-border/50 relative;
+    background:
+      linear-gradient(
+          to bottom right,
+          hsl(var(--background)),
+          hsl(var(--background))
+        )
+        padding-box,
+      linear-gradient(
+          to bottom right,
+          hsl(var(--muted-foreground) / 0.2),
+          transparent
+        )
+        border-box;
   }
 
   .level-card:hover {
     @apply transform -translate-y-0.5;
-    border-image: linear-gradient(
-        to bottom right,
-        hsl(var(--primary)),
-        hsl(var(--primary) / 0.2)
-      )
-      1;
+    background:
+      linear-gradient(
+          to bottom right,
+          hsl(var(--background)),
+          hsl(var(--background))
+        )
+        padding-box,
+      linear-gradient(
+          to bottom right,
+          hsl(var(--primary)),
+          hsl(var(--primary) / 0.2)
+        )
+        border-box;
+  }
+
+  .level-badge-small {
+    @apply h-6 w-6 rounded-lg text-primary-foreground
+           flex items-center justify-center shadow-md
+           ring-1 ring-white/10 backdrop-blur-sm shrink-0;
   }
 </style>
