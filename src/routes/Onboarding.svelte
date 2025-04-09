@@ -45,11 +45,27 @@
         currentStep = state.step;
       }
 
-      const response = await fetch(
+      // Check for pending invites first
+      if (auth.user?.email) {
+        const response = await fetch(
+          `${API_BASE_URL}/invitations/pending?email=${encodeURIComponent(auth.user.email)}`,
+          { credentials: "include" }
+        );
+        if (response.ok) {
+          const invitations = await response.json();
+          // If user has pending invites, redirect them to handle those first
+          if (invitations.length > 0) {
+            navigate("/pending-invites");
+            return;
+          }
+        }
+      }
+
+      const orgResponse = await fetch(
         `${API_BASE_URL}/organizations/by-user?userId=${auth.user?.id}`,
         { credentials: "include" }
       );
-      const data = await response.json();
+      const data = await orgResponse.json();
       organizations = data.data;
 
       // Check if user has any organizations with active subscriptions
