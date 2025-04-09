@@ -8,6 +8,7 @@
   export let organizationId: string;
   export let priceId: string;
   export let planId: string;
+  export let isOwner: boolean;
 
   let stripe: Stripe | null = null;
   let isLoading = false;
@@ -32,6 +33,7 @@
           priceId,
           planId,
           userEmail: auth.user?.email,
+          isOwner: isOwner,
         }),
       });
 

@@ -2,12 +2,27 @@
   import { navigate } from "svelte-routing";
   import { auth } from "../lib/stores/AuthStore.svelte";
   import { onMount } from "svelte";
-  import type { Organization } from "../lib/types/auth";
+  import type { Organization as AuthOrganization } from "../lib/types/auth";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import Pricing from "./Pricing.svelte";
   import { DarkmodeToggle } from "$lib/components/ui/darkmode-toggle";
   import { API_BASE_URL } from "$lib/config";
+
+  // Define the expected structure for the role information
+  // interface OrganizationRole {
+  //   role: {
+  //     id: string;
+  //     name: string;
+  //   };
+  //   // Add other potential fields if needed
+  // }
+
+  // Update the Organization type to ensure it matches/extends AuthOrganization correctly
+  // We assume AuthOrganization already defines organizationRoles structure correctly,
+  // potentially as: { roleId: string; role?: { id: string; name: string } }[]
+  // So, we just use the type directly.
+  interface Organization extends AuthOrganization {}
 
   interface CreatedOrganization {
     id: string;
@@ -36,6 +51,10 @@
   let organizations = $state<Organization[]>([]);
   let hasExistingWorkspace = $state(false);
   const totalSteps = 4;
+  let isOrgOwner = $state(false); // Track if the user is the org owner
+
+  // Define the Owner Role ID (consider fetching this or using role name if more stable)
+  const OWNER_ROLE_ID = "e820de49-d7bd-42d7-8b05-49279cee686f";
 
   onMount(async () => {
     try {
@@ -45,16 +64,18 @@
         currentStep = state.step;
       }
 
-      // First check if user is already part of any organizations
-      const orgResponse = await fetch(
+      const response = await fetch(
         `${API_BASE_URL}/organizations/by-user?userId=${auth.user?.id}`,
         { credentials: "include" }
       );
-      const data = await orgResponse.json();
+      const data = await response.json();
       organizations = data.data;
 
-      // If user has organizations, they've either created one or accepted an invite
-      // They should be redirected to dashboard or subscription page
+      // Check if user has any organizations with active subscriptions
+      const hasActiveSubscription = organizations.some(
+        (org) => org.billingProviderId != null && org.subscription != null
+      );
+
       if (organizations.length > 0) {
         // If they have an org, set it as the current workspace
         const lastOrg = organizations[organizations.length - 1];
@@ -66,6 +87,19 @@
         orgName = lastOrg.name;
         hasExistingWorkspace = true;
 
+        // Determine if the user is the owner of this organization
+        if (
+          lastOrg.organizationRoles &&
+          lastOrg.organizationRoles.length > 0 &&
+          // Access roleId directly if role object isn't guaranteed
+          // Or prefer checking the nested role.id if backend always preloads it
+          lastOrg.organizationRoles[0].role?.id === OWNER_ROLE_ID
+        ) {
+          isOrgOwner = true;
+        } else {
+          isOrgOwner = false;
+        }
+
         // Set subscription type based on organization's subscription
         if (lastOrg.subscriptionType === "organization") {
           subscriptionType = "organization";
@@ -73,35 +107,22 @@
           subscriptionType = "personal";
         }
 
-        // Check if they have an active subscription
-        const hasActiveSubscription = organizations.some(
-          (org) => org.billingProviderId != null && org.subscription != null
-        );
-
-        if (hasActiveSubscription && !state?.step) {
-          // If they have an active subscription, go straight to dashboard
+        // --- Navigation Logic ---
+        if (!isOrgOwner && hasActiveSubscription && !state?.step) {
+          // If user is NOT the owner and the org has an active subscription, go straight to dashboard
           navigate("/dashboard");
-          return;
+        } else if (hasActiveSubscription && !state?.step) {
+          // If user IS the owner and has active subscription, also go to dashboard (assuming setup is complete)
+          // This handles owners returning after completing onboarding.
+          navigate("/dashboard");
         } else if (!state?.step) {
-          // If they have an org but no subscription, go to subscription step
+          // If they have an org but no subscription or billing provider,
+          // OR if they are a non-owner joining an org without subscription,
+          // go to subscription step (Step 2). Owners will proceed from here.
+          // Non-owners will be redirected after this step.
           currentStep = 2;
-          return;
         }
-      }
-
-      // Only check for pending invites if user has no organizations
-      if (auth.user?.email) {
-        const inviteResponse = await fetch(
-          `${API_BASE_URL}/invitations/pending?email=${encodeURIComponent(auth.user.email)}`,
-          { credentials: "include" }
-        );
-        if (inviteResponse.ok) {
-          const invitations = await inviteResponse.json();
-          if (invitations.length > 0) {
-            navigate("/pending-invites");
-            return;
-          }
-        }
+        // If state?.step exists, respect the navigation state (e.g., coming back from Pricing)
       }
     } catch (error) {
       console.error("Failed to fetch organizations:", error);
@@ -243,7 +264,10 @@
           body: JSON.stringify({
             name: projectName,
             organizationId: createdOrganization.id,
-            departmentId: selectedDepartmentId,
+            departmentId:
+              subscriptionType === "organization"
+                ? selectedDepartmentId
+                : undefined,
             userId: auth.user?.id,
           }),
         }
@@ -419,6 +443,7 @@
             onBack={() => {
               currentStep = 1;
             }}
+            isOwner={isOrgOwner}
           />
         </div>
       {:else if currentStep === 3}

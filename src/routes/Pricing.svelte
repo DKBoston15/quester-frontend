@@ -20,6 +20,7 @@
     mode: "personal" | "organization";
     workspaceName: string;
     onBack: () => void;
+    isOwner: boolean;
   }>();
 
   type SubscriptionPlan = {
@@ -486,6 +487,7 @@
                     organizationId={props.organizationId}
                     priceId={getPriceId(plan)}
                     planId={plan.id}
+                    isOwner={props.isOwner}
                   />
                 </div>
               {/if}
