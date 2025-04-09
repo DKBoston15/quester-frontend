@@ -45,22 +45,7 @@
         currentStep = state.step;
       }
 
-      // Check for pending invites first
-      if (auth.user?.email) {
-        const response = await fetch(
-          `${API_BASE_URL}/invitations/pending?email=${encodeURIComponent(auth.user.email)}`,
-          { credentials: "include" }
-        );
-        if (response.ok) {
-          const invitations = await response.json();
-          // If user has pending invites, redirect them to handle those first
-          if (invitations.length > 0) {
-            navigate("/pending-invites");
-            return;
-          }
-        }
-      }
-
+      // First check if user is already part of any organizations
       const orgResponse = await fetch(
         `${API_BASE_URL}/organizations/by-user?userId=${auth.user?.id}`,
         { credentials: "include" }
@@ -68,11 +53,8 @@
       const data = await orgResponse.json();
       organizations = data.data;
 
-      // Check if user has any organizations with active subscriptions
-      const hasActiveSubscription = organizations.some(
-        (org) => org.billingProviderId != null && org.subscription != null
-      );
-
+      // If user has organizations, they've either created one or accepted an invite
+      // They should be redirected to dashboard or subscription page
       if (organizations.length > 0) {
         // If they have an org, set it as the current workspace
         const lastOrg = organizations[organizations.length - 1];
@@ -91,11 +73,34 @@
           subscriptionType = "personal";
         }
 
+        // Check if they have an active subscription
+        const hasActiveSubscription = organizations.some(
+          (org) => org.billingProviderId != null && org.subscription != null
+        );
+
         if (hasActiveSubscription && !state?.step) {
+          // If they have an active subscription, go straight to dashboard
           navigate("/dashboard");
+          return;
         } else if (!state?.step) {
-          // If they have an org but no subscription or billing provider, go to subscription step
+          // If they have an org but no subscription, go to subscription step
           currentStep = 2;
+          return;
+        }
+      }
+
+      // Only check for pending invites if user has no organizations
+      if (auth.user?.email) {
+        const inviteResponse = await fetch(
+          `${API_BASE_URL}/invitations/pending?email=${encodeURIComponent(auth.user.email)}`,
+          { credentials: "include" }
+        );
+        if (inviteResponse.ok) {
+          const invitations = await inviteResponse.json();
+          if (invitations.length > 0) {
+            navigate("/pending-invites");
+            return;
+          }
         }
       }
     } catch (error) {
