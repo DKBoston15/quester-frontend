@@ -35,15 +35,7 @@
   import { Input } from "$lib/components/ui/input";
   import { Button } from "$lib/components/ui/button";
   import ProjectUsersModal from "$lib/components/ProjectUsersModal.svelte";
-  import {
-    Pagination,
-    PaginationContent,
-    PaginationEllipsis,
-    PaginationItem,
-    PaginationLink,
-    PaginationNextButton,
-    PaginationPrevButton,
-  } from "$lib/components/ui/pagination/index.js";
+  import * as Pagination from "$lib/components/ui/pagination/index.js";
 
   // Define the structure for the daily activity counts
   interface DailyActivityCount {
@@ -134,7 +126,7 @@
 
   // State for Project Activity Table Pagination
   let projectCurrentPage = $state(1);
-  const projectItemsPerPage = 10;
+  const projectItemsPerPage = 2;
 
   // Function to check if user has admin access
   function checkAdminAccess() {
@@ -724,12 +716,21 @@
   });
 
   // Explicitly type the event here
-  function handleProjectPageChange(event: CustomEvent<{ page: number }>) {
-    const newPage = event.detail.page;
-    if (newPage >= 1 && newPage <= projectTotalPages) {
-      projectCurrentPage = newPage;
-      // Deselect projects when changing page to avoid confusion
-      selectedProjectIds = new Set();
+  function handleProjectPageChange(page: number) {
+    if (page >= 1 && page <= projectTotalPages) {
+      projectCurrentPage = page;
+    }
+  }
+
+  function handleNextPage() {
+    if (projectCurrentPage < projectTotalPages) {
+      handleProjectPageChange(projectCurrentPage + 1);
+    }
+  }
+
+  function handlePrevPage() {
+    if (projectCurrentPage > 1) {
+      handleProjectPageChange(projectCurrentPage - 1);
     }
   }
   // --- End Project Activity Table Pagination Logic ---
@@ -1234,39 +1235,43 @@
                     <!-- Project Activity Pagination -->
                     {#if projectTotalPages > 1}
                       <div class="mt-4 flex justify-center">
-                        <Pagination
-                          count={projectTotalPages}
+                        <Pagination.Root
+                          count={projectActivityTableData.length}
                           page={projectCurrentPage}
+                          perPage={projectItemsPerPage}
                           onPageChange={handleProjectPageChange}
-                          let:pages
                           showFirstLastButtons
                           siblingCount={1}
                         >
-                          <PaginationContent>
-                            <PaginationItem>
-                              <PaginationPrevButton />
-                            </PaginationItem>
-                            {#each pages as page (page.key)}
-                              {#if page.type === "page"}
-                                <PaginationItem>
-                                  <PaginationLink
-                                    {page}
-                                    isActive={projectCurrentPage === page.value}
-                                  >
-                                    {page.value}
-                                  </PaginationLink>
-                                </PaginationItem>
-                              {:else}
-                                <PaginationItem>
-                                  <PaginationEllipsis />
-                                </PaginationItem>
-                              {/if}
-                            {/each}
-                            <PaginationItem>
-                              <PaginationNextButton />
-                            </PaginationItem>
-                          </PaginationContent>
-                        </Pagination>
+                          {#snippet children({ pages, currentPage }: any)}
+                            <Pagination.Content>
+                              <Pagination.Item>
+                                <Pagination.PrevButton />
+                              </Pagination.Item>
+                              {#each pages as page (page.key)}
+                                {#if page.type === "ellipsis"}
+                                  <Pagination.Item>
+                                    <Pagination.Ellipsis />
+                                  </Pagination.Item>
+                                {:else}
+                                  <Pagination.Item>
+                                    <Pagination.Link
+                                      {page}
+                                      isActive={currentPage === page.value}
+                                      on:click={() =>
+                                        handleProjectPageChange(page.value)}
+                                    >
+                                      {page.value}
+                                    </Pagination.Link>
+                                  </Pagination.Item>
+                                {/if}
+                              {/each}
+                              <Pagination.Item>
+                                <Pagination.NextButton />
+                              </Pagination.Item>
+                            </Pagination.Content>
+                          {/snippet}
+                        </Pagination.Root>
                       </div>
                     {/if}
 
