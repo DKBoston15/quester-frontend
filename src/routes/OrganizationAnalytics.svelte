@@ -126,7 +126,7 @@
 
   // State for Project Activity Table Pagination
   let projectCurrentPage = $state(1);
-  const projectItemsPerPage = 2;
+  const projectItemsPerPage = 10;
 
   // Function to check if user has admin access
   function checkAdminAccess() {
