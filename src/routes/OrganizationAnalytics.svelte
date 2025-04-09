@@ -36,6 +36,7 @@
   import { Button } from "$lib/components/ui/button";
   import ProjectUsersModal from "$lib/components/ProjectUsersModal.svelte";
   import * as Pagination from "$lib/components/ui/pagination/index.js";
+  import { navigate, Link } from "svelte-routing";
 
   // Define the structure for the daily activity counts
   interface DailyActivityCount {
@@ -1207,17 +1208,32 @@
                                     {project.outcomes}
                                   </TableCell>
                                   <TableCell class="text-right">
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      class="h-8 px-2"
-                                      onclick={() =>
-                                        openProjectUsersModal(
-                                          project.projectId
-                                        )}
+                                    <div
+                                      class="flex items-center justify-end gap-2"
                                     >
-                                      View Users
-                                    </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        class="h-8 px-2"
+                                        onclick={() =>
+                                          openProjectUsersModal(
+                                            project.projectId
+                                          )}
+                                      >
+                                        View Users
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        class="h-8 px-2"
+                                        onclick={() =>
+                                          navigate(
+                                            `/project/${project.projectId}`
+                                          )}
+                                      >
+                                        Go to Project
+                                      </Button>
+                                    </div>
                                   </TableCell>
                                 </TableRow>
                               {/if}
