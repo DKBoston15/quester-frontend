@@ -5,10 +5,10 @@
   // Remove the incorrect backend import
   // import type { LoginStatUserJson } from "../../app/services/permission_service";
 
+  type ResourceType = "organization" | "department" | "project";
+
   // State management
-  let selectedResourceType = $state<"organization" | "department" | "project">(
-    "organization"
-  );
+  let selectedResourceType = $state<ResourceType>("organization");
   let selectedResourceId = $state<string | null>(null);
   let organizationStructure = $state<any | null>(null);
   let departmentStructure = $state<any | null>(null);
@@ -20,8 +20,12 @@
   let settings = $state<Record<string, any>>({});
   let settingsError = $state<string | null>(null);
   let userLoginStatsMap = $state<Record<string, any> | null>(null);
-  // Revert type to any[] or keep as is if it works
   let loginStatUsers = $state<any[] | null>(null);
+
+  // State for project details modal
+  let modalProjectData = $state<any | null>(null);
+  let isModalDataLoading = $state(false);
+  let modalError = $state<string | null>(null);
 
   export const teamManagement = {
     // Getters
@@ -64,12 +68,18 @@
     get loginStatUsers() {
       return loginStatUsers;
     },
+    get modalProjectData() {
+      return modalProjectData;
+    },
+    get isModalDataLoading() {
+      return isModalDataLoading;
+    },
+    get modalError() {
+      return modalError;
+    },
 
     // Set the selected resource
-    setSelectedResource(
-      type: "organization" | "department" | "project",
-      id: string
-    ) {
+    setSelectedResource(type: ResourceType, id: string) {
       selectedResourceType = type;
       selectedResourceId = id;
 
@@ -691,6 +701,9 @@
       settingsError = null;
       userLoginStatsMap = null;
       loginStatUsers = null;
+      modalProjectData = null;
+      isModalDataLoading = false;
+      modalError = null;
     },
 
     // Initialize the store
@@ -707,6 +720,44 @@
         }
       } else {
         this.clear();
+      }
+    },
+
+    // Load specific project details for the modal view
+    async loadProjectDetailsForModal(projectId: string) {
+      if (!projectId) return;
+
+      isModalDataLoading = true;
+      modalError = null;
+      modalProjectData = null; // Clear previous data
+
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/team-management/project/${projectId}`,
+          {
+            credentials: "include",
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.message ||
+              `Failed to load project details (${response.status})`
+          );
+        }
+
+        const data = await response.json();
+        // The actual project data is nested under a 'project' key in the response
+        modalProjectData = data.project;
+
+        console.log("Loaded project details for modal:", modalProjectData);
+      } catch (err) {
+        console.error("Error loading project details for modal:", err);
+        modalError = err instanceof Error ? err.message : "An error occurred";
+        modalProjectData = null;
+      } finally {
+        isModalDataLoading = false;
       }
     },
   };

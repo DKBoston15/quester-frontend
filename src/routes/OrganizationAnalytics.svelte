@@ -5,9 +5,9 @@
   import { auth } from "$lib/stores/AuthStore.svelte";
   import ProjectActivityChart from "$lib/components/ProjectActivityChart.svelte";
   import { onMount } from "svelte";
-  // Runes are globally available in Svelte 5
   import * as RadioGroup from "$lib/components/ui/radio-group";
   import { Label } from "$lib/components/ui/label";
+  import { Checkbox } from "$lib/components/ui/checkbox";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import {
     Table,
@@ -18,7 +18,6 @@
     TableRow,
   } from "$lib/components/ui/table";
   import { DateTime } from "luxon";
-  import { writable } from "svelte/store"; // Needed for sorting state if not using runes for everything
   import {
     ChevronDown,
     ChevronUp,
@@ -28,8 +27,14 @@
     CalendarClock,
     Calendar,
     ShieldAlert,
-  } from "lucide-svelte"; // Import sorting and icon components
-  import { navigate } from "svelte-routing";
+    Library,
+    NotebookText,
+    Boxes,
+    Target,
+  } from "lucide-svelte";
+  import { Input } from "$lib/components/ui/input";
+  import { Button } from "$lib/components/ui/button";
+  import ProjectUsersModal from "$lib/components/ProjectUsersModal.svelte";
 
   // Define the structure for the daily activity counts
   interface DailyActivityCount {
@@ -37,6 +42,18 @@
     notes: number;
     models: number;
     outcomes: number;
+  }
+
+  // Define the structure for aggregated project activity for the table
+  interface AggregatedProjectActivity {
+    projectId: string;
+    projectName: string;
+    literature: number;
+    notes: number;
+    models: number;
+    outcomes: number;
+    // Include raw daily counts for the selected chart
+    dailyActivityCounts: Record<string, DailyActivityCount>;
   }
 
   // Define the structure for user login stats from the backend
@@ -83,6 +100,28 @@
   let hasAccess = $state(false);
   let accessChecked = $state(false);
   let isCheckingAccess = $state(true);
+
+  // State for selected project in the activity table
+  let selectedProjectIds = $state<Set<string>>(new Set());
+
+  // Sorting state for Project Activity table
+  type ProjectSortColumn =
+    | "projectName"
+    | "literature"
+    | "notes"
+    | "models"
+    | "outcomes";
+  let projectSortColumn = $state<ProjectSortColumn>("projectName");
+  let projectSortDirection = $state<"asc" | "desc">("asc");
+
+  // State for project search filter
+  let projectSearchTerm = $state("");
+
+  // State for user search filter
+  let userSearchTerm = $state("");
+
+  // State for viewing project users modal
+  let viewingProjectUsersId = $state<string | null>(null);
 
   // Function to check if user has admin access
   function checkAdminAccess() {
@@ -222,6 +261,63 @@
     return hasAnyActivity;
   }
 
+  // Helper function to aggregate project activity based on date range
+  function aggregateProjectActivity(
+    dailyCounts: Record<string, DailyActivityCount> | undefined | null,
+    range: "7" | "14" | "30" | "all"
+  ): { literature: number; notes: number; models: number; outcomes: number } {
+    const aggregated = { literature: 0, notes: 0, models: 0, outcomes: 0 };
+    if (!dailyCounts || typeof dailyCounts !== "object") {
+      return aggregated;
+    }
+
+    const now = DateTime.now();
+    let startDate: DateTime | null = null;
+
+    switch (range) {
+      case "7":
+        startDate = now.minus({ days: 7 });
+        break;
+      case "14":
+        startDate = now.minus({ days: 14 });
+        break;
+      case "30":
+        startDate = now.minus({ days: 30 });
+        break;
+      case "all":
+        // No start date needed, include all
+        break;
+    }
+
+    // Use safeClone to avoid issues with Svelte proxies during iteration
+    const safeDailyCounts = safeClone(dailyCounts);
+
+    for (const [dateStr, counts] of Object.entries(safeDailyCounts)) {
+      try {
+        const activityDate = DateTime.fromISO(dateStr);
+        if (
+          !activityDate.isValid || // Skip invalid dates
+          (startDate && activityDate < startDate) // Skip if before start date for ranges other than 'all'
+        ) {
+          continue;
+        }
+
+        // Cast counts to the expected type
+        const typedCounts = counts as DailyActivityCount;
+
+        aggregated.literature += typedCounts?.literature || 0;
+        aggregated.notes += typedCounts?.notes || 0;
+        aggregated.models += typedCounts?.models || 0;
+        aggregated.outcomes += typedCounts?.outcomes || 0;
+      } catch (e) {
+        console.error(`Error processing date ${dateStr}:`, e);
+        // Optionally skip this entry or handle differently
+      }
+    }
+
+    return aggregated;
+  }
+
   // Derived state to prepare user login data for the table
   let userLoginTableData = $derived.by(() => {
     // Don't attempt to process data if user doesn't have access
@@ -265,7 +361,7 @@
     });
     console.log("[Derived] Populated userDetailsMap:", userDetailsMap); // Log the created map
 
-    // 2. Iterate through the statsMap and combine with user details
+    // 2. Iterate through the statsMap, combine with user details
     let tableData: UserLoginTableRow[] = [];
     for (const [userId, stats] of Object.entries(statsMap)) {
       console.log(`[Derived Loop] Processing userId from statsMap: ${userId}`); // Log current key from statsMap
@@ -301,11 +397,25 @@
     }
     console.log("[Derived] Combined tableData (before sort):", tableData);
 
-    // 3. Apply Sorting based on component state
+    // 3. Filter by user search term (case-insensitive)
+    const lowerUserSearch = userSearchTerm.toLowerCase();
+    const filteredUserData = lowerUserSearch
+      ? tableData.filter((user) => {
+          const fullName =
+            `${user.firstName || ""} ${user.lastName || ""}`.toLowerCase();
+          const email = user.email.toLowerCase();
+          return (
+            fullName.includes(lowerUserSearch) ||
+            email.includes(lowerUserSearch)
+          );
+        })
+      : tableData;
+
+    // 4. Apply Sorting based on component state
     const sortCol = sortColumn;
     const sortDir = sortDirection;
 
-    tableData.sort((a, b) => {
+    filteredUserData.sort((a, b) => {
       let valA: any, valB: any;
 
       switch (sortCol) {
@@ -354,9 +464,110 @@
       if (valA > valB) return sortDir === "asc" ? 1 : -1;
       return 0;
     });
-    console.log("[Derived] Sorted tableData:", tableData);
+    console.log("[Derived] Sorted tableData:", filteredUserData);
+
+    return filteredUserData;
+  });
+
+  // Derived state for the project activity table
+  let projectActivityTableData = $derived.by(() => {
+    if (!hasAccess || !teamManagement.userResources?.projects) {
+      return [];
+    }
+
+    // 1. Filter projects that have activity
+    const projectsWithActivity = teamManagement.userResources.projects.filter(
+      (p: any) => hasActivity(p)
+    );
+
+    // 2. Filter by search term (case-insensitive)
+    const lowerSearchTerm = projectSearchTerm.toLowerCase();
+    const filteredProjects = lowerSearchTerm
+      ? projectsWithActivity.filter((project: any) =>
+          (project.name || "").toLowerCase().includes(lowerSearchTerm)
+        )
+      : projectsWithActivity; // No filtering if search term is empty
+
+    // 3. Map to aggregated data structure
+    let tableData: AggregatedProjectActivity[] = filteredProjects.map(
+      (project: any) => {
+        const dailyCounts = project.$extras?.dailyActivityCounts || {};
+        const aggregatedCounts = aggregateProjectActivity(
+          dailyCounts,
+          selectedRange
+        );
+        return {
+          projectId: project.id,
+          projectName: project.name || "Unnamed Project",
+          literature: aggregatedCounts.literature,
+          notes: aggregatedCounts.notes,
+          models: aggregatedCounts.models,
+          outcomes: aggregatedCounts.outcomes,
+          dailyActivityCounts: dailyCounts, // Keep raw counts for the chart
+        };
+      }
+    );
+
+    // 4. Apply Sorting
+    const sortCol = projectSortColumn;
+    const sortDir = projectSortDirection;
+
+    tableData.sort((a, b) => {
+      let valA: any, valB: any;
+
+      switch (sortCol) {
+        case "projectName":
+          valA = a.projectName.toLowerCase();
+          valB = b.projectName.toLowerCase();
+          break;
+        case "literature":
+          valA = a.literature;
+          valB = b.literature;
+          break;
+        case "notes":
+          valA = a.notes;
+          valB = b.notes;
+          break;
+        case "models":
+          valA = a.models;
+          valB = b.models;
+          break;
+        case "outcomes":
+          valA = a.outcomes;
+          valB = b.outcomes;
+          break;
+        default:
+          return 0;
+      }
+
+      if (valA < valB) return sortDir === "asc" ? -1 : 1;
+      if (valA > valB) return sortDir === "asc" ? 1 : -1;
+      return 0;
+    });
 
     return tableData;
+  });
+
+  // Derived state to get the data for the selected projects charts
+  let selectedProjectsData = $derived.by(() => {
+    if (selectedProjectIds.size === 0) return [];
+
+    // Create a map for faster lookup if needed, though filtering might be fine for typical numbers of projects
+    const selectedIds = selectedProjectIds; // Use the reactive set directly
+
+    return projectActivityTableData.filter((p) => selectedIds.has(p.projectId));
+  });
+
+  // Derived state to get the full project object for the user view modal
+  let selectedProjectForUserView = $derived.by(() => {
+    if (!viewingProjectUsersId || !teamManagement.userResources?.projects)
+      return null;
+    // Find the project from the original userResources list, as it contains projectRoles
+    return (
+      teamManagement.userResources.projects.find(
+        (p: any) => p.id === viewingProjectUsersId
+      ) || null
+    );
   });
 
   // Derived state for summary metrics
@@ -419,12 +630,48 @@
     }
   }
 
+  // Event handler for project activity table sort
+  function handleProjectSortClick(column: ProjectSortColumn) {
+    if (projectSortColumn === column) {
+      projectSortDirection = projectSortDirection === "asc" ? "desc" : "asc";
+    } else {
+      projectSortColumn = column;
+      projectSortDirection = "asc";
+    }
+    // Deselect project when sorting changes
+    selectedProjectIds = new Set();
+  }
+
+  // Handler to toggle project selection
+  function toggleProjectSelection(projectId: string) {
+    const newSet = new Set(selectedProjectIds);
+    if (newSet.has(projectId)) {
+      newSet.delete(projectId);
+    } else {
+      newSet.add(projectId);
+    }
+    selectedProjectIds = newSet;
+  }
+
   // Log state changes for debugging
   $effect(() => {
     console.log("Selected range changed to:", selectedRange);
     // Log when user login data is derived
     console.log("User login table data derived:", userLoginTableData);
+    console.log("Selected project IDs changed:", selectedProjectIds);
+    console.log("Project search term:", projectSearchTerm);
+    console.log("User search term:", userSearchTerm);
   });
+
+  function openProjectUsersModal(projectId: string) {
+    viewingProjectUsersId = projectId;
+    // Trigger loading the specific project details in the store
+    teamManagement.loadProjectDetailsForModal(projectId);
+  }
+
+  function closeProjectUsersModal() {
+    viewingProjectUsersId = null;
+  }
 </script>
 
 <Sidebar.Provider>
@@ -604,7 +851,7 @@
             {:else}
               <div class="space-y-8">
                 <!-- Projects with Activity Section -->
-                <div>
+                <div class="space-y-6">
                   <div
                     class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4"
                   >
@@ -667,7 +914,17 @@
                     </div>
                   </div>
 
-                  {#if !teamManagement.userResources.projects.filter(hasActivity)?.length}
+                  <!-- Project Search Input -->
+                  <div class="mb-4">
+                    <Input
+                      type="search"
+                      placeholder="Search projects by name..."
+                      bind:value={projectSearchTerm}
+                      class="max-w-sm"
+                    />
+                  </div>
+
+                  {#if !projectActivityTableData?.length}
                     <div
                       class="text-center p-8 bg-muted/50 border border-border rounded-md"
                     >
@@ -681,30 +938,250 @@
                       </p>
                     </div>
                   {:else}
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {#each teamManagement.userResources.projects.filter(hasActivity) as project (project.id)}
-                        <div
-                          class="bg-card rounded-lg border shadow-sm p-4 hover:shadow-md transition-shadow"
-                        >
-                          <Tooltip.Root>
-                            <Tooltip.Trigger class="w-full text-left">
-                              <h3 class="text-lg font-semibold mb-2 truncate">
-                                {project.name}
-                              </h3>
-                            </Tooltip.Trigger>
-                            <Tooltip.Content side="top">
-                              <span>{project.name}</span>
-                            </Tooltip.Content>
-                          </Tooltip.Root>
-                          <ProjectActivityChart
-                            dailyActivityCounts={project.$extras
-                              ?.dailyActivityCounts || {}}
-                            projectName={project.name}
-                            dateRange={selectedRange}
-                          />
-                        </div>
-                      {/each}
+                    <!-- Project Activity Table -->
+                    <div class="border rounded-lg overflow-hidden shadow-sm">
+                      <div class="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead class="w-[50px]">
+                                <span class="sr-only">Select</span>
+                              </TableHead>
+                              <TableHead
+                                class="cursor-pointer hover:bg-muted/50 transition-colors"
+                                onclick={() =>
+                                  handleProjectSortClick("projectName")}
+                              >
+                                <div class="flex items-center gap-1">
+                                  Project
+                                  {#if projectSortColumn === "projectName"}
+                                    {#if projectSortDirection === "asc"}<ChevronUp
+                                        class="h-4 w-4"
+                                      />{:else}<ChevronDown
+                                        class="h-4 w-4"
+                                      />{/if}
+                                  {:else}
+                                    <ChevronsUpDown
+                                      class="h-4 w-4 text-muted-foreground/50"
+                                    />
+                                  {/if}
+                                </div>
+                              </TableHead>
+                              <TableHead
+                                class="text-right cursor-pointer hover:bg-muted/50"
+                                onclick={() =>
+                                  handleProjectSortClick("literature")}
+                              >
+                                <div
+                                  class="flex items-center justify-end gap-1"
+                                >
+                                  <Tooltip.Root>
+                                    <Tooltip.Trigger
+                                      class="flex items-center gap-1"
+                                    >
+                                      <Library class="h-4 w-4" /> Lit
+                                      {#if projectSortColumn === "literature"}
+                                        {#if projectSortDirection === "asc"}<ChevronUp
+                                            class="h-4 w-4"
+                                          />{:else}<ChevronDown
+                                            class="h-4 w-4"
+                                          />{/if}
+                                      {:else}
+                                        <ChevronsUpDown
+                                          class="h-4 w-4 text-muted-foreground/50"
+                                        />
+                                      {/if}
+                                    </Tooltip.Trigger>
+                                    <Tooltip.Content>Literature</Tooltip.Content
+                                    >
+                                  </Tooltip.Root>
+                                </div>
+                              </TableHead>
+                              <TableHead
+                                class="text-right cursor-pointer hover:bg-muted/50"
+                                onclick={() => handleProjectSortClick("notes")}
+                              >
+                                <div
+                                  class="flex items-center justify-end gap-1"
+                                >
+                                  <Tooltip.Root>
+                                    <Tooltip.Trigger
+                                      class="flex items-center gap-1"
+                                    >
+                                      <NotebookText class="h-4 w-4" /> Notes
+                                      {#if projectSortColumn === "notes"}
+                                        {#if projectSortDirection === "asc"}<ChevronUp
+                                            class="h-4 w-4"
+                                          />{:else}<ChevronDown
+                                            class="h-4 w-4"
+                                          />{/if}
+                                      {:else}
+                                        <ChevronsUpDown
+                                          class="h-4 w-4 text-muted-foreground/50"
+                                        />
+                                      {/if}
+                                    </Tooltip.Trigger>
+                                    <Tooltip.Content>Notes</Tooltip.Content>
+                                  </Tooltip.Root>
+                                </div>
+                              </TableHead>
+                              <TableHead
+                                class="text-right cursor-pointer hover:bg-muted/50"
+                                onclick={() => handleProjectSortClick("models")}
+                              >
+                                <div
+                                  class="flex items-center justify-end gap-1"
+                                >
+                                  <Tooltip.Root>
+                                    <Tooltip.Trigger
+                                      class="flex items-center gap-1"
+                                    >
+                                      <Boxes class="h-4 w-4" /> Models
+                                      {#if projectSortColumn === "models"}
+                                        {#if projectSortDirection === "asc"}<ChevronUp
+                                            class="h-4 w-4"
+                                          />{:else}<ChevronDown
+                                            class="h-4 w-4"
+                                          />{/if}
+                                      {:else}
+                                        <ChevronsUpDown
+                                          class="h-4 w-4 text-muted-foreground/50"
+                                        />
+                                      {/if}
+                                    </Tooltip.Trigger>
+                                    <Tooltip.Content>Models</Tooltip.Content>
+                                  </Tooltip.Root>
+                                </div>
+                              </TableHead>
+                              <TableHead
+                                class="text-right cursor-pointer hover:bg-muted/50"
+                                onclick={() =>
+                                  handleProjectSortClick("outcomes")}
+                              >
+                                <div
+                                  class="flex items-center justify-end gap-1"
+                                >
+                                  <Tooltip.Root>
+                                    <Tooltip.Trigger
+                                      class="flex items-center gap-1"
+                                    >
+                                      <Target class="h-4 w-4" /> Outcomes
+                                      {#if projectSortColumn === "outcomes"}
+                                        {#if projectSortDirection === "asc"}<ChevronUp
+                                            class="h-4 w-4"
+                                          />{:else}<ChevronDown
+                                            class="h-4 w-4"
+                                          />{/if}
+                                      {:else}
+                                        <ChevronsUpDown
+                                          class="h-4 w-4 text-muted-foreground/50"
+                                        />
+                                      {/if}
+                                    </Tooltip.Trigger>
+                                    <Tooltip.Content>Outcomes</Tooltip.Content>
+                                  </Tooltip.Root>
+                                </div>
+                              </TableHead>
+                              <TableHead class="text-right">Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {#each projectActivityTableData as project (project.projectId)}
+                              <TableRow
+                                class="transition-colors data-[state=selected]:bg-muted/50 hover:bg-muted/20"
+                                data-state={selectedProjectIds.has(
+                                  project.projectId
+                                )
+                                  ? "selected"
+                                  : "unselected"}
+                                onclick={() =>
+                                  toggleProjectSelection(project.projectId)}
+                              >
+                                <TableCell class="cursor-pointer">
+                                  <Checkbox
+                                    checked={selectedProjectIds.has(
+                                      project.projectId
+                                    )}
+                                    onCheckedChange={() => {
+                                      toggleProjectSelection(project.projectId);
+                                    }}
+                                    aria-label={`Select project ${project.projectName}`}
+                                  />
+                                </TableCell>
+                                <TableCell
+                                  class="font-medium truncate max-w-xs cursor-pointer"
+                                >
+                                  <Tooltip.Provider>
+                                    <Tooltip.Root>
+                                      <Tooltip.Trigger>
+                                        {project.projectName}
+                                      </Tooltip.Trigger>
+                                      <Tooltip.Content>
+                                        {project.projectName}
+                                      </Tooltip.Content>
+                                    </Tooltip.Root>
+                                  </Tooltip.Provider>
+                                </TableCell>
+                                <TableCell class="text-right">
+                                  {project.literature}
+                                </TableCell>
+                                <TableCell class="text-right">
+                                  {project.notes}
+                                </TableCell>
+                                <TableCell class="text-right">
+                                  {project.models}
+                                </TableCell>
+                                <TableCell class="text-right">
+                                  {project.outcomes}
+                                </TableCell>
+                                <TableCell class="text-right">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    class="h-8 px-2"
+                                    onclick={() =>
+                                      openProjectUsersModal(project.projectId)}
+                                  >
+                                    View Users
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            {/each}
+                          </TableBody>
+                        </Table>
+                      </div>
                     </div>
+
+                    <!-- Selected Project Chart -->
+                    {#if selectedProjectsData.length > 0}
+                      <div class="mt-6 space-y-6">
+                        <h3 class="text-lg font-semibold">
+                          Selected Project Activity Details
+                        </h3>
+                        <div
+                          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                        >
+                          {#each selectedProjectsData as project (project.projectId)}
+                            <div
+                              class="bg-card rounded-lg border shadow-sm p-3 animate-in fade-in-50"
+                              role="region"
+                              aria-live="polite"
+                              aria-atomic="false"
+                            >
+                              <h4 class="text-md font-semibold mb-2 truncate">
+                                {project.projectName}
+                              </h4>
+                              <ProjectActivityChart
+                                dailyActivityCounts={project.dailyActivityCounts ||
+                                  {}}
+                                projectName={project.projectName}
+                                dateRange={selectedRange}
+                              />
+                            </div>
+                          {/each}
+                        </div>
+                      </div>
+                    {/if}
                   {/if}
                 </div>
 
@@ -714,6 +1191,16 @@
                     <Users class="w-5 h-5 text-primary" />
                     <span>User Login Activity</span>
                   </h2>
+
+                  <!-- User Search Input -->
+                  <div class="mb-4">
+                    <Input
+                      type="search"
+                      placeholder="Search users by name or email..."
+                      bind:value={userSearchTerm}
+                      class="max-w-sm"
+                    />
+                  </div>
 
                   {#if !userLoginTableData?.length}
                     <div
@@ -900,4 +1387,9 @@
       </div>
     </main>
   </div>
+
+  <!-- Project Users Modal -->
+  {#if viewingProjectUsersId}
+    <ProjectUsersModal onClose={closeProjectUsersModal} />
+  {/if}
 </Sidebar.Provider>

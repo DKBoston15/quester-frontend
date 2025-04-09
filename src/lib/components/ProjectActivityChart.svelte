@@ -351,7 +351,7 @@
         data: chartData,
         options: {
           responsive: true,
-          maintainAspectRatio: true,
+          maintainAspectRatio: false,
           plugins: {
             title: {
               display: true,
@@ -433,7 +433,7 @@
       },
       options: {
         responsive: true,
-        maintainAspectRatio: true,
+        maintainAspectRatio: false,
         plugins: {
           title: {
             display: true,
@@ -509,7 +509,7 @@
   });
 </script>
 
-<div class="chart-container" style="aspect-ratio: 16/9;">
+<div class="chart-container" style="aspect-ratio: 4/3;">
   <!-- Canvas always displayed -->
   <canvas bind:this={chartCanvas}></canvas>
 
