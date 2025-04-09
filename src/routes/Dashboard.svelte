@@ -192,7 +192,8 @@
       );
 
       // Check if user has projects after loading
-      if (projects.length === 0) {
+      // Only redirect the OWNER to create the first project if none exist
+      if (projects.length === 0 && isOrganizationOwner()) {
         // Determine the correct onboarding step based on subscription type
         const step = currentOrg.subscriptionType === "organization" ? 4 : 3;
         navigate("/onboarding", { state: { step: step } });
