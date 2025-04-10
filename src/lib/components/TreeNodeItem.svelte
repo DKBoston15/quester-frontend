@@ -14,8 +14,10 @@
   import { Button } from "$lib/components/ui/button";
   import { Badge } from "$lib/components/ui/badge";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
+  import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
   import { navigate } from "svelte-routing";
   import { API_BASE_URL } from "$lib/config";
+  import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
 
   // Props
   const props = $props<{
@@ -31,23 +33,9 @@
 
   // Component state
   let isExpanded = $state(false);
-  let projects = $state<Project[]>([]);
-  let isLoading = $state(false);
+  let showDeleteConfirmDialog = $state(false);
 
-  // Load projects when department is expanded
-  $effect(() => {
-    if (isExpanded && isDepartment(props.item)) {
-      if (props.isFiltering && props.filteredProjects) {
-        // Use the filtered projects passed from parent
-        projects = props.filteredProjects;
-        isLoading = false;
-      } else {
-        loadProjects(props.item.id);
-      }
-    }
-  });
-
-  // Auto-expand departments when filtering is active
+  // Auto-expand departments when filtering is active and has results
   $effect(() => {
     if (
       props.isFiltering &&
@@ -90,76 +78,31 @@
     return false;
   }
 
-  // Load projects for a department
-  async function loadProjects(departmentId: string) {
-    if (!auth.user) return;
+  // Helper function to check if user *might* have delete permissions (client-side check)
+  // Actual permission is enforced by the backend.
+  function canPotentiallyDeleteDepartment(department: Department): boolean {
+    if (!auth.user || !teamManagement.userResources) return false;
 
-    isLoading = true;
-    projects = []; // Clear existing projects before loading
-    let allProjects: Project[] = [];
-    let currentPage = 1;
-    let hasMorePages = true;
-
-    try {
-      while (hasMorePages) {
-        // Always use the dedicated endpoint for by-department which handles permissions correctly
-        const projectsResponse = await fetch(
-          `${API_BASE_URL}/projects/by-department?departmentId=${departmentId}&page=${currentPage}`,
-          { credentials: "include" }
-        );
-
-        if (projectsResponse.ok) {
-          const data = await projectsResponse.json();
-          const pageProjects = data.data || [];
-          allProjects = [...allProjects, ...pageProjects];
-
-          // Check pagination meta data
-          if (data.meta && data.meta.lastPage > data.meta.currentPage) {
-            currentPage++;
-          } else {
-            hasMorePages = false;
-          }
-        } else {
-          // If the request fails, log the status and stop trying
-          console.error(
-            `Failed to load projects page ${currentPage} for department. Status: ${projectsResponse.status}`
-          );
-          hasMorePages = false; // Stop pagination on error
-
-          // Attempt fallback only if the first page failed and we haven't loaded any projects yet
-          if (currentPage === 1 && allProjects.length === 0) {
-            console.warn(
-              "Falling back to /team-management/resources for projects."
-            );
-            const resourcesResponse = await fetch(
-              `${API_BASE_URL}/team-management/resources`,
-              { credentials: "include" }
-            );
-
-            if (resourcesResponse.ok) {
-              const resourceData = await resourcesResponse.json();
-              if (resourceData.projects) {
-                // Filter projects by department ID client-side as fallback
-                allProjects = resourceData.projects.filter(
-                  (p: Project) => p.departmentId === departmentId
-                );
-              }
-            }
-          }
-
-          // If fallback also failed or wasn't applicable, keep projects empty
-          if (allProjects.length === 0) {
-            projects = [];
-          }
-        }
-      }
-      projects = allProjects; // Assign all loaded projects
-    } catch (error) {
-      console.error("Error loading projects:", error);
-      projects = []; // Ensure projects is empty on error
-    } finally {
-      isLoading = false;
+    // Check if user is Department Owner
+    const deptResource = teamManagement.userResources.departments?.find(
+      (d: any) => d.id === department.id
+    );
+    if (deptResource?.$extras?.roleName === "Owner") {
+      return true;
     }
+
+    // Check if user is Org Admin or Org Owner
+    const orgResource = teamManagement.userResources.organizations?.find(
+      (o: any) => o.id === department.organizationId
+    );
+    if (
+      orgResource?.$extras?.roleName === "Admin" ||
+      orgResource?.$extras?.roleName === "Owner"
+    ) {
+      return true;
+    }
+
+    return false;
   }
 
   // Check if user is a member of a project
@@ -201,6 +144,31 @@
     }
   }
 
+  // Helper function to get user's role for the current item
+  function getUserRoleNameForCurrentItem(): string {
+    if (!auth.user) return "Unknown";
+    const resources = teamManagement.userResources;
+    if (!resources) return "Unknown";
+
+    let resourceList;
+    let itemType: "organization" | "department" | "project";
+
+    if (isDepartment(props.item)) {
+      resourceList = resources.departments;
+      itemType = "department";
+    } else if (isProject(props.item)) {
+      resourceList = resources.projects;
+      itemType = "project";
+    } else {
+      return "Unknown"; // Should not happen for this component
+    }
+
+    if (!resourceList) return "Unknown";
+
+    const resource = resourceList.find((r: any) => r.id === props.item.id);
+    return resource?.$extras?.roleName || "Unknown";
+  }
+
   // Join a project (self-assign)
   async function joinProject(project: Project, e: MouseEvent) {
     if (!auth.user) return;
@@ -225,7 +193,7 @@
 
       // Refresh projects if in a department
       if (isDepartment(props.item)) {
-        loadProjects(props.item.id);
+        // loadProjects(props.item.id);
       }
     } catch (error) {
       console.error("Error joining project:", error);
@@ -266,40 +234,102 @@
         </Button>
       {:else}
         <Badge variant="outline" class="bg-primary/10 text-primary"
-          >Member</Badge
+          >{getUserRoleNameForCurrentItem()}</Badge
         >
       {/if}
 
-      <Button
-        variant="outline"
-        size="sm"
-        class="flex items-center gap-1"
-        onclick={(e: MouseEvent) => {
-          e.stopPropagation();
-          if (props.onNewProject) props.onNewProject();
-        }}
-      >
-        <Plus class="h-4 w-4" />
-        New Project
-      </Button>
+      <!-- Add dropdown menu for department actions -->
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger onclick={(e: MouseEvent) => e.stopPropagation()}>
+          <Button variant="ghost" size="icon" class="relative z-10">
+            <MoreVertical class="h-4 w-4" />
+          </Button>
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Content
+          onclick={(e: MouseEvent) => e.stopPropagation()}
+          class="relative z-20"
+        >
+          <DropdownMenu.Label>Department Actions</DropdownMenu.Label>
+          <DropdownMenu.Separator />
+          <DropdownMenu.Item
+            onclick={(e: MouseEvent) => {
+              e.stopPropagation();
+              if (props.onNewProject) props.onNewProject();
+            }}
+          >
+            <Plus class="h-4 w-4 mr-2" />
+            New Project
+          </DropdownMenu.Item>
+
+          <!-- Delete Department Item -->
+          {#if isDepartment(props.item) && canPotentiallyDeleteDepartment(props.item)}
+            {@const departmentIsEmpty =
+              !props.filteredProjects || props.filteredProjects.length === 0}
+            <span
+              title={departmentIsEmpty
+                ? ""
+                : "Move or delete all projects in this department first"}
+            >
+              <DropdownMenu.Item
+                class="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                disabled={!departmentIsEmpty}
+                onclick={async (e: MouseEvent) => {
+                  e.stopPropagation();
+                  if (departmentIsEmpty) {
+                    showDeleteConfirmDialog = true;
+                  }
+                }}
+              >
+                Delete Department
+              </DropdownMenu.Item>
+            </span>
+          {/if}
+        </DropdownMenu.Content>
+      </DropdownMenu.Root>
     </div>
   </div>
+
+  <!-- Delete Confirmation Dialog -->
+  {#if isDepartment(props.item)}
+    <AlertDialog.Root bind:open={showDeleteConfirmDialog}>
+      <AlertDialog.Content>
+        <AlertDialog.Header>
+          <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
+          <AlertDialog.Description>
+            This action cannot be undone. This will permanently delete the
+            department "<strong>{props.item.name}</strong>".
+          </AlertDialog.Description>
+        </AlertDialog.Header>
+        <AlertDialog.Footer>
+          <AlertDialog.Cancel onclick={() => (showDeleteConfirmDialog = false)}
+            >Cancel</AlertDialog.Cancel
+          >
+          <AlertDialog.Action
+            class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            onclick={async () => {
+              const success = await teamManagement.deleteDepartment(
+                props.item.id
+              );
+              if (!success) {
+                alert(
+                  `Failed to delete department: ${teamManagement.error || "Unknown error"}`
+                );
+              }
+              showDeleteConfirmDialog = false; // Close dialog regardless of success/failure
+            }}
+          >
+            Delete
+          </AlertDialog.Action>
+        </AlertDialog.Footer>
+      </AlertDialog.Content>
+    </AlertDialog.Root>
+  {/if}
 
   <!-- Projects in Department (when expanded) -->
   {#if isExpanded}
     <div class="ml-6 border-l pl-4">
-      {#if isLoading}
-        <div class="flex items-center justify-center p-4">
-          <div
-            class="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin"
-          ></div>
-        </div>
-      {:else if projects.length === 0}
-        <div class="text-sm text-muted-foreground py-2 px-4">
-          No projects in this department
-        </div>
-      {:else}
-        {#each projects as project}
+      {#if props.filteredProjects && props.filteredProjects.length > 0}
+        {#each props.filteredProjects as project}
           <div
             class="flex items-center gap-2 p-2 hover:bg-accent hover:text-accent-foreground rounded-md cursor-pointer my-1 transition-colors"
             onclick={(e: MouseEvent) => {
@@ -322,7 +352,7 @@
                 </Button>
               {:else}
                 <Badge variant="outline" class="bg-primary/10 text-primary"
-                  >Member</Badge
+                  >{getUserRoleNameForCurrentItem()}</Badge
                 >
               {/if}
 
@@ -353,6 +383,10 @@
             </div>
           </div>
         {/each}
+      {:else}
+        <div class="text-sm text-muted-foreground py-2 px-4">
+          No projects in this department
+        </div>
       {/if}
     </div>
   {/if}
@@ -380,7 +414,7 @@
         </Button>
       {:else}
         <Badge variant="outline" class="bg-primary/10 text-primary"
-          >Member</Badge
+          >{getUserRoleNameForCurrentItem()}</Badge
         >
       {/if}
 

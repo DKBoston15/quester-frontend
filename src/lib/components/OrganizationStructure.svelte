@@ -29,6 +29,7 @@
   import * as Tabs from "$lib/components/ui/tabs/index.js";
   import TreeNode from "./TreeNodeItem.svelte";
   import { API_BASE_URL } from "$lib/config";
+  import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
 
   // Props
   const props = $props<{
@@ -38,9 +39,6 @@
   // Component state
   let viewMode = $state<"tree" | "list">("tree");
   let organizations = $state<Organization[]>([]);
-  let departments = $state<Department[]>([]);
-  let projects = $state<Project[]>([]);
-  let flatProjects = $state<Project[]>([]);
   let searchQuery = $state("");
   let filteredProjects = $state<Project[]>([]);
   let showMyProjectsOnly = $state(false);
@@ -102,12 +100,13 @@
   // Computed values for filtering projects
   $effect(() => {
     // Filter the flattened list of projects based on search and filter options
-    if (!flatProjects.length) {
+    const storeProjects = teamManagement.userResources?.projects || [];
+    if (!storeProjects.length) {
       filteredProjects = [];
       return;
     }
 
-    let filtered = [...flatProjects];
+    let filtered = [...storeProjects];
 
     // Apply search filter
     if (searchQuery) {
@@ -125,10 +124,10 @@
       filtered = filtered.filter(
         (project) =>
           project.projectRoles?.some(
-            (role) => String(role.userId) === String(auth.user?.id)
+            (role: any) => String(role.userId) === String(auth.user?.id)
           ) ||
           project.users?.some(
-            (user) => String(user.id) === String(auth.user?.id)
+            (user: any) => String(user.id) === String(auth.user?.id)
           )
       );
     }
@@ -145,31 +144,29 @@
     errorMessage = null;
 
     try {
-      // Load organizations
+      // Fetch organizations separately (assuming userResources might not contain full org details needed)
       const orgsResponse = await fetch(
         `${API_BASE_URL}/organizations/by-user?userId=${auth.user.id}`,
         { credentials: "include" }
       );
-
       if (!orgsResponse.ok) {
         throw new Error("Failed to load organizations");
       }
-
       const orgsData = await orgsResponse.json();
-      organizations = orgsData.data;
+      organizations = orgsData.data; // Assuming response structure
 
-      // Load departments and projects using team management API
-      const resourcesResponse = await fetch(
-        `${API_BASE_URL}/team-management/resources`,
-        { credentials: "include" }
-      );
+      // Load user resources (departments, projects with roles) using the store
+      // This ensures we get the data with $extras.roleName
+      const teamResources = await teamManagement.loadUserResources();
 
-      if (!resourcesResponse.ok) {
-        throw new Error("Failed to load team resources");
-      }
+      // Populate local state from the store's data
+      // No longer needed to populate local state for departments/projects
+      // departments = teamResources.departments || [];
+      // projects = teamResources.projects || [];
+      // flatProjects = teamResources.projects || [];
 
-      const teamResources = await resourcesResponse.json();
-
+      // Removed fallback fetches for departments and projects
+      /*
       if (teamResources.departments) {
         departments = teamResources.departments;
       }
@@ -204,6 +201,7 @@
           flatProjects = projectsData.data;
         }
       }
+      */
     } catch (error) {
       console.error("Failed to load data:", error);
       errorMessage =
@@ -291,6 +289,23 @@
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || "Failed to create department");
       }
+
+      const data = await response.json();
+      const newDepartment = data.department; // Assuming API returns the new department object
+
+      // --- Start Client-side Store Update ---
+      if (newDepartment && teamManagement.userResources) {
+        // Assume the creator is assigned the 'Owner' role by default by the backend
+        // Adjust 'Owner' if the backend assigns a different default role
+        const newDeptWithRole = {
+          ...newDepartment,
+          $extras: { roleName: "Owner" },
+        };
+
+        // Call the store function to add the new department
+        teamManagement.addDepartmentToUserResources(newDeptWithRole);
+      }
+      // --- End Client-side Store Update ---
 
       // Reset form and close dialog
       newDepartmentName = "";
@@ -428,14 +443,14 @@
     // Check project roles
     if (project.projectRoles && Array.isArray(project.projectRoles)) {
       return project.projectRoles.some(
-        (role) => role.userId.toString() === auth.user?.id.toString()
+        (role: any) => role.userId.toString() === auth.user?.id.toString()
       );
     }
 
     // Check users array as fallback
     if (project.users && Array.isArray(project.users)) {
       return project.users.some(
-        (user) => user.id.toString() === auth.user?.id.toString()
+        (user: any) => user.id.toString() === auth.user?.id.toString()
       );
     }
 
@@ -462,15 +477,23 @@
   // Get a flattened map of departments by ID for quick lookups
   $effect(() => {
     // Only rebuild the map when departments change
-    departmentsMap = departments.reduce((acc, dept) => {
-      acc.set(dept.id, dept);
-      return acc;
-    }, new Map<string, Department>());
+    const storeDepartments = teamManagement.userResources?.departments || [];
+    departmentsMap = storeDepartments.reduce(
+      (acc: Map<string, Department>, dept: any) => {
+        acc.set(dept.id, dept);
+        return acc;
+      },
+      new Map<string, Department>()
+    );
   });
 
   // Process orphaned projects only once when flatProjects or departmentsMap changes
   $effect(() => {
-    if (!flatProjects || flatProjects.length === 0 || departmentsMap.size === 0)
+    if (
+      !filteredProjects ||
+      filteredProjects.length === 0 ||
+      departmentsMap.size === 0
+    )
       return;
   });
 
@@ -572,6 +595,16 @@
     return departmentCreationCapabilities[orgId]?.allowed || false;
   }
 
+  // Helper function to get user's role for a specific project
+  function getUserRoleForProject(project: Project): string {
+    if (!auth.user) return "Unknown";
+    const resources = teamManagement.userResources;
+    if (!resources?.projects) return "Unknown";
+
+    const resource = resources.projects.find((r: any) => r.id === project.id);
+    return resource?.$extras?.roleName || "Unknown";
+  }
+
   // Handle toggle change
   function handleToggleChange(value: boolean): void {
     showMyProjectsOnly = value;
@@ -585,6 +618,56 @@
 
     // Make sure we don't include orphaned projects that have a departmentId but the department doesn't exist
     return filteredProjects.some((p) => p.departmentId === departmentId);
+  }
+
+  // Helper function to check if the current user is an Admin or Owner of a given Org
+  function isUserOrgAdminOrOwner(orgId: string): boolean {
+    if (!auth.user || !teamManagement.userResources?.organizations)
+      return false;
+    const orgResource = teamManagement.userResources.organizations.find(
+      (o: any) => o.id === orgId
+    );
+    return (
+      orgResource?.$extras?.roleName === "Admin" ||
+      orgResource?.$extras?.roleName === "Owner"
+    );
+  }
+
+  // Helper function to check if the current user is specifically a Member of a given Org
+  function isUserOrgMember(orgId: string): boolean {
+    if (!auth.user || !teamManagement.userResources?.organizations)
+      return false;
+    const orgResource = teamManagement.userResources.organizations.find(
+      (o: any) => o.id === orgId
+    );
+    // Ensure they are part of the org but NOT Admin or Owner
+    return (
+      !!orgResource &&
+      !(
+        orgResource?.$extras?.roleName === "Admin" ||
+        orgResource?.$extras?.roleName === "Owner"
+      )
+    );
+  }
+
+  // Helper function to check if the current user is specifically an Owner of a given Org
+  function isUserOrgOwner(orgId: string): boolean {
+    if (!auth.user || !teamManagement.userResources?.organizations)
+      return false;
+    const orgResource = teamManagement.userResources.organizations.find(
+      (o: any) => o.id === orgId
+    );
+    return orgResource?.$extras?.roleName === "Owner";
+  }
+
+  // Helper function to check if the current user is specifically an Admin of a given Org
+  function isUserOrgAdmin(orgId: string): boolean {
+    if (!auth.user || !teamManagement.userResources?.organizations)
+      return false;
+    const orgResource = teamManagement.userResources.organizations.find(
+      (o: any) => o.id === orgId
+    );
+    return orgResource?.$extras?.roleName === "Admin";
   }
 </script>
 
@@ -628,7 +711,7 @@
             bind:value={selectedDepartmentId}
           >
             <option value={null}>No Department</option>
-            {#each departments.filter((d) => d.organizationId === selectedOrganization?.id) as dept}
+            {#each (teamManagement.userResources?.departments || []).filter((d: any) => d.organizationId === selectedOrganization?.id) as dept}
               <option value={dept.id}>{dept.name}</option>
             {/each}
           </select>
@@ -742,7 +825,7 @@
             bind:value={selectedDepartmentId}
           >
             <option value={null}>No Department</option>
-            {#each departments.filter((d) => d.organizationId === projectToMove?.organizationId) as dept}
+            {#each (teamManagement.userResources?.departments || []).filter((d: any) => d.organizationId === projectToMove?.organizationId) as dept}
               <option value={dept.id}>{dept.name}</option>
             {/each}
           </select>
@@ -791,7 +874,44 @@
     <!-- Action buttons -->
     <div class="flex gap-2">
       {#if selectedOrganization}
-        {#if canCreateDepartment(selectedOrganization.id)}
+        {@const orgId = selectedOrganization.id}
+        {@const subAllowsProjectCreate =
+          projectCreationCapabilities[orgId]?.allowed ?? false}
+        {@const settingAllowsMemberCreate =
+          teamManagement.settings?.allowMembersToCreateProjects ?? false}
+        {@const userCanCreateProj =
+          subAllowsProjectCreate &&
+          (isUserOrgAdminOrOwner(orgId) ||
+            (isUserOrgMember(orgId) && settingAllowsMemberCreate))}
+        {@const createProjectTooltip = !subAllowsProjectCreate
+          ? projectCreationCapabilities[orgId]?.message ||
+            "Project creation not allowed by subscription."
+          : !userCanCreateProj && isUserOrgMember(orgId)
+            ? "Members are not allowed to create projects in this organization."
+            : ""}
+
+        <!-- Department Creation Logic (Replacement Start) -->
+        {@const subAllowsDeptCreate =
+          departmentCreationCapabilities[orgId]?.allowed ?? false}
+        {@const settingAllowsMemberCreateDept =
+          teamManagement.settings?.allowMembersToCreateDepartments ?? false}
+        {@const settingAllowsAdminCreateDept =
+          teamManagement.settings?.allowAdminsToCreateDepartments ?? true}
+        {@const roleAllowsCreateDept =
+          isUserOrgOwner(orgId) ||
+          (isUserOrgAdmin(orgId) && settingAllowsAdminCreateDept) ||
+          (isUserOrgMember(orgId) && settingAllowsMemberCreateDept)}
+        {@const userCanCreateDept = subAllowsDeptCreate && roleAllowsCreateDept}
+        {@const createDeptTooltip = !subAllowsDeptCreate
+          ? departmentCreationCapabilities[orgId]?.message ||
+            "Department creation not allowed by subscription."
+          : !roleAllowsCreateDept && isUserOrgAdmin(orgId)
+            ? "Administrators are not allowed to create departments in this organization."
+            : !roleAllowsCreateDept && isUserOrgMember(orgId)
+              ? "Members are not allowed to create departments in this organization."
+              : "You do not have permission to create departments."}
+
+        {#if userCanCreateDept}
           <Button
             variant="outline"
             size="sm"
@@ -821,13 +941,12 @@
               <div
                 class="bg-popover text-popover-foreground shadow-md rounded-md p-2 text-xs w-48"
               >
-                Your subscription plan does not allow creating departments.
-                Please upgrade to create departments.
+                {createDeptTooltip}
               </div>
             </div>
           </div>
         {/if}
-        {#if canCreateProject(selectedOrganization.id)}
+        {#if userCanCreateProj}
           <Button
             variant="default"
             size="sm"
@@ -842,6 +961,7 @@
             New Project
           </Button>
         {:else}
+          <!-- Disabled Button with Tooltip -->
           <div class="relative inline-block group">
             <Button
               variant="default"
@@ -853,14 +973,10 @@
               New Project
             </Button>
             <div
-              class="absolute right-0 bottom-full mb-2 hidden group-hover:block z-50"
+              class="absolute right-0 bottom-full mb-2 w-60 p-2 text-xs text-popover-foreground bg-popover rounded shadow-lg hidden group-hover:block z-50"
             >
-              <div
-                class="bg-popover text-popover-foreground shadow-md rounded-md p-2 text-xs w-48"
-              >
-                Project limit reached. Please upgrade your subscription for more
-                projects.
-              </div>
+              {createProjectTooltip ||
+                "You do not have permission to create projects."}
             </div>
           </div>
         {/if}
@@ -933,7 +1049,7 @@
               <!-- Calculate filtered departments (only show departments with matching projects if search is active) -->
               {#if searchQuery || showMyProjectsOnly}
                 <!-- For each department, check if it has any projects that match the current filters -->
-                {#each departments.filter((d) => d.organizationId === org.id && filterHasMatchingProjects(d.id)) as department}
+                {#each (teamManagement.userResources?.departments || []).filter((d: any) => d.organizationId === org.id && filterHasMatchingProjects(d.id)) as department}
                   <TreeNode
                     item={department}
                     depth={1}
@@ -980,9 +1096,11 @@
                           Join
                         </Button>
                       {:else}
+                        <!-- Use the specific role name -->
                         <Badge
                           variant="outline"
-                          class="bg-primary/10 text-primary">Member</Badge
+                          class="bg-primary/10 text-primary"
+                          >{getUserRoleForProject(project)}</Badge
                         >
                       {/if}
 
@@ -1003,7 +1121,7 @@
                 {/each}
 
                 <!-- No results message when filtering -->
-                {#if (searchQuery || showMyProjectsOnly) && filteredProjects.filter((p) => p.organizationId === org.id).length === 0 && departments.filter((d) => d.organizationId === org.id && filterHasMatchingProjects(d.id)).length === 0}
+                {#if (searchQuery || showMyProjectsOnly) && filteredProjects.filter((p) => p.organizationId === org.id).length === 0 && (teamManagement.userResources?.departments || []).filter((d: any) => d.organizationId === org.id && filterHasMatchingProjects(d.id)).length === 0}
                   <div
                     class="text-sm text-muted-foreground py-4 px-6 bg-muted/50 rounded-md m-3 border border-muted"
                   >
@@ -1040,7 +1158,7 @@
                 {/if}
               {:else}
                 <!-- Standard view (no filtering) -->
-                {#each departments.filter((d) => d.organizationId === org.id) as department}
+                {#each (teamManagement.userResources?.departments || []).filter((d: any) => d.organizationId === org.id) as department}
                   <TreeNode
                     item={department}
                     depth={1}
@@ -1052,7 +1170,7 @@
                     onJoinDepartment={() => joinDepartment(department)}
                     onMoveProject={(p: Project) => openMoveProjectDialog(p)}
                     isUserMember={isUserDepartmentMember(department)}
-                    filteredProjects={flatProjects.filter(
+                    filteredProjects={filteredProjects.filter(
                       (p) => p.departmentId === department.id
                     )}
                     isFiltering={false}
@@ -1060,7 +1178,7 @@
                 {/each}
 
                 <!-- Direct Projects (no department) -->
-                {#each flatProjects.filter((p) => p.organizationId === org.id && (!p.departmentId || !departmentsMap.has(p.departmentId))) as project}
+                {#each filteredProjects.filter((p) => p.organizationId === org.id && (!p.departmentId || !departmentsMap.has(p.departmentId))) as project}
                   <div
                     class="flex items-center gap-2 p-2 hover:bg-accent hover:text-accent-foreground rounded-md cursor-pointer ml-2 my-1 transition-colors"
                     onclick={() => {
@@ -1087,9 +1205,11 @@
                           Join
                         </Button>
                       {:else}
+                        <!-- Use the specific role name -->
                         <Badge
                           variant="outline"
-                          class="bg-primary/10 text-primary">Member</Badge
+                          class="bg-primary/10 text-primary"
+                          >{getUserRoleForProject(project)}</Badge
                         >
                       {/if}
 
@@ -1110,7 +1230,7 @@
                 {/each}
 
                 <!-- No items message -->
-                {#if departments.filter((d) => d.organizationId === org.id).length === 0 && projects.filter((p) => p.organizationId === org.id && !p.departmentId).length === 0}
+                {#if (teamManagement.userResources?.departments || []).filter((d: any) => d.organizationId === org.id).length === 0 && filteredProjects.filter((p) => p.organizationId === org.id && (!p.departmentId || !departmentsMap.has(p.departmentId))).length === 0}
                   <div class="text-sm text-muted-foreground py-2 px-4">
                     No departments or projects
                   </div>
@@ -1144,47 +1264,19 @@
                 }
               }}
             >
-              <!-- Project name -->
-              <div class="flex items-center gap-2 min-w-[200px]">
-                <FileText class="h-4 w-4 text-primary" />
-                <span class="font-medium">{project.name}</span>
-                {#if project.description}
-                  <span
-                    class="text-xs text-muted-foreground truncate max-w-[200px]"
-                  >
-                    {project.description}
-                  </span>
-                {/if}
-              </div>
-
-              <!-- Department -->
-              <div>
-                {#if project.departmentId && departmentsMap.has(project.departmentId)}
-                  <div class="flex items-center gap-1">
-                    <FolderKanban class="h-4 w-4 text-amber-500" />
-                    <span
-                      >{departmentsMap.get(project.departmentId)?.name ||
-                        "Unknown"}</span
-                    >
-                  </div>
-                {:else}
-                  <span class="text-muted-foreground text-sm"
-                    >No department</span
-                  >
-                {/if}
-              </div>
-
-              <!-- Organization -->
-              <div class="flex items-center gap-1">
-                <Building2 class="h-4 w-4 text-muted-foreground" />
-                <span
-                  >{organizations.find((o) => o.id === project.organizationId)
-                    ?.name || "Unknown"}</span
-                >
-              </div>
-
-              <!-- Actions -->
-              <div class="flex gap-2 min-w-[120px]">
+              <span>{project.name}</span>
+              <span
+                >{project.departmentId
+                  ? departmentsMap.get(project.departmentId)?.name
+                  : "No Department"}</span
+              >
+              <span
+                >{project.organizationId
+                  ? organizations.find((o) => o.id === project.organizationId)
+                      ?.name
+                  : "No Organization"}</span
+              >
+              <div class="ml-auto flex gap-2">
                 {#if !isUserProjectMember(project)}
                   <Button
                     variant="outline"
@@ -1199,8 +1291,9 @@
                     Join
                   </Button>
                 {:else}
+                  <!-- Use the specific role name -->
                   <Badge variant="outline" class="bg-primary/10 text-primary"
-                    >Member</Badge
+                    >{getUserRoleForProject(project)}</Badge
                   >
                 {/if}
 
@@ -1219,31 +1312,9 @@
               </div>
             </div>
           {/each}
-          <!-- No results state -->
         {:else}
-          <div
-            class="p-8 text-center bg-muted/30 border border-muted rounded-md m-3"
-          >
-            <Search class="h-12 w-12 mx-auto mb-4 text-primary/40" />
-            <h3 class="text-lg font-medium mb-2">No Projects Found</h3>
-            <p class="text-muted-foreground mb-4">
-              {#if searchQuery}
-                No projects match your search query.
-              {:else if showMyProjectsOnly}
-                You are not a member of any projects.
-              {:else}
-                No projects are available.
-              {/if}
-            </p>
-            <Button
-              variant="outline"
-              onclick={() => {
-                searchQuery = "";
-                showMyProjectsOnly = false;
-              }}
-            >
-              Clear Filters
-            </Button>
+          <div class="text-sm text-muted-foreground py-2 px-4">
+            No projects found
           </div>
         {/if}
       </div>

@@ -211,129 +211,43 @@
   }
 
   // Check if a user has organization admin/owner role when viewing a project
-  function getOrgPrivilegeLevel(user: TeamMember): string | null {
+  function getOrgPrivilegeLevel(user: TeamMember): "Owner" | "Admin" | null {
     // Only relevant for project context
     if (props.resourceType !== "project") return null;
 
-    // APPROACH 1: Direct org role check
-    if (user.organizationRoles && user.organizationRoles.length > 0) {
-      // Check all organization roles
-      for (const orgRole of user.organizationRoles) {
-        if (orgRole.role) {
-          if (orgRole.role.name === "Owner") {
-            // Found an Owner role in any organization
-            return "Owner";
-          }
-          if (orgRole.role.name === "Admin") {
-            // Found an Admin role in any organization
-            return "Admin";
-          }
-        }
-      }
+    // Get the parent organization ID from the current project context
+    const parentOrganizationId = teamManagement.projectTeam?.organization?.id;
+    if (!parentOrganizationId) {
+      // console.warn('Could not determine parent organization ID for project context.');
+      return null; // Cannot determine without parent org ID
     }
 
-    // APPROACH 2: Check if this user is specifically one of the organization admins we know about
-    // This is a special case for the org admin who is the current user
-    if (isCurrentUser(user) && isUsingElevatedPermissions()) {
-      // The current user is using elevated permissions, which means they must be an org admin or owner
-      // We can get their exact org role from the team management store
-      const projectTeam = teamManagement.projectTeam;
-      if (projectTeam && projectTeam.organization) {
-        const organizationId = projectTeam.organization.id;
-        const orgResources = teamManagement.userResources?.organizations || [];
-        const userOrg = orgResources.find(
-          (org: any) => org.id === organizationId
-        );
+    // Find the user's role information within the parent organization
+    // Check the userResources which contains roles for all accessible resources
+    const userOrgResource = teamManagement.userResources?.organizations?.find(
+      (org) => org.id === parentOrganizationId
+    );
 
-        if (
-          userOrg &&
-          userOrg.organizationRoles &&
-          userOrg.organizationRoles.length > 0
-        ) {
-          const userRole = userOrg.organizationRoles[0];
-          return userRole.role?.name === "Owner" ? "Owner" : "Admin";
-        }
-      }
+    if (!userOrgResource) {
+      // This can happen if the current user (e.g., org admin) can see the project,
+      // but the specific user being rendered doesn't belong to the parent org
+      // in a way that's listed in the current user's own userResources.
+      // Or, the user simply isn't in the parent org at all.
+      // console.log(`User ${user.id} not found in userResources for org ${parentOrganizationId}`);
+      return null;
     }
 
-    // APPROACH 3: Additional checks for non-current users
-    // Check if there's any indication in $extras that this user has an org role
-    if (user.$extras?.roleName === "Owner" && user.role?.name !== "Owner") {
+    // Check the role name attached via $extras from the /resources endpoint
+    const orgRoleName = userOrgResource.$extras?.roleName;
+
+    if (orgRoleName === "Owner") {
       return "Owner";
-    } else if (
-      user.$extras?.roleName === "Admin" &&
-      user.role?.name !== "Admin"
-    ) {
+    }
+    if (orgRoleName === "Admin") {
       return "Admin";
     }
 
-    // APPROACH 4: For non-current users, find them in the organization's user list
-    const projectTeam = teamManagement.projectTeam;
-    if (projectTeam && projectTeam.organization) {
-      const organizationId = projectTeam.organization.id;
-
-      // Check if we have this organization's structure loaded
-      const orgStructure = teamManagement.organizationStructure;
-      if (
-        orgStructure &&
-        orgStructure.id === organizationId &&
-        orgStructure.users
-      ) {
-        // Find this user in the organization's user list
-        const orgUser = orgStructure.users.find(
-          (u: any) => String(u.id) === String(user.id)
-        );
-        if (orgUser) {
-          // Check their role in the organization
-          let orgRoleName = "";
-          if (orgUser.$extras?.roleName) {
-            orgRoleName = orgUser.$extras.roleName;
-          } else if (orgUser.role?.name) {
-            orgRoleName = orgUser.role.name;
-          } else if (
-            orgUser.organizationRoles?.length &&
-            orgUser.organizationRoles[0].role?.name
-          ) {
-            orgRoleName = orgUser.organizationRoles[0].role.name;
-          }
-
-          if (orgRoleName === "Owner") return "Owner";
-          if (orgRoleName === "Admin") return "Admin";
-        }
-      }
-    }
-
-    // APPROACH 5: Check if the current user (who we know is an org admin) has the same email as this user
-    if (
-      auth.user &&
-      isUsingElevatedPermissions() &&
-      user.email === auth.user.email
-    ) {
-      // This is the current user who we know is an org admin/owner from isUsingElevatedPermissions()
-      // Let's determine whether they're an Admin or Owner
-      const projectTeam = teamManagement.projectTeam;
-      if (projectTeam && projectTeam.organization) {
-        const organizationId = projectTeam.organization.id;
-        const orgResources = teamManagement.userResources?.organizations || [];
-        const userOrg = orgResources.find(
-          (org: any) => org.id === organizationId
-        );
-
-        if (
-          userOrg &&
-          userOrg.organizationRoles &&
-          userOrg.organizationRoles.length > 0
-        ) {
-          const userRole = userOrg.organizationRoles[0];
-          return userRole.role?.name === "Owner" ? "Owner" : "Admin";
-        }
-
-        // If we can't determine from the store, default to Admin
-        return "Admin";
-      }
-    }
-
-    // No clear indication of organization admin/owner privilege
+    // User has a role in the parent org, but it's not Admin or Owner
     return null;
   }
 
@@ -534,39 +448,31 @@
               </td>
               <td class="p-3">{user.email}</td>
               <td class="p-3">
-                {#if props.resourceType === "organization"}
-                  <!-- Organization level: Show single role badge -->
+                <div class="flex items-center gap-1">
+                  <!-- Always display the user's role in the CURRENT resource -->
                   <Badge variant="secondary" class="font-medium">
                     {getRoleName(user)}
                   </Badge>
-                {:else if props.resourceType === "project"}
-                  <!-- Project level: Show org privilege or project role -->
-                  {#if getOrgPrivilegeLevel(user) === "Owner"}
+
+                  <!-- Add secondary badge if user has elevated Org privileges -->
+                  {#if props.resourceType === "project" && getOrgPrivilegeLevel(user) === "Owner"}
                     <Badge
                       variant="outline"
-                      class="font-medium bg-primary/10 text-primary border-primary/25"
+                      title="Organization Owner"
+                      class="font-medium text-xs px-1.5 py-0.5 bg-primary/10 text-primary border-primary/25"
                     >
-                      Org Owner
+                      Org. Owner
                     </Badge>
-                  {:else if getOrgPrivilegeLevel(user) === "Admin"}
+                  {:else if props.resourceType === "project" && getOrgPrivilegeLevel(user) === "Admin"}
                     <Badge
                       variant="outline"
-                      class="font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
+                      title="Organization Admin"
+                      class="font-medium text-xs px-1.5 py-0.5 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
                     >
-                      Org Admin
-                    </Badge>
-                  {:else}
-                    <!-- Regular project member - show their project role -->
-                    <Badge variant="secondary" class="font-medium">
-                      {getRoleName(user)}
+                      Org. Admin
                     </Badge>
                   {/if}
-                {:else}
-                  <!-- Department level: Show role badge -->
-                  <Badge variant="secondary" class="font-medium">
-                    {getRoleName(user)}
-                  </Badge>
-                {/if}
+                </div>
               </td>
               <td class="p-3 text-right">
                 <div class="flex items-center justify-end gap-2">

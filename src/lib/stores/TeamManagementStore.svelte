@@ -79,21 +79,50 @@
     },
 
     // Set the selected resource
-    setSelectedResource(type: ResourceType, id: string) {
+    async setSelectedResource(type: ResourceType, id: string) {
       selectedResourceType = type;
       selectedResourceId = id;
 
+      // Clear previous specific structures to avoid showing stale data
+      organizationStructure = null;
+      departmentStructure = null;
+      projectTeam = null;
+      settings = {}; // Clear settings as well
+      permissions = {}; // Clear permissions
+      settingsError = null;
+
       // Load the selected resource data
-      switch (type) {
-        case "organization":
-          this.loadOrganizationStructure(id);
-          break;
-        case "department":
-          this.loadDepartmentStructure(id);
-          break;
-        case "project":
-          this.loadProjectTeam(id);
-          break;
+      try {
+        switch (type) {
+          case "organization":
+            await this.loadOrganizationStructure(id);
+            break;
+          case "department":
+            await this.loadDepartmentStructure(id);
+            break;
+          case "project":
+            await this.loadProjectTeam(id);
+            break;
+        }
+        // After successfully loading the resource structure and permissions,
+        // load its full settings ONLY if the user has management permission.
+        if (permissions.canManage) {
+          console.log(
+            "[TeamManagementStore] User can manage, attempting to load full settings."
+          );
+          await this.loadSettings();
+        } else {
+          console.log(
+            "[TeamManagementStore] User cannot manage, skipping full settings load."
+          );
+        }
+      } catch (err) {
+        // The specific load functions handle their own errors and state updates
+        // We might already have an error set from the load function, no need to overwrite
+        console.error(
+          `[TeamManagementStore] Error setting selected resource ${type}:${id}`,
+          err
+        );
       }
     },
 
@@ -197,6 +226,34 @@
 
         organizationStructure = data.organization;
         permissions = data.permissions || {};
+
+        // Extract and store settings included in the organization structure response
+        const newSettings: Record<string, any> = {};
+        if (data.organization?.hasOwnProperty("allowMembersToCreateProjects")) {
+          newSettings.allowMembersToCreateProjects =
+            data.organization.allowMembersToCreateProjects;
+        }
+        if (
+          data.organization?.hasOwnProperty("allowMembersToCreateDepartments")
+        ) {
+          newSettings.allowMembersToCreateDepartments =
+            data.organization.allowMembersToCreateDepartments;
+        }
+        if (
+          data.organization?.hasOwnProperty("allowAdminsToCreateDepartments")
+        ) {
+          newSettings.allowAdminsToCreateDepartments =
+            data.organization.allowAdminsToCreateDepartments;
+        }
+
+        // Merge the extracted settings into the main settings state
+        if (Object.keys(newSettings).length > 0) {
+          settings = { ...settings, ...newSettings };
+          console.log(
+            "[TeamManagementStore] Updated settings from Org Structure:",
+            newSettings
+          );
+        }
       } catch (err) {
         console.error("Error loading organization structure:", err);
         error =
@@ -538,6 +595,25 @@
       }
     },
 
+    // Add a newly created department to the user's resources list
+    // This is used for immediate UI updates after creation, before the next full refresh.
+    addDepartmentToUserResources(newDepartment: any) {
+      if (userResources && userResources.departments) {
+        // Create a new array to ensure reactivity if needed, although direct mutation should work with runes
+        userResources.departments = [
+          ...userResources.departments,
+          newDepartment,
+        ];
+      } else if (userResources) {
+        // If departments array didn't exist, create it
+        userResources.departments = [newDepartment];
+      } else {
+        console.warn(
+          "[TeamManagementStore] Cannot add department: userResources is not yet loaded."
+        );
+      }
+    },
+
     // Load settings for the current resource
     async loadSettings() {
       if (!selectedResourceType || !selectedResourceId) return;
@@ -546,33 +622,37 @@
       settingsError = null;
 
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/settings/${selectedResourceType}/${selectedResourceId}`,
-          {
-            credentials: "include",
-          }
+        const url = `${API_BASE_URL}/settings/${selectedResourceType}/${selectedResourceId}`;
+        console.log("[TeamManagementStore] Fetching settings from:", url);
+
+        const response = await fetch(url, {
+          credentials: "include",
+        });
+
+        console.log(
+          "[TeamManagementStore] Settings response status:",
+          response.status
         );
 
         if (!response.ok) {
-          // Check if this is a permissions error (403)
           if (response.status === 403) {
-            // For permission errors, just set an empty settings object without showing an error
-            settings = {};
-            return;
+            console.log(
+              "[TeamManagementStore] Permission denied (403) loading settings."
+            );
+            return; // Exit without modifying settings on 403
           }
-
           throw new Error(`Failed to load settings (${response.status})`);
         }
 
         const data = await response.json();
-        settings = data;
+        console.log("[TeamManagementStore] Received settings data:", data);
+
+        // Merge fetched settings with existing ones
+        settings = { ...settings, ...data };
       } catch (err) {
-        console.error("Error loading settings:", err);
+        console.error("[TeamManagementStore] Error loading settings:", err);
         settingsError =
           err instanceof Error ? err.message : "An error occurred";
-        // Don't set the general error for settings issues
-        // Just use an empty settings object when there's an error
-        settings = {};
       } finally {
         isLoading = false;
       }
@@ -758,6 +838,68 @@
         modalProjectData = null;
       } finally {
         isModalDataLoading = false;
+      }
+    },
+
+    // Delete a department
+    async deleteDepartment(departmentId: string) {
+      if (!departmentId) {
+        error = "Department ID is required";
+        return false;
+      }
+
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/departments/${departmentId}`,
+          {
+            method: "DELETE",
+            credentials: "include",
+          }
+        );
+
+        if (!response.ok) {
+          let errorDetails = `Failed to delete department (${response.status})`;
+          try {
+            const errorData = await response.json();
+            errorDetails += `: ${errorData.message || "Unknown error"}`;
+          } catch (parseErr) {
+            /* Ignore parse error */
+          }
+          throw new Error(errorDetails);
+        }
+
+        // Remove the department from the local store for immediate UI update
+        if (userResources && userResources.departments) {
+          userResources.departments = userResources.departments.filter(
+            (dept: any) => dept.id !== departmentId
+          );
+        }
+
+        // If the deleted department was the selected resource, clear selection
+        if (
+          selectedResourceId === departmentId &&
+          selectedResourceType === "department"
+        ) {
+          selectedResourceId = null;
+          // Optionally select the first organization if available
+          if (userResources?.organizations?.length > 0) {
+            this.setSelectedResource(
+              "organization",
+              userResources.organizations[0].id
+            );
+          } else {
+            // Or clear related structures if no orgs left
+            departmentStructure = null;
+            projectTeam = null;
+            permissions = {};
+          }
+        }
+
+        return true;
+      } catch (err) {
+        console.error("Error deleting department:", err);
+        error = err instanceof Error ? err.message : "An error occurred";
+        return false;
       }
     },
   };
