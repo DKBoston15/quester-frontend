@@ -106,57 +106,13 @@
   });
 
   function getRoleName(user: TeamMember): string {
-    // Check all possible places where role data might be stored
-
-    // 1. Check if we have the roleName from $extras (set by the backend)
+    // Prioritize the roleName from $extras provided by the backend
     if (user.$extras?.roleName) {
       return user.$extras.roleName;
     }
 
-    // 2. Check the role arrays based on resourceType
-    if (
-      props.resourceType === "organization" &&
-      user.organizationRoles?.length
-    ) {
-      const firstRole = user.organizationRoles[0];
-      if (firstRole.role?.name) {
-        return firstRole.role.name;
-      }
-    } else if (
-      props.resourceType === "department" &&
-      user.departmentRoles?.length
-    ) {
-      const firstRole = user.departmentRoles[0];
-      if (firstRole.role?.name) {
-        return firstRole.role.name;
-      }
-    } else if (props.resourceType === "project" && user.projectRoles?.length) {
-      const firstRole = user.projectRoles[0];
-      if (firstRole.role?.name) {
-        return firstRole.role.name;
-      }
-    }
-
-    // 3. If the role object is present with a name property
-    if (user.role?.name) {
-      return user.role.name;
-    }
-
-    // 4. If there's a pivot object with roleId
-    if (user.pivot) {
-      const pivotRoleId = user.pivot.role_id || user.pivot.roleId;
-      if (pivotRoleId) {
-        // Try to map from our known role IDs to names
-        return roleNames[pivotRoleId.toLowerCase()] || pivotRoleId;
-      }
-    }
-
-    // 5. Direct roleId property
-    if (user.roleId) {
-      return roleNames[user.roleId.toLowerCase()] || user.roleId;
-    }
-
-    // 6. If we can't determine the role
+    // Fallback if $extras.roleName is somehow missing (shouldn't happen with backend changes)
+    console.warn("Missing $extras.roleName for user:", user);
     return "Unknown";
   }
 
