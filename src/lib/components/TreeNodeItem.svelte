@@ -8,6 +8,7 @@
     FolderKanban,
     MoreVertical,
     FolderInput,
+    AlertTriangle,
   } from "lucide-svelte";
   import type { Department, Project } from "$lib/types/auth";
   import { auth } from "$lib/stores/AuthStore.svelte";
@@ -15,25 +16,22 @@
   import { Badge } from "$lib/components/ui/badge";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
+  import * as Tooltip from "$lib/components/ui/tooltip/index.js";
   import { navigate } from "svelte-routing";
   import { API_BASE_URL } from "$lib/config";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
 
   // Props
-  const props = $props<{
-    item: Department | Project;
-    depth: number;
-    isUserMember: boolean;
-    onNewProject?: () => void;
-    onJoinDepartment?: () => void;
-    onMoveProject?: (project: Project) => void;
-    filteredProjects?: Project[];
-    isFiltering?: boolean;
-  }>();
+  const props = $props();
 
   // Component state
   let isExpanded = $state(false);
   let showDeleteConfirmDialog = $state(false);
+
+  // State for error dialog
+  let showErrorDialog = $state(false);
+  let dialogErrorTitle = $state("Action Failed");
+  let dialogErrorMessage = $state("An unexpected error occurred.");
 
   // Auto-expand departments when filtering is active and has results
   $effect(() => {
@@ -177,29 +175,56 @@
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/team-management/project/${project.id}/self-assign`,
+        `${API_BASE_URL}/team-management/project/${project.id}/join-with-department`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ roleId: "member" }),
         }
       );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        dialogErrorTitle = "Join Failed";
+        dialogErrorMessage =
+          errorData.message ||
+          "Could not join the project. Please try again or contact support.";
+        showErrorDialog = true;
         throw new Error(errorData.message || "Failed to join project");
       }
 
-      // Refresh projects if in a department
-      if (isDepartment(props.item)) {
-        // loadProjects(props.item.id);
-      }
+      await teamManagement.loadUserResources();
     } catch (error) {
       console.error("Error joining project:", error);
+      dialogErrorTitle = "Join Failed";
+      dialogErrorMessage =
+        error instanceof Error
+          ? error.message
+          : "Could not join the project. Please try again or contact support.";
+      showErrorDialog = true;
     }
   }
 </script>
+
+<!-- Add the Error Alert Dialog -->
+<AlertDialog.Root bind:open={showErrorDialog}>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title class="flex items-center gap-2">
+        <AlertTriangle class="h-5 w-5 text-destructive" />
+        {dialogErrorTitle}
+      </AlertDialog.Title>
+      <AlertDialog.Description>
+        {dialogErrorMessage}
+      </AlertDialog.Description>
+    </AlertDialog.Header>
+    <AlertDialog.Footer>
+      <AlertDialog.Action onclick={() => (showErrorDialog = false)}
+        >OK</AlertDialog.Action
+      >
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>
 
 {#if isDepartment(props.item)}
   <!-- Department Item -->
@@ -265,24 +290,47 @@
           {#if isDepartment(props.item) && canPotentiallyDeleteDepartment(props.item)}
             {@const departmentIsEmpty =
               !props.filteredProjects || props.filteredProjects.length === 0}
-            <span
-              title={departmentIsEmpty
-                ? ""
-                : "Move or delete all projects in this department first"}
-            >
+
+            {#if !departmentIsEmpty}
+              <!-- DISABLED: Show with Tooltip -->
+              <Tooltip.Root>
+                <Tooltip.Trigger class="w-full">
+                  <span
+                    class="w-full flex cursor-not-allowed"
+                    aria-label={"Delete Department (disabled, cannot delete non-empty department)"}
+                  >
+                    <DropdownMenu.Item
+                      class="w-full text-red-600 dark:text-red-500 focus:bg-red-100 dark:focus:bg-red-900/50 focus:text-red-700 dark:focus:text-red-400 data-[disabled]:text-muted-foreground data-[disabled]:opacity-70 data-[disabled]:pointer-events-none data-[disabled]:cursor-not-allowed"
+                      disabled={true}
+                      onclick={(e: MouseEvent) => {
+                        e.stopPropagation();
+                      }}
+                    >
+                      Delete Department
+                    </DropdownMenu.Item>
+                  </span>
+                </Tooltip.Trigger>
+                <Tooltip.Content
+                  side="right"
+                  class="bg-background text-foreground border rounded-md shadow-md p-2 text-sm"
+                >
+                  <p>Move or delete all projects in this department first.</p>
+                </Tooltip.Content>
+              </Tooltip.Root>
+            {:else}
+              <!-- ENABLED: Show without Tooltip -->
               <DropdownMenu.Item
-                class="text-destructive focus:bg-destructive/10 focus:text-destructive"
-                disabled={!departmentIsEmpty}
+                class="w-full text-red-600 dark:text-red-500 focus:bg-red-100 dark:focus:bg-red-900/50 focus:text-red-700 dark:focus:text-red-400"
+                disabled={false}
                 onclick={async (e: MouseEvent) => {
                   e.stopPropagation();
-                  if (departmentIsEmpty) {
-                    showDeleteConfirmDialog = true;
-                  }
+                  showDeleteConfirmDialog = true;
                 }}
+                aria-label="Delete Department"
               >
                 Delete Department
               </DropdownMenu.Item>
-            </span>
+            {/if}
           {/if}
         </DropdownMenu.Content>
       </DropdownMenu.Root>
