@@ -163,22 +163,32 @@
           throw new Error(`Failed to update model (${response.status})`);
         }
 
-        const updatedModel = await response.json();
+        const updatedModelResponse = await response.json();
 
-        console.log("Model updated successfully:", updatedModel);
+        console.log("Model updated successfully:", updatedModelResponse);
+
+        // Extract the actual model data from the response
+        const actualUpdatedModel = updatedModelResponse.model;
+
+        if (!actualUpdatedModel) {
+          throw new Error("API response did not contain model data.");
+        }
 
         // Create a new array with the updated model
         const updatedModels = [...models];
         const index = updatedModels.findIndex((model) => model.id === id);
         if (index !== -1) {
-          updatedModels[index] = updatedModel;
+          // Ensure the full model object is placed in the array
+          updatedModels[index] = actualUpdatedModel;
           models = updatedModels;
         }
 
         if (currentModel?.id === id) {
-          currentModel = updatedModel;
+          // Merge existing currentModel with the updated data
+          currentModel = { ...currentModel, ...actualUpdatedModel };
         }
-        return updatedModel;
+
+        return actualUpdatedModel; // Return the actual model data
       } catch (err) {
         console.error("Error updating model:", err);
         error = err instanceof Error ? err.message : "An error occurred";

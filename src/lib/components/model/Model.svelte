@@ -36,10 +36,22 @@
   const edges = writable<Edge[]>([]);
   const showGrid = writable(true);
   const snapToGrid = writable(true);
+  let initialLoadComplete = $state(false);
 
   // Track customized edges and selected edge
   const customizedEdges = new Set<string>();
   const selectedEdge = writable<Edge | null>(null);
+
+  // Get the model name reactively
+  let modelName = $derived(modelStore.currentModel?.name);
+
+  // Log currentModel changes for debugging
+  $effect(() => {
+    console.log(
+      "Model.svelte $effect: currentModel updated",
+      modelStore.currentModel
+    );
+  });
 
   // Function to duplicate a node
   function duplicateNode(nodeToDuplicate: Node) {
@@ -164,50 +176,88 @@
 
   $effect(() => {
     const modelData = modelStore.currentModel;
+    console.log(
+      "Model.svelte: $effect watching currentModel triggered. InitialLoadComplete:",
+      initialLoadComplete,
+      "Data:",
+      modelData
+    );
 
-    if (!modelData) return;
+    if (!modelData) {
+      console.log("Model.svelte: No model data, returning.");
+      return;
+    }
 
-    const model = "model" in modelData ? modelData.model : modelData;
+    // Only process if the initial load hasn't happened yet
+    if (!initialLoadComplete) {
+      const model = "model" in modelData ? modelData.model : modelData;
 
-    if (model && typeof model === "object") {
-      const modelNodes = "nodes" in model ? model.nodes : null;
-      const modelEdges = "edges" in model ? model.edges : null;
+      if (model && typeof model === "object") {
+        const modelNodes = "nodes" in model ? model.nodes : null;
+        const modelEdges = "edges" in model ? model.edges : null;
 
-      if (modelNodes && modelEdges) {
-        try {
-          const parsedNodes =
-            typeof modelNodes === "string"
-              ? JSON.parse(modelNodes)
-              : modelNodes;
-          const parsedEdges =
-            typeof modelEdges === "string"
-              ? JSON.parse(modelEdges)
-              : modelEdges;
+        if (modelNodes && modelEdges) {
+          try {
+            const parsedNodes =
+              typeof modelNodes === "string"
+                ? JSON.parse(modelNodes)
+                : modelNodes;
+            const parsedEdges =
+              typeof modelEdges === "string"
+                ? JSON.parse(modelEdges)
+                : modelEdges;
 
-          if (Array.isArray(parsedNodes) && Array.isArray(parsedEdges)) {
-            nodes.set(parsedNodes);
-            edges.set(parsedEdges);
+            if (Array.isArray(parsedNodes) && Array.isArray(parsedEdges)) {
+              console.log(
+                "Model.svelte: Performing initial set of nodes and edges."
+              );
+              nodes.set(parsedNodes);
+              edges.set(parsedEdges);
 
-            // Apply loaded edge settings
-            const firstEdge = parsedEdges[0]; // Assuming all edges have the same settings
-            if (firstEdge) {
-              edgeSettings.set({
-                type: firstEdge.type,
-                color: firstEdge.style.match(/stroke: (#[0-9a-fA-F]{6})/)[1],
-                width: parseInt(
-                  firstEdge.style.match(/stroke-width: (\d+)px/)[1]
-                ),
-                animated: firstEdge.animated,
-                markerStart: !!firstEdge.markerStart,
-                markerEnd: !!firstEdge.markerEnd,
-              });
-              console.log("Loaded edge settings applied:", firstEdge);
+              // Apply loaded edge settings
+              const firstEdge = parsedEdges[0];
+              if (firstEdge) {
+                edgeSettings.set({
+                  type: firstEdge.type,
+                  color: firstEdge.style.match(/stroke: (#[0-9a-fA-F]{6})/)[1],
+                  width: parseInt(
+                    firstEdge.style.match(/stroke-width: (\d+)px/)[1]
+                  ),
+                  animated: firstEdge.animated,
+                  markerStart: !!firstEdge.markerStart,
+                  markerEnd: !!firstEdge.markerEnd,
+                });
+                console.log(
+                  "Loaded edge settings applied during initial load:",
+                  firstEdge
+                );
+              }
+
+              console.log("Model.svelte: Marking initial load complete.");
+              initialLoadComplete = true; // Mark as complete AFTER setting data
             }
+          } catch (error) {
+            console.error(
+              "Error parsing nodes or edges during initial load:",
+              error
+            );
+            // Consider setting initialLoadComplete = true even on error?
+            // Maybe not, to allow retry if modelData updates again.
           }
-        } catch (error) {
-          console.error("Error parsing nodes or edges:", error);
+        } else {
+          console.log(
+            "Model.svelte: modelNodes or modelEdges missing/invalid during initial load."
+          );
         }
+      } else {
+        console.log(
+          "Model.svelte: model is not a valid object during initial load."
+        );
       }
+    } else {
+      console.log(
+        "Model.svelte: Initial load already complete, skipping set from currentModel."
+      );
     }
   });
 
@@ -246,13 +296,13 @@
   };
 
   $effect(() => {
-    if (Array.isArray($nodes)) {
+    if (initialLoadComplete && Array.isArray($nodes)) {
       debouncedSave();
     }
   });
 
   $effect(() => {
-    if (Array.isArray($edges)) {
+    if (initialLoadComplete && Array.isArray($edges)) {
       debouncedSave();
     }
   });
@@ -403,7 +453,7 @@
       <Background patternColor="#aaa" gap={20} />
     {/if}
     <Controls />
-    <FlowToolbar {nodes} {showGrid} {snapToGrid} />
+    <FlowToolbar {nodes} {showGrid} {snapToGrid} {modelName} />
     {#if $selectedEdge}
       <EdgeCustomizationPanel
         edge={$selectedEdge}

@@ -3,11 +3,20 @@
   import type { Node } from "@xyflow/svelte";
   import { toPng } from "html-to-image";
   import { getNodesBounds, getViewportForBounds } from "@xyflow/svelte";
+  import * as Tooltip from "$lib/components/ui/tooltip";
 
-  // Export the nodes store as a prop
-  export let nodes: ReturnType<typeof writable<Node[]>>;
-  export let showGrid: ReturnType<typeof writable<boolean>>;
-  export let snapToGrid: ReturnType<typeof writable<boolean>>;
+  // Define props using $props
+  let {
+    nodes,
+    showGrid,
+    snapToGrid,
+    modelName = "",
+  } = $props<{
+    nodes: ReturnType<typeof writable<Node[]>>;
+    showGrid: ReturnType<typeof writable<boolean>>;
+    snapToGrid: ReturnType<typeof writable<boolean>>;
+    modelName?: string;
+  }>();
 
   let bgColor = "#ffffff";
   let isTransparent = false;
@@ -22,7 +31,7 @@
       targetPosition: options.targetPosition,
     };
 
-    nodes.update((currentNodes) => [...currentNodes, newNode]);
+    nodes.update((currentNodes: Node[]) => [...currentNodes, newNode]);
   };
 
   const downloadImage = async () => {
@@ -69,6 +78,25 @@
   class="inline-block p-3 backdrop-blur-md bg-white/80 dark:bg-slate-800/90 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 transition-all absolute top-4 left-4 z-10"
 >
   <div class="flex flex-col gap-4">
+    {#if modelName}
+      <div
+        class="pb-2 border-b border-gray-200 dark:border-gray-700 max-w-[200px]"
+      >
+        <Tooltip.Root>
+          <Tooltip.Trigger class="w-full text-left">
+            <h2
+              class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate"
+            >
+              {modelName}
+            </h2>
+          </Tooltip.Trigger>
+          <Tooltip.Content side="bottom" sideOffset={5}>
+            <p>{modelName}</p>
+          </Tooltip.Content>
+        </Tooltip.Root>
+      </div>
+    {/if}
+
     <!-- Add Nodes Section -->
     <div class="flex flex-col gap-2">
       <span class="text-xs font-medium text-gray-700 dark:text-gray-300"
