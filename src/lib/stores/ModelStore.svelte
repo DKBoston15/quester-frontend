@@ -165,6 +165,8 @@
 
         const updatedModel = await response.json();
 
+        console.log("Model updated successfully:", updatedModel);
+
         // Create a new array with the updated model
         const updatedModels = [...models];
         const index = updatedModels.findIndex((model) => model.id === id);

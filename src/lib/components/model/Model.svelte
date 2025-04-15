@@ -187,6 +187,22 @@
           if (Array.isArray(parsedNodes) && Array.isArray(parsedEdges)) {
             nodes.set(parsedNodes);
             edges.set(parsedEdges);
+
+            // Apply loaded edge settings
+            const firstEdge = parsedEdges[0]; // Assuming all edges have the same settings
+            if (firstEdge) {
+              edgeSettings.set({
+                type: firstEdge.type,
+                color: firstEdge.style.match(/stroke: (#[0-9a-fA-F]{6})/)[1],
+                width: parseInt(
+                  firstEdge.style.match(/stroke-width: (\d+)px/)[1]
+                ),
+                animated: firstEdge.animated,
+                markerStart: !!firstEdge.markerStart,
+                markerEnd: !!firstEdge.markerEnd,
+              });
+              console.log("Loaded edge settings applied:", firstEdge);
+            }
           }
         } catch (error) {
           console.error("Error parsing nodes or edges:", error);
@@ -211,6 +227,13 @@
           const newEdge = { ...edge };
           return newEdge;
         });
+
+        console.log(
+          "Saving model with nodes:",
+          cleanNodes,
+          "and edges:",
+          cleanEdges
+        );
 
         await modelStore.updateModel(modelId, {
           nodes: JSON.stringify(cleanNodes) as any,
@@ -273,6 +296,7 @@
 
   // Handle edge customization
   const onEdgeCustomize = (edge: Edge, customSettings: any) => {
+    console.log("Customizing edge:", edge.id, "with settings:", customSettings);
     customizedEdges.add(edge.id);
     edges.update((currentEdges) =>
       currentEdges.map((e) => {
