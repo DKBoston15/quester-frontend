@@ -17,7 +17,7 @@
   import { edgeSettings } from "./edge-settings-store";
   import ResizableNode from "./ResizableNode.svelte";
   import CircleNode from "./CircleNode.svelte";
-  import EdgeSettingsPanel from "./EdgeSettingsPanel.svelte";
+
   import EdgeCustomizationPanel from "./EdgeCustomizationPanel.svelte";
 
   import FlowToolbar from "./FlowToolbar.svelte";
@@ -261,21 +261,22 @@
     if (saveTimeout) clearTimeout(saveTimeout);
   });
 
+  $effect(() => {
+    console.log("Current edge settings:", $edgeSettings);
+  });
+
   const onConnect = (params: any) => {
     const newEdge: Edge = {
       ...params,
       id: `e${Date.now()}`,
-      type: $edgeSettings.type,
-      animated: $edgeSettings.animated,
       data: { customized: false },
-      style: `stroke: ${$edgeSettings.color}; stroke-width: ${$edgeSettings.width}px;`,
-      markerEnd: $edgeSettings.markerEnd
-        ? { type: MarkerType.ArrowClosed, color: $edgeSettings.color }
-        : undefined,
-      markerStart: $edgeSettings.markerStart
-        ? { type: MarkerType.ArrowClosed, color: $edgeSettings.color }
-        : undefined,
+      // Remove default settings
+      style: "",
+      markerEnd: undefined,
+      markerStart: undefined,
     };
+
+    console.log("Creating new edge without default settings:", newEdge);
 
     edges.update((eds) => {
       const updatedEdges = [...eds, newEdge];
@@ -403,7 +404,6 @@
     {/if}
     <Controls />
     <FlowToolbar {nodes} {showGrid} {snapToGrid} />
-    <EdgeSettingsPanel />
     {#if $selectedEdge}
       <EdgeCustomizationPanel
         edge={$selectedEdge}
