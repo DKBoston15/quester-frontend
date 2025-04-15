@@ -264,10 +264,16 @@
               stepSize: 1,
               // @ts-ignore
               callback: function (this: any, value: number | string) {
-                // Get the labels from the chart instance
-                const labels = this.chart.data.labels;
-                // Return the label corresponding to the index (value)
-                return labels[Number(value)] || value;
+                // Check if the indexAxis is 'y' (horizontal bar chart)
+                if (this.chart.options.indexAxis === "y") {
+                  // For horizontal bars, x-axis is numerical count
+                  const numValue = Number(value);
+                  return Number.isInteger(numValue) ? numValue : null;
+                } else {
+                  // For vertical bars (like Years), x-axis uses labels
+                  const labels = this.chart.data.labels;
+                  return labels[Number(value)] || value;
+                }
               },
               maxRotation: 0,
               minRotation: 0,
@@ -387,6 +393,7 @@
     const chartOptions = {
       indexAxis: "y" as const,
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         title: {
           display: true,
@@ -602,6 +609,7 @@
           },
           options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
               title: {
                 display: true,
@@ -803,7 +811,7 @@
   {:else}
     <Tabs.Root
       value={activeTab}
-      onValueChange={(value) => (activeTab = value)}
+      onValueChange={(value: string) => (activeTab = value)}
       class="space-y-6"
     >
       <Tabs.List class="inline-flex h-10 items-center justify-center gap-4">

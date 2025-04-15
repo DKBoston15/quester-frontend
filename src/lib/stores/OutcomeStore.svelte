@@ -1013,6 +1013,218 @@
       }),
       type: "ABSTRACT",
     },
+    {
+      name: "Research Grant",
+      content: JSON.stringify({
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            attrs: { textAlign: null, class: null },
+            content: [
+              {
+                type: "text",
+                marks: [{ type: "textStyle", attrs: { fontSize: "1.5rem" } }],
+                text: "Research Grant",
+              },
+            ],
+          },
+          {
+            type: "paragraph",
+            attrs: { textAlign: null, class: null },
+            content: [
+              {
+                type: "text",
+                marks: [{ type: "bold" }],
+                text: "Project Description",
+              },
+            ],
+          },
+          {
+            type: "paragraph",
+            attrs: { textAlign: null, class: null },
+            content: [
+              {
+                type: "text",
+                marks: [{ type: "italic" }],
+                text: "Provide context and identify the research problem",
+              },
+            ],
+          },
+          { type: "horizontalRule" },
+          {
+            type: "paragraph",
+            attrs: { textAlign: null, class: null },
+            content: [
+              {
+                type: "text",
+                marks: [{ type: "bold" }],
+                text: "Relevant Literature",
+              },
+            ],
+          },
+          {
+            type: "taskList",
+            content: [
+              {
+                type: "taskItem",
+                attrs: { checked: false },
+                content: [
+                  {
+                    type: "paragraph",
+                    attrs: { textAlign: null, class: null },
+                    content: [{ type: "text", text: "Primary objective:" }],
+                  },
+                ],
+              },
+              {
+                type: "taskItem",
+                attrs: { checked: false },
+                content: [
+                  {
+                    type: "paragraph",
+                    attrs: { textAlign: null, class: null },
+                    content: [{ type: "text", text: "Secondary objectives:" }],
+                  },
+                ],
+              },
+              {
+                type: "taskItem",
+                attrs: { checked: false },
+                content: [
+                  {
+                    type: "paragraph",
+                    attrs: { textAlign: null, class: null },
+                    content: [
+                      {
+                        type: "text",
+                        text: "Conceptual, Theoretical, or Empirical model",
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          { type: "horizontalRule" },
+          {
+            type: "paragraph",
+            attrs: { textAlign: null, class: null },
+            content: [
+              {
+                type: "text",
+                marks: [{ type: "bold" }],
+                text: "Summary of Designs",
+              },
+            ],
+          },
+          {
+            type: "paragraph",
+            attrs: { textAlign: null, class: null },
+            content: [
+              {
+                type: "text",
+                marks: [{ type: "italic" }],
+                text: "Describe research, sampling, measurement, and analytic designs",
+              },
+            ],
+          },
+          { type: "horizontalRule" },
+          {
+            type: "paragraph",
+            attrs: { textAlign: null, class: null },
+            content: [
+              {
+                type: "text",
+                marks: [{ type: "bold" }],
+                text: "Knowledge Gained",
+              },
+            ],
+          },
+          {
+            type: "paragraph",
+            attrs: { textAlign: null, class: null },
+            content: [
+              {
+                type: "text",
+                marks: [{ type: "italic" }],
+                text: "Summarize expected findings and their significance",
+              },
+            ],
+          },
+          { type: "horizontalRule" },
+          {
+            type: "paragraph",
+            attrs: { textAlign: null, class: null },
+            content: [
+              {
+                type: "text",
+                marks: [{ type: "bold" }],
+                text: "Principal Investigators",
+              },
+            ],
+          },
+          {
+            type: "paragraph",
+            attrs: { textAlign: null, class: null },
+            content: [
+              {
+                type: "text",
+                marks: [{ type: "italic" }],
+                text: "Identify and describe expertise of Principal and Co-Principal Investigators",
+              },
+            ],
+          },
+          { type: "horizontalRule" },
+          {
+            type: "paragraph",
+            attrs: { textAlign: null, class: null },
+            content: [
+              {
+                type: "text",
+                marks: [{ type: "bold" }],
+                text: "Word Count",
+              },
+            ],
+          },
+          {
+            type: "paragraph",
+            attrs: { textAlign: null, class: null },
+            content: [
+              {
+                type: "text",
+                marks: [{ type: "italic" }],
+                text: "Provide word count for draft",
+              },
+            ],
+          },
+          { type: "horizontalRule" },
+          {
+            type: "paragraph",
+            attrs: { textAlign: null, class: null },
+            content: [
+              {
+                type: "text",
+                marks: [{ type: "bold" }],
+                text: "References",
+              },
+            ],
+          },
+          {
+            type: "paragraph",
+            attrs: { textAlign: null, class: null },
+            content: [
+              {
+                type: "text",
+                marks: [{ type: "italic" }],
+                text: "List references using a consistent format",
+              },
+            ],
+          },
+        ],
+      }),
+      type: "GRANT",
+    },
   ];
 
   export const outcomeStore = {
