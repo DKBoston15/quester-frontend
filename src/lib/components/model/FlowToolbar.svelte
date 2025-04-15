@@ -2,7 +2,11 @@
   import { writable } from "svelte/store";
   import type { Node } from "@xyflow/svelte";
   import { toPng } from "html-to-image";
-  import { getNodesBounds, getViewportForBounds } from "@xyflow/svelte";
+  import {
+    getNodesBounds,
+    getViewportForBounds,
+    useSvelteFlow,
+  } from "@xyflow/svelte";
   import * as Tooltip from "$lib/components/ui/tooltip";
 
   // Define props using $props
@@ -21,11 +25,35 @@
   let bgColor = "#ffffff";
   let isTransparent = false;
 
+  const { screenToFlowPosition, getViewport } = useSvelteFlow(); // Get flow methods
+
   const addNode = (type: string, options: any = {}) => {
+    // Get viewport dimensions (assuming it takes full width/height for calculation)
+    // A more robust way might involve getting the actual element dimensions
+    const flowElement = document.querySelector(".svelte-flow"); // Find the flow container
+    const containerWidth = flowElement?.clientWidth ?? window.innerWidth;
+    const containerHeight = flowElement?.clientHeight ?? window.innerHeight;
+
+    // Calculate the center of the screen in screen coordinates
+    const screenCenterX = containerWidth / 2;
+    const screenCenterY = containerHeight / 2;
+
+    // Project the screen center to flow coordinates
+    const flowPosition = screenToFlowPosition({
+      x: screenCenterX,
+      y: screenCenterY,
+    });
+
+    // TODO: Offset by node dimensions if needed for true centering
+    // const nodeWidth = type === 'CircleNode' ? 100 : 150; // Example default widths
+    // const nodeHeight = type === 'CircleNode' ? 100 : 50; // Example default heights
+    // flowPosition.x -= nodeWidth / 2;
+    // flowPosition.y -= nodeHeight / 2;
+
     const newNode = {
       id: `${type}-${Date.now()}`,
       type,
-      position: { x: 100, y: 100 },
+      position: flowPosition, // Use calculated position
       data: { label: options.label || "" },
       sourcePosition: options.sourcePosition,
       targetPosition: options.targetPosition,
