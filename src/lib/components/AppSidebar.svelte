@@ -207,7 +207,7 @@
 
       while (hasMorePages) {
         const response = await fetch(
-          `${API_BASE_URL}/projects/by-user?userId=${auth.user.id}&page=${currentPage}&limit=50`, // Fetch 50 per page
+          `${API_BASE_URL}/projects/by-user?userId=${auth.user.id}&page=${currentPage}&limit=50&sort=lastViewedAt&order=desc`,
           { credentials: "include" }
         );
 
@@ -367,8 +367,25 @@
                             <a
                               href={`/project/${project.id}`}
                               class="block"
-                              onclick={(e) => {
+                              onclick={async (e) => {
                                 e.preventDefault();
+                                try {
+                                  fetch(
+                                    `${API_BASE_URL}/projects/${project.id}/view`,
+                                    {
+                                      method: "POST",
+                                      credentials: "include",
+                                    }
+                                  );
+                                  console.log(
+                                    `[Sidebar] Fired view event for project: ${project.id}`
+                                  );
+                                } catch (fetchError) {
+                                  console.error(
+                                    "Error recording project view:",
+                                    fetchError
+                                  );
+                                }
                                 navigate(`/project/${project.id}`);
                               }}
                             >
