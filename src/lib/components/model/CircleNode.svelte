@@ -395,7 +395,7 @@
   class={!showHandles ? "hidden" : ""}
 />
 <div
-  class="h-full w-full aspect-square rounded-full flex items-center justify-center"
+  class="h-full w-full aspect-square rounded-full flex items-center justify-center overflow-hidden"
   style=" 
     background-color: {effectiveBgColorWithOpacity}; 
     border: {transparentBorder
@@ -404,10 +404,9 @@
     {shadowBlur > 0 ? `box-shadow: 0 0 ${shadowBlur}px ${shadowColor};` : ''}
   "
 >
-  <input
-    type="text"
+  <textarea
     bind:value={data.label}
-    class="bg-transparent w-full focus:outline-none"
+    class="bg-transparent w-full h-full focus:outline-none resize-none overflow-hidden mt-36"
     style="
       font-size: {fontSize}px; 
       color: {textColor}; 
@@ -415,7 +414,7 @@
       text-align: {textAlign};
       opacity: {textOpacity};
     "
-  />
+  ></textarea>
 </div>
 <!-- Right Handles -->
 <Handle
