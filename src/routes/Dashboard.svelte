@@ -209,7 +209,7 @@
 <Sidebar.Provider>
   <div class="flex h-screen bg-background w-full">
     <AppSidebar />
-    <main class="flex-1 overflow-y-auto">
+    <main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-background">
       {#if isLoading}
         <div class="flex items-center justify-center h-full">
           <div
@@ -231,8 +231,8 @@
 
           {#if error}
             <div class="mb-6">
-              <Card class="border-red-500">
-                <CardContent class="text-red-500 py-4">
+              <Card class="border border-red-400">
+                <CardContent class="text-red-600 py-4">
                   {error}
                 </CardContent>
               </Card>
@@ -284,7 +284,7 @@
                 <!-- Subscription Management -->
                 {#if currentOrg.billingProviderId}
                   <Card
-                    class="border-2 dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
+                    class="border dark:border-dark-border shadow-md dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-lg dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
                   >
                     <CardHeader>
                       <div class="flex items-center gap-2">
@@ -302,7 +302,7 @@
                   </Card>
                 {:else}
                   <Card
-                    class="border-2 dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
+                    class="border dark:border-dark-border shadow-md dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-lg dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
                   >
                     <CardHeader>
                       <div class="flex items-center gap-2">
@@ -329,7 +329,7 @@
           <!-- Workspace Overview -->
           {#if currentOrg}
             <Card
-              class="mt-6 border-2 dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
+              class="mt-6 border dark:border-dark-border shadow-md dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-lg dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
             >
               <CardHeader>
                 <div class="flex items-center gap-2">

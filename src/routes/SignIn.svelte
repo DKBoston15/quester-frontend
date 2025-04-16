@@ -6,7 +6,7 @@
 </script>
 
 <div
-  class="relative min-h-screen bg-background dark:bg-dark-background transition-colors duration-300"
+  class="relative min-h-screen bg-gray-50 dark:bg-dark-background transition-colors duration-300"
 >
   <!-- Background pattern -->
   <div

@@ -456,7 +456,7 @@
 <Sidebar.Provider>
   <div class="flex h-screen bg-background w-full">
     <AppSidebar />
-    <main class="flex-1 overflow-y-auto">
+    <main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-background">
       {#if isLoading}
         <div class="flex items-center justify-center h-full">
           <div

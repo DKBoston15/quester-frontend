@@ -733,7 +733,7 @@
 </script>
 
 <Sidebar.Provider>
-  <div class="flex h-screen bg-background w-full">
+  <div class="flex h-screen bg-gray-50 dark:bg-background w-full">
     <AppSidebar />
     <main class="flex-1 overflow-y-auto p-4">
       <div class="container mx-auto py-6 px-4">
@@ -1258,7 +1258,6 @@
                           page={projectCurrentPage}
                           perPage={projectItemsPerPage}
                           onPageChange={handleProjectPageChange}
-                          showFirstLastButtons
                           siblingCount={1}
                         >
                           {#snippet children({ pages, currentPage }: any)}
@@ -1276,7 +1275,7 @@
                                     <Pagination.Link
                                       {page}
                                       isActive={currentPage === page.value}
-                                      on:click={() =>
+                                      onclick={() =>
                                         handleProjectPageChange(page.value)}
                                     >
                                       {page.value}

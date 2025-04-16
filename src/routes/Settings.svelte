@@ -156,14 +156,13 @@
 </script>
 
 <Sidebar.Provider>
-  <div class="flex h-screen bg-background w-full">
+  <div class="flex h-screen bg-gray-50 dark:bg-background w-full">
     <AppSidebar />
     <main class="flex-1 overflow-y-auto">
       <div class="container mx-auto py-6 px-4">
         <!-- Page Header -->
         <div class="mb-8">
           <h1 class="text-3xl font-bold mb-2 flex items-center gap-2">
-            <SettingsIcon class="h-8 w-8" />
             Settings
           </h1>
           <p class="text-muted-foreground">
