@@ -123,9 +123,37 @@
       window.location.href = `${API_BASE_URL}/auth/redirect`;
     },
 
-    logout() {
-      window.location.href = `${API_BASE_URL}/auth/logout`;
+    // ===== START: Replace existing logout() function =====
+    // Inside AuthStore.svelte auth = { ... }
+    async logout() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+          method: "POST",
+          credentials: "include", // Crucial for sending cookies locally too
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        });
+
+        // Try to read response body regardless of status for debugging
+        let responseBody = null;
+        try {
+          responseBody = await response.json();
+        } catch (e) {
+          console.log(
+            "LOCAL LOGOUT: Could not parse response body as JSON or no body."
+          );
+        }
+      } catch (error) {
+        console.error("LOCAL LOGOUT: Network error during fetch:", error);
+      } finally {
+        this.clearUser(); // Should see "Local auth state cleared." log from this function
+        window.location.href = "/";
+      }
     },
+
+    // Make sure the rest of your AuthStore code (setUser, verifySession etc.) remains the same
 
     async updateUser(userData: Partial<User>) {
       try {

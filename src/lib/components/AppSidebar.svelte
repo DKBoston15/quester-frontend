@@ -60,42 +60,27 @@
 
   // Function to check admin roles
   function checkAdminRoles() {
-    console.log("[Sidebar Check] Starting canViewOrgAnalytics check");
-
     const userId = auth.user?.id;
     const orgId = auth.currentOrganization?.id;
     const resources = teamManagement.userResources;
 
-    console.log("[Sidebar Check] User ID:", userId);
-    console.log("[Sidebar Check] Org ID:", orgId);
-    console.log("[Sidebar Check] Resources available:", !!resources);
-
     if (!userId || !orgId || !resources) {
-      console.log(
-        "[Sidebar Check] Exiting early: Missing userId, orgId, or resources."
-      );
       return false;
     }
 
     const ADMIN_ROLES = new Set(["admin", "owner", "manager"]);
-    console.log("[Sidebar Check] Admin roles required:", ADMIN_ROLES);
 
     // Check organization roles
     const currentOrg = resources.organizations?.find(
       (org: any) => org.id === orgId
     );
-    console.log("[Sidebar Check] Found currentOrg:", currentOrg);
     if (currentOrg) {
       const hasOrgAdminRole = currentOrg.organizationRoles?.some(
         (roleInfo: any) =>
           roleInfo.userId === userId &&
           ADMIN_ROLES.has(roleInfo.role?.name?.toLowerCase())
       );
-      console.log("[Sidebar Check] User has Org Admin Role:", hasOrgAdminRole);
       if (hasOrgAdminRole) {
-        console.log(
-          "[Sidebar Check] Granting access based on Organization role."
-        );
         return true;
       }
     } else {
@@ -108,10 +93,6 @@
     const relevantDepartments = resources.departments?.filter(
       (dept: any) => dept.organizationId === orgId
     );
-    console.log(
-      "[Sidebar Check] Found relevantDepartments:",
-      relevantDepartments
-    );
 
     if (relevantDepartments?.length > 0) {
       const hasDeptAdminRole = relevantDepartments.some((dept: any) =>
@@ -121,14 +102,7 @@
             ADMIN_ROLES.has(roleInfo.role?.name?.toLowerCase())
         )
       );
-      console.log(
-        "[Sidebar Check] User has Dept Admin Role in any relevant department:",
-        hasDeptAdminRole
-      );
       if (hasDeptAdminRole) {
-        console.log(
-          "[Sidebar Check] Granting access based on Department role."
-        );
         return true;
       }
     } else {
@@ -137,16 +111,11 @@
       );
     }
 
-    console.log("[Sidebar Check] No qualifying roles found. Denying access.");
     return false;
   }
 
   // Calculate visible nav items based on permissions
   function getVisibleNavItems(): MenuItem[] {
-    console.log(
-      "[Sidebar] Calculating visible items, canViewOrgAnalytics =",
-      canViewOrgAnalytics
-    );
     return mainNavItems.filter((item) => {
       // If an item requires admin privileges, only show it if the user has those privileges
       if (item.requiresAdmin) {
@@ -165,11 +134,7 @@
   }
 
   $effect(() => {
-    console.log("[Sidebar] Component initialized");
-    console.log("[Sidebar] Current organization:", auth.currentOrganization);
-
     if (auth.currentOrganization) {
-      console.log("[Sidebar] Loading resources...");
       teamManagement.loadUserResources();
       loadProjects();
 
@@ -177,10 +142,6 @@
       setTimeout(() => {
         canViewOrgAnalytics = checkAdminRoles();
         visibleNavItems = getVisibleNavItems();
-        console.log(
-          "[Sidebar] Visible nav items updated:",
-          visibleNavItems.map((i) => i.title)
-        );
       }, 300);
     }
   });
@@ -243,7 +204,6 @@
 
   function handleLogout() {
     auth.logout();
-    navigate("https://app.quester.tech");
   }
 </script>
 
@@ -376,9 +336,6 @@
                                       method: "POST",
                                       credentials: "include",
                                     }
-                                  );
-                                  console.log(
-                                    `[Sidebar] Fired view event for project: ${project.id}`
                                   );
                                 } catch (fetchError) {
                                   console.error(

@@ -220,7 +220,6 @@
       }
 
       const data = await response.json();
-      console.log("invitations", data);
       // Filter for pending invitations only - exclude both acceptedAt and status "accepted"
       pendingInvitations = data.filter(
         (inv: any) =>

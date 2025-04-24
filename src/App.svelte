@@ -25,10 +25,6 @@
   let isCheckingAuth = $state(true);
 
   onMount(async () => {
-    console.log("App.svelte onMount: Start.", {
-      path: window.location.pathname,
-      isAuth: auth.isAuthenticated,
-    });
     // Safety timeout - force loading to false after 10 seconds
     const safetyTimeout = setTimeout(() => {
       isCheckingAuth = false;
@@ -42,10 +38,6 @@
         reject(new Error("Auth verification timed out after 10 seconds"));
       }, 10000); // 10 second timeout
     });
-    console.log("App.svelte onMount: After verify.", {
-      path: window.location.pathname,
-      isAuth: auth.isAuthenticated,
-    });
 
     try {
       // Race the auth verification against the timeout
@@ -53,23 +45,14 @@
 
       isCheckingAuth = false;
 
-      // Log BEFORE the condition
-      console.log("App.svelte onMount: Checking redirect conditions.", {
-        path: window.location.pathname,
-        isAuth: auth.isAuthenticated,
-      });
       if (!auth.isAuthenticated && window.location.pathname !== "/") {
         console.error(
           'App.svelte onMount: <<< REDIRECTING TO / >>> Condition met: !auth.isAuthenticated && window.location.pathname !== "/"'
         );
         navigate("/", { replace: true });
       } else if (auth.isAuthenticated && window.location.pathname === "/") {
-        console.log(
-          'App.svelte onMount: Navigating to /dashboard. Condition met: auth.isAuthenticated && window.location.pathname === "/"'
-        );
         navigate("/dashboard", { replace: true });
       }
-      console.log("App.svelte onMount: Finish.");
     } catch (err) {
       console.error("Error during auth verification:", err);
       // If we timeout or have another error, force isCheckingAuth to false
@@ -86,14 +69,7 @@
   });
 
   function login() {
-    console.log(
-      "Login button clicked. Attempting navigation to:",
-      `${API_BASE_URL}/auth/redirect`
-    );
-    // Temporarily disable the check during navigation? (See Step 3)
-    // isNavigatingExternally = true; // Example flag
     window.location.href = `${API_BASE_URL}/auth/redirect`;
-    console.log("Login function: window.location.href assigned.");
   }
 
   async function checkPendingInvites() {
