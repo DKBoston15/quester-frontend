@@ -210,7 +210,6 @@
       </div>
       {#if !editMode}
         <Button
-          variant="outline"
           size="sm"
           onclick={() => {
             editMode = true;
