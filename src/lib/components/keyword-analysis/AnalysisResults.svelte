@@ -348,7 +348,7 @@
     {/if}
 
     <Accordion type="single" class="w-full">
-      <AccordionItem value="summary">
+      <AccordionItem value="summary" id="analysis-summary-accordion">
         <AccordionTrigger>Summary</AccordionTrigger>
         <AccordionContent>
           <div class="flex justify-end mb-2">
@@ -362,7 +362,7 @@
         </AccordionContent>
       </AccordionItem>
 
-      <AccordionItem value="frequency-chart">
+      <AccordionItem value="frequency-chart" id="frequency-chart-accordion">
         <AccordionTrigger>Frequency Distribution Figure</AccordionTrigger>
         <AccordionContent>
           <div class="mt-2">
@@ -371,7 +371,7 @@
         </AccordionContent>
       </AccordionItem>
 
-      <AccordionItem value="visualization">
+      <AccordionItem value="visualization" id="venn-diagram-accordion">
         <AccordionTrigger>Keyword Venn Diagram Figures</AccordionTrigger>
         <AccordionContent>
           <div class="mt-2">
@@ -380,7 +380,10 @@
         </AccordionContent>
       </AccordionItem>
 
-      <AccordionItem value="frequency-distribution">
+      <AccordionItem
+        value="frequency-distribution"
+        id="frequency-table-accordion"
+      >
         <AccordionTrigger>Frequency Distribution</AccordionTrigger>
         <AccordionContent>
           <div class="flex justify-between items-center mt-4 mb-2">
@@ -454,7 +457,7 @@
         </AccordionContent>
       </AccordionItem>
 
-      <AccordionItem value="cross-distribution">
+      <AccordionItem value="cross-distribution" id="cross-table-accordion">
         <AccordionTrigger>Cross Distribution</AccordionTrigger>
         <AccordionContent>
           <div class="flex justify-between items-center mt-4 mb-2">
@@ -522,7 +525,7 @@
 
       <!-- New Accordion Item for Three-way Distribution -->
       {#if keywords.length >= 3}
-        <AccordionItem value="triple-distribution">
+        <AccordionItem value="triple-distribution" id="triple-table-accordion">
           <AccordionTrigger>Three-way Distribution</AccordionTrigger>
           <AccordionContent>
             <div class="flex justify-between items-center mt-4 mb-2">
@@ -591,7 +594,7 @@
       {/if}
 
       {#if report.keywordsSuggested}
-        <AccordionItem value="suggestions">
+        <AccordionItem value="suggestions" id="suggestions-accordion">
           <AccordionTrigger>Suggested Keywords</AccordionTrigger>
           <AccordionContent>
             <div class="flex flex-wrap gap-2 mt-2">

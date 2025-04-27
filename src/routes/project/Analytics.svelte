@@ -965,7 +965,7 @@
         </Tabs.Trigger>
         <Tabs.Trigger value="research" class="tab-button">
           <FlaskConical class="h-4 w-4 mr-2" />
-          Research Design
+          Research Designs
         </Tabs.Trigger>
       </Tabs.List>
 

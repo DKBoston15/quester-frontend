@@ -108,8 +108,7 @@
         element: "#org-search-input",
         popover: {
           title: "Search Projects",
-          description:
-            "Quickly find projects by searching for their name or description.",
+          description: "Quickly find projects by searching for their name.",
           side: "bottom",
           align: "start",
         },
@@ -119,29 +118,9 @@
         popover: {
           title: "Filter Your View",
           description:
-            "Toggle this to show only the projects you are directly a member of.",
+            "Toggle this to show only the projects for which you are a member.",
           side: "bottom",
           align: "start",
-        },
-      },
-      {
-        element: "#org-structure-content",
-        popover: {
-          title: "Navigate Your Structure",
-          description:
-            "Explore your departments and projects. Click on a project you're a member of to navigate to it. You can also join projects or move them between departments if you have permission.",
-          side: "top",
-          align: "center",
-        },
-      },
-      {
-        element: ".container",
-        popover: {
-          title: "Navigate Your Workspace",
-          description:
-            "Use the sidebar to access different sections like specific projects or settings. This dashboard provides your high-level overview.",
-          side: "top",
-          align: "center",
         },
       },
     ],

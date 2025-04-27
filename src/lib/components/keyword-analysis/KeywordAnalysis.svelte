@@ -8,12 +8,163 @@
   import type { KeywordAnalysis } from "$lib/types/index";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
   import { API_BASE_URL } from "$lib/config";
+  import { driver } from "driver.js";
+  import "driver.js/dist/driver.css";
+  import { GraduationCap } from "lucide-svelte";
 
   let loading = $state(false);
   let error = $state<string | null>(null);
   let currentAnalysis = $state<KeywordAnalysis | null>(null);
   let analyses = $state<KeywordAnalysis[]>([]);
   let showNewAnalysis = $state(false);
+
+  const driverNoAnalysis = driver({
+    showProgress: true,
+    popoverClass: "quester-driver-theme",
+    steps: [
+      {
+        element: "#keyword-analysis-header",
+        popover: {
+          title: "Welcome to Keyword Analysis",
+          description:
+            "This tool helps you understand keyword frequency and relationships within your project's literature. Discover patterns, identify research gaps, and refine your focus.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#no-analysis-placeholder",
+        popover: {
+          title: "Start Your First Analysis",
+          description:
+            "You haven't run any analyses yet. Click 'Create Your First Analysis' to begin exploring keyword connections.",
+          side: "bottom",
+          align: "center",
+        },
+      },
+      {
+        element: "#create-first-analysis-button",
+        popover: {
+          title: "Input Your Keywords",
+          description:
+            "Enter 2-10 keywords relevant to your research questions. Quester will then search your literature for occurrences and co-occurrences.",
+          side: "top",
+          align: "center",
+        },
+        onHighlightStarted: () => {
+          const button = document.getElementById(
+            "create-first-analysis-button"
+          );
+          if (button) button.style.pointerEvents = "auto";
+        },
+      },
+    ],
+  });
+
+  const driverWithAnalysis = driver({
+    showProgress: true,
+    popoverClass: "quester-driver-theme",
+    steps: [
+      {
+        element: "#keyword-analysis-header",
+        popover: {
+          title: "Exploring Your Keyword Analysis",
+          description:
+            "This analysis reveals patterns in your selected keywords across your project literature. Let's break down the results.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#analysis-results-card",
+        popover: {
+          title: "Analysis Results Overview",
+          description:
+            "Here you'll find a summary, visualizations, and detailed tables showing how your keywords appear and overlap in your sources.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: "#analysis-summary-accordion",
+        popover: {
+          title: "AI-Generated Summary",
+          description:
+            "Read an AI-generated interpretation of the keyword patterns, potential research gaps, and areas of high concentration. A great starting point for insights!",
+          side: "right",
+          align: "start",
+        },
+      },
+      {
+        element: "#frequency-chart-accordion",
+        popover: {
+          title: "Frequency Distribution Chart",
+          description:
+            "Visualize how often each keyword appears individually. Identify the most dominant terms in your literature set.",
+          side: "right",
+          align: "start",
+        },
+      },
+      {
+        element: "#venn-diagram-accordion",
+        popover: {
+          title: "Keyword Overlap (Venn Diagram)",
+          description:
+            "Select 2 or 3 keywords to see their co-occurrence visually. Click on sections to filter literature containing specific keyword combinations (opens Google Scholar).",
+          side: "right",
+          align: "start",
+        },
+      },
+      {
+        element: "#frequency-table-accordion",
+        popover: {
+          title: "Frequency Distribution Table",
+          description:
+            "See the exact counts and percentages for each keyword. Click counts to view corresponding results on Google Scholar. Download the data as CSV.",
+          side: "right",
+          align: "start",
+        },
+      },
+      {
+        element: "#cross-table-accordion",
+        popover: {
+          title: "Cross Distribution Table",
+          description:
+            "Examine the co-occurrence frequency for every pair of keywords. Identify which terms frequently appear together. Download as CSV.",
+          side: "right",
+          align: "start",
+        },
+      },
+      {
+        element: "#previous-analyses-section",
+        popover: {
+          title: "Previous Analyses",
+          description:
+            "Access your past analyses here. Click on one to view its results again or delete analyses you no longer need.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: "#new-analysis-button",
+        popover: {
+          title: "Run a New Analysis",
+          description:
+            "Explore different keyword combinations or update your analysis as your literature grows by running a new analysis anytime.",
+          side: "left",
+          align: "start",
+        },
+      },
+    ],
+  });
+
+  function startTour() {
+    if (currentAnalysis || analyses.length > 0) {
+      driverWithAnalysis.drive();
+    } else {
+      driverNoAnalysis.drive();
+    }
+  }
 
   $effect(() => {
     if (projectStore.currentProject?.id) {
@@ -167,16 +318,26 @@
 </script>
 
 <Card class="p-6">
-  <div class="flex justify-between items-center mb-6">
+  <div
+    class="flex justify-between items-center mb-6"
+    id="keyword-analysis-header"
+  >
     <h2 class="text-2xl font-bold text-primary">Keyword Analysis</h2>
     {#if projectStore.currentProject}
-      <Button
-        variant={showNewAnalysis ? "destructive" : "default"}
-        onclick={() => (showNewAnalysis = !showNewAnalysis)}
-        disabled={loading}
-      >
-        {showNewAnalysis ? "Cancel" : "New Analysis"}
-      </Button>
+      <div class="flex items-center space-x-2">
+        <Button
+          variant={showNewAnalysis ? "destructive" : "default"}
+          onclick={() => (showNewAnalysis = !showNewAnalysis)}
+          disabled={loading}
+          id="new-analysis-button"
+        >
+          {showNewAnalysis ? "Cancel" : "New Analysis"}
+        </Button>
+        <Button variant="outline" size="icon" onclick={startTour}>
+          <GraduationCap class="h-4 w-4" />
+          <span class="sr-only">Learn about Keyword Analysis</span>
+        </Button>
+      </div>
     {/if}
   </div>
 
@@ -198,20 +359,26 @@
       <KeywordInput on:submit={({ detail }) => handleNewAnalysis(detail)} />
     </div>
   {:else if currentAnalysis}
-    <div class="space-y-6" transition:fade>
+    <div class="space-y-6" transition:fade id="analysis-results-card">
       <AnalysisResults analysis={currentAnalysis} />
     </div>
   {:else if projectStore.currentProject}
-    <div class="text-center py-12 text-muted-foreground" transition:fade>
+    <div
+      class="text-center py-12 text-muted-foreground"
+      transition:fade
+      id="no-analysis-placeholder"
+    >
       <p class="mb-4">No keyword analyses yet</p>
-      <Button onclick={() => (showNewAnalysis = true)} disabled={loading}
-        >Create Your First Analysis</Button
+      <Button
+        onclick={() => (showNewAnalysis = true)}
+        disabled={loading}
+        id="create-first-analysis-button">Create Your First Analysis</Button
       >
     </div>
   {/if}
 
   {#if analyses.length > 0 && !showNewAnalysis}
-    <div class="mt-8 border-t pt-6">
+    <div class="mt-8 border-t pt-6" id="previous-analyses-section">
       <h3 class="text-base font-semibold mb-4">Previous Analyses</h3>
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {#each analyses as analysis}
@@ -282,5 +449,35 @@
     to {
       transform: rotate(360deg);
     }
+  }
+
+  :global(.quester-driver-theme) {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+  }
+  :global(.quester-driver-theme .driver-popover-title) {
+    font-size: 1.1rem;
+    font-weight: bold;
+  }
+  :global(.quester-driver-theme .driver-popover-description) {
+    font-size: 0.9rem;
+  }
+  :global(.quester-driver-theme .driver-popover-navigation-btns button) {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--radius);
+  }
+  :global(.quester-driver-theme .driver-popover-navigation-btns button:hover) {
+    background-color: hsl(var(--primary) / 0.9);
+  }
+  :global(.quester-driver-theme .driver-popover-close-btn) {
+    color: hsl(var(--foreground));
+  }
+  :global(.quester-driver-theme .driver-popover-progress-text) {
+    color: hsl(var(--muted-foreground));
   }
 </style>
