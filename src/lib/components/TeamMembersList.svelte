@@ -225,7 +225,8 @@
     // Find the user's role information within the parent organization
     // Check the userResources which contains roles for all accessible resources
     const userOrgResource = teamManagement.userResources?.organizations?.find(
-      (org) => org.id === parentOrganizationId
+      (org: { id: string; [key: string]: any }) =>
+        org.id === parentOrganizationId
     );
 
     if (!userOrgResource) {
@@ -319,6 +320,7 @@
         </p>
       </div>
 
+      <!-- Reverted progress bar structure -->
       <div class="flex items-center gap-2">
         <div class="w-32 bg-muted rounded-full h-2">
           <div

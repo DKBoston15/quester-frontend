@@ -262,7 +262,7 @@
 </script>
 
 <div class="grid gap-6">
-  <div class="grid gap-3">
+  <div class="grid gap-3" id="lit-detail-title-section">
     <Label for="name">
       {#if selectedType === "Book Chapter"}
         Book
@@ -306,7 +306,7 @@
     </div>
   {/if}
 
-  <div class="grid gap-3">
+  <div class="grid gap-3" id="lit-detail-authors-section">
     <div class="flex space-x-2 items-center">
       <Tooltip.Root>
         <Tooltip.Trigger>
@@ -366,7 +366,7 @@
   {/if}
 
   <div class="grid grid-cols-2 gap-4">
-    <div class="grid gap-3">
+    <div class="grid gap-3" id="lit-detail-publisher-section">
       <Label for="publisherName">Publisher</Label>
       {#if editMode.details}
         <Input
@@ -380,7 +380,7 @@
       {/if}
     </div>
     {#if selectedType !== "Conference Presentation"}
-      <div class="grid gap-3">
+      <div class="grid gap-3" id="lit-detail-year-section">
         <Label for="publishYear">Publish Year</Label>
         {#if editMode.details}
           <Input
@@ -394,7 +394,7 @@
         {/if}
       </div>
     {:else}
-      <div class="grid gap-3">
+      <div class="grid gap-3" id="lit-detail-city-section">
         <Label for="city">City</Label>
         {#if editMode.details}
           <Input
@@ -530,7 +530,7 @@
   {/if}
 
   <div class="grid grid-cols-2 gap-4">
-    <div class="grid gap-3">
+    <div class="grid gap-3" id="lit-detail-type-section">
       <Label for="type">Type</Label>
       {#if editMode.details}
         <select
@@ -556,7 +556,7 @@
         <p>{selectedType}</p>
       {/if}
     </div>
-    <div class="grid gap-3">
+    <div class="grid gap-3" id="lit-detail-link-section">
       <Label for="link">Link</Label>
       {#if editMode.details}
         <Input
@@ -574,9 +574,18 @@
 
 <div class="flex justify-end space-x-2 mt-6">
   {#if editMode.details}
-    <Button size="sm" variant="ghost" onclick={cancelEdit}>Cancel</Button>
-    <Button size="sm" onclick={updateField}>Save</Button>
+    <Button
+      id="lit-detail-cancel-button"
+      size="sm"
+      variant="ghost"
+      onclick={cancelEdit}>Cancel</Button
+    >
+    <Button id="lit-detail-save-button" size="sm" onclick={updateField}
+      >Save</Button
+    >
   {:else}
-    <Button size="sm" onclick={enterEditMode}>Edit</Button>
+    <Button id="lit-detail-edit-button" size="sm" onclick={enterEditMode}
+      >Edit</Button
+    >
   {/if}
 </div>

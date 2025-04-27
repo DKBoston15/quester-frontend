@@ -267,7 +267,10 @@
 
     {#if isOwner || isAdmin}
       <!-- Disable Invitations (owner-controlled but visible to admins) -->
-      <div class="flex items-center justify-between space-x-2">
+      <div
+        id="setting-disable-invitations"
+        class="flex items-center justify-between space-x-2"
+      >
         <Label for="disable-invitations" class="flex flex-col space-y-1">
           <span>Disable Invitations</span>
           <span class="text-sm text-muted-foreground">
@@ -298,7 +301,10 @@
 
       <!-- Allow Member Invitations (owner-controlled but visible to admins) -->
       {#if !invitationsDisabled}
-        <div class="flex items-center justify-between space-x-2">
+        <div
+          id="setting-allow-member-invites"
+          class="flex items-center justify-between space-x-2"
+        >
           <Label for="allow-member-invitations" class="flex flex-col space-y-1">
             <span>Allow Member Invitations</span>
             <span class="text-sm text-muted-foreground">
@@ -342,7 +348,10 @@
       <h3 class="text-lg font-medium">Content Creation Permissions</h3>
 
       <!-- Project Creation (visible to everyone with permission to manage) -->
-      <div class="flex items-center justify-between space-x-2">
+      <div
+        id="setting-members-create-projects"
+        class="flex items-center justify-between space-x-2"
+      >
         <Label for="members-create-projects" class="flex flex-col space-y-1">
           <span>Members Can Create Projects</span>
           <span class="text-sm text-muted-foreground">
@@ -365,7 +374,10 @@
       <!-- Owner-only settings (visible to admins but not editable) -->
       {#if isOwner || isAdmin}
         <!-- Department Creation (Members) - Owner only -->
-        <div class="flex items-center justify-between space-x-2">
+        <div
+          id="setting-members-create-departments"
+          class="flex items-center justify-between space-x-2"
+        >
           <Label
             for="members-create-departments"
             class="flex flex-col space-y-1"
@@ -399,7 +411,10 @@
         </div>
 
         <!-- Department Creation (Admins) - Owner only -->
-        <div class="flex items-center justify-between space-x-2">
+        <div
+          id="setting-admins-create-departments"
+          class="flex items-center justify-between space-x-2"
+        >
           <Label
             for="admins-create-departments"
             class="flex flex-col space-y-1"

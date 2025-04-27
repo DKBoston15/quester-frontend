@@ -14,6 +14,7 @@
     Search,
     Info,
     Link as LinkIcon,
+    GraduationCap,
   } from "lucide-svelte";
   import { navigate } from "svelte-routing";
   import * as Tooltip from "$lib/components/ui/tooltip";
@@ -22,6 +23,8 @@
   import * as Select from "$lib/components/ui/select";
   import { auth } from "$lib/stores/AuthStore.svelte";
   import PublisherScore from "$lib/components/custom-ui/dashboard/PublisherScore.svelte";
+  import { driver } from "driver.js";
+  import "driver.js/dist/driver.css";
 
   interface Outcome {
     id: string;
@@ -46,6 +49,153 @@
   let editLinkUrl = $state("");
   let selectedType = $state("QUESTION");
   let linkUrl = $state("");
+
+  // Driver.js initialization
+  const driverObj = driver({
+    showProgress: true,
+    popoverClass: "quester-driver-theme",
+    overlayClickBehavior: "nextStep",
+    steps: [
+      {
+        element: "#outcomes-header",
+        popover: {
+          title: "Manage Your Outcomes",
+          description:
+            "This page is where you create, view, and manage all the outcomes, findings, or links related to your research project.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#create-outcome-button",
+        popover: {
+          title: "Initiate Outcome Creation",
+          description:
+            "Clicking this button opens a dialog where you can start creating a new outcome (a research finding, question, or link).",
+          side: "bottom",
+          align: "end",
+        },
+      },
+      {
+        element: "#outcomes-search",
+        popover: {
+          title: "Find Outcomes Quickly",
+          description:
+            "Use this search bar to filter your outcomes list by name.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#outcomes-grid",
+        popover: {
+          title: "Your Outcome Collection",
+          description:
+            "All your outcomes are displayed here as cards. Click a card to view/edit (for outcomes) or open (for links). Hover over a card to see edit/delete options.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: "#journal-suggestions-card",
+        popover: {
+          title: "Get Journal Suggestions",
+          description:
+            "Based on the literature you've added, Quester suggests relevant journals for potential publication. Click 'Explain' for details on the scoring.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: "#conference-suggestions-card",
+        popover: {
+          title: "Find Relevant Conferences",
+          description:
+            "Similarly, Quester suggests conferences where your research might be a good fit for presentation.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: "#create-outcome-button",
+        popover: {
+          title: "Let's Create an Outcome",
+          description:
+            "We'll walk through the creation process. You can create a detailed research outcome or a simple link.",
+          side: "bottom",
+          align: "end",
+        },
+      },
+      {
+        element: "#create-outcome-dialog",
+        popover: {
+          title: "1. Select Outcome Type",
+          description:
+            "First, categorize your outcome. Choose 'Research Outcome' for findings, questions, or analyses that need detailed documentation (using a template), or 'Link' for simply saving relevant external URLs.",
+          side: "right",
+          align: "start",
+        },
+        onHighlightStarted: () => {
+          setTimeout(() => {
+            showCreateDialog = true;
+          }, 50);
+        },
+      },
+      {
+        element: "#create-outcome-dialog #name",
+        popover: {
+          title: "2. Name Your Outcome",
+          description:
+            "Provide a clear, concise name that summarizes this outcome or link. This helps you identify it later.",
+          side: "right",
+          align: "center",
+        },
+      },
+      {
+        element: "#create-outcome-dialog",
+        popover: {
+          title: "3. Add Details (Type Specific)",
+          description:
+            "If creating a 'Link', paste the URL here. If creating a 'Research Outcome', choose a template (like 'Key Finding' or 'Research Question') to structure the information you'll add next.",
+          side: "right",
+          align: "start",
+        },
+      },
+      {
+        element: "#create-outcome-submit-button",
+        popover: {
+          title: "4. Create the Outcome",
+          description:
+            "Clicking here saves the outcome. 'Link' types are saved immediately. 'Research Outcome' types will open a dedicated editor based on the template you selected, ready for you to document the details.",
+          side: "top",
+          align: "center",
+        },
+        onDeselected: () => {
+          showCreateDialog = false;
+        },
+      },
+      {
+        element: ".outcome-card-actions",
+        popover: {
+          title: "Manage Existing Outcomes",
+          description:
+            "Hover over any card to reveal buttons for renaming (pencil icon) or deleting (trash icon) the outcome.",
+          side: "left",
+          align: "start",
+        },
+      },
+      {
+        element: ".container",
+        popover: {
+          title: "Ready to Document Your Findings?",
+          description:
+            "Use the Outcomes page to keep track of key results, questions, and useful links throughout your research process. Stay organized!",
+          side: "top",
+          align: "center",
+        },
+      },
+    ],
+  });
 
   // Load outcomes data when project changes
   $effect(() => {
@@ -222,7 +372,7 @@
 <div class="flex-1 w-full">
   <div class="container mx-auto py-6 px-4">
     <div class="mb-8">
-      <div class="flex items-center justify-between">
+      <div class="flex items-center justify-between" id="outcomes-header">
         <div class="flex items-center gap-2">
           <h1 class="text-3xl font-bold">Outcomes</h1>
           <Tooltip.Root>
@@ -237,13 +387,26 @@
             </Tooltip.Content>
           </Tooltip.Root>
         </div>
-        <Button
-          onclick={() => (showCreateDialog = true)}
-          class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] transition-all"
-        >
-          <Plus class="h-4 w-4 mr-2" />
-          Create Outcome
-        </Button>
+        <div class="flex items-center space-x-2">
+          <Button
+            id="create-outcome-button"
+            onclick={() => (showCreateDialog = true)}
+            class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] transition-all"
+          >
+            <Plus class="h-4 w-4 mr-2" />
+            Create Outcome
+          </Button>
+          <Button
+            id="learn-outcomes-button"
+            variant="outline"
+            size="icon"
+            onclick={() => driverObj.drive()}
+            class="border-2 dark:border-dark-border"
+          >
+            <GraduationCap class="h-4 w-4" />
+            <span class="sr-only">Learn about Outcomes Management</span>
+          </Button>
+        </div>
       </div>
       <p class="text-muted-foreground mt-2">
         Create and manage your project outcomes
@@ -267,6 +430,7 @@
             class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
           />
           <input
+            id="outcomes-search"
             type="text"
             placeholder="Search outcomes..."
             bind:value={searchQuery}
@@ -299,7 +463,10 @@
             </Button>
           </div>
         {:else}
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div
+            id="outcomes-grid"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
             {#each outcomeStore.outcomes
               .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
               .filter((outcome) => outcome?.name
@@ -307,7 +474,7 @@
                   .includes(searchQuery.toLowerCase())) as outcome (outcome.id)}
               <button
                 type="button"
-                class="group text-left transition-all duration-200 bg-transparent border-none p-0 m-0 w-full cursor-pointer"
+                class="outcome-card group text-left transition-all duration-200 bg-transparent border-none p-0 m-0 w-full cursor-pointer"
                 onclick={() => handleCardClick(outcome)}
                 onkeydown={(e) => e.key === "Enter" && handleCardClick(outcome)}
                 transition:fly|local={{
@@ -334,12 +501,12 @@
                         {/if}
                       </div>
                       <div
-                        class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0"
+                        class="outcome-card-actions flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0"
                       >
                         <Button
                           variant="outline"
                           size="icon"
-                          class="h-8 w-8 border-2  dark:border-dark-border bg-background shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,0.15)] dark:hover:shadow-[3px_3px_0px_0px_rgba(44,46,51,0.15)] hover:translate-y-[-1px] hover:translate-x-[-1px] transition-all"
+                          class="rename-button h-8 w-8 border-2  dark:border-dark-border bg-background shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,0.15)] dark:hover:shadow-[3px_3px_0px_0px_rgba(44,46,51,0.15)] hover:translate-y-[-1px] hover:translate-x-[-1px] transition-all"
                           onclick={stopPropagation(() =>
                             handleRenameClick(outcome)
                           )}
@@ -352,7 +519,7 @@
                         <Button
                           variant="outline"
                           size="icon"
-                          class="h-8 w-8 border-2  dark:border-dark-border bg-background shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[3px_3px_0px_0px_rgba(220,38,38,0.15)] dark:hover:shadow-[3px_3px_0px_0px_rgba(220,38,38,0.15)] hover:border-destructive dark:hover:border-destructive hover:translate-y-[-1px] hover:translate-x-[-1px] transition-all"
+                          class="delete-button h-8 w-8 border-2  dark:border-dark-border bg-background shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[3px_3px_0px_0px_rgba(220,38,38,0.15)] dark:hover:shadow-[3px_3px_0px_0px_rgba(220,38,38,0.15)] hover:border-destructive dark:hover:border-destructive hover:translate-y-[-1px] hover:translate-x-[-1px] transition-all"
                           onclick={stopPropagation(() =>
                             handleDeleteClick(outcome)
                           )}
@@ -415,6 +582,7 @@
 <!-- Create Outcome Dialog -->
 <Root bind:open={showCreateDialog}>
   <Content
+    id="create-outcome-dialog"
     class="sm:max-w-[425px] border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
   >
     <div class="flex flex-col space-y-1.5 text-center sm:text-left">
@@ -494,6 +662,7 @@
         Cancel
       </Button>
       <Button
+        id="create-outcome-submit-button"
         onclick={handleCreateOutcome}
         class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] transition-all"
       >
@@ -539,6 +708,7 @@
 <!-- Rename Outcome Dialog -->
 <Root bind:open={showRenameDialog}>
   <Content
+    id="rename-outcome-dialog"
     class="sm:max-w-[425px] border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
   >
     <div class="flex flex-col space-y-1.5 text-center sm:text-left">

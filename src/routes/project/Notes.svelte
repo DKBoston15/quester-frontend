@@ -11,6 +11,9 @@
   import { Layout, Maximize2, Minimize2, Plus, Info } from "lucide-svelte";
   import { auth } from "$lib/stores/AuthStore.svelte";
   import * as Tooltip from "$lib/components/ui/tooltip";
+  import { driver } from "driver.js";
+  import "driver.js/dist/driver.css";
+  import { GraduationCap } from "lucide-svelte";
   // Props
   const { literatureId = undefined } = $props();
 
@@ -19,6 +22,93 @@
   let selectedView = $state(""); // Default to split view
   let selectedTab = $state("literature"); // Default to literature notes
   let rightPanelNote = $state<Note | null>(null);
+
+  const driverObj = driver({
+    showProgress: true,
+    popoverClass: "quester-driver-theme",
+    steps: [
+      {
+        element: "#notes-header-controls",
+        popover: {
+          title: "Welcome to Notes",
+          description:
+            "Capture, organize, and manage your research and literature notes. Use the controls here to manage your view and create new notes.",
+          side: "bottom",
+          align: "center",
+        },
+      },
+      {
+        element: "#note-type-tabs",
+        popover: {
+          title: "Filter by Note Type",
+          description:
+            "Switch between viewing notes specifically linked to literature items and general research notes for your project.",
+          side: "bottom",
+          align: "end",
+        },
+      },
+      {
+        element: "#note-list-sidebar",
+        popover: {
+          title: "Your Notes List",
+          description:
+            "All your notes for the selected type appear here. Use the search bar at the top to filter them instantly.",
+          side: "right",
+          align: "start",
+        },
+      },
+      {
+        element: "#new-note-button",
+        popover: {
+          title: "Create a New Note",
+          description:
+            "Click here to start a new note. It will be automatically saved as you type.",
+          side: "bottom",
+          align: "end",
+        },
+      },
+      {
+        element: "#note-editor-area",
+        popover: {
+          title: "Rich Text Editor",
+          description:
+            "Write and format your notes here. Changes are saved automatically. You can attach notes to literature entries from within the editor.",
+          side: "left",
+          align: "start",
+        },
+      },
+      {
+        element: "#view-toggle-button",
+        popover: {
+          title: "Toggle Split View",
+          description:
+            "Switch between viewing one note or two notes side-by-side for comparison or referencing.",
+          side: "bottom",
+          align: "end",
+        },
+      },
+      {
+        element: "#focus-toggle-button",
+        popover: {
+          title: "Toggle Focus Mode",
+          description:
+            "Hide the sidebar to focus solely on the editor. Use the button or Cmd/Ctrl+B to toggle.",
+          side: "bottom",
+          align: "end",
+        },
+      },
+      {
+        element: ".container", // Target a stable element
+        popover: {
+          title: "Ready to Take Notes?",
+          description:
+            "Use these features to keep your thoughts organized and connected to your research sources.",
+          side: "top",
+          align: "center",
+        },
+      },
+    ],
+  });
 
   // Effect to sync rightPanelNote with store updates
   $effect(() => {
@@ -157,7 +247,7 @@
     class="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10"
   >
     <div class="container mx-auto py-4 px-4">
-      <div class="flex items-center justify-between">
+      <div class="flex items-center justify-between" id="notes-header-controls">
         <!-- Left Side: Title & Description -->
         <div class="flex-1 min-w-0 mr-4">
           <div class="flex items-center gap-2 mb-1">
@@ -184,6 +274,7 @@
         <div class="flex items-center gap-4 flex-shrink-0">
           <!-- View Toggle Buttons -->
           <Button
+            id="view-toggle-button"
             variant="ghost"
             size="sm"
             onclick={() =>
@@ -194,6 +285,7 @@
             <Layout class="h-4 w-4" />
           </Button>
           <Button
+            id="focus-toggle-button"
             variant="ghost"
             size="sm"
             class={focusMode ? "bg-secondary h-8" : "h-8"}
@@ -211,16 +303,30 @@
 
           <!-- Tabs -->
           <Tabs value={selectedTab} onValueChange={handleTabChange}>
-            <TabsList>
+            <TabsList id="note-type-tabs">
               <TabsTrigger value="literature">Literature Notes</TabsTrigger>
               <TabsTrigger value="research">Research Notes</TabsTrigger>
             </TabsList>
           </Tabs>
 
           <!-- New Note Button -->
-          <Button onclick={createNote} disabled={!projectStore.currentProject}>
+          <Button
+            id="new-note-button"
+            onclick={createNote}
+            disabled={!projectStore.currentProject}
+          >
             <Plus class="h-4 w-4 mr-2" />
             New Note
+          </Button>
+          <!-- Learn Button -->
+          <Button
+            variant="outline"
+            size="icon"
+            onclick={() => driverObj.drive()}
+            title="Learn about Notes features"
+          >
+            <GraduationCap class="h-4 w-4" />
+            <span class="sr-only">Learn about Notes features</span>
           </Button>
         </div>
       </div>
@@ -237,6 +343,7 @@
       {#if !focusMode}
         <!-- Sidebar -->
         <aside
+          id="note-list-sidebar"
           class="w-80 border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-[calc(77px)] h-[calc(100vh-77px)] overflow-y-auto"
         >
           <NoteList
@@ -248,6 +355,7 @@
 
       <!-- Editor Area -->
       <main
+        id="note-editor-area"
         class="{selectedView === 'split'
           ? 'flex-1 flex'
           : 'flex-1 bg-background'} overflow-hidden"

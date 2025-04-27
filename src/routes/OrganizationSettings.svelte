@@ -15,6 +15,9 @@
   } from "$lib/components/ui/card";
   import TeamSettings from "./components/TeamSettings.svelte";
   import ResourceSelector from "./components/ResourceSelector.svelte";
+  import { driver } from "driver.js";
+  import "driver.js/dist/driver.css";
+  import { GraduationCap } from "lucide-svelte";
 
   // Reactive state
   let isLoading = $state(true);
@@ -43,6 +46,113 @@
   function refreshData() {
     teamManagement.refreshCurrentResource();
   }
+
+  const driverObj = driver({
+    showProgress: true,
+    popoverClass: "quester-driver-theme",
+    steps: [
+      {
+        element: "#org-settings-header",
+        popover: {
+          title: "Organization Settings Hub",
+          description:
+            "This page allows administrators and owners to manage settings specific to the selected organization.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#org-selector-card",
+        popover: {
+          title: "Select Your Organization",
+          description:
+            "If you belong to multiple organizations, use this selector to switch between them and manage their specific settings.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#refresh-org-button",
+        popover: {
+          title: "Refresh Data",
+          description:
+            "Click here to reload the latest settings and team information for the selected organization.",
+          side: "bottom",
+          align: "end",
+        },
+      },
+      {
+        element: "#team-settings-card",
+        popover: {
+          title: "Team & Permission Settings",
+          description:
+            "This section contains controls for managing how users interact within the organization, including invitations and content creation permissions.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: "#setting-disable-invitations",
+        popover: {
+          title: "Control Invitations",
+          description:
+            "(Owner Only) Enable or disable the ability for anyone to invite new members to this organization.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: "#setting-allow-member-invites",
+        popover: {
+          title: "Delegate Invitations",
+          description:
+            "(Owner Only) If invitations are enabled, choose whether regular members and admins (not just owners) can invite others.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: "#setting-members-create-projects",
+        popover: {
+          title: "Project Creation Permission",
+          description:
+            "(Admin/Owner) Decide if regular members should be allowed to create new projects within this organization.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: "#setting-members-create-departments",
+        popover: {
+          title: "Department Creation (Members)",
+          description:
+            "(Owner Only) Control whether regular members can create new departments.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: "#setting-admins-create-departments",
+        popover: {
+          title: "Department Creation (Admins)",
+          description:
+            "(Owner Only) Control whether administrators can create new departments.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: ".container", // General overview
+        popover: {
+          title: "Manage Your Organization",
+          description:
+            "Use these settings to configure how your team collaborates and manages research within Quester.",
+          side: "top",
+          align: "center",
+        },
+      },
+    ],
+  });
 </script>
 
 <Sidebar.Provider>
@@ -59,7 +169,7 @@
       {:else}
         <div class="container mx-auto py-6 px-4">
           <!-- Header -->
-          <div class="mb-8">
+          <div class="mb-8" id="org-settings-header">
             <div class="flex justify-between items-center">
               <div class="flex items-center gap-2">
                 <h1 class="text-3xl font-bold">Organization Settings</h1>
@@ -69,9 +179,22 @@
               </div>
 
               <div class="flex items-center gap-2">
-                <Button variant="outline" onclick={refreshData}>
+                <Button
+                  id="refresh-org-button"
+                  variant="outline"
+                  onclick={refreshData}
+                >
                   <RefreshCw class="h-4 w-4 mr-2" />
                   Refresh
+                </Button>
+                <!-- Add Learn Button -->
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onclick={() => driverObj.drive()}
+                  aria-label="Learn about Organization Settings"
+                >
+                  <GraduationCap class="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -82,7 +205,7 @@
 
           <!-- Resource Selector -->
           {#if !teamManagement.isLoading && teamManagement.userResources}
-            <Card class="mb-6">
+            <Card class="mb-6" id="org-selector-card">
               <CardHeader>
                 <CardTitle class="flex items-center gap-2">
                   <Building2 class="h-5 w-5" />
@@ -109,7 +232,7 @@
 
           <!-- Settings Content -->
           {#if !teamManagement.isLoading && teamManagement.organizationStructure}
-            <Card>
+            <Card id="team-settings-card">
               <CardContent class="pt-6">
                 <TeamSettings resourceType="organization" />
               </CardContent>

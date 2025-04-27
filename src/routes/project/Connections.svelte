@@ -10,6 +10,9 @@
   import { navigate } from "svelte-routing";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
   import { API_BASE_URL } from "$lib/config";
+  import { driver } from "driver.js";
+  import "driver.js/dist/driver.css";
+  import { GraduationCap } from "lucide-svelte";
 
   let value = $state("2D");
   let showControls = false;
@@ -62,6 +65,74 @@
   onMount(() => {
     checkGraphAccessCapability();
   });
+
+  // Define driverObj
+  const driverObj = driver({
+    showProgress: true,
+    popoverClass: "quester-driver-theme",
+    steps: [
+      {
+        element: "#connections-header",
+        popover: {
+          title: "Visualize Your Research Connections",
+          description:
+            "This view maps out the relationships between your literature, notes, keywords, and concepts. It helps you discover hidden patterns, identify research gaps, and understand the structure of your project.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#view-toggle",
+        popover: {
+          title: "Switch Between Dimensions",
+          description:
+            "Toggle between a 2D network graph and an immersive 3D view to explore your connections from different perspectives.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#legend-button",
+        popover: {
+          title: "Understand the Symbols",
+          description:
+            "Click here to open the legend, which explains what each icon (node) in the graph represents (e.g., literature, note, keyword).",
+          side: "bottom",
+          align: "end",
+        },
+      },
+      {
+        element: "#controls-toggle-button",
+        popover: {
+          title: "Show/Hide Interaction Hints",
+          description:
+            "Toggle this to display or hide helpful tips on how to navigate and interact with the graph (zooming, panning, selecting).",
+          side: "bottom",
+          align: "end",
+        },
+      },
+      {
+        element: "#connections-header",
+        popover: {
+          title: "Interact with the Graph",
+          description:
+            "Explore the graph area below! Use your mouse to zoom, pan, and select nodes. In 2D, you can drag nodes; in 3D, rotate the view. Check the controls hints if needed.",
+          side: "bottom",
+          align: "center",
+        },
+      },
+      {
+        element: "#connections-header",
+        popover: {
+          title: "Discover Insights",
+          description:
+            "Use this visualization to see how ideas connect, identify clusters of related work, spot potential research gaps, and gain a deeper understanding of your research landscape.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+    ],
+  });
 </script>
 
 {#if isLoading}
@@ -72,11 +143,13 @@
   </div>
 {:else if hasAccess}
   <div
-    class={`overflow-hidden relative  ${document.documentElement.classList.contains("dark") ? "bg-[#1A1A1A]" : "bg-white"}`}
+    id="connections-header"
+    class={`overflow-hidden relative h-full flex flex-col ${document.documentElement.classList.contains("dark") ? "bg-[#1A1A1A]" : "bg-white"}`}
   >
-    <div class="flex justify-between dark:bg-[#1A1A1A] bg-white">
-      <div class="flex flex-col items-start z-50 p-4">
+    <div class="flex justify-between dark:bg-[#1A1A1A] bg-white p-4">
+      <div class="flex items-center space-x-2 z-50">
         <ToggleGroup.Root
+          id="view-toggle"
           variant="outline"
           {value}
           type="single"
@@ -101,10 +174,11 @@
           </ToggleGroup.Item>
         </ToggleGroup.Root>
       </div>
-      <div class="flex space-x-2 items-center p-4">
+      <div class="flex space-x-2 items-center z-50">
         <Popover.Root>
           <Popover.Trigger>
             <Button
+              id="legend-button"
               variant="outline"
               class="w-[6rem] border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
               >Legend</Button
@@ -154,32 +228,46 @@
           </Popover.Content>
         </Popover.Root>
         <Button
+          id="controls-toggle-button"
           variant="outline"
           onclick={toggleControls}
           class="w-[7rem] border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
           >{showControls ? "Hide Controls" : "Show Controls"}</Button
         >
+        <Button
+          variant="outline"
+          size="icon"
+          onclick={() => driverObj.drive()}
+          class="border-2 dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+        >
+          <GraduationCap class="h-4 w-4" />
+          <span class="sr-only">Start Tour</span>
+        </Button>
       </div>
     </div>
-    {#if value === "3D"}
-      <ThreeD />
-    {:else if value === "2D"}
-      <TwoD />
-    {/if}
-    {#if showControls && value === "2D"}
-      <div
-        class="absolute bottom-16 left-1/2 text-xs transform -translate-x-1/2 mb-4"
-      >
-        Left Click: Pan/Select/Drag, Scroll Wheel: Zoom, Left Click + Shift:
-        Select Multiple Nodes
-      </div>
-    {/if}
-    {#if showControls && value === "3D"}
-      <div
-        class="absolute bottom-16 left-1/2 text-xs transform -translate-x-1/2 mb-4"
-      >
-        Left Click: Rotate, Scroll Wheel: Zoom, Right Click: Pan
-      </div>
-    {/if}
+    <div id="graph-container" class="flex-1 relative">
+      {#if value === "3D"}
+        <ThreeD />
+      {:else if value === "2D"}
+        <TwoD />
+      {/if}
+      {#if showControls && value === "2D"}
+        <div
+          id="interaction-controls-2d"
+          class="absolute bottom-4 left-1/2 text-xs transform -translate-x-1/2 mb-4 p-2 bg-background/80 rounded border dark:border-dark-border"
+        >
+          Left Click: Pan/Select/Drag, Scroll Wheel: Zoom, Left Click + Shift:
+          Select Multiple Nodes
+        </div>
+      {/if}
+      {#if showControls && value === "3D"}
+        <div
+          id="interaction-controls-3d"
+          class="absolute bottom-4 left-1/2 text-xs transform -translate-x-1/2 mb-4 p-2 bg-background/80 rounded border dark:border-dark-border"
+        >
+          Left Click: Rotate, Scroll Wheel: Zoom, Right Click: Pan
+        </div>
+      {/if}
+    </div>
   </div>
 {/if}

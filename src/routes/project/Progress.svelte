@@ -22,6 +22,7 @@
     Plus,
     Minus,
     Info,
+    GraduationCap,
   } from "lucide-svelte";
   import { onDestroy, onMount } from "svelte";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
@@ -29,6 +30,8 @@
   import { notesStore } from "$lib/stores/NotesStore.svelte";
   import { fade } from "svelte/transition";
   import { API_BASE_URL } from "$lib/config";
+  import { driver } from "driver.js";
+  import "driver.js/dist/driver.css";
 
   // Level definitions with colors
   const levels = [
@@ -222,16 +225,6 @@
     }
     await loadAchievements();
   });
-
-  // $effect(() => {
-  //   if (
-  //     timelineContainer &&
-  //     projectStore.currentProject?.id &&
-  //     !isInitialized
-  //   ) {
-  //     initializeTimeline();
-  //   }
-  // });
 
   async function initializeTimeline() {
     if (!timelineContainer || !projectStore.currentProject) return;
@@ -672,11 +665,120 @@
       timeline.destroy();
     }
   });
+
+  // Define driverObj
+  const driverObj = driver({
+    showProgress: true,
+    popoverClass: "quester-driver-theme",
+    steps: [
+      {
+        element: "#progress-header",
+        popover: {
+          title: "Track Your Research Journey",
+          description:
+            "This page visualizes your project's activity, milestones, and achievements, helping you understand your progress over time.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#research-level-card",
+        popover: {
+          title: "Your Research Level",
+          description:
+            "Gain Experience Points (XP) by completing research activities and achievements. Level up to unlock new titles reflecting your mastery!",
+          side: "bottom",
+          align: "center",
+        },
+      },
+      {
+        element: "#view-levels-button",
+        popover: {
+          title: "Explore All Levels",
+          description:
+            "Click here to see all the available research levels, their XP requirements, and descriptions.",
+          side: "left",
+          align: "start",
+        },
+      },
+      {
+        element: "#progress-tabs",
+        popover: {
+          title: "Navigate Progress Views",
+          description:
+            "Switch between the 'Project Timeline' view, showing chronological events, and the 'Achievements' view, tracking specific milestones.",
+          side: "bottom",
+          align: "center",
+        },
+      },
+      {
+        element: "#timeline-content",
+        popover: {
+          title: "Project Timeline",
+          description:
+            "See key project events like creation, status changes, literature additions, and note creation laid out chronologically. Click items for more details.",
+          side: "top",
+          align: "start",
+        },
+        onHighlighted: () => {
+          // Ensure Timeline tab is active
+          if (activeTab !== "timeline") activeTab = "timeline";
+        },
+      },
+      {
+        element: "#timeline-zoom-buttons",
+        popover: {
+          title: "Zoom Timeline",
+          description: "Use these buttons to zoom in or out on the timeline.",
+          side: "bottom",
+          align: "end",
+        },
+      },
+      {
+        element: "#progress-tabs", // Target tabs again to easily switch
+        popover: {
+          title: "Switch to Achievements",
+          description:
+            "Now let's look at the specific achievements you can unlock.",
+          side: "bottom",
+          align: "center",
+        },
+        onHighlighted: () => {
+          // Switch to Achievements tab
+          if (activeTab !== "achievements") activeTab = "achievements";
+        },
+      },
+      {
+        element: "#achievements-content",
+        popover: {
+          title: "Achievements",
+          description:
+            "Unlock achievements by performing specific actions like adding literature, writing notes, or using features consistently. Completed achievements award XP towards your Research Level.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: "#progress-header", // Back to header for closing
+        popover: {
+          title: "Monitor Your Momentum",
+          description:
+            "Check this page regularly to visualize your research activity, celebrate milestones, and stay motivated on your journey!",
+          side: "bottom",
+          align: "start",
+        },
+      },
+    ],
+  });
 </script>
 
 <div class="container mx-auto py-6 px-4 space-y-6">
-  <div class="flex justify-between items-center">
+  <div class="flex justify-between items-center" id="progress-header">
     <h1 class="text-3xl font-bold">Research Progress</h1>
+    <Button variant="outline" size="icon" onclick={() => driverObj.drive()}>
+      <GraduationCap class="h-4 w-4" />
+      <span class="sr-only">Learn about Progress Tracking</span>
+    </Button>
   </div>
 
   {#if !isAchievementsLoading && !error}
@@ -685,12 +787,13 @@
       0
     )}
     {@const levelInfo = getCurrentLevel(totalPoints)}
-    <div in:fade={{ duration: 300 }}>
+    <div in:fade={{ duration: 300 }} id="research-level-card">
       <Card class="border-2">
         <CardHeader>
           <CardTitle class="flex items-center justify-between">
             Research Level
             <Button
+              id="view-levels-button"
               variant="outline"
               size="sm"
               class="ml-2"
@@ -776,7 +879,10 @@
     }}
     class="space-y-6"
   >
-    <Tabs.List class="inline-flex h-10 items-center justify-center gap-4">
+    <Tabs.List
+      id="progress-tabs"
+      class="inline-flex h-10 items-center justify-center gap-4"
+    >
       <Tabs.Trigger value="timeline" class="tab-button">
         <Calendar class="h-4 w-4 mr-2" />
         Project Timeline
@@ -787,13 +893,13 @@
       </Tabs.Trigger>
     </Tabs.List>
 
-    <Tabs.Content value="timeline" class="space-y-4">
+    <Tabs.Content value="timeline" class="space-y-4" id="timeline-content">
       <Card class="border-2">
         <CardHeader>
           <CardTitle>Project Timeline</CardTitle>
         </CardHeader>
         <CardContent>
-          <div class="flex justify-end gap-2 mb-2">
+          <div class="flex justify-end gap-2 mb-2" id="timeline-zoom-buttons">
             <Button
               variant="outline"
               size="icon"
@@ -811,7 +917,11 @@
               <span class="sr-only">Zoom Out</span>
             </Button>
           </div>
-          <div bind:this={timelineContainer} class="w-full timeline-container">
+          <div
+            bind:this={timelineContainer}
+            class="w-full timeline-container"
+            id="timeline-container"
+          >
             {#if isTimelineLoading}
               <div class="flex justify-center items-center min-h-[400px]">
                 <div
@@ -824,7 +934,11 @@
       </Card>
     </Tabs.Content>
 
-    <Tabs.Content value="achievements" class="space-y-6">
+    <Tabs.Content
+      value="achievements"
+      class="space-y-6"
+      id="achievements-content"
+    >
       {#if isAchievementsLoading}
         <div class="flex justify-center items-center min-h-[400px]">
           <div

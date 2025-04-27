@@ -23,4 +23,6 @@
   }
 </script>
 
-<TagInput tags={keywords} placeholder="Keywords" on:change={updateKeywords} />
+<div id="lit-keywords-input">
+  <TagInput tags={keywords} placeholder="Keywords" on:change={updateKeywords} />
+</div>

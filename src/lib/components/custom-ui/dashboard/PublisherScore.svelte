@@ -223,7 +223,7 @@
 {#if !dialog}
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <Dialog.Root>
-      <Card.Root>
+      <Card.Root id="journal-suggestions-card">
         <Card.Header>
           <Card.Title class="flex justify-between items-center">
             <h3 class="font-semibold mb-2 text-xl text-[#2383fb]">
@@ -267,7 +267,7 @@
       </Dialog.Content>
     </Dialog.Root>
     <Dialog.Root>
-      <Card.Root>
+      <Card.Root id="conference-suggestions-card">
         <Card.Header>
           <Card.Title class="flex justify-between items-center">
             <h3 class="font-semibold mb-2 text-xl text-[#2383fb]">

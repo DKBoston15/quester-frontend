@@ -140,6 +140,7 @@
 </script>
 
 <Card.Root
+  id="lit-insights-card"
   class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
 >
   <Accordion.Root value={accordionValue} type="multiple" class="w-full">
@@ -166,7 +167,10 @@
             {insights.length === 1 ? "task" : "tasks"} remaining)
           </span>
         </div>
-        <Accordion.Trigger class="hover:opacity-70 transition-opacity group" />
+        <Accordion.Trigger
+          id="lit-insights-accordion-trigger"
+          class="hover:opacity-70 transition-opacity group"
+        />
       </div>
 
       <Card.Header class="pt-4 px-6 pb-12">
@@ -190,10 +194,12 @@
             <span class="font-bold">{completionPercentage}%</span>
           </div>
           <div class="relative">
-            <Progress.Root
-              value={completionPercentage}
-              class="h-2 bg-secondary relative overflow-hidden rounded-full"
-            />
+            <div id="lit-insights-progress-bar">
+              <Progress.Root
+                value={completionPercentage}
+                class="h-2 bg-secondary relative overflow-hidden rounded-full"
+              />
+            </div>
             {#if completionPercentage > 0 && completionPercentage < 100}
               <div
                 class="absolute top-3 left-0 w-full flex justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"

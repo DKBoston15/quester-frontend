@@ -22,6 +22,7 @@
     X,
   } from "lucide-svelte";
   import { API_BASE_URL } from "$lib/config";
+  // Note: driver.js CSS is imported at the page level only
 
   const dispatch = createEventDispatcher();
 
@@ -550,116 +551,121 @@
 
             <Tabs.Content value="manual" class="space-y-4">
               <!-- Manual Entry Form -->
-              <div class="grid gap-4">
-                <!-- Title -->
-                <div class="space-y-2">
-                  <Label.Root for="name">Title</Label.Root>
-                  <Input
-                    id="name"
-                    bind:value={name}
-                    placeholder="Enter title"
-                  />
-                </div>
-
-                <!-- Authors -->
-                <div class="space-y-2">
-                  <Label.Root>Authors</Label.Root>
-                  <TagInput
-                    tags={authors}
-                    on:change={(e) => (authors = e.detail)}
-                    placeholder="Add authors"
-                  />
-                </div>
-
-                <!-- Type -->
-                <div class="space-y-2">
-                  <Label.Root>Type</Label.Root>
-                  <Select.Root
-                    type="single"
-                    value={type.value}
-                    onValueChange={(value) => onTypeChange(value)}
-                  >
-                    <Select.Trigger>
-                      <span>{type.label}</span>
-                    </Select.Trigger>
-                    <Select.Content>
-                      {#each literatureTypes as type}
-                        <Select.Item value={type.value} label={type.label}>
-                          {#snippet children({ selected })}
-                            {type.label}
-                            {#if selected}
-                              <div class="ml-auto">✓</div>
-                            {/if}
-                          {/snippet}
-                        </Select.Item>
-                      {/each}
-                    </Select.Content>
-                  </Select.Root>
-                </div>
-
-                <!-- Publication Details -->
+              <div id="manual-entry-form" class="space-y-4">
                 <div class="grid grid-cols-2 gap-4">
                   <div class="space-y-2">
-                    <Label.Root>Publisher</Label.Root>
+                    <Label.Root for="manual-entry-name">Name (Title)</Label.Root
+                    >
                     <Input
-                      bind:value={publisher_name}
-                      placeholder="Publisher name"
+                      id="manual-entry-name"
+                      bind:value={name}
+                      placeholder="Enter article or book title"
                     />
                   </div>
-                  <div class="space-y-2">
-                    <Label.Root>Year</Label.Root>
-                    <Input
-                      bind:value={publish_year}
-                      placeholder="Publication year"
-                    />
-                  </div>
-                </div>
 
-                <!-- Additional Fields based on type -->
-                {#if type.value === "Journal Article"}
+                  <!-- Authors -->
+                  <div class="space-y-2">
+                    <Label.Root>Authors</Label.Root>
+                    <TagInput
+                      tags={authors}
+                      on:change={(e) => (authors = e.detail)}
+                      placeholder="Add authors"
+                    />
+                  </div>
+
+                  <!-- Type -->
+                  <div class="space-y-2">
+                    <Label.Root>Type</Label.Root>
+                    <Select.Root
+                      type="single"
+                      value={type.value}
+                      onValueChange={(value) => onTypeChange(value)}
+                    >
+                      <Select.Trigger>
+                        <span>{type.label}</span>
+                      </Select.Trigger>
+                      <Select.Content>
+                        {#each literatureTypes as type}
+                          <Select.Item value={type.value} label={type.label}>
+                            {#snippet children({ selected })}
+                              {type.label}
+                              {#if selected}
+                                <div class="ml-auto">✓</div>
+                              {/if}
+                            {/snippet}
+                          </Select.Item>
+                        {/each}
+                      </Select.Content>
+                    </Select.Root>
+                  </div>
+
+                  <!-- Publication Details -->
                   <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-2">
-                      <Label.Root>Volume</Label.Root>
-                      <Input bind:value={volume} placeholder="Volume number" />
+                      <Label.Root>Publisher</Label.Root>
+                      <Input
+                        bind:value={publisher_name}
+                        placeholder="Publisher name"
+                      />
                     </div>
                     <div class="space-y-2">
-                      <Label.Root>Issue</Label.Root>
-                      <Input bind:value={issue} placeholder="Issue number" />
+                      <Label.Root>Year</Label.Root>
+                      <Input
+                        bind:value={publish_year}
+                        placeholder="Publication year"
+                      />
                     </div>
                   </div>
-                {/if}
 
-                <!-- Link -->
-                <div class="space-y-2">
-                  <Label.Root>Link</Label.Root>
-                  <Input
-                    bind:value={link}
-                    placeholder="URL to the literature"
-                  />
-                </div>
-
-                <!-- Add Literature Button -->
-                <Button
-                  class="w-full mt-4"
-                  onclick={handleSaveLiterature}
-                  disabled={isSaving}
-                >
-                  {#if isSaving}
-                    <Loader2 class="h-4 w-4 mr-2 animate-spin" />
-                    Saving...
-                  {:else}
-                    Add Literature
+                  <!-- Additional Fields based on type -->
+                  {#if type.value === "Journal Article"}
+                    <div class="grid grid-cols-2 gap-4">
+                      <div class="space-y-2">
+                        <Label.Root>Volume</Label.Root>
+                        <Input
+                          bind:value={volume}
+                          placeholder="Volume number"
+                        />
+                      </div>
+                      <div class="space-y-2">
+                        <Label.Root>Issue</Label.Root>
+                        <Input bind:value={issue} placeholder="Issue number" />
+                      </div>
+                    </div>
                   {/if}
-                </Button>
 
-                {#if processingError}
-                  <div
-                    class="bg-destructive/10 text-destructive p-4 rounded-lg flex items-center space-x-2"
-                  >
-                    <AlertCircle class="h-5 w-5" />
-                    <p>{processingError}</p>
+                  <!-- Link -->
+                  <div class="space-y-2">
+                    <Label.Root>Link</Label.Root>
+                    <Input
+                      bind:value={link}
+                      placeholder="URL to the literature"
+                    />
                   </div>
-                {/if}
+
+                  <!-- Add Literature Button -->
+                  <Button
+                    class="w-full mt-4"
+                    onclick={handleSaveLiterature}
+                    disabled={isSaving}
+                  >
+                    {#if isSaving}
+                      <Loader2 class="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    {:else}
+                      Add Literature
+                    {/if}
+                  </Button>
+
+                  {#if processingError}
+                    <div
+                      class="bg-destructive/10 text-destructive p-4 rounded-lg flex items-center space-x-2"
+                    >
+                      <AlertCircle class="h-5 w-5" />
+                      <p>{processingError}</p>
+                    </div>
+                  {/if}
+                </div>
               </div>
             </Tabs.Content>
           </div>

@@ -97,6 +97,7 @@
   <CardContent>
     <Tabs.Root value={currentTab}>
       <Tabs.List
+        id="lit-design-tabs"
         class="grid grid-cols-4 border dark:bg-background  dark:border-dark-border rounded-lg overflow-hidden"
       >
         {#each designTypes as type}
@@ -134,6 +135,7 @@
     <CardFooter class="grid grid-cols-2 gap-2">
       <Button
         variant="ghost"
+        id="lit-design-cancel-button"
         size="sm"
         onclick={() => (editMode = false)}
         disabled={isPending}
@@ -143,6 +145,7 @@
       </Button>
       <Button
         size="sm"
+        id="lit-design-save-button"
         onclick={saveDesigns}
         disabled={isPending}
         class="w-full"

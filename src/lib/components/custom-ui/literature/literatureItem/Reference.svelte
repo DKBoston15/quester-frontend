@@ -812,7 +812,7 @@
             }
           }}
         >
-          <Select.Trigger class="w-[180px]">
+          <Select.Trigger id="lit-ref-style-selector" class="w-[180px]">
             <span>{citationStyle.label}</span>
           </Select.Trigger>
           <Select.Content>
@@ -827,6 +827,7 @@
         </Select.Root>
         <Button
           variant="outline"
+          id="lit-ref-copy-button"
           size="icon"
           onclick={copyToClipboard}
           class="h-8 w-8"
@@ -843,7 +844,7 @@
 
   <Card.Content>
     <div class="space-y-4">
-      <div class="prose dark:prose-invert max-w-none">
+      <div id="lit-ref-text" class="prose dark:prose-invert max-w-none">
         {@html formattedCitation}
       </div>
     </div>

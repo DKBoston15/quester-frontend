@@ -13,6 +13,9 @@
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
   import { toast } from "svelte-sonner";
   import { API_BASE_URL } from "$lib/config";
+  import { driver } from "driver.js";
+  import "driver.js/dist/driver.css";
+  import { GraduationCap } from "lucide-svelte";
 
   let projectName = $state("");
   let originalName = $state("");
@@ -123,13 +126,88 @@
       showDeleteDialog = false;
     }
   }
+
+  // Define driverObj
+  const driverObj = driver({
+    showProgress: true,
+    popoverClass: "quester-driver-theme",
+    steps: [
+      {
+        element: "#settings-header",
+        popover: {
+          title: "Configure Your Project",
+          description:
+            "Manage your project's basic settings, custom designs, and data options here.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#project-name-input",
+        popover: {
+          title: "Update Project Name",
+          description:
+            "Change the project name here and click 'Save Changes' when done.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#design-manager-card",
+        popover: {
+          title: "Manage Custom Designs",
+          description:
+            "Add, edit, or remove custom options for your research, sampling, measurement, and analytic designs to tailor Quester to your specific methodology.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: "#danger-zone-card",
+        popover: {
+          title: "Danger Zone",
+          description:
+            "Be careful! This section contains actions like exporting or permanently deleting your project.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: "#export-data-button",
+        popover: {
+          title: "Export Project Data",
+          description:
+            "Download a zip file containing all your project data (literature, notes, designs, etc.) for backup or use elsewhere.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: "#delete-project-button",
+        popover: {
+          title: "Delete Project",
+          description:
+            "Permanently delete this project and all its data. This action cannot be undone, so proceed with caution!",
+          side: "top",
+          align: "start",
+        },
+      },
+    ],
+  });
 </script>
 
 <div class="container mx-auto py-6 px-4">
-  <h1 class="text-3xl font-bold mb-6">Settings</h1>
+  <div class="flex justify-between items-center mb-6" id="settings-header">
+    <h1 class="text-3xl font-bold">Settings</h1>
+    <Button variant="outline" size="icon" onclick={() => driverObj.drive()}>
+      <GraduationCap class="h-4 w-4" />
+      <span class="sr-only">Learn about Settings</span>
+    </Button>
+  </div>
 
   <div class="grid gap-6">
     <Card
+      id="general-settings-card"
       class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
     >
       <CardHeader>
@@ -140,7 +218,7 @@
           <div class="space-y-2">
             <Label for="projectName">Project Name</Label>
             <Input
-              id="projectName"
+              id="project-name-input"
               type="text"
               bind:value={projectName}
               placeholder="Enter project name"
@@ -166,9 +244,12 @@
       </CardContent>
     </Card>
 
-    <DesignManager />
+    <div id="design-manager-card">
+      <DesignManager />
+    </div>
 
     <Card
+      id="danger-zone-card"
       class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
     >
       <CardHeader>
@@ -182,6 +263,7 @@
             outcomes, and analyses, as a zip file.
           </p>
           <Button
+            id="export-data-button"
             variant="outline"
             disabled={!projectStore.currentProject || isExporting}
             onclick={exportProject}
@@ -201,6 +283,7 @@
             action cannot be undone.
           </p>
           <Button
+            id="delete-project-button"
             variant="destructive"
             disabled={!projectStore.currentProject || isDeleting}
             onclick={() => (showDeleteDialog = true)}

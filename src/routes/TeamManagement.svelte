@@ -14,6 +14,7 @@
     RefreshCw,
     Info,
     UserCog,
+    GraduationCap,
   } from "lucide-svelte";
   import {
     Card,
@@ -37,6 +38,8 @@
   import InvitationManager from "$lib/components/InvitationManager.svelte";
   import RoleManager from "$lib/components/RoleManager.svelte";
   import { API_BASE_URL } from "$lib/config";
+  import { driver, type DriveStep } from "driver.js";
+  import "driver.js/dist/driver.css";
 
   // Reactive state
   let activeTab = $state("members");
@@ -63,6 +66,15 @@
   });
   let checkingSubscription = $state(false);
 
+  // Driver.js instance
+  let driveSteps: DriveStep[] = $state([]);
+
+  const driverObj = driver({
+    showProgress: true,
+    popoverClass: "quester-driver-theme",
+    steps: driveSteps,
+  });
+
   // Load data on mount
   onMount(async () => {
     try {
@@ -88,6 +100,118 @@
           resourceId
         );
       }
+
+      // Update driver steps dynamically based on conditional rendering
+      await Promise.resolve();
+
+      // Build steps array dynamically
+      const steps: DriveStep[] = [
+        {
+          element: "#team-management-header",
+          popover: {
+            title: "Welcome to Team Management",
+            description:
+              "This is where you manage access and roles for your organizations, departments, and projects. Let's explore!",
+            side: "bottom",
+            align: "start",
+          },
+        },
+        {
+          element: "#resource-selector-card",
+          popover: {
+            title: "Select Your Team Context",
+            description:
+              "Use this dropdown to choose which Organization, Department, or Project team you want to manage. Your selection here updates the members and options below.",
+            side: "bottom",
+            align: "start",
+          },
+        },
+        {
+          element: "#team-tabs",
+          popover: {
+            title: "Manage Your Team",
+            description:
+              "Use these tabs to navigate between viewing members, adding users (for Departments/Projects), and managing invitations (for Organizations).",
+            side: "bottom",
+            align: "start",
+          },
+        },
+        {
+          element: "#team-members-tab-trigger",
+          popover: {
+            title: "View Team Members",
+            description:
+              "See who is currently part of this team. You can view their roles and, if you have permission, manage roles or remove members.",
+            side: "bottom",
+            align: "start",
+          },
+        },
+      ];
+
+      if (canShowAddUsersTab()) {
+        steps.push({
+          element: "#add-users-tab-trigger",
+          popover: {
+            title: "Add Existing Users",
+            description:
+              "For Departments and Projects, you can add users who are already part of the parent Organization directly to this team.",
+            side: "bottom",
+            align: "start",
+          },
+        });
+      }
+
+      if (showInvitationsTab) {
+        steps.push({
+          element: "#invitations-tab-trigger",
+          popover: {
+            title: "Manage Invitations",
+            description:
+              "For Organizations, invite new users via email and manage pending invitations here. Note: Invitations might be limited by your subscription plan.",
+            side: "bottom",
+            align: "start",
+          },
+        });
+      }
+
+      steps.push({
+        element: "#refresh-button",
+        popover: {
+          title: "Refresh Data",
+          description:
+            "Click here anytime to load the latest team information.",
+          side: "left",
+          align: "start",
+        },
+      });
+
+      if (canJoinResource()) {
+        steps.push({
+          element: "#join-button",
+          popover: {
+            title: "Join This Team",
+            description:
+              "If you have organization privileges (like Admin/Owner) but aren't a member of this specific Department or Project, you can add yourself here.",
+            side: "left",
+            align: "start",
+          },
+        });
+      }
+
+      steps.push({
+        element: ".container",
+        popover: {
+          title: "Ready to Collaborate?",
+          description:
+            "Use these tools to build and manage your research teams effectively. Select a resource to begin!",
+          side: "top",
+          align: "center",
+        },
+      });
+
+      // Update the state variable and the driver instance
+      driveSteps = steps;
+      driverObj.setSteps(driveSteps);
     } catch (error) {
       console.error("Error initializing team management:", error);
     } finally {
@@ -468,7 +592,10 @@
         <div class="container mx-auto py-6 px-4">
           <!-- Header with Resource Selector -->
           <div class="mb-8">
-            <div class="flex justify-between items-center">
+            <div
+              class="flex justify-between items-center"
+              id="team-management-header"
+            >
               <div class="flex items-center gap-2">
                 <h1 class="text-3xl font-bold">Team Management</h1>
                 {#if teamManagement.isLoading}
@@ -477,8 +604,19 @@
               </div>
 
               <div class="flex items-center gap-2">
+                <!-- Driver Tour Button -->
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onclick={() => driverObj.drive()}
+                >
+                  <GraduationCap class="h-4 w-4" />
+                  <span class="sr-only">Learn about Team Management</span>
+                </Button>
+
                 {#if canJoinResource()}
                   <Button
+                    id="join-button"
                     variant="outline"
                     onclick={handleSelfAssign}
                     disabled={isSelfAssigning}
@@ -496,7 +634,11 @@
                     {/if}
                   </Button>
                 {/if}
-                <Button variant="outline" onclick={refreshData}>
+                <Button
+                  id="refresh-button"
+                  variant="outline"
+                  onclick={refreshData}
+                >
                   <RefreshCw class="h-4 w-4 mr-2" />
                   Refresh
                 </Button>
@@ -509,7 +651,7 @@
 
           <!-- Resource Selector -->
           {#if !teamManagement.isLoading && teamManagement.userResources}
-            <Card class="mb-6">
+            <Card class="mb-6" id="resource-selector-card">
               <CardHeader>
                 <CardTitle class="flex items-center gap-2">
                   <svelte:component this={resourceIcon} class="h-5 w-5" />
@@ -560,7 +702,7 @@
           {#if !teamManagement.isLoading && (teamManagement.organizationStructure || teamManagement.departmentStructure || teamManagement.projectTeam)}
             <Card>
               <CardHeader class="pb-0">
-                <Tabs value={activeTab} class="w-full">
+                <Tabs value={activeTab} class="w-full" id="team-tabs">
                   <TabsList
                     class="grid w-full grid-cols-{1 +
                       (canShowAddUsersTab() ? 1 : 0) +
@@ -569,6 +711,7 @@
                     <TabsTrigger
                       value="members"
                       onclick={() => (activeTab = "members")}
+                      id="team-members-tab-trigger"
                     >
                       <Users class="h-4 w-4 mr-2" />
                       Team Members
@@ -578,6 +721,7 @@
                       <TabsTrigger
                         value="add-users"
                         onclick={() => (activeTab = "add-users")}
+                        id="add-users-tab-trigger"
                       >
                         <UserCog class="h-4 w-4 mr-2" />
                         Add Users
@@ -588,6 +732,7 @@
                       <TabsTrigger
                         value="invitations"
                         onclick={() => (activeTab = "invitations")}
+                        id="invitations-tab-trigger"
                       >
                         <UserPlus class="h-4 w-4 mr-2" />
                         Invitations
@@ -600,7 +745,7 @@
               <CardContent>
                 <!-- Team Members Tab -->
                 {#if activeTab === "members"}
-                  <div class="py-4">
+                  <div class="py-4" id="team-members-tab-content">
                     {#if canJoinResource()}
                       <div
                         class="mb-6 p-4 border-2 border-dashed rounded-lg bg-card/50"
@@ -627,6 +772,7 @@
                             onclick={handleSelfAssign}
                             class="whitespace-nowrap"
                             disabled={isSelfAssigning}
+                            id="join-team-button-alt"
                           >
                             {#if isSelfAssigning}
                               <div
@@ -649,13 +795,14 @@
                       resourceType={teamManagement.selectedResourceType}
                       canChangeRoles={teamManagement.permissions.canChangeRoles}
                       onUserSelect={handleUserSelect}
+                      {subscriptionLimits}
                     />
                   </div>
                 {/if}
 
                 <!-- Add Users Tab - NEW -->
                 {#if activeTab === "add-users" && canShowAddUsersTab()}
-                  <div class="py-4">
+                  <div class="py-4" id="add-users-tab-content">
                     <ResourceUserManager
                       resourceType={teamManagement.selectedResourceType ===
                       "department"
@@ -670,7 +817,7 @@
 
                 <!-- Invitations Tab -->
                 {#if activeTab === "invitations" && showInvitationsTab}
-                  <div class="py-4">
+                  <div class="py-4" id="invitations-tab-content">
                     {#if teamManagement.settings?.invitations?.disabled}
                       <div class="text-center py-8 text-muted-foreground">
                         <p>

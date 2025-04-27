@@ -8,7 +8,16 @@
   import { analyzeLiterature } from "./analytics/utils";
   import * as Tabs from "$lib/components/ui/tabs";
   import * as Dialog from "$lib/components/ui/dialog";
-  import { PieChart, FileText, BookText, FlaskConical } from "lucide-svelte";
+  import { Button } from "$lib/components/ui/button";
+  import {
+    PieChart,
+    FileText,
+    BookText,
+    FlaskConical,
+    GraduationCap,
+  } from "lucide-svelte";
+  import { driver } from "driver.js";
+  import "driver.js/dist/driver.css";
 
   // Watch for theme changes and update charts
   const observer = new MutationObserver((mutations) => {
@@ -173,6 +182,124 @@
     color: string;
   } | null = $state(null);
   let fullscreenChart: Chart | null = null;
+
+  // driver.js setup
+  const driverObj = driver({
+    showProgress: true,
+    popoverClass: "quester-driver-theme",
+    steps: [
+      {
+        element: "#analytics-header",
+        popover: {
+          title: "Explore Your Project Analytics",
+          description:
+            "This section visualizes key trends and patterns in your literature and notes, helping you understand your research landscape.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#analytics-tabs",
+        popover: {
+          title: "Navigate Different Views",
+          description:
+            "Use these tabs to switch between different analysis categories: Overview, Notes Content, Literature Titles, and Research Design Methods.",
+          side: "bottom",
+          align: "center",
+        },
+      },
+      {
+        element: "#overview-charts",
+        popover: {
+          title: "Project Overview",
+          description:
+            "See high-level trends like prevalent publishers, common keywords, publication year distribution, and literature types.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: "#notes-charts",
+        popover: {
+          title: "Notes Content Analysis",
+          description:
+            "Analyze the content of your notes by identifying the most frequent nouns, verbs, and adjectives used.",
+          side: "top",
+          align: "start",
+        },
+        onHighlighted: () => {
+          // Switch to the 'notes' tab if not already active
+          if (activeTab !== "notes") activeTab = "notes";
+        },
+      },
+      {
+        element: "#literature-charts",
+        popover: {
+          title: "Literature Title Analysis",
+          description:
+            "Discover common nouns, verbs, and adjectives appearing in the titles of your collected literature.",
+          side: "top",
+          align: "start",
+        },
+        onHighlighted: () => {
+          // Switch to the 'literature' tab
+          if (activeTab !== "literature") activeTab = "literature";
+        },
+      },
+      {
+        element: "#research-charts",
+        popover: {
+          title: "Research Design Insights",
+          description:
+            "Understand the methodologies used in your literature, including prevalent research, sampling, measurement, and analytic designs.",
+          side: "top",
+          align: "start",
+        },
+        onHighlighted: () => {
+          // Switch to the 'research' tab
+          if (activeTab !== "research") activeTab = "research";
+        },
+      },
+      {
+        element: "#fullscreen-button-example",
+        popover: {
+          title: "View Fullscreen",
+          description:
+            "Click this icon on any chart card to view a larger version in a modal window for easier inspection.",
+          side: "left",
+          align: "start",
+        },
+        onHighlighted: () => {
+          // Switch back to overview tab for context
+          if (activeTab !== "overview") activeTab = "overview";
+        },
+      },
+      {
+        element: ".analytics-container", // General container if no data
+        popover: {
+          title: "No Data Yet?",
+          description:
+            "If you see a 'No data' message, start by adding literature and notes to your project. Analytics will appear automatically as you add content.",
+          side: "top",
+          align: "center",
+        },
+        onHighlighted: () => {
+          // Ensure overview tab is active if switching back
+          if (activeTab !== "overview") activeTab = "overview";
+        },
+      },
+      {
+        element: ".analytics-container",
+        popover: {
+          title: "Gain Deeper Insights",
+          description:
+            "Regularly check these analytics to spot trends, identify gaps, and understand the focus of your research materials.",
+          side: "top",
+          align: "center",
+        },
+      },
+    ],
+  });
 
   function openFullscreen(
     canvas: HTMLCanvasElement | null,
@@ -788,7 +915,13 @@
 </script>
 
 <div class="analytics-container">
-  <h1 class="text-3xl font-bold mb-6">Analytics</h1>
+  <div class="flex justify-between items-center mb-6" id="analytics-header">
+    <h1 class="text-3xl font-bold">Analytics</h1>
+    <Button variant="outline" size="icon" onclick={() => driverObj.drive()}>
+      <GraduationCap class="h-4 w-4" />
+      <span class="sr-only">Learn about Analytics</span>
+    </Button>
+  </div>
 
   <Dialog.Root
     open={!!activeChart}
@@ -804,7 +937,7 @@
   {#if isLoading}
     <div class="loading">Loading data...</div>
   {:else if !data.summary}
-    <div class="no-data">
+    <div class="no-data" id="analytics-no-data">
       <h3>No data to analyze yet!</h3>
       <p>Add literature and notes to see your analytics.</p>
     </div>
@@ -814,7 +947,10 @@
       onValueChange={(value: string) => (activeTab = value)}
       class="space-y-6"
     >
-      <Tabs.List class="inline-flex h-10 items-center justify-center gap-4">
+      <Tabs.List
+        class="inline-flex h-10 items-center justify-center gap-4"
+        id="analytics-tabs"
+      >
         <Tabs.Trigger value="overview" class="tab-button">
           <PieChart class="h-4 w-4 mr-2" />
           Overview
@@ -834,9 +970,10 @@
       </Tabs.List>
 
       <Tabs.Content value="overview" class="space-y-6">
-        <div class="charts-grid">
+        <div class="charts-grid" id="overview-charts">
           <div class="chart-card">
             <button
+              id="fullscreen-button-example"
               class="fullscreen-button"
               aria-label="View chart in fullscreen"
               onclick={() =>
@@ -959,7 +1096,7 @@
       </Tabs.Content>
 
       <Tabs.Content value="notes" class="space-y-6">
-        <div class="charts-grid">
+        <div class="charts-grid" id="notes-charts">
           <div class="chart-card">
             <button
               class="fullscreen-button"
@@ -1054,7 +1191,7 @@
       </Tabs.Content>
 
       <Tabs.Content value="literature" class="space-y-6">
-        <div class="charts-grid">
+        <div class="charts-grid" id="literature-charts">
           <div class="chart-card">
             <button
               class="fullscreen-button"
@@ -1149,7 +1286,7 @@
       </Tabs.Content>
 
       <Tabs.Content value="research" class="space-y-6">
-        <div class="charts-grid">
+        <div class="charts-grid" id="research-charts">
           <div class="chart-card">
             <button
               class="fullscreen-button"

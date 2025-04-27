@@ -74,3 +74,102 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Add custom driver.js theme styles below */
+@layer components {
+  .driver-popover.quester-driver-theme {
+    @apply bg-card text-card-foreground border border-border rounded-lg shadow-lg;
+  }
+
+  .driver-popover.quester-driver-theme .driver-popover-title {
+    @apply text-lg font-semibold mb-2 text-card-foreground;
+  }
+
+  .driver-popover.quester-driver-theme .driver-popover-description {
+    @apply text-sm mb-4 text-muted-foreground;
+  }
+
+  .driver-popover.quester-driver-theme .driver-popover-progress-text {
+    @apply text-xs text-muted-foreground mr-4;
+  }
+
+  .driver-popover.quester-driver-theme .driver-popover-footer {
+    @apply flex items-center justify-between mt-4;
+  }
+
+  .driver-popover.quester-driver-theme .driver-popover-navigation-btns {
+    @apply flex items-center justify-end gap-2;
+    flex: 1;
+  }
+
+  .driver-popover.quester-driver-theme button {
+    @apply inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 flex-1;
+    text-shadow: none;
+  }
+
+  .driver-popover.quester-driver-theme .driver-popover-close-btn {
+    /* Remove 'all: unset;' and explicitly set styles */
+    /* Apply Tailwind utilities for positioning, styling, padding, cursor, and explicitly remove bg/border */
+    /* Added hover:text-muted-foreground to explicitly prevent color change */
+    @apply absolute top-2 right-2 text-muted-foreground transition-colors p-1 rounded-full cursor-pointer bg-transparent border-none hover:text-muted-foreground;
+  }
+
+  .driver-popover.quester-driver-theme .driver-popover-close-btn svg {
+    @apply w-4 h-4;
+  }
+
+  .driver-popover.quester-driver-theme
+    .driver-popover-arrow-side-left.driver-popover-arrow {
+    border-left-color: var(--card);
+  }
+
+  .driver-popover.quester-driver-theme
+    .driver-popover-arrow-side-right.driver-popover-arrow {
+    border-right-color: var(--card);
+  }
+
+  .driver-popover.quester-driver-theme
+    .driver-popover-arrow-side-top.driver-popover-arrow {
+    border-top-color: var(--card);
+  }
+
+  .driver-popover.quester-driver-theme
+    .driver-popover-arrow-side-bottom.driver-popover-arrow {
+    border-bottom-color: var(--card);
+  }
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* General body styling */
+body {
+  @apply bg-background text-foreground min-h-screen;
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* Ensure root layout takes full height */
+html,
+body,
+#app {
+  height: 100%;
+}
+
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/80;
+}

@@ -278,7 +278,7 @@
 
       // Not viewed today, call backend
       const response = await fetch(
-        `${API_BASE_URL}/projects/${projectId}/viewed`,
+        `${API_BASE_URL}/projects/${projectId}/view`,
         {
           method: "POST",
           credentials: "include",

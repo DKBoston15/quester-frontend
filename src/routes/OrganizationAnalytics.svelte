@@ -37,6 +37,9 @@
   import ProjectUsersModal from "$lib/components/ProjectUsersModal.svelte";
   import * as Pagination from "$lib/components/ui/pagination/index.js";
   import { navigate, Link } from "svelte-routing";
+  import { driver } from "driver.js";
+  import "driver.js/dist/driver.css";
+  import { GraduationCap } from "lucide-svelte";
 
   // Define the structure for the daily activity counts
   interface DailyActivityCount {
@@ -730,6 +733,133 @@
     }
   }
   // --- End Project Activity Table Pagination Logic ---
+
+  const driverObj = driver({
+    showProgress: true,
+    popoverClass: "quester-driver-theme",
+    steps: [
+      {
+        element: "#analytics-header",
+        popover: {
+          title: "Welcome to Organization Analytics",
+          description:
+            "This page provides a high-level overview of activity and engagement across your organization's projects and users. Use it to monitor progress, identify trends, and understand resource usage.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#summary-metrics-grid",
+        popover: {
+          title: "Key Performance Indicators",
+          description:
+            "These cards show vital signs for your organization: total users, recent user activity (last 7 and 30 days), and the overall activity rate. Quickly gauge the health and engagement level of your workspace.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#project-activity-section",
+        popover: {
+          title: "Project Content Activity",
+          description:
+            "This section tracks the creation and modification of research content (Literature, Notes, Models, Outcomes) within each project.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: "#date-range-selector",
+        popover: {
+          title: "Filter by Time",
+          description:
+            "Adjust the date range (7, 14, 30 days, or All Time) to focus the activity data in the table and charts on specific periods. Useful for tracking recent progress or long-term trends.",
+          side: "bottom",
+          align: "end",
+        },
+      },
+      {
+        element: "#project-search-input",
+        popover: {
+          title: "Find Projects Quickly",
+          description:
+            "Use this search bar to filter the table below and find specific projects by name.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#project-activity-table",
+        popover: {
+          title: "Project Activity Details",
+          description:
+            "This table lists projects with recent activity. Click headers to sort. The columns quantify added content, helping identify active research areas. Use the checkboxes to select projects for detailed charting below.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: "#project-activity-table tbody tr:first-child td:last-child", // Target actions on the first row
+        popover: {
+          title: "Project Actions",
+          description:
+            "Quickly view the users associated with a project or navigate directly to the project workspace.",
+          side: "left",
+          align: "start",
+        },
+      },
+      {
+        element: "#project-activity-charts",
+        popover: {
+          title: "Visualize Project Trends",
+          description:
+            "When you select projects in the table above, detailed activity charts appear here. Compare trends across projects or dive deep into a single project's content creation patterns over the selected date range.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: "#user-activity-section",
+        popover: {
+          title: "User Login Activity",
+          description:
+            "Monitor user engagement by tracking login frequency. This helps identify active contributors and users who might need support.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: "#user-search-input",
+        popover: {
+          title: "Find Users Quickly",
+          description:
+            "Search for specific users by name or email to check their recent login activity.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#user-activity-table",
+        popover: {
+          title: "User Login Details",
+          description:
+            "See when each user last logged in and how many distinct days they were active over different periods (7, 14, 30 days, All Time). Click headers to sort and easily identify engagement patterns.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: ".container", // General overview
+        popover: {
+          title: "Monitor Your Organization's Pulse",
+          description:
+            "Regularly use this Analytics page to understand research activity, track user engagement, and make informed decisions about resource allocation and support.",
+          side: "top",
+          align: "center",
+        },
+      },
+    ],
+  });
 </script>
 
 <Sidebar.Provider>
@@ -739,6 +869,7 @@
       <div class="container mx-auto py-6 px-4">
         <!-- Header Section with Date Range Selector -->
         <div
+          id="analytics-header"
           class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
         >
           <div>
@@ -748,6 +879,15 @@
             </p>
           </div>
           <!-- Date Range Selector (moved to Project Activity section) -->
+          <!-- Add Learn Button Here -->
+          <Button
+            variant="outline"
+            size="icon"
+            onclick={() => driverObj.drive()}
+            aria-label="Learn about Organization Analytics"
+          >
+            <GraduationCap class="h-4 w-4" />
+          </Button>
         </div>
 
         <!-- Access Denied State -->
@@ -789,6 +929,7 @@
           <!-- Summary Metrics Cards -->
           {#if userLoginTableData?.length}
             <div
+              id="summary-metrics-grid"
               class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
             >
               <!-- Total Users Card -->
@@ -909,7 +1050,7 @@
             {:else}
               <div class="space-y-8">
                 <!-- Projects with Activity Section -->
-                <div class="space-y-6">
+                <div class="space-y-6" id="project-activity-section">
                   <div
                     class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4"
                   >
@@ -926,7 +1067,7 @@
                     </h2>
 
                     <!-- Date Range Selector (moved here) -->
-                    <div class="flex">
+                    <div class="flex" id="date-range-selector">
                       <RadioGroup.Root
                         bind:value={selectedRange}
                         class="flex gap-2 rounded-md bg-card p-1 shadow-sm"
@@ -982,6 +1123,7 @@
                   <!-- Project Search Input -->
                   <div class="mb-4">
                     <Input
+                      id="project-search-input"
                       type="search"
                       placeholder="Search projects by name..."
                       bind:value={projectSearchTerm}
@@ -1004,7 +1146,10 @@
                     </div>
                   {:else}
                     <!-- Project Activity Table -->
-                    <div class="border rounded-lg overflow-hidden shadow-sm">
+                    <div
+                      id="project-activity-table"
+                      class="border rounded-lg overflow-hidden shadow-sm"
+                    >
                       <div class="overflow-x-auto">
                         <Table>
                           <TableHeader>
@@ -1299,7 +1444,7 @@
                         selectedProjectIds.has(p.projectId)
                       )}
                     {#if selectedProjectsData.length > 0}
-                      <div class="mt-6 space-y-6">
+                      <div class="mt-6 space-y-6" id="project-activity-charts">
                         <h3 class="text-lg font-semibold">
                           Selected Project Activity Details
                         </h3>
@@ -1331,7 +1476,7 @@
                 </div>
 
                 <!-- User Login Activity Section -->
-                <div>
+                <div id="user-activity-section">
                   <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
                     <Users class="w-5 h-5 text-primary" />
                     <span>User Login Activity</span>
@@ -1340,6 +1485,7 @@
                   <!-- User Search Input -->
                   <div class="mb-4">
                     <Input
+                      id="user-search-input"
                       type="search"
                       placeholder="Search users by name or email..."
                       bind:value={userSearchTerm}
@@ -1356,7 +1502,10 @@
                       </p>
                     </div>
                   {:else}
-                    <div class="border rounded-lg overflow-hidden shadow-sm">
+                    <div
+                      id="user-activity-table"
+                      class="border rounded-lg overflow-hidden shadow-sm"
+                    >
                       <div class="overflow-x-auto">
                         <Table>
                           <TableHeader>

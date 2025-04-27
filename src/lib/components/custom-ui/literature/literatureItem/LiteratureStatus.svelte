@@ -83,7 +83,7 @@
 
 <div class="grid gap-4">
   <div class="flex items-center justify-between">
-    <div class="flex items-center gap-4">
+    <div class="flex items-center gap-4" id="lit-status-display">
       <div class={`p-3 rounded-lg ${currentStatus.bgColor}`}>
         <svelte:component
           this={currentStatus.icon}
@@ -101,10 +101,19 @@
     </div>
     <div class="flex space-x-2">
       {#if editMode}
-        <Button size="sm" variant="ghost" onclick={cancelEdit}>Cancel</Button>
-        <Button size="sm" onclick={updateStatus}>Save</Button>
+        <Button
+          id="lit-status-cancel-button"
+          size="sm"
+          variant="ghost"
+          onclick={cancelEdit}>Cancel</Button
+        >
+        <Button id="lit-status-save-button" size="sm" onclick={updateStatus}
+          >Save</Button
+        >
       {:else}
-        <Button size="sm" onclick={enterEditMode}>Change Status</Button>
+        <Button id="lit-status-change-button" size="sm" onclick={enterEditMode}
+          >Change Status</Button
+        >
       {/if}
     </div>
   </div>

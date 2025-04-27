@@ -30,6 +30,9 @@
   import TreeNode from "./TreeNodeItem.svelte";
   import { API_BASE_URL } from "$lib/config";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
+  import { driver } from "driver.js";
+  import "driver.js/dist/driver.css";
+  import { GraduationCap } from "lucide-svelte";
 
   // Props
   const props = $props<{
@@ -857,8 +860,11 @@
 
 <div class="w-full">
   <!-- Header with title and view options -->
-  <div class="mb-4 border-b flex justify-between items-center">
-    <Tabs.Root value={viewMode} class="w-auto">
+  <div
+    class="mb-4 border-b flex justify-between items-center"
+    id="org-structure-header"
+  >
+    <Tabs.Root value={viewMode} class="w-auto" id="org-view-mode-toggle">
       <Tabs.List>
         <Tabs.Trigger value="tree" onclick={() => (viewMode = "tree")}>
           <LayoutGrid class="h-4 w-4 mr-2" />
@@ -872,7 +878,7 @@
     </Tabs.Root>
 
     <!-- Action buttons -->
-    <div class="flex gap-2">
+    <div class="flex gap-2 items-center">
       {#if selectedOrganization}
         {@const orgId = selectedOrganization.id}
         {@const subAllowsProjectCreate =
@@ -913,6 +919,7 @@
 
         {#if userCanCreateDept}
           <Button
+            id="org-new-department-button"
             variant="outline"
             size="sm"
             class="flex items-center gap-1"
@@ -925,7 +932,10 @@
             New Department
           </Button>
         {:else}
-          <div class="relative inline-block group">
+          <div
+            class="relative inline-block group"
+            id="org-new-department-button"
+          >
             <Button
               variant="outline"
               size="sm"
@@ -948,6 +958,7 @@
         {/if}
         {#if userCanCreateProj}
           <Button
+            id="org-new-project-button"
             variant="default"
             size="sm"
             class="flex items-center gap-1"
@@ -962,7 +973,7 @@
           </Button>
         {:else}
           <!-- Disabled Button with Tooltip -->
-          <div class="relative inline-block group">
+          <div class="relative inline-block group" id="org-new-project-button">
             <Button
               variant="default"
               size="sm"
@@ -989,6 +1000,7 @@
     <div class="relative flex-1">
       <Search class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
       <Input
+        id="org-search-input"
         type="text"
         placeholder="Search projects..."
         bind:value={searchQuery}
@@ -997,6 +1009,7 @@
     </div>
 
     <Toggle
+      id="org-filter-toggle"
       pressed={showMyProjectsOnly}
       onPressedChange={handleToggleChange}
       variant="outline"
@@ -1033,7 +1046,10 @@
   {:else}
     <!-- Tree View -->
     {#if viewMode === "tree"}
-      <div class="border rounded-md overflow-hidden bg-background">
+      <div
+        class="border rounded-md overflow-hidden bg-background"
+        id="org-tree-view-container"
+      >
         {#each organizations as org}
           <div class="border-b last:border-0">
             <button
@@ -1242,7 +1258,10 @@
       </div>
       <!-- List View -->
     {:else}
-      <div class="border rounded-md overflow-hidden bg-background">
+      <div
+        class="border rounded-md overflow-hidden bg-background"
+        id="org-list-view-container"
+      >
         <!-- Header -->
         <div
           class="bg-muted/70 px-4 py-2 grid grid-cols-[auto_1fr_auto_auto] gap-4 items-center font-medium text-sm border-b"

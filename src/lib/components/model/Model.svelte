@@ -21,6 +21,10 @@
   import EdgeCustomizationPanel from "./EdgeCustomizationPanel.svelte";
 
   import FlowToolbar from "./FlowToolbar.svelte";
+  import { driver, type DriveStep, type Driver } from "driver.js";
+  import "driver.js/dist/driver.css";
+  import { GraduationCap } from "lucide-svelte";
+  import { Button } from "$lib/components/ui/button";
 
   let { modelId } = $props<{
     modelId: string;
@@ -419,6 +423,137 @@
       })
     );
   });
+
+  // --- Driver.js Tour Definition ---
+  const driverObj = driver({
+    allowClose: false, // Prevent closing by clicking overlay
+    showProgress: true,
+    popoverClass: "quester-driver-theme",
+    steps: [
+      {
+        element: "#flow-toolbar",
+        popover: {
+          title: "Model Building Tools",
+          description:
+            "Add Rectangle or Circle nodes, toggle grid visibility and snapping, and download your model as an image using this toolbar.",
+          side: "right",
+          align: "start",
+        },
+      },
+      {
+        element: ".svelte-flow", // Target the main canvas area
+        popover: {
+          title: "Your Modeling Canvas",
+          description:
+            "This is your main workspace. Drag nodes from the toolbar to add them. Connect nodes by dragging between their handles.",
+          side: "top",
+          align: "center",
+        },
+      },
+      {
+        element: ".svelte-flow__controls", // Target the controls panel
+        popover: {
+          title: "Canvas Controls",
+          description:
+            "Use these controls to zoom in/out, fit the entire model to the view, and lock/unlock the canvas panning.",
+          side: "top", // Adjust side based on actual position
+          align: "end",
+        },
+      },
+      {
+        element: ".svelte-flow__minimap", // Target the minimap
+        popover: {
+          title: "Minimap Navigation",
+          description:
+            "This provides an overview of your entire model. Click and drag within the minimap to quickly navigate large canvases.",
+          side: "left", // Adjust side based on actual position
+          align: "end",
+        },
+      },
+      {
+        element: ".svelte-flow__node", // Target the first node found
+        popover: {
+          title: "Nodes",
+          description:
+            "Nodes represent the core concepts or variables in your model. Click to select, resize using handles, and double-click (if applicable) to edit content.",
+          side: "right",
+          align: "start",
+        },
+        onHighlightStarted: (
+          element: Element | undefined,
+          step: DriveStep,
+          options: { driver: Driver }
+        ) => {
+          const toolbar = document.getElementById("flow-toolbar");
+          if (!document.querySelector(".svelte-flow__node")) {
+            options.driver.moveNext(); // Use options.driver
+          } else if (toolbar) {
+            toolbar.classList.add("driver-secondary-highlight");
+          }
+        },
+        onDeselected: () => {
+          const toolbar = document.getElementById("flow-toolbar");
+          toolbar?.classList.remove("driver-secondary-highlight");
+        },
+      },
+      {
+        element: ".svelte-flow__edge", // Target the first edge found
+        popover: {
+          title: "Edges",
+          description:
+            "Edges show the relationships or connections between your concepts. Click an edge to select it and customize its appearance using the panel that appears.",
+          side: "bottom",
+          align: "start",
+        },
+        onHighlightStarted: (
+          element: Element | undefined,
+          step: DriveStep,
+          options: { driver: Driver }
+        ) => {
+          const toolbar = document.getElementById("flow-toolbar");
+          if (!document.querySelector(".svelte-flow__edge")) {
+            options.driver.moveNext(); // Use options.driver
+          } else if (toolbar) {
+            toolbar.classList.add("driver-secondary-highlight");
+          }
+        },
+        onDeselected: () => {
+          const toolbar = document.getElementById("flow-toolbar");
+          toolbar?.classList.remove("driver-secondary-highlight");
+        },
+      },
+      {
+        element: "#edge-customization-panel", // Assuming this ID exists
+        popover: {
+          title: "Edge Customization",
+          description:
+            "When an edge is selected, use this panel to change its style, color, arrowheads, and animation to clearly communicate the nature of the relationship.",
+          side: "left",
+          align: "start",
+        },
+        onHighlightStarted: (
+          element: Element | undefined,
+          step: DriveStep,
+          options: { driver: Driver }
+        ) => {
+          const panel = document.getElementById("edge-customization-panel");
+          if (!panel || getComputedStyle(panel).display === "none") {
+            options.driver.moveNext(); // Use options.driver
+          }
+        },
+      },
+      {
+        element: "#model-view-container",
+        popover: {
+          title: "Model View Container",
+          description:
+            "This is the container for the model view. It's used to apply any additional styling or layout constraints.",
+          side: "right",
+          align: "start",
+        },
+      },
+    ],
+  });
 </script>
 
 <div class="overview" style="height: 100vh; width: 100%;" data-flowid={modelId}>
@@ -544,5 +679,55 @@
 
   :global(.dark .svelte-flow__controls-button svg) {
     fill: currentColor;
+  }
+
+  /* Override driver.js button styles specifically within this component context */
+  :global(
+      .driver-popover.quester-driver-theme
+        .driver-popover-navigation-btns
+        button
+    ) {
+    background-color: hsl(var(--primary)) !important;
+    color: hsl(var(--primary-foreground)) !important;
+    border: 1px solid transparent !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 0.375rem !important; /* rounded-md */
+    font-size: 0.875rem !important; /* text-sm */
+    font-weight: 500 !important; /* medium */
+    transition: background-color 0.2s !important;
+    /* Reset potential conflicting styles */
+    box-shadow: none !important;
+    text-transform: none !important;
+  }
+
+  :global(
+      .driver-popover.quester-driver-theme
+        .driver-popover-navigation-btns
+        button:hover
+    ) {
+    /* Adjust hover state - assuming a slightly darker/lighter primary */
+    /* You might need to define a --primary-hover variable or adjust opacity */
+    filter: brightness(90%) !important;
+  }
+
+  /* Ensure disabled state is clear if needed */
+  :global(
+      .driver-popover.quester-driver-theme
+        .driver-popover-navigation-btns
+        button:disabled
+    ) {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+  }
+
+  /* Style for secondary highlight during specific tour steps */
+  :global(#flow-toolbar.driver-secondary-highlight) {
+    outline: 2px solid hsl(var(--primary)) !important;
+    outline-offset: 2px;
+    box-shadow: 0 0 10px hsl(var(--primary) / 0.5) !important; /* Optional glow */
+    transition:
+      outline 0.2s,
+      box-shadow 0.2s;
+    z-index: 10001 !important; /* Ensure it's above the driver overlay */
   }
 </style>

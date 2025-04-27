@@ -7,13 +7,22 @@
   import * as Card from "$lib/components/ui/card";
   import { Root, Content, Title, Description } from "$lib/components/ui/dialog";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import { Plus, Trash2, Pencil, Search, Info } from "lucide-svelte";
+  import {
+    Plus,
+    Trash2,
+    Pencil,
+    Search,
+    Info,
+    GraduationCap,
+  } from "lucide-svelte";
   import { navigate } from "svelte-routing";
   import type { Node, Edge } from "@xyflow/svelte";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { fly } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
   import { API_BASE_URL } from "$lib/config";
+  import { driver } from "driver.js";
+  import "driver.js/dist/driver.css";
 
   interface Model {
     id: string;
@@ -213,6 +222,63 @@
       renameValue = "";
     }
   });
+
+  const driverObj = driver({
+    showProgress: true,
+    popoverClass: "quester-driver-theme",
+    steps: [
+      {
+        element: "#models-header",
+        popover: {
+          title: "Manage Your Research Models",
+          description:
+            "This is where you create, view, and organize visual models of your research concepts and their relationships. Models help you map out theories and complex ideas.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#create-model-button",
+        popover: {
+          title: "Create a New Model",
+          description:
+            "Click here to start a new model. Give it a name, and you'll be taken to the editor to begin mapping your ideas.",
+          side: "bottom",
+          align: "end",
+        },
+      },
+      {
+        element: "#models-search",
+        popover: {
+          title: "Find Your Models",
+          description:
+            "Use the search bar to quickly find specific models by name as your collection grows.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#models-grid",
+        popover: {
+          title: "Your Model Collection",
+          description:
+            "All your created models are displayed here. Click on a card to open the editor. You can also rename or delete models using the icons that appear on hover.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: ".container", // Target a stable element on the main page
+        popover: {
+          title: "Visualize Your Research",
+          description:
+            "Use models to visually structure your thoughts, theories, and connections within your research. It's a powerful way to gain clarity and communicate complex ideas.",
+          side: "top",
+          align: "center",
+        },
+      },
+    ],
+  });
 </script>
 
 {#if isLoadingCapability}
@@ -226,7 +292,7 @@
     <div class="container mx-auto py-6 px-4">
       <div class="mb-8">
         <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2" id="models-header">
             <h1 class="text-3xl font-bold">Models</h1>
             <Tooltip.Root>
               <Tooltip.Trigger>
@@ -240,13 +306,25 @@
               </Tooltip.Content>
             </Tooltip.Root>
           </div>
-          <Button
-            onclick={() => (showCreateDialog = true)}
-            class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] transition-all"
-          >
-            <Plus class="h-4 w-4 mr-2" />
-            Create Model
-          </Button>
+          <div class="flex items-center gap-2">
+            <Button
+              onclick={() => (showCreateDialog = true)}
+              class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] transition-all"
+              id="create-model-button"
+            >
+              <Plus class="h-4 w-4 mr-2" />
+              Create Model
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onclick={() => driverObj.drive()}
+              class="border-2 dark:border-dark-border"
+            >
+              <GraduationCap class="h-4 w-4" />
+              <span class="sr-only">Learn about Models Page</span>
+            </Button>
+          </div>
         </div>
         <p class="text-muted-foreground mt-2">
           Create and manage your research models
@@ -270,6 +348,7 @@
               class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
             />
             <input
+              id="models-search"
               type="text"
               placeholder="Search models..."
               bind:value={searchQuery}
@@ -302,7 +381,10 @@
               </Button>
             </div>
           {:else}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div
+              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              id="models-grid"
+            >
               {#each modelStore.models
                 .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
                 .filter((model) => model?.name

@@ -283,34 +283,45 @@
     <h3 class="text-lg font-medium mb-4">Send New Invitation</h3>
 
     {#if props.subscriptionLimits && props.subscriptionLimits.maxUsers > 0}
-      <div class="mb-4">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-sm font-medium">Available Invitations</span>
+      <!-- Apply styling from TeamMembersList -->
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h4 class="text-sm font-medium">Available Invitations</h4>
+          <p class="text-sm text-muted-foreground">
+            {props.subscriptionLimits.currentUserCount +
+              pendingInvitations.length} of {props.subscriptionLimits.maxUsers} seats
+            used
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <div class="w-32 bg-muted rounded-full h-2">
+            <div
+              class="h-2 rounded-full {remainingInvitations === 0
+                ? 'bg-red-500'
+                : remainingInvitations <= 1
+                  ? 'text-amber-500'
+                  : 'bg-green-500'}"
+              style="width: {Math.min(
+                100,
+                ((props.subscriptionLimits.currentUserCount +
+                  pendingInvitations.length) /
+                  props.subscriptionLimits.maxUsers) *
+                  100
+              )}%"
+            ></div>
+          </div>
+
           <span
-            class="text-sm font-medium {remainingInvitations === 0
+            class="text-xs font-medium {remainingInvitations === 0
               ? 'text-red-500'
               : remainingInvitations <= 1
                 ? 'text-amber-500'
-                : ''}"
+                : 'text-green-500'}"
           >
-            {remainingInvitations} / {props.subscriptionLimits.maxUsers}
+            {remainingInvitations}
+            {remainingInvitations === 1 ? "seat" : "seats"} remaining
           </span>
-        </div>
-        <div class="w-full bg-muted rounded-full h-2.5">
-          <div
-            class="h-2.5 rounded-full {remainingInvitations === 0
-              ? 'bg-red-500'
-              : remainingInvitations <= 1
-                ? 'bg-amber-500'
-                : 'bg-green-500'}"
-            style="width: {Math.min(
-              100,
-              ((props.subscriptionLimits.currentUserCount +
-                pendingInvitations.length) /
-                props.subscriptionLimits.maxUsers) *
-                100
-            )}%"
-          ></div>
         </div>
       </div>
     {/if}

@@ -16,8 +16,10 @@
   import ManageSubscription from "$lib/components/ManageSubscription.svelte";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import AppSidebar from "$lib/components/AppSidebar.svelte";
-  import { CreditCard, FolderTree } from "lucide-svelte";
+  import { CreditCard, FolderTree, GraduationCap } from "lucide-svelte";
   import { API_BASE_URL } from "$lib/config";
+  import { driver } from "driver.js";
+  import "driver.js/dist/driver.css";
 
   let organizations = $state<Organization[]>([]);
   let currentOrg = $state<Organization | null>(null);
@@ -37,6 +39,113 @@
       (role) => role.roleId === ORGANIZATION_OWNER_ROLE_ID
     );
   }
+
+  const driverObj = driver({
+    showProgress: true,
+    popoverClass: "quester-driver-theme",
+    steps: [
+      {
+        element: "#dashboard-welcome",
+        popover: {
+          title: "Welcome to Your Dashboard",
+          description:
+            "This is your main hub for navigating your Quester workspace. See your organization's structure and manage settings.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#subscription-card",
+        popover: {
+          title: "Subscription Management",
+          description:
+            "If you're the owner, manage your plan details here. Access to advanced features and team collaboration depends on your subscription.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: "#organization-structure-card",
+        popover: {
+          title: "Organization Structure",
+          description:
+            "View and manage your departments and projects here. Let's explore this section.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: "#org-view-mode-toggle",
+        popover: {
+          title: "Switch Views",
+          description:
+            "Toggle between a hierarchical 'Tree View' and a flat 'List View' to see your projects and departments.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#org-new-department-button",
+        popover: {
+          title: "Create Departments",
+          description:
+            "Organize your projects by creating departments (if your role and subscription allow).",
+          side: "bottom",
+          align: "end",
+        },
+      },
+      {
+        element: "#org-new-project-button",
+        popover: {
+          title: "Create Projects",
+          description:
+            "Start new research projects directly from here (permissions and subscription permitting).",
+          side: "bottom",
+          align: "end",
+        },
+      },
+      {
+        element: "#org-search-input",
+        popover: {
+          title: "Search Projects",
+          description:
+            "Quickly find projects by searching for their name or description.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#org-filter-toggle",
+        popover: {
+          title: "Filter Your View",
+          description:
+            "Toggle this to show only the projects you are directly a member of.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#org-structure-content",
+        popover: {
+          title: "Navigate Your Structure",
+          description:
+            "Explore your departments and projects. Click on a project you're a member of to navigate to it. You can also join projects or move them between departments if you have permission.",
+          side: "top",
+          align: "center",
+        },
+      },
+      {
+        element: ".container",
+        popover: {
+          title: "Navigate Your Workspace",
+          description:
+            "Use the sidebar to access different sections like specific projects or settings. This dashboard provides your high-level overview.",
+          side: "top",
+          align: "center",
+        },
+      },
+    ],
+  });
 
   onMount(async () => {
     try {
@@ -220,11 +329,21 @@
       {:else}
         <div class="container mx-auto py-6 px-4">
           <!-- Welcome Section -->
-          <div class="mb-8">
-            <h1 class="text-3xl font-bold mb-2">
-              Welcome back, {auth.user?.firstName}!
-            </h1>
-            <p class="text-muted-foreground">
+          <div class="mb-8" id="dashboard-welcome">
+            <div class="flex justify-between items-center">
+              <h1 class="text-3xl font-bold">
+                Welcome back, {auth.user?.firstName}!
+              </h1>
+              <Button
+                variant="outline"
+                size="icon"
+                onclick={() => driverObj.drive()}
+                aria-label="Learn about the Dashboard"
+              >
+                <GraduationCap class="h-4 w-4" />
+              </Button>
+            </div>
+            <p class="text-muted-foreground mt-1">
               Here's what's happening in your workspace.
             </p>
           </div>
@@ -284,6 +403,7 @@
                 <!-- Subscription Management -->
                 {#if currentOrg.billingProviderId}
                   <Card
+                    id="subscription-card"
                     class="border dark:border-dark-border shadow-md dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-lg dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
                   >
                     <CardHeader>
@@ -302,6 +422,7 @@
                   </Card>
                 {:else}
                   <Card
+                    id="subscription-card"
                     class="border dark:border-dark-border shadow-md dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-lg dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
                   >
                     <CardHeader>
@@ -329,6 +450,7 @@
           <!-- Workspace Overview -->
           {#if currentOrg}
             <Card
+              id="organization-structure-card"
               class="mt-6 border dark:border-dark-border shadow-md dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-lg dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
             >
               <CardHeader>

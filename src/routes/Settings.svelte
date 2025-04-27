@@ -13,7 +13,12 @@
     CardDescription,
     CardContent,
   } from "$lib/components/ui/card";
-  import { Settings as SettingsIcon, User, Building2 } from "lucide-svelte";
+  import {
+    Settings as SettingsIcon,
+    User,
+    Building2,
+    GraduationCap,
+  } from "lucide-svelte";
   import * as Tabs from "$lib/components/ui/tabs";
   import TeamSettings from "$lib/components/TeamSettings.svelte";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
@@ -21,6 +26,8 @@
   // Import tooltip components
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { API_BASE_URL } from "$lib/config";
+  import { driver } from "driver.js";
+  import "driver.js/dist/driver.css";
 
   let activeTab = $state("profile");
   let isLoading = $state(false);
@@ -153,6 +160,138 @@
       isLoading = false;
     }
   }
+
+  const driverObj = driver({
+    showProgress: true,
+    popoverClass: "quester-driver-theme",
+    steps: [
+      {
+        element: "#settings-header",
+        popover: {
+          title: "Manage Your Settings",
+          description:
+            "This area allows you to manage your personal profile information and, if applicable, settings for your organization.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#settings-tabs",
+        popover: {
+          title: "Switch Between Settings Areas",
+          description:
+            "Use these tabs to navigate between your personal Profile settings and the Organization settings (if available on your plan).",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#profile-tab-content",
+        popover: {
+          title: "Your Profile Information",
+          description:
+            "Update your first and last name here. Your email address cannot be changed.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: "#profile-save-button",
+        popover: {
+          title: "Save Profile Changes",
+          description: "Click here to save any updates made to your name.",
+          side: "left",
+          align: "start",
+        },
+      },
+      {
+        element: "#organization-tab-trigger", // Target the trigger, even if disabled
+        popover: {
+          title: "Organization Settings Tab",
+          description:
+            "Access settings for your current organization here. This tab may be disabled depending on your subscription plan.",
+          side: "bottom",
+          align: "start",
+        },
+        onHighlightStarted: (element) => {
+          // If the element is disabled, driver.js might skip it.
+          // We might need to manually switch tab if it's enabled
+          if (!element?.hasAttribute("disabled")) {
+            activeTab = "organization";
+          }
+        },
+      },
+      {
+        element: "#organization-tab-content", // Target the content area for the org settings
+        popover: {
+          title: "Organization-Specific Settings",
+          description:
+            "Manage invitations and content creation permissions for your organization. Note that some settings may be owner-only.",
+          side: "top",
+          align: "start",
+        },
+        onHighlightStarted: () => {
+          // Ensure the org tab is active for this step
+          if (hasOrgSettingsAccess) {
+            activeTab = "organization";
+          } else {
+            // If user shouldn't have access, maybe skip this step or handle differently?
+            // For now, we assume the tab won't be active if no access.
+          }
+        },
+      },
+      // Add steps for specific org settings if the tab is active
+      {
+        element: "#setting-disable-invitations",
+        popover: {
+          title: "Control Invitations",
+          description:
+            "(Owner Only) Enable or disable the ability for anyone to invite new members to this organization.",
+          side: "top",
+          align: "start",
+        },
+        onHighlightStarted: () => {
+          if (!hasOrgSettingsAccess) driverObj.moveNext(); // Skip if no access
+        },
+      },
+      {
+        element: "#setting-allow-member-invites",
+        popover: {
+          title: "Delegate Invitations",
+          description:
+            "(Owner Only) If invitations are enabled, choose whether regular members and admins (not just owners) can invite others.",
+          side: "top",
+          align: "start",
+        },
+        onHighlightStarted: () => {
+          if (!hasOrgSettingsAccess) driverObj.moveNext(); // Skip if no access
+        },
+      },
+      {
+        element: "#setting-members-create-projects",
+        popover: {
+          title: "Project Creation Permission",
+          description:
+            "(Admin/Owner) Decide if regular members should be allowed to create new projects within this organization.",
+          side: "top",
+          align: "start",
+        },
+        onHighlightStarted: () => {
+          if (!hasOrgSettingsAccess) driverObj.moveNext(); // Skip if no access
+        },
+      },
+      {
+        element: ".container", // General overview
+        popover: {
+          title: "Keep Your Information Up-to-Date",
+          description:
+            "Regularly review your profile and organization settings to ensure they reflect your current needs and preferences.",
+          side: "top",
+          align: "center",
+        },
+      },
+    ],
+  });
 </script>
 
 <Sidebar.Provider>
@@ -161,10 +300,21 @@
     <main class="flex-1 overflow-y-auto">
       <div class="container mx-auto py-6 px-4">
         <!-- Page Header -->
-        <div class="mb-8">
-          <h1 class="text-3xl font-bold mb-2 flex items-center gap-2">
-            Settings
-          </h1>
+        <div class="mb-8" id="settings-header">
+          <div class="flex justify-between items-center">
+            <h1 class="text-3xl font-bold mb-2 flex items-center gap-2">
+              Settings
+            </h1>
+            <!-- Add Learn Button -->
+            <Button
+              variant="outline"
+              size="icon"
+              onclick={() => driverObj.drive()}
+              aria-label="Learn about Settings"
+            >
+              <GraduationCap class="h-4 w-4" />
+            </Button>
+          </div>
           <p class="text-muted-foreground">
             Manage your account and preferences
           </p>
@@ -183,7 +333,7 @@
           >
             <CardHeader class="pb-0">
               <Tabs.Root value={activeTab}>
-                <Tabs.List class="grid grid-cols-5 gap-4">
+                <Tabs.List class="grid grid-cols-5 gap-4" id="settings-tabs">
                   <Tabs.Trigger
                     value="profile"
                     onclick={() => (activeTab = "profile")}
@@ -194,6 +344,7 @@
                   {#if hasOrgSettingsAccess}
                     <Tabs.Trigger
                       value="organization"
+                      id="organization-tab-trigger"
                       onclick={() => (activeTab = "organization")}
                     >
                       <Building2 class="h-4 w-4 mr-2" />
@@ -205,6 +356,7 @@
                         <Tooltip.Trigger>
                           <Tabs.Trigger
                             value="organization"
+                            id="organization-tab-trigger"
                             disabled={true}
                             class="opacity-50 cursor-not-allowed"
                           >
@@ -232,6 +384,7 @@
               <!-- Profile Tab -->
               {#if activeTab === "profile"}
                 <form
+                  id="profile-tab-content"
                   class="space-y-6"
                   onsubmit={(e) => {
                     e.preventDefault();
@@ -280,7 +433,11 @@
                   {/if}
 
                   <div class="flex justify-end">
-                    <Button type="submit" disabled={isLoading}>
+                    <Button
+                      id="profile-save-button"
+                      type="submit"
+                      disabled={isLoading}
+                    >
                       {#if isLoading}
                         <div
                           class="h-4 w-4 mr-2 border-2 border-t-transparent rounded-full animate-spin"
@@ -296,7 +453,7 @@
 
               <!-- Organization Tab -->
               {#if activeTab === "organization"}
-                <div class="space-y-6">
+                <div class="space-y-6" id="organization-tab-content">
                   {#if teamManagement.isLoading}
                     <div class="flex justify-center py-8">
                       <div
