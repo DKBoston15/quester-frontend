@@ -9,6 +9,7 @@
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
   import { API_BASE_URL } from "$lib/config";
   import { driver } from "driver.js";
+  import type { DriveStep, Side } from "driver.js";
   import "driver.js/dist/driver.css";
   import { GraduationCap } from "lucide-svelte";
 
@@ -18,152 +19,168 @@
   let analyses = $state<KeywordAnalysis[]>([]);
   let showNewAnalysis = $state(false);
 
-  const driverNoAnalysis = driver({
-    showProgress: true,
-    popoverClass: "quester-driver-theme",
-    steps: [
-      {
-        element: "#keyword-analysis-header",
-        popover: {
-          title: "Welcome to Keyword Analysis",
-          description:
-            "This tool helps you understand keyword frequency and relationships within your project's literature. Discover patterns, identify research gaps, and refine your focus.",
-          side: "bottom",
-          align: "start",
-        },
+  // --- Driver.js Steps Definitions ---
+  const noAnalysisSteps: DriveStep[] = [
+    {
+      element: "#keyword-analysis-header",
+      popover: {
+        title: "Welcome to Keyword Analysis",
+        description:
+          "This tool helps you understand keyword frequency and relationships within your project's literature. Discover patterns, identify research gaps, and refine your focus.",
+        side: "bottom",
+        align: "start",
       },
-      {
-        element: "#no-analysis-placeholder",
-        popover: {
-          title: "Start Your First Analysis",
-          description:
-            "You haven't run any analyses yet. Click 'Create Your First Analysis' to begin exploring keyword connections.",
-          side: "bottom",
-          align: "center",
-        },
+    },
+    {
+      element: "#no-analysis-placeholder",
+      popover: {
+        title: "Start Your First Analysis",
+        description:
+          "You haven't run any analyses yet. Click 'Create Your First Analysis' to begin exploring keyword connections.",
+        side: "bottom",
+        align: "center",
       },
-      {
-        element: "#create-first-analysis-button",
-        popover: {
-          title: "Input Your Keywords",
-          description:
-            "Enter 2-10 keywords relevant to your research questions. Quester will then search your literature for occurrences and co-occurrences.",
-          side: "top",
-          align: "center",
-        },
-        onHighlightStarted: () => {
-          const button = document.getElementById(
-            "create-first-analysis-button"
-          );
-          if (button) button.style.pointerEvents = "auto";
-        },
+    },
+    {
+      element: "#create-first-analysis-button",
+      popover: {
+        title: "Input Your Keywords",
+        description:
+          "Enter 2-10 keywords relevant to your research questions. Quester will then search your literature for occurrences and co-occurrences.",
+        side: "top",
+        align: "center",
       },
-    ],
-  });
+      onHighlightStarted: () => {
+        const button = document.getElementById("create-first-analysis-button");
+        if (button) button.style.pointerEvents = "auto";
+      },
+    },
+  ];
 
-  const driverWithAnalysis = driver({
-    showProgress: true,
-    popoverClass: "quester-driver-theme",
-    steps: [
-      {
-        element: "#keyword-analysis-header",
-        popover: {
-          title: "Exploring Your Keyword Analysis",
-          description:
-            "This analysis reveals patterns in your selected keywords across your project literature. Let's break down the results.",
-          side: "bottom",
-          align: "start",
-        },
+  const withAnalysisSteps: DriveStep[] = [
+    {
+      element: "#keyword-analysis-header",
+      popover: {
+        title: "Exploring Your Keyword Analysis",
+        description:
+          "This analysis reveals patterns in your selected keywords across your project literature. Let's break down the results.",
+        side: "bottom",
+        align: "start",
       },
-      {
-        element: "#analysis-results-card",
-        popover: {
-          title: "Analysis Results Overview",
-          description:
-            "Here you'll find a summary, visualizations, and detailed tables showing how your keywords appear and overlap in your sources.",
-          side: "top",
-          align: "start",
-        },
+    },
+    {
+      element: "#analysis-results-card", // Target the AnalysisResults component card
+      popover: {
+        title: "Analysis Results Overview",
+        description:
+          "Here you'll find a summary, visualizations, and detailed tables showing how your keywords appear and overlap in your sources.",
+        side: "top",
+        align: "start",
       },
-      {
-        element: "#analysis-summary-accordion",
-        popover: {
-          title: "AI-Generated Summary",
-          description:
-            "Read an AI-generated interpretation of the keyword patterns, potential research gaps, and areas of high concentration. A great starting point for insights!",
-          side: "right",
-          align: "start",
-        },
+    },
+    {
+      element: "#analysis-summary-accordion", // Requires ID on AccordionItem in AnalysisResults
+      popover: {
+        title: "AI-Generated Summary",
+        description:
+          "Read an AI-generated interpretation of the keyword patterns, potential research gaps, and areas of high concentration. A great starting point for insights!",
+        side: "right",
+        align: "start",
       },
-      {
-        element: "#frequency-chart-accordion",
-        popover: {
-          title: "Frequency Distribution Chart",
-          description:
-            "Visualize how often each keyword appears individually. Identify the most dominant terms in your literature set.",
-          side: "right",
-          align: "start",
-        },
+    },
+    {
+      element: "#frequency-chart-accordion", // Requires ID on AccordionItem in AnalysisResults
+      popover: {
+        title: "Frequency Distribution Chart",
+        description:
+          "Visualize how often each keyword appears individually. Identify the most dominant terms in your literature set.",
+        side: "right",
+        align: "start",
       },
-      {
-        element: "#venn-diagram-accordion",
-        popover: {
-          title: "Keyword Overlap (Venn Diagram)",
-          description:
-            "Select 2 or 3 keywords to see their co-occurrence visually. Click on sections to filter literature containing specific keyword combinations (opens Google Scholar).",
-          side: "right",
-          align: "start",
-        },
+    },
+    {
+      element: "#venn-diagram-accordion", // Requires ID on AccordionItem in AnalysisResults
+      popover: {
+        title: "Keyword Overlap (Venn Diagram)",
+        description:
+          "Select 2 or 3 keywords to see their co-occurrence visually. Click on sections to filter literature containing specific keyword combinations (opens Google Scholar).",
+        side: "right",
+        align: "start",
       },
-      {
-        element: "#frequency-table-accordion",
-        popover: {
-          title: "Frequency Distribution Table",
-          description:
-            "See the exact counts and percentages for each keyword. Click counts to view corresponding results on Google Scholar. Download the data as CSV.",
-          side: "right",
-          align: "start",
-        },
+    },
+    {
+      element: "#frequency-table-accordion", // Requires ID on AccordionItem in AnalysisResults
+      popover: {
+        title: "Frequency Distribution Table",
+        description:
+          "See the exact counts and percentages for each keyword. Click counts to view corresponding results on Google Scholar. Download the data as CSV.",
+        side: "right",
+        align: "start",
       },
-      {
-        element: "#cross-table-accordion",
-        popover: {
-          title: "Cross Distribution Table",
-          description:
-            "Examine the co-occurrence frequency for every pair of keywords. Identify which terms frequently appear together. Download as CSV.",
-          side: "right",
-          align: "start",
-        },
+    },
+    {
+      element: "#cross-table-accordion", // Requires ID on AccordionItem in AnalysisResults
+      popover: {
+        title: "Cross Distribution Table",
+        description:
+          "Examine the co-occurrence frequency for every pair of keywords. Identify which terms frequently appear together. Download as CSV.",
+        side: "right",
+        align: "start",
       },
-      {
-        element: "#previous-analyses-section",
-        popover: {
-          title: "Previous Analyses",
-          description:
-            "Access your past analyses here. Click on one to view its results again or delete analyses you no longer need.",
-          side: "top",
-          align: "start",
-        },
+    },
+    {
+      element: "#triple-table-accordion", // Requires ID on AccordionItem in AnalysisResults
+      popover: {
+        title: "Three-Way Distribution Table",
+        description:
+          "Explore the co-occurrence for combinations of three keywords. Available when 3+ keywords are analyzed. Download as CSV.",
+        side: "right",
+        align: "start",
       },
-      {
-        element: "#new-analysis-button",
-        popover: {
-          title: "Run a New Analysis",
-          description:
-            "Explore different keyword combinations or update your analysis as your literature grows by running a new analysis anytime.",
-          side: "left",
-          align: "start",
-        },
+    },
+    {
+      element: "#previous-analyses-section",
+      popover: {
+        title: "Previous Analyses",
+        description:
+          "Access your past analyses here. Click on one to view its results again or delete analyses you no longer need.",
+        side: "top",
+        align: "start",
       },
-    ],
-  });
+    },
+    {
+      element: "#new-analysis-button",
+      popover: {
+        title: "Run a New Analysis",
+        description:
+          "Explore different keyword combinations or update your analysis as your literature grows by running a new analysis anytime.",
+        side: "left",
+        align: "start",
+      },
+    },
+  ];
+  // --- End Driver.js Steps Definitions ---
+
+  // Commented out upfront driver definitions
+  // const driverNoAnalysis = driver({ ... });
+  // const driverWithAnalysis = driver({ ... });
 
   function startTour() {
+    let driverInstance;
     if (currentAnalysis || analyses.length > 0) {
-      driverWithAnalysis.drive();
+      driverInstance = driver({
+        showProgress: true,
+        popoverClass: "quester-driver-theme",
+        steps: withAnalysisSteps,
+      });
     } else {
-      driverNoAnalysis.drive();
+      driverInstance = driver({
+        showProgress: true,
+        popoverClass: "quester-driver-theme",
+        steps: noAnalysisSteps,
+      });
     }
+    driverInstance.drive();
   }
 
   $effect(() => {
