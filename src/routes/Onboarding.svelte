@@ -7,6 +7,7 @@
   import { Label } from "$lib/components/ui/label";
   import Pricing from "./Pricing.svelte";
   import { DarkmodeToggle } from "$lib/components/ui/darkmode-toggle";
+  import { LogOut } from "lucide-svelte";
   import { API_BASE_URL } from "$lib/config";
 
   // Define the expected structure for the role information
@@ -283,13 +284,27 @@
       isLoading = false;
     }
   }
+
+  function handleLogout() {
+    auth.logout();
+  }
 </script>
 
 <div
   class="relative min-h-screen bg-background dark:bg-dark-background transition-colors duration-300"
 >
-  <!-- Dark mode toggle -->
-  <div class="fixed top-4 right-4 z-50">
+  <!-- Top controls -->
+  <div class="fixed top-4 right-4 z-50 flex items-center gap-2">
+    <!-- Logout button -->
+    <button
+      onclick={handleLogout}
+      class="relative border-2 dark:border-dark-border bg-card dark:bg-dark-card p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,1)] transition-all duration-300 hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[3px_3px_0px_0px_rgba(44,46,51,1)]"
+      title="Sign out"
+    >
+      <LogOut class="h-4 w-4 text-black dark:text-dark-text-primary" />
+    </button>
+
+    <!-- Dark mode toggle -->
     <DarkmodeToggle />
   </div>
 
