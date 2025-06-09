@@ -14,6 +14,7 @@
   import { GraduationCap } from "lucide-svelte";
 
   let loading = $state(false);
+  let switching = $state(false);
   let error = $state<string | null>(null);
   let currentAnalysis = $state<KeywordAnalysis | null>(null);
   let analyses = $state<KeywordAnalysis[]>([]);
@@ -218,9 +219,14 @@
               ? JSON.parse(analysis.report)
               : analysis.report,
           frequencyData:
-            analysis.frequencyData && typeof analysis.frequencyData === "string"
+            (analysis.frequencyData &&
+            typeof analysis.frequencyData === "string"
               ? JSON.parse(analysis.frequencyData)
-              : analysis.frequencyData,
+              : analysis.frequencyData) ||
+            (analysis.frequency_data &&
+            typeof analysis.frequency_data === "string"
+              ? JSON.parse(analysis.frequency_data)
+              : analysis.frequency_data),
         };
         return processed;
       });
@@ -270,7 +276,7 @@
           typeof data.keyword_analysis.report === "string"
             ? JSON.parse(data.keyword_analysis.report)
             : data.keyword_analysis.report,
-        frequency_data:
+        frequencyData:
           data.keyword_analysis.frequency_data &&
           typeof data.keyword_analysis.frequency_data === "string"
             ? JSON.parse(data.keyword_analysis.frequency_data)
@@ -328,9 +334,15 @@
   }
 
   function setCurrentAnalysis(analysis: KeywordAnalysis) {
+    switching = true;
     currentAnalysis = analysis;
     error = null;
     showNewAnalysis = false;
+
+    // Reset switching state after a brief delay to allow for smooth transitions
+    setTimeout(() => {
+      switching = false;
+    }, 100);
   }
 </script>
 
@@ -377,7 +389,16 @@
     </div>
   {:else if currentAnalysis}
     <div class="space-y-6" transition:fade id="analysis-results-card">
-      <AnalysisResults analysis={currentAnalysis} />
+      {#if switching}
+        <div class="flex justify-center items-center py-8" transition:fade>
+          <div class="loader mr-2"></div>
+          <span class="text-muted-foreground">Switching analysis...</span>
+        </div>
+      {:else}
+        {#key currentAnalysis.id}
+          <AnalysisResults analysis={currentAnalysis} />
+        {/key}
+      {/if}
     </div>
   {:else if projectStore.currentProject}
     <div
@@ -400,15 +421,15 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {#each analyses as analysis}
           <div
-            class={`relative border rounded-lg overflow-hidden transition-shadow hover:shadow-md ${
+            class={`relative border rounded-lg overflow-hidden transition-all duration-200 cursor-pointer ${
               currentAnalysis?.id === analysis.id
-                ? "border-primary bg-primary/5"
-                : "border-border"
+                ? "border-primary bg-primary/10 shadow-md transform scale-[1.02]"
+                : "border-border hover:border-primary/50 hover:shadow-sm"
             }`}
           >
             <button
               type="button"
-              class="w-full text-left cursor-pointer p-4"
+              class="w-full text-left p-4 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-inset"
               onclick={() => {
                 setCurrentAnalysis(analysis);
               }}

@@ -37,15 +37,27 @@
 
   $effect(() => {
     if (analysis) {
-      keywords =
+      const newKeywords =
         typeof analysis.keywords === "string"
           ? JSON.parse(analysis.keywords)
           : analysis.keywords;
 
-      frequencyData =
+      const newFrequencyData =
         typeof analysis.frequencyData === "string"
           ? JSON.parse(analysis.frequencyData || "{}")
           : analysis.frequencyData || {};
+
+      // Only update if data actually changed to prevent loops
+      if (JSON.stringify(newKeywords) !== JSON.stringify(keywords)) {
+        keywords = newKeywords;
+        // Reset selectedKeywords when keywords change
+        selectedKeywords =
+          newKeywords.length >= 2 ? newKeywords.slice(0, 2) : [];
+      }
+
+      if (JSON.stringify(newFrequencyData) !== JSON.stringify(frequencyData)) {
+        frequencyData = newFrequencyData;
+      }
     }
   });
 
@@ -472,8 +484,9 @@
     } else if (selectedKeywords.length < 3) {
       selectedKeywords = [...selectedKeywords, keyword];
     }
-    // Force update dimensions and render
-    setTimeout(updateDimensions, 0);
+
+    // Update dimensions after keyword selection changes to re-render diagram
+    updateDimensions();
   }
 
   function handleFilterClick(
@@ -487,12 +500,6 @@
       url,
     });
   }
-
-  $effect(() => {
-    if (selectedKeywords.length >= 2) {
-      updateDimensions();
-    }
-  });
 
   onMount(() => {
     updateDimensions();

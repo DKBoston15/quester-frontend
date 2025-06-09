@@ -30,9 +30,12 @@
   );
 
   let frequencyData = $state(
-    typeof analysis.frequencyData === "string"
-      ? JSON.parse(analysis.frequencyData || "{}")
-      : analysis.frequencyData || {}
+    (() => {
+      const rawData = analysis.frequencyData || analysis.frequency_data;
+      return typeof rawData === "string"
+        ? JSON.parse(rawData || "{}")
+        : rawData || {};
+    })()
   );
 
   // Format keywords for display
@@ -62,10 +65,12 @@
         ? JSON.parse(analysis.keywords)
         : analysis.keywords;
 
+    // Handle both frequencyData and frequency_data field names
+    const rawFrequencyData = analysis.frequencyData || analysis.frequency_data;
     frequencyData =
-      typeof analysis.frequencyData === "string"
-        ? JSON.parse(analysis.frequencyData || "{}")
-        : analysis.frequencyData || {};
+      typeof rawFrequencyData === "string"
+        ? JSON.parse(rawFrequencyData || "{}")
+        : rawFrequencyData || {};
 
     updateKeywordsText();
   });
@@ -366,7 +371,9 @@
         <AccordionTrigger>Frequency Distribution Figure</AccordionTrigger>
         <AccordionContent>
           <div class="mt-2">
-            <FrequencyChart {analysis} />
+            {#key analysis.id}
+              <FrequencyChart {analysis} />
+            {/key}
           </div>
         </AccordionContent>
       </AccordionItem>
@@ -375,7 +382,9 @@
         <AccordionTrigger>Keyword Venn Diagram Figures</AccordionTrigger>
         <AccordionContent>
           <div class="mt-2">
-            <VennDiagram {analysis} on:filter={handleVennFilter} />
+            {#key analysis.id}
+              <VennDiagram {analysis} on:filter={handleVennFilter} />
+            {/key}
           </div>
         </AccordionContent>
       </AccordionItem>
