@@ -6,7 +6,7 @@
   import { Textarea } from "$lib/components/ui/textarea";
   import * as Select from "$lib/components/ui/select";
   import * as Card from "$lib/components/ui/card";
-  import { Loader2Icon, XIcon } from "lucide-svelte";
+  import { Loader2Icon, XIcon, PlusIcon, MinusIcon } from "lucide-svelte";
   import type { Grant } from "$lib/types/auth";
 
   interface Props {
@@ -26,16 +26,19 @@
     endDate: grant?.endDate || "",
     awardType: grant?.awardType || "",
     directorateDivision: grant?.directorateDivision || "",
-    principalInvestigator: grant?.principalInvestigator || "",
-    coPrincipalInvestigator: grant?.coPrincipalInvestigator || "",
+    principalInvestigators: grant?.principalInvestigators || [""],
+    coPrincipalInvestigators: grant?.coPrincipalInvestigators || [""],
     programManager: grant?.programManager || "",
+    programManagerEmail: grant?.programManagerEmail || "",
+    programManagerPhone: grant?.programManagerPhone || "",
     amount: grant?.amount?.toString() || "",
     status: grant?.status || "active",
   });
 
   let errors = $state<Record<string, string>>({});
 
-  const awardTypeOptions = [
+  const awardInstrumentOptions = [
+    { value: "standard", label: "Standard Grant" },
     { value: "research", label: "Research Grant" },
     { value: "training", label: "Training Grant" },
     { value: "equipment", label: "Equipment Grant" },
@@ -52,6 +55,32 @@
     { value: "cancelled", label: "Cancelled" },
     { value: "expired", label: "Expired" },
   ];
+
+  function addPrincipalInvestigator() {
+    formData.principalInvestigators = [...formData.principalInvestigators, ""];
+  }
+
+  function removePrincipalInvestigator(index: number) {
+    if (formData.principalInvestigators.length > 1) {
+      formData.principalInvestigators = formData.principalInvestigators.filter(
+        (_, i) => i !== index
+      );
+    }
+  }
+
+  function addCoPrincipalInvestigator() {
+    formData.coPrincipalInvestigators = [
+      ...formData.coPrincipalInvestigators,
+      "",
+    ];
+  }
+
+  function removeCoPrincipalInvestigator(index: number) {
+    if (formData.coPrincipalInvestigators.length > 1) {
+      formData.coPrincipalInvestigators =
+        formData.coPrincipalInvestigators.filter((_, i) => i !== index);
+    }
+  }
 
   function validateForm() {
     errors = {};
@@ -73,11 +102,26 @@
       errors.amount = "Amount must be a valid number";
     }
 
+    if (formData.programManagerEmail && formData.programManagerEmail.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.programManagerEmail.trim())) {
+        errors.programManagerEmail = "Must be a valid email address";
+      }
+    }
+
     return Object.keys(errors).length === 0;
   }
 
   function handleSubmit() {
     if (!validateForm()) return;
+
+    // Filter out empty PIs and Co-PIs
+    const filteredPIs = formData.principalInvestigators.filter(
+      (pi) => pi.trim().length > 0
+    );
+    const filteredCoPIs = formData.coPrincipalInvestigators.filter(
+      (copi) => copi.trim().length > 0
+    );
 
     const submitData: Partial<Grant> = {
       grantName: formData.grantName.trim(),
@@ -87,9 +131,11 @@
       endDate: formData.endDate || null,
       awardType: formData.awardType || null,
       directorateDivision: formData.directorateDivision.trim() || null,
-      principalInvestigator: formData.principalInvestigator.trim() || null,
-      coPrincipalInvestigator: formData.coPrincipalInvestigator.trim() || null,
+      principalInvestigators: filteredPIs.length > 0 ? filteredPIs : null,
+      coPrincipalInvestigators: filteredCoPIs.length > 0 ? filteredCoPIs : null,
       programManager: formData.programManager.trim() || null,
+      programManagerEmail: formData.programManagerEmail.trim() || null,
+      programManagerPhone: formData.programManagerPhone.trim() || null,
       amount: formData.amount ? Number(formData.amount) : null,
       status: formData.status,
     };
@@ -182,18 +228,19 @@
         {/if}
       </div>
 
-      <!-- Award Type -->
+      <!-- Award Instrument -->
       <div>
-        <Label for="awardType">Award Type</Label>
+        <Label for="awardType">Award Instrument</Label>
         <Select.Root bind:value={formData.awardType} type="single">
           <Select.Trigger>
             <span class="truncate">
-              {awardTypeOptions.find((opt) => opt.value === formData.awardType)
-                ?.label || "Select award type"}
+              {awardInstrumentOptions.find(
+                (opt) => opt.value === formData.awardType
+              )?.label || "Select award instrument"}
             </span>
           </Select.Trigger>
           <Select.Content>
-            {#each awardTypeOptions as option}
+            {#each awardInstrumentOptions as option}
               <Select.Item value={option.value}>
                 {option.label}
               </Select.Item>
@@ -248,24 +295,74 @@
         {/if}
       </div>
 
-      <!-- Principal Investigator -->
-      <div>
-        <Label for="principalInvestigator">Principal Investigator</Label>
-        <Input
-          id="principalInvestigator"
-          bind:value={formData.principalInvestigator}
-          placeholder="e.g., Dr. Jane Smith"
-        />
+      <!-- Principal Investigators -->
+      <div class="md:col-span-2">
+        <div class="flex justify-between items-center mb-2">
+          <Label>Principal Investigators</Label>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onclick={addPrincipalInvestigator}
+          >
+            <PlusIcon class="h-4 w-4 mr-1" />
+            Add PI
+          </Button>
+        </div>
+        {#each formData.principalInvestigators as pi, index}
+          <div class="flex gap-2 mb-2">
+            <Input
+              bind:value={formData.principalInvestigators[index]}
+              placeholder="e.g., Dr. Jane Smith"
+              class="flex-1"
+            />
+            {#if formData.principalInvestigators.length > 1}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onclick={() => removePrincipalInvestigator(index)}
+              >
+                <MinusIcon class="h-4 w-4" />
+              </Button>
+            {/if}
+          </div>
+        {/each}
       </div>
 
-      <!-- Co-Principal Investigator -->
-      <div>
-        <Label for="coPrincipalInvestigator">Co-Principal Investigator</Label>
-        <Input
-          id="coPrincipalInvestigator"
-          bind:value={formData.coPrincipalInvestigator}
-          placeholder="e.g., Dr. John Doe"
-        />
+      <!-- Co-Principal Investigators -->
+      <div class="md:col-span-2">
+        <div class="flex justify-between items-center mb-2">
+          <Label>Co-Principal Investigators</Label>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onclick={addCoPrincipalInvestigator}
+          >
+            <PlusIcon class="h-4 w-4 mr-1" />
+            Add Co-PI
+          </Button>
+        </div>
+        {#each formData.coPrincipalInvestigators as copi, index}
+          <div class="flex gap-2 mb-2">
+            <Input
+              bind:value={formData.coPrincipalInvestigators[index]}
+              placeholder="e.g., Dr. John Doe"
+              class="flex-1"
+            />
+            {#if formData.coPrincipalInvestigators.length > 1}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onclick={() => removeCoPrincipalInvestigator(index)}
+              >
+                <MinusIcon class="h-4 w-4" />
+              </Button>
+            {/if}
+          </div>
+        {/each}
       </div>
 
       <!-- Program Manager -->
@@ -275,6 +372,34 @@
           id="programManager"
           bind:value={formData.programManager}
           placeholder="e.g., Dr. Program Manager"
+        />
+      </div>
+
+      <!-- Program Manager Email -->
+      <div>
+        <Label for="programManagerEmail">Program Manager Email</Label>
+        <Input
+          id="programManagerEmail"
+          type="email"
+          bind:value={formData.programManagerEmail}
+          placeholder="e.g., pm@nsf.gov"
+          class={errors.programManagerEmail ? "border-destructive" : ""}
+        />
+        {#if errors.programManagerEmail}
+          <p class="text-sm text-destructive mt-1">
+            {errors.programManagerEmail}
+          </p>
+        {/if}
+      </div>
+
+      <!-- Program Manager Phone -->
+      <div class="md:col-span-2">
+        <Label for="programManagerPhone">Program Manager Phone</Label>
+        <Input
+          id="programManagerPhone"
+          type="tel"
+          bind:value={formData.programManagerPhone}
+          placeholder="e.g., (555) 123-4567"
         />
       </div>
     </form>

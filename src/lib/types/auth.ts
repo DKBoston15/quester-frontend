@@ -5,6 +5,7 @@ export type User = {
   firstName: string;
   lastName: string;
   avatarUrl: string | null;
+  orcidUrl: string | null;
 };
 
 // Add a type assertion function to validate user data
@@ -16,7 +17,8 @@ export function isUser(data: any): data is User {
     typeof data.email === "string" &&
     typeof data.firstName === "string" &&
     typeof data.lastName === "string" &&
-    (data.avatarUrl === null || typeof data.avatarUrl === "string")
+    (data.avatarUrl === null || typeof data.avatarUrl === "string") &&
+    (data.orcidUrl === null || typeof data.orcidUrl === "string")
   );
 }
 
@@ -164,9 +166,11 @@ export interface Grant {
   endDate?: string | null;
   awardType?: string | null;
   directorateDivision?: string | null;
-  principalInvestigator?: string | null;
-  coPrincipalInvestigator?: string | null;
+  principalInvestigators?: string[] | null;
+  coPrincipalInvestigators?: string[] | null;
   programManager?: string | null;
+  programManagerEmail?: string | null;
+  programManagerPhone?: string | null;
   amount?: number | null;
   status: string;
   createdAt: string;

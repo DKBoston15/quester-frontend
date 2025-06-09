@@ -41,6 +41,26 @@
   let firstName = $state(auth.user?.firstName || "");
   let lastName = $state(auth.user?.lastName || "");
   let email = $state(auth.user?.email || "");
+  let orcidUrl = $state(auth.user?.orcidUrl || "");
+
+  // Validation state
+  let orcidError = $state<string | null>(null);
+
+  // ORCID URL validation function
+  function validateOrcidUrl(url: string): string | null {
+    if (!url.trim()) return null; // Empty is valid (optional field)
+
+    const orcidPattern = /^https:\/\/orcid\.org\/\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/;
+    if (!orcidPattern.test(url)) {
+      return "Please enter a valid ORCID URL (e.g., https://orcid.org/0000-0000-0000-0000)";
+    }
+    return null;
+  }
+
+  // Monitor orcidUrl changes for validation
+  $effect(() => {
+    orcidError = validateOrcidUrl(orcidUrl);
+  });
 
   // Monitor activeTab changes and prevent switching to org tab if no access
   $effect(() => {
@@ -59,6 +79,7 @@
     firstName = auth.user?.firstName || "";
     lastName = auth.user?.lastName || "";
     email = auth.user?.email || "";
+    orcidUrl = auth.user?.orcidUrl || "";
 
     // Check if user can access organization settings
     await checkOrgSettingsCapability();
@@ -141,10 +162,22 @@
     isLoading = true;
     message = null;
 
+    // Validate ORCID URL before saving
+    const orcidValidationError = validateOrcidUrl(orcidUrl);
+    if (orcidValidationError) {
+      message = {
+        type: "error",
+        text: orcidValidationError,
+      };
+      isLoading = false;
+      return;
+    }
+
     try {
       await auth.updateUser({
         firstName,
         lastName,
+        orcidUrl: orcidUrl.trim() || null,
       });
 
       message = {
@@ -422,6 +455,38 @@
                       bind:value={email}
                       class="border-2  dark:border-dark-border"
                     />
+                  </div>
+
+                  <div class="space-y-2">
+                    <Label for="orcidUrl">
+                      ORCID Profile URL
+                      <span class="text-sm text-muted-foreground font-normal"
+                        >(optional)</span
+                      >
+                    </Label>
+                    <Input
+                      id="orcidUrl"
+                      type="url"
+                      placeholder="https://orcid.org/0000-0000-0000-0000"
+                      bind:value={orcidUrl}
+                      class={`border-2 dark:border-dark-border ${orcidError ? "border-destructive" : ""}`}
+                    />
+                    {#if orcidError}
+                      <p class="text-sm text-destructive">{orcidError}</p>
+                    {:else}
+                      <p class="text-sm text-muted-foreground">
+                        Your ORCID iD provides a persistent digital identifier
+                        that distinguishes you from other researchers.
+                        <a
+                          href="https://orcid.org/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="text-primary hover:underline"
+                        >
+                          Learn more about ORCID
+                        </a>
+                      </p>
+                    {/if}
                   </div>
 
                   {#if message}
