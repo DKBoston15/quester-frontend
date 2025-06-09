@@ -325,7 +325,7 @@
 
     if (action === "delete") {
       // Remove the deleted event from the events array
-      events = events.filter((e) => e.id !== customEvent.id);
+      events = events.filter((e: any) => e.id !== customEvent.id);
     }
 
     if (onCustomEventAction) {
