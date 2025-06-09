@@ -37,6 +37,9 @@
           if (chart?.options?.plugins?.title) {
             chart.options.plugins.title.color = textColor;
           }
+          if (chart?.options?.plugins?.legend?.labels) {
+            chart.options.plugins.legend.labels.color = textColor;
+          }
           if (chart?.options?.scales?.x?.ticks) {
             chart.options.scales.x.ticks.color = textColor;
           }
@@ -49,6 +52,9 @@
         // Update fullscreen chart if it exists
         if (fullscreenChart?.options?.plugins?.title) {
           fullscreenChart.options.plugins.title.color = textColor;
+        }
+        if (fullscreenChart?.options?.plugins?.legend?.labels) {
+          fullscreenChart.options.plugins.legend.labels.color = textColor;
         }
         if (fullscreenChart?.options?.scales?.x?.ticks) {
           fullscreenChart.options.scales.x.ticks.color = textColor;
@@ -148,6 +154,11 @@
       literatureNounsWordCounts: { names: string[]; counts: number[] };
       literatureVerbsWordCounts: { names: string[]; counts: number[] };
       literatureAdjectivesWordCounts: { names: string[]; counts: number[] };
+      yearTypeMatrix: {
+        years: string[];
+        types: string[];
+        datasets: { type: string; data: number[] }[];
+      };
     } | null;
   }
 
@@ -171,6 +182,7 @@
     samplingDesigns: null,
     measurementDesigns: null,
     analyticDesigns: null,
+    yearTypeStacked: null,
   });
 
   // Chart instances
@@ -213,7 +225,7 @@
         popover: {
           title: "Project Overview",
           description:
-            "See high-level trends like prevalent publishers, common keywords, publication year distribution, and literature types.",
+            "See high-level trends like prevalent publishers, common keywords, publication year distribution, literature types, and a detailed breakdown of literature types by publication year.",
           side: "top",
           align: "start",
         },
@@ -275,6 +287,20 @@
         },
       },
       {
+        element: ".stacked-chart-card",
+        popover: {
+          title: "Literature Types by Year",
+          description:
+            "This stacked bar chart shows the distribution of different literature types across publication years, helping you identify trends in research approaches over time.",
+          side: "top",
+          align: "center",
+        },
+        onHighlighted: () => {
+          // Ensure overview tab is active
+          if (activeTab !== "overview") activeTab = "overview";
+        },
+      },
+      {
         element: ".analytics-container", // General container if no data
         popover: {
           title: "No Data Yet?",
@@ -321,12 +347,10 @@
   function createFullscreenChart(node: HTMLElement) {
     if (!activeChart?.canvas) return;
 
-    const originalChart =
-      charts[
-        Object.keys(charts).find(
-          (key) => canvasRefs[key] === activeChart?.canvas
-        ) || ""
-      ];
+    const originalChartKey = Object.keys(charts).find(
+      (key) => canvasRefs[key] === activeChart?.canvas
+    );
+    const originalChart = charts[originalChartKey || ""];
 
     if (!originalChart) return;
 
@@ -339,105 +363,136 @@
     const isDark = document.documentElement.classList.contains("dark");
     const textColor = isDark ? "#ffffff" : "#000000";
 
-    // Check if this is the years chart
+    // Check if this is the years chart or stacked chart
     const isYearsChart =
       activeChart.title === "Distribution of Publication Years";
+    const isStackedChart =
+      activeChart.title === "Literature Types by Publication Year";
 
-    // Create a new chart with the same data but adjusted options for fullscreen
-    fullscreenChart = new Chart(fullscreenCanvas, {
-      type: "bar",
-      data: {
-        labels: originalChart.data.labels,
-        datasets: [
-          {
-            label: "Count",
-            data: originalChart.data.datasets[0].data,
-            backgroundColor: activeChart?.color || "rgb(75, 192, 192)",
-          },
-        ],
-      },
-      options: {
-        indexAxis: isYearsChart ? "x" : ("y" as const),
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          title: {
-            display: true,
-            text: activeChart?.title || "",
-            color: textColor,
-            font: {
-              size: 16,
-              weight: "bold" as const,
+    if (isStackedChart) {
+      const stackedData = data.summary?.yearTypeMatrix;
+      if (stackedData) {
+        const plainStackedData = {
+          years: [...stackedData.years],
+          types: [...stackedData.types],
+          datasets: stackedData.datasets.map(
+            (d: { type: string; data: number[] }) => ({
+              type: d.type,
+              data: [...d.data],
+            })
+          ),
+        };
+        fullscreenChart = createStackedBarChart(
+          fullscreenCanvas,
+          plainStackedData,
+          activeChart.title
+        );
+      }
+    } else {
+      // Create a new chart with the same data but adjusted options for fullscreen
+      fullscreenChart = new Chart(fullscreenCanvas, {
+        type: "bar",
+        data: {
+          labels: originalChart.data.labels,
+          datasets: [
+            {
+              label: "Count",
+              data: originalChart.data.datasets[0].data,
+              backgroundColor: activeChart?.color || "rgb(75, 192, 192)",
             },
+          ],
+        },
+        options: {
+          indexAxis: isYearsChart ? "x" : ("y" as const),
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: {
             padding: {
-              top: 10,
-              bottom: 20,
+              left: 10,
+              right: 10,
+              top: 5,
+              bottom: 5,
             },
           },
-          legend: {
-            display: false,
-            labels: {
+          plugins: {
+            title: {
+              display: true,
+              text: activeChart?.title || "",
               color: textColor,
-            },
-          },
-        },
-        scales: {
-          x: {
-            grid: {
-              color: "rgba(128, 128, 128, 0.1)",
-            },
-            ticks: {
-              color: textColor,
-              stepSize: 1,
-              // @ts-ignore
-              callback: function (this: any, value: number | string) {
-                // Check if the indexAxis is 'y' (horizontal bar chart)
-                if (this.chart.options.indexAxis === "y") {
-                  // For horizontal bars, x-axis is numerical count
-                  const numValue = Number(value);
-                  return Number.isInteger(numValue) ? numValue : null;
-                } else {
-                  // For vertical bars (like Years), x-axis uses labels
-                  const labels = this.chart.data.labels;
-                  return labels[Number(value)] || value;
-                }
+              font: {
+                size: 16,
+                weight: "bold" as const,
               },
-              maxRotation: 0,
-              minRotation: 0,
+              padding: {
+                top: 10,
+                bottom: 20,
+              },
+            },
+            legend: {
+              display: false,
+              labels: {
+                color: textColor,
+              },
             },
           },
-          y: {
-            grid: {
-              display: isYearsChart,
-              color: isYearsChart ? "rgba(128, 128, 128, 0.1)" : undefined,
+          scales: {
+            x: {
+              grid: {
+                color: "rgba(128, 128, 128, 0.1)",
+              },
+              ticks: {
+                color: textColor,
+                stepSize: 1,
+                // @ts-ignore
+                callback: function (this: any, value: number | string) {
+                  // Check if the indexAxis is 'y' (horizontal bar chart)
+                  if (this.chart.options.indexAxis === "y") {
+                    // For horizontal bars, x-axis is numerical count
+                    const numValue = Number(value);
+                    return Number.isInteger(numValue) ? numValue : null;
+                  } else {
+                    // For vertical bars (like Years), x-axis uses labels
+                    const labels = this.chart.data.labels;
+                    return labels[Number(value)] || value;
+                  }
+                },
+                maxRotation: 0,
+                minRotation: 0,
+              },
             },
-            ticks: {
-              color: textColor,
-              stepSize: 1,
-              callback: function (value: number | string) {
-                if (isYearsChart) {
-                  const numValue = Number(value);
-                  return Number.isInteger(numValue) ? numValue : null;
-                }
-                const labels = originalChart.data.labels;
-                if (!Array.isArray(labels)) return value;
-                const label = labels[Number(value)];
-                if (typeof label !== "string") return value;
+            y: {
+              grid: {
+                display: isYearsChart,
+                color: isYearsChart ? "rgba(128, 128, 128, 0.1)" : undefined,
+              },
+              ticks: {
+                color: textColor,
+                stepSize: 1,
+                callback: function (value: number | string) {
+                  if (isYearsChart) {
+                    const numValue = Number(value);
+                    return Number.isInteger(numValue) ? numValue : null;
+                  }
+                  const labels = originalChart.data.labels;
+                  if (!Array.isArray(labels)) return value;
+                  const label = labels[Number(value)];
+                  if (typeof label !== "string") return value;
 
-                const title = activeChart?.title || "";
-                if (title === "Prevalent Publishers" && label.length > 10) {
-                  return label.slice(0, 10) + "...";
-                }
-                if (label.length > 35) {
-                  return label.slice(0, 35) + "...";
-                }
-                return label;
+                  const title = activeChart?.title || "";
+                  if (title === "Prevalent Publishers" && label.length > 10) {
+                    return label.slice(0, 10) + "...";
+                  }
+                  if (label.length > 35) {
+                    return label.slice(0, 35) + "...";
+                  }
+                  return label;
+                },
               },
             },
           },
         },
-      },
-    });
+      });
+    }
 
     return {
       destroy() {
@@ -612,6 +667,141 @@
             backgroundColor: color,
           },
         ],
+      },
+      options: chartOptions,
+    });
+  }
+
+  function createStackedBarChart(
+    canvas: HTMLCanvasElement,
+    yearTypeData: {
+      years: string[];
+      types: string[];
+      datasets: { type: string; data: number[] }[];
+    },
+    title: string
+  ): Chart {
+    // Get text color based on theme
+    const isDark = document.documentElement.classList.contains("dark");
+    const textColor = isDark ? "#ffffff" : "#000000";
+
+    // Define colors for different literature types
+    const typeColors: Record<string, string> = {
+      "Journal Article": "rgb(54, 162, 235)",
+      "Literature Review": "rgb(255, 99, 132)",
+      Book: "rgb(255, 206, 86)",
+      "Book Chapter": "rgb(75, 192, 192)",
+      "Conference Presentation": "rgb(153, 102, 255)",
+      "Conference Proceedings": "rgb(255, 159, 64)",
+      Dissertation: "rgb(199, 199, 199)",
+      Website: "rgb(83, 102, 255)",
+      "Newspaper Article": "rgb(255, 99, 255)",
+      Other: "rgb(128, 128, 128)",
+    };
+
+    const chartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: {
+        padding: {
+          left: 10,
+          right: 10,
+          top: 5,
+          bottom: 5,
+        },
+      },
+      plugins: {
+        title: {
+          display: true,
+          text: title,
+          color: textColor,
+          font: {
+            size: 16,
+            weight: "bold" as const,
+          },
+          padding: {
+            top: 10,
+            bottom: 20,
+          },
+        },
+        legend: {
+          display: true,
+          labels: {
+            color: textColor,
+          },
+        },
+      },
+      scales: {
+        x: {
+          stacked: true,
+          grid: {
+            color: "rgba(128, 128, 128, 0.1)",
+          },
+          ticks: {
+            color: textColor,
+            maxRotation: 45,
+            minRotation: 0,
+          },
+        },
+        y: {
+          stacked: true,
+          grid: {
+            color: "rgba(128, 128, 128, 0.1)",
+          },
+          ticks: {
+            color: textColor,
+            stepSize: 1,
+            callback: function (value: number | string) {
+              const numValue = Number(value);
+              if (Number.isInteger(numValue)) {
+                return numValue;
+              }
+              return null;
+            },
+          },
+        },
+      },
+      interaction: {
+        mode: "index" as const,
+        intersect: false,
+      },
+      categoryPercentage: 0.9,
+      barPercentage: 0.95,
+    };
+
+    if (yearTypeData.years.length === 0 || yearTypeData.datasets.length === 0) {
+      return new Chart(canvas, {
+        type: "bar",
+        data: {
+          labels: ["No data"],
+          datasets: [
+            {
+              label: "Count",
+              data: [0],
+              backgroundColor: "rgb(200, 200, 200)",
+            },
+          ],
+        },
+        options: chartOptions,
+      });
+    }
+
+    const plainYears = [...yearTypeData.years];
+    const plainDatasets = yearTypeData.datasets.map((dataset, index) => ({
+      label: dataset.type,
+      data: [...dataset.data],
+      backgroundColor:
+        typeColors[dataset.type] || `hsl(${(index * 137.508) % 360}, 70%, 50%)`,
+      borderColor:
+        typeColors[dataset.type] || `hsl(${(index * 137.508) % 360}, 70%, 40%)`,
+      borderWidth: 1,
+    }));
+
+    return new Chart(canvas, {
+      type: "bar",
+      data: {
+        labels: plainYears,
+        datasets: plainDatasets,
       },
       options: chartOptions,
     });
@@ -911,6 +1101,24 @@
         "rgb(180, 30, 50)"
       );
     }
+
+    if (canvasRefs.yearTypeStacked) {
+      const plainYearTypeData = {
+        years: [...summary.yearTypeMatrix.years],
+        types: [...summary.yearTypeMatrix.types],
+        datasets: summary.yearTypeMatrix.datasets.map(
+          (d: { type: string; data: number[] }) => ({
+            type: d.type,
+            data: [...d.data],
+          })
+        ),
+      };
+      charts.yearTypeStacked = createStackedBarChart(
+        canvasRefs.yearTypeStacked,
+        plainYearTypeData,
+        "Literature Types by Publication Year"
+      );
+    }
   }
 </script>
 
@@ -1091,6 +1299,36 @@
               </svg>
             </button>
             <canvas bind:this={canvasRefs.types}></canvas>
+          </div>
+          <div class="chart-card stacked-chart-card">
+            <button
+              class="fullscreen-button"
+              aria-label="View chart in fullscreen"
+              onclick={() =>
+                openFullscreen(
+                  canvasRefs.yearTypeStacked,
+                  "Literature Types by Publication Year",
+                  "rgb(54, 162, 235)"
+                )}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
+                <path d="M21 8V5a2 2 0 0 0-2-2h-3"></path>
+                <path d="M3 16v3a2 2 0 0 0 2 2h3"></path>
+                <path d="M16 21h3a2 2 0 0 0 2-2v-3"></path>
+              </svg>
+            </button>
+            <canvas bind:this={canvasRefs.yearTypeStacked}></canvas>
           </div>
         </div>
       </Tabs.Content>

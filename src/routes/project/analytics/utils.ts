@@ -40,6 +40,7 @@ export class AnalysisData {
   measurementDesigns: Record<string, number> = {};
   keywords: Record<string, number> = {};
   literatureTypes: Record<string, number> = {};
+  yearTypeMatrix: Record<string, Record<string, number>> = {};
 
   updateWordCount(
     type: "nouns" | "verbs" | "adjectives",
@@ -98,6 +99,36 @@ export class AnalysisData {
       names: filteredSortedEntries.map((entry) => entry[0]),
       counts: filteredSortedEntries.map((entry) => entry[1]),
     };
+  }
+
+  addYearTypeEntry(year: string, type: string) {
+    if (!this.yearTypeMatrix[year]) {
+      this.yearTypeMatrix[year] = {};
+    }
+    this.yearTypeMatrix[year][type] =
+      (this.yearTypeMatrix[year][type] || 0) + 1;
+  }
+
+  getStackedYearTypeData(): {
+    years: string[];
+    types: string[];
+    datasets: { type: string; data: number[] }[];
+  } {
+    const years = Object.keys(this.yearTypeMatrix).sort();
+    const allTypes = new Set<string>();
+
+    Object.values(this.yearTypeMatrix).forEach((yearData) => {
+      Object.keys(yearData).forEach((type) => allTypes.add(type));
+    });
+
+    const types = Array.from(allTypes).sort();
+
+    const datasets = types.map((type) => ({
+      type,
+      data: years.map((year) => this.yearTypeMatrix[year]?.[type] || 0),
+    }));
+
+    return { years, types, datasets };
   }
 }
 
@@ -358,6 +389,11 @@ export async function analyzeLiterature(
     if (lit.type) {
       analysisData.countOccurrences([lit.type], analysisData.literatureTypes);
     }
+
+    // Add year-type combination entry
+    if (lit.publishYear && lit.type) {
+      analysisData.addYearTypeEntry(lit.publishYear, lit.type);
+    }
   });
 
   // Process notes
@@ -421,6 +457,7 @@ export async function analyzeLiterature(
       1,
       false
     ),
+    yearTypeMatrix: analysisData.getStackedYearTypeData(),
   };
 }
 
