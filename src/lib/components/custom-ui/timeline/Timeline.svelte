@@ -198,45 +198,60 @@
 
     // Sort groups by their grouping key (newest first) and events within each group
     return groupsArray
-      .sort((a, b) => {
-        // Extract sortable values from grouping keys
-        if (groupingMode === "days") {
-          return (
-            new Date(b.groupingKey).getTime() -
-            new Date(a.groupingKey).getTime()
-          );
-        } else if (groupingMode === "weeks") {
-          const [, aYear, aMonth, aDay] = a.groupingKey.split("-");
-          const [, bYear, bMonth, bDay] = b.groupingKey.split("-");
-          const aDate = new Date(
-            parseInt(aYear),
-            parseInt(aMonth),
-            parseInt(aDay)
-          );
-          const bDate = new Date(
-            parseInt(bYear),
-            parseInt(bMonth),
-            parseInt(bDay)
-          );
-          return bDate.getTime() - aDate.getTime();
-        } else if (groupingMode === "months") {
-          const [, aYear, aMonth] = a.groupingKey.split("-");
-          const [, bYear, bMonth] = b.groupingKey.split("-");
-          const aDate = new Date(parseInt(aYear), parseInt(aMonth));
-          const bDate = new Date(parseInt(bYear), parseInt(bMonth));
-          return bDate.getTime() - aDate.getTime();
+      .sort(
+        (
+          a: { date: string; events: TimelineEvent[]; groupingKey: string },
+          b: { date: string; events: TimelineEvent[]; groupingKey: string }
+        ) => {
+          // Extract sortable values from grouping keys
+          if (groupingMode === "days") {
+            return (
+              new Date(b.groupingKey).getTime() -
+              new Date(a.groupingKey).getTime()
+            );
+          } else if (groupingMode === "weeks") {
+            const [, aYear, aMonth, aDay] = a.groupingKey.split("-");
+            const [, bYear, bMonth, bDay] = b.groupingKey.split("-");
+            const aDate = new Date(
+              parseInt(aYear),
+              parseInt(aMonth),
+              parseInt(aDay)
+            );
+            const bDate = new Date(
+              parseInt(bYear),
+              parseInt(bMonth),
+              parseInt(bDay)
+            );
+            return bDate.getTime() - aDate.getTime();
+          } else if (groupingMode === "months") {
+            const [, aYear, aMonth] = a.groupingKey.split("-");
+            const [, bYear, bMonth] = b.groupingKey.split("-");
+            const aDate = new Date(parseInt(aYear), parseInt(aMonth));
+            const bDate = new Date(parseInt(bYear), parseInt(bMonth));
+            return bDate.getTime() - aDate.getTime();
+          }
+          return 0;
         }
-        return 0;
-      })
-      .map(({ date, events, groupingKey }) => ({
-        date,
-        events: [...events].sort(
-          (a: TimelineEvent, b: TimelineEvent) =>
-            b.timestamp.getTime() - a.timestamp.getTime()
-        ),
-        isExpanded: true, // Start expanded for better initial UX
-        groupingKey,
-      }));
+      )
+      .map(
+        ({
+          date,
+          events,
+          groupingKey,
+        }: {
+          date: string;
+          events: TimelineEvent[];
+          groupingKey: string;
+        }) => ({
+          date,
+          events: [...events].sort(
+            (a: TimelineEvent, b: TimelineEvent) =>
+              b.timestamp.getTime() - a.timestamp.getTime()
+          ),
+          isExpanded: true, // Start expanded for better initial UX
+          groupingKey,
+        })
+      );
   });
 
   // Enhanced icon mapping for different event types including custom events
