@@ -22,6 +22,8 @@
     FileText,
     Star,
     Plus,
+    CalendarClock,
+    CalendarRange,
   } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button";
   import * as Popover from "$lib/components/ui/popover";
@@ -30,6 +32,7 @@
   import { Checkbox } from "$lib/components/ui/checkbox";
   import * as Select from "$lib/components/ui/select";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
+  import * as ToggleGroup from "$lib/components/ui/toggle-group";
   // import { DatePicker } from "$lib/components/ui/date-picker";
   import { fade, slide } from "svelte/transition";
   import { customEventsStore } from "$lib/stores/custom-events-store.svelte";
@@ -63,6 +66,8 @@
     message?: string;
   }
 
+  type GroupingMode = "days" | "weeks" | "months";
+
   let {
     filters = { types: [], searchQuery: "" },
     onFiltersChange,
@@ -73,6 +78,8 @@
     showExportOptions = true,
     onExport = undefined,
     customEvents = [],
+    groupingMode = "days",
+    onGroupingModeChange = undefined,
   } = $props<{
     filters: FilterOptions;
     onFiltersChange: (filters: FilterOptions) => void;
@@ -86,6 +93,8 @@
     showExportOptions?: boolean;
     onExport?: (format: string, filters: FilterOptions) => void;
     customEvents?: CustomTimelineEvent[];
+    groupingMode?: GroupingMode;
+    onGroupingModeChange?: (mode: GroupingMode) => void;
   }>();
 
   let searchQuery = $state(filters.searchQuery);
@@ -314,6 +323,13 @@
     customEventsStore.openCreateForm();
   }
 
+  // Grouping mode handlers
+  function handleGroupingModeChange(mode: GroupingMode) {
+    if (onGroupingModeChange) {
+      onGroupingModeChange(mode);
+    }
+  }
+
   // Date conversion handlers
   $effect(() => {
     if (dateRangeStartString) {
@@ -381,6 +397,48 @@
           </button>
         {/if}
       </div>
+    </div>
+
+    <!-- Grouping Mode Toggle -->
+    <div class="grouping-mode-container">
+      <ToggleGroup.Root
+        type="single"
+        value={groupingMode}
+        onValueChange={(value) => {
+          if (
+            value &&
+            (value === "days" || value === "weeks" || value === "months")
+          ) {
+            handleGroupingModeChange(value as GroupingMode);
+          }
+        }}
+        class="grouping-toggle-group"
+      >
+        <ToggleGroup.Item
+          value="days"
+          aria-label="Group by days"
+          class="grouping-toggle-item"
+        >
+          <Calendar class="w-4 h-4 mr-1.5" />
+          Days
+        </ToggleGroup.Item>
+        <ToggleGroup.Item
+          value="weeks"
+          aria-label="Group by weeks"
+          class="grouping-toggle-item"
+        >
+          <CalendarClock class="w-4 h-4 mr-1.5" />
+          Weeks
+        </ToggleGroup.Item>
+        <ToggleGroup.Item
+          value="months"
+          aria-label="Group by months"
+          class="grouping-toggle-item"
+        >
+          <CalendarRange class="w-4 h-4 mr-1.5" />
+          Months
+        </ToggleGroup.Item>
+      </ToggleGroup.Root>
     </div>
 
     <!-- Add Custom Event Button -->
@@ -878,5 +936,17 @@
     .date-inputs {
       @apply flex-col;
     }
+  }
+
+  .grouping-mode-container {
+    @apply flex items-center;
+  }
+
+  .grouping-toggle-group {
+    @apply inline-flex items-center justify-center rounded-md bg-muted p-1 text-muted-foreground h-10;
+  }
+
+  .grouping-toggle-item {
+    @apply inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-sm hover:bg-background/50 hover:text-foreground min-w-[70px];
   }
 </style>

@@ -140,6 +140,7 @@
   let dialogContent = $state<string[]>([]);
   let selectedEvent = $state<TimelineEvent | null>(null);
   let showLevelsDialog = $state(false);
+  let timelineGroupingMode = $state<"days" | "weeks" | "months">("days");
 
   // Achievement related state and types
   let achievements = $state<Achievement[]>([]);
@@ -822,6 +823,10 @@
     timelineFilters = newFilters;
   }
 
+  function handleTimelineGroupingModeChange(mode: "days" | "weeks" | "months") {
+    timelineGroupingMode = mode;
+  }
+
   async function handleCustomEventAction(action: string, customEvent: any) {
     try {
       switch (action) {
@@ -1470,6 +1475,8 @@
             onBulkAction={handleBulkAction}
             onExport={handleExport}
             customEvents={customEventsStore.events}
+            groupingMode={timelineGroupingMode}
+            onGroupingModeChange={handleTimelineGroupingModeChange}
           />
 
           <Timeline
@@ -1478,6 +1485,8 @@
             onEventClick={handleTimelineEventClick}
             onCustomEventAction={handleCustomEventAction}
             onEventAdded={syncTimelineWithStore}
+            groupingMode={timelineGroupingMode}
+            onGroupingModeChange={handleTimelineGroupingModeChange}
           />
         </CardContent>
       </Card>

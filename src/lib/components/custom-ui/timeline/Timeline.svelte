@@ -68,7 +68,10 @@
     date: string;
     events: TimelineEvent[];
     isExpanded?: boolean;
+    groupingKey?: string; // For internal grouping logic
   }
+
+  type GroupingMode = "days" | "weeks" | "months";
 
   let {
     events = [],
@@ -76,12 +79,16 @@
     onEventClick = undefined,
     onCustomEventAction = undefined,
     onEventAdded = undefined,
+    groupingMode = "days",
+    onGroupingModeChange = undefined,
   } = $props<{
     events: TimelineEvent[];
     isLoading?: boolean;
     onEventClick?: (event: TimelineEvent) => void;
     onCustomEventAction?: (action: string, event: any) => void;
     onEventAdded?: () => void;
+    groupingMode?: GroupingMode;
+    onGroupingModeChange?: (mode: GroupingMode) => void;
   }>();
 
   // Context menu state
@@ -93,7 +100,62 @@
   // Get form state from store instead of local state
   let customEventFormState = $derived(customEventsStore.formState);
 
-  // Group events by date
+  // Helper functions for date grouping
+  function getWeekStart(date: Date): Date {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day; // First day is Sunday
+    return new Date(d.setDate(diff));
+  }
+
+  function getMonthStart(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), 1);
+  }
+
+  function getGroupingKey(date: Date, mode: GroupingMode): string {
+    switch (mode) {
+      case "days":
+        return date.toDateString();
+      case "weeks":
+        const weekStart = getWeekStart(date);
+        return `week-${weekStart.getFullYear()}-${weekStart.getMonth()}-${weekStart.getDate()}`;
+      case "months":
+        return `month-${date.getFullYear()}-${date.getMonth()}`;
+      default:
+        return date.toDateString();
+    }
+  }
+
+  function getGroupDisplayDate(
+    groupingKey: string,
+    mode: GroupingMode
+  ): string {
+    switch (mode) {
+      case "days":
+        return groupingKey;
+      case "weeks":
+        const [, year, month, day] = groupingKey.split("-");
+        const weekStart = new Date(
+          parseInt(year),
+          parseInt(month),
+          parseInt(day)
+        );
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        return `Week of ${weekStart.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${weekEnd.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
+      case "months":
+        const [, yearStr, monthStr] = groupingKey.split("-");
+        const monthDate = new Date(parseInt(yearStr), parseInt(monthStr));
+        return monthDate.toLocaleDateString("en-US", {
+          month: "long",
+          year: "numeric",
+        });
+      default:
+        return groupingKey;
+    }
+  }
+
+  // Group events by date/week/month based on groupingMode
   let groupedEvents = $derived(() => {
     // Sort events first
     const sortedEvents = [...events].sort(
@@ -101,40 +163,80 @@
         b.timestamp.getTime() - a.timestamp.getTime()
     );
 
-    // Group events by date using reduce (no mutations)
+    // Group events by the selected grouping mode
     const groupsArray = sortedEvents.reduce(
       (
-        acc: { date: string; events: TimelineEvent[] }[],
+        acc: { date: string; events: TimelineEvent[]; groupingKey: string }[],
         event: TimelineEvent
       ) => {
-        const dateKey = event.timestamp.toDateString();
+        const groupingKey = getGroupingKey(event.timestamp, groupingMode);
+        const displayDate = getGroupDisplayDate(groupingKey, groupingMode);
 
         // Find existing group or create new one
-        const existingGroup = acc.find((group) => group.date === dateKey);
+        const existingGroup = acc.find(
+          (group) => group.groupingKey === groupingKey
+        );
         if (existingGroup) {
           return acc.map((group) =>
-            group.date === dateKey
+            group.groupingKey === groupingKey
               ? { ...group, events: [...group.events, event] }
               : group
           );
         } else {
-          return [...acc, { date: dateKey, events: [event] }];
+          return [
+            ...acc,
+            {
+              date: displayDate,
+              events: [event],
+              groupingKey,
+            },
+          ];
         }
       },
       []
     );
 
-    // Sort events within each group and add isExpanded property
-    return groupsArray.map(
-      ({ date, events }: { date: string; events: TimelineEvent[] }) => ({
+    // Sort groups by their grouping key (newest first) and events within each group
+    return groupsArray
+      .sort((a, b) => {
+        // Extract sortable values from grouping keys
+        if (groupingMode === "days") {
+          return (
+            new Date(b.groupingKey).getTime() -
+            new Date(a.groupingKey).getTime()
+          );
+        } else if (groupingMode === "weeks") {
+          const [, aYear, aMonth, aDay] = a.groupingKey.split("-");
+          const [, bYear, bMonth, bDay] = b.groupingKey.split("-");
+          const aDate = new Date(
+            parseInt(aYear),
+            parseInt(aMonth),
+            parseInt(aDay)
+          );
+          const bDate = new Date(
+            parseInt(bYear),
+            parseInt(bMonth),
+            parseInt(bDay)
+          );
+          return bDate.getTime() - aDate.getTime();
+        } else if (groupingMode === "months") {
+          const [, aYear, aMonth] = a.groupingKey.split("-");
+          const [, bYear, bMonth] = b.groupingKey.split("-");
+          const aDate = new Date(parseInt(aYear), parseInt(aMonth));
+          const bDate = new Date(parseInt(bYear), parseInt(bMonth));
+          return bDate.getTime() - aDate.getTime();
+        }
+        return 0;
+      })
+      .map(({ date, events, groupingKey }) => ({
         date,
         events: [...events].sort(
           (a: TimelineEvent, b: TimelineEvent) =>
             b.timestamp.getTime() - a.timestamp.getTime()
         ),
         isExpanded: true, // Start expanded for better initial UX
-      })
-    );
+        groupingKey,
+      }));
   });
 
   // Enhanced icon mapping for different event types including custom events
@@ -272,7 +374,13 @@
     });
   }
 
-  function formatRelativeDate(dateString: string) {
+  function formatRelativeDate(dateString: string, mode: GroupingMode = "days") {
+    if (mode === "weeks" || mode === "months") {
+      // For weeks and months, the dateString is already formatted
+      return dateString;
+    }
+
+    // Original logic for days
     const date = new Date(dateString);
     const today = new Date();
     const yesterday = new Date(today);
@@ -461,7 +569,9 @@
                 <Calendar class="w-4 h-4" />
               </div>
               <div class="date-content">
-                <span class="date-text">{formatRelativeDate(group.date)}</span>
+                <span class="date-text"
+                  >{formatRelativeDate(group.date, groupingMode)}</span
+                >
                 <span class="event-count">
                   {group.events.length}
                   {group.events.length === 1 ? "event" : "events"}
