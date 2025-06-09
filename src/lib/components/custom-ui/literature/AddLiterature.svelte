@@ -118,7 +118,7 @@
     { label: "Conference Proceedings", value: "Conference Proceedings" },
     { label: "Dissertation", value: "Dissertation" },
     { label: "Website", value: "Website" },
-    { label: "Newspaper Article", value: "Newspaper Article" },
+    { label: "Gray Literature", value: "Gray Literature" },
     { label: "Other", value: "Other" },
   ];
 

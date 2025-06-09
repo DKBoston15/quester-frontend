@@ -549,7 +549,7 @@
           <option value="Conference Proceedings">Conference Proceedings</option>
           <option value="Dissertation">Dissertation</option>
           <option value="Website">Website</option>
-          <option value="Newspaper Article">Newspaper Article</option>
+          <option value="Gray Literature">Gray Literature</option>
           <option value="Other">Other</option>
         </select>
       {:else}

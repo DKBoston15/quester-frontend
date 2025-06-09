@@ -695,7 +695,7 @@
       "Conference Proceedings": "rgb(255, 159, 64)",
       Dissertation: "rgb(199, 199, 199)",
       Website: "rgb(83, 102, 255)",
-      "Newspaper Article": "rgb(255, 99, 255)",
+      "Gray Literature": "rgb(255, 99, 255)",
       Other: "rgb(128, 128, 128)",
     };
 

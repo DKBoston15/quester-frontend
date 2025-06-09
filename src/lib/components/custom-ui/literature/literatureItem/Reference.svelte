@@ -707,7 +707,7 @@
         }
         break;
 
-      case "Newspaper Article":
+      case "Gray Literature":
         components.push(`"${citation.title}."`);
         components.push(`${citation.journalName},`);
         if (citation.startDate) {
