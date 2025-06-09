@@ -568,7 +568,7 @@
                     <Label.Root>Authors</Label.Root>
                     <TagInput
                       tags={authors}
-                      on:change={(e) => (authors = e.detail)}
+                      on:change={(e) => (authors = e.detail.tags)}
                       placeholder="Add authors"
                     />
                   </div>
@@ -745,8 +745,8 @@
               <Label.Root>Authors</Label.Root>
               <TagInput
                 tags={selectedReference!.authors}
-                on:change={(e: CustomEvent<string[]>) =>
-                  (selectedReference!.authors = e.detail)}
+                on:change={(e: CustomEvent<{ tags: string[] }>) =>
+                  (selectedReference!.authors = e.detail.tags)}
                 placeholder="Add authors"
               />
             </div>
@@ -756,8 +756,8 @@
                 <Label.Root>Editors</Label.Root>
                 <TagInput
                   tags={selectedReference!.editors}
-                  on:change={(e: CustomEvent<string[]>) =>
-                    (selectedReference!.editors = e.detail)}
+                  on:change={(e: CustomEvent<{ tags: string[] }>) =>
+                    (selectedReference!.editors = e.detail.tags)}
                   placeholder="Add editors"
                 />
               </div>

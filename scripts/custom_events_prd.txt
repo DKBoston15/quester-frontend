@@ -1,0 +1,394 @@
+# Product Requirements Document: Custom Timeline Events
+
+## 1. Overview
+
+### 1.1 Product Vision
+Add the ability for users to create, edit, and manage custom timeline events in the research project timeline, allowing them to document important milestones, discoveries, deadlines, and personal reflections that may not be automatically captured by the system.
+
+### 1.2 Problem Statement
+Currently, the timeline only displays system-generated events (project status changes, literature additions, model creation, etc.). Users need the ability to manually add custom events to:
+- Document important research milestones and breakthroughs
+- Track external deadlines and meetings
+- Add personal reflections and insights
+- Record collaboration events and communications
+- Mark significant decisions or pivot points
+- Capture events that happen outside the system
+
+### 1.3 Success Criteria
+- Users can create custom timeline events with rich content
+- Custom events integrate seamlessly with existing timeline UI
+- Events can be edited and deleted by their creators
+- Events support various types (milestone, deadline, meeting, insight, etc.)
+- Events are properly authenticated and authorized
+- Search and filtering includes custom events
+- Mobile-responsive interface for event management
+
+## 2. User Stories
+
+### 2.1 Primary User Stories
+
+**As a researcher, I want to:**
+- Add custom events to my project timeline so I can document important milestones that aren't automatically captured
+- Edit my custom events so I can update details as situations evolve
+- Delete custom events that are no longer relevant
+- Categorize my custom events (meeting, deadline, milestone, insight, decision) for better organization
+- Add rich descriptions and multiple detail points to custom events
+- Set specific timestamps for events (not just current time)
+- View my custom events alongside system-generated events in a unified timeline
+- Search for custom events using the existing search functionality
+- Filter timeline by custom event types
+
+**As a project collaborator, I want to:**
+- See custom events created by other team members
+- Understand the context and reasoning behind custom events
+- Be notified when important custom events (deadlines, meetings) are added
+
+### 2.2 Secondary User Stories
+
+**As a system administrator, I want to:**
+- Monitor custom event usage and storage
+- Ensure custom events don't impact system performance
+- Have audit trails for custom event modifications
+
+## 3. Functional Requirements
+
+### 3.1 Custom Event Creation
+
+**3.1.1 Event Creation Interface**
+- Floating action button (FAB) or prominent "Add Event" button on timeline
+- Modal/dialog form for event creation with fields:
+  - Title (required, max 200 characters)
+  - Description (optional, max 1000 characters)  
+  - Event Type (dropdown: milestone, deadline, meeting, insight, decision, other)
+  - Date and Time (datetime picker, defaults to current time)
+  - Details (optional, multiple bullet points, max 5 items, 500 chars each)
+  - Tags (optional, comma-separated, max 10 tags)
+
+**3.1.2 Event Type Configuration**
+- Predefined event types with distinct icons and colors:
+  - Milestone: Trophy icon, gold/yellow theme
+  - Deadline: Clock icon, red/orange theme  
+  - Meeting: Users icon, blue theme
+  - Insight: Lightbulb icon, purple theme
+  - Decision: Gavel icon, green theme
+  - Other: Star icon, gray theme
+
+**3.1.3 Event Creation Validation**
+- Title is required and not empty
+- Date cannot be more than 1 year in the future
+- Details array limited to 5 items
+- Client-side and server-side validation
+- Real-time validation feedback
+
+### 3.2 Custom Event Management
+
+**3.2.1 Event Editing**
+- Click on custom event shows context menu with "Edit" option
+- Edit modal pre-populated with existing data
+- All fields editable except event ID and creation metadata
+- Save changes updates event and refreshes timeline
+- Optimistic UI updates with rollback on error
+
+**3.2.2 Event Deletion**
+- Context menu includes "Delete" option
+- Confirmation dialog to prevent accidental deletion
+- Soft delete with option to restore (retain for 30 days)
+- Immediate removal from timeline UI
+
+**3.2.3 Event Permissions**
+- Users can only edit/delete their own custom events
+- Project admins can delete any custom events in their projects
+- Read access for all project members
+- Clear visual indication of ownership (creator name/avatar)
+
+### 3.3 Timeline Integration
+
+**3.3.1 Display Integration**
+- Custom events appear in chronological order with system events
+- Distinct visual styling to differentiate from system events
+- Custom event icons and colors based on event type
+- "Custom" badge or indicator on custom events
+- Creator information displayed (name, avatar)
+
+**3.3.2 Interaction Consistency**
+- Same click behavior as system events (expand/collapse details)
+- Consistent styling with hover effects and animations
+- Context menu for custom events (edit, delete, copy link)
+- Same time formatting and date grouping
+
+**3.3.3 Search and Filter Integration**
+- Custom events included in search results
+- Event type filter includes custom event types
+- Text search includes title, description, details, and tags
+- Advanced filter for "custom events only"
+
+### 3.4 Data Storage and API
+
+**3.4.1 Database Schema**
+```sql
+CREATE TABLE custom_timeline_events (
+  id SERIAL PRIMARY KEY,
+  project_id INTEGER NOT NULL REFERENCES projects(id),
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  title VARCHAR(200) NOT NULL,
+  description TEXT,
+  event_type VARCHAR(50) NOT NULL,
+  event_timestamp TIMESTAMP NOT NULL,
+  details JSONB, -- Array of detail strings
+  tags JSONB, -- Array of tag strings
+  is_deleted BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  deleted_at TIMESTAMP NULL
+);
+
+CREATE INDEX idx_custom_timeline_events_project_timestamp 
+ON custom_timeline_events(project_id, event_timestamp DESC) 
+WHERE is_deleted = FALSE;
+
+CREATE INDEX idx_custom_timeline_events_user 
+ON custom_timeline_events(user_id) 
+WHERE is_deleted = FALSE;
+```
+
+**3.4.2 API Endpoints**
+- `POST /api/projects/:projectId/custom-events` - Create custom event
+- `GET /api/projects/:projectId/custom-events` - List custom events (with filters)
+- `PUT /api/custom-events/:id` - Update custom event
+- `DELETE /api/custom-events/:id` - Soft delete custom event
+- `GET /api/custom-events/:id` - Get single custom event
+
+**3.4.3 API Response Format**
+```json
+{
+  "id": 123,
+  "projectId": 456,
+  "userId": 789,
+  "title": "Research Breakthrough",
+  "description": "Discovered key insight about methodology",
+  "eventType": "insight",
+  "eventTimestamp": "2024-01-15T14:30:00Z",
+  "details": [
+    "Novel approach to data processing",
+    "Significant performance improvement",
+    "Need to validate with larger dataset"
+  ],
+  "tags": ["methodology", "performance", "validation"],
+  "creator": {
+    "id": 789,
+    "name": "Dr. Jane Smith",
+    "avatar": "https://..."
+  },
+  "createdAt": "2024-01-15T14:32:00Z",
+  "updatedAt": "2024-01-15T14:32:00Z"
+}
+```
+
+## 4. Technical Requirements
+
+### 4.1 Frontend Implementation
+
+**4.1.1 Technology Stack**
+- Svelte 5 with TypeScript
+- Tailwind CSS for styling
+- Lucide Svelte for icons
+- Existing timeline components as base
+- Form validation using Svelte stores
+
+**4.1.2 Component Architecture**
+```
+/src/lib/components/custom-ui/timeline/
+  ├── CustomEventForm.svelte (modal form)
+  ├── CustomEventMenu.svelte (context menu)
+  ├── CustomEventTypes.ts (type definitions)
+  ├── CustomEventAPI.ts (API functions)
+  └── Timeline.svelte (enhanced with custom events)
+```
+
+**4.1.3 State Management**
+- Custom events stored in dedicated Svelte store
+- Integration with existing timeline event state
+- Optimistic updates for better UX
+- Error handling and rollback logic
+
+### 4.2 Backend Implementation
+
+**4.2.1 Technology Stack**
+- AdonisJS V6 with TypeScript
+- PostgreSQL database
+- Lucid ORM for database operations
+- Validation using Vine validator
+
+**4.2.2 Model and Controller Structure**
+```
+/app/
+  ├── models/CustomTimelineEvent.ts
+  ├── controllers/CustomTimelineEventsController.ts
+  ├── validators/CustomEventValidator.ts
+  └── middleware/CustomEventAuth.ts
+```
+
+**4.2.3 Authentication and Authorization**
+- JWT-based authentication (existing system)
+- Project membership verification
+- Resource ownership validation
+- Rate limiting for event creation
+
+### 4.3 Performance Requirements
+
+**4.3.1 Response Times**
+- Event creation: < 500ms
+- Event updates: < 300ms
+- Timeline loading with custom events: < 1s
+- Search with custom events: < 800ms
+
+**4.3.2 Scalability**
+- Support up to 1000 custom events per project
+- Efficient pagination for large timelines
+- Database indexing for optimal query performance
+- Caching strategy for frequently accessed events
+
+## 5. User Experience Requirements
+
+### 5.1 Interface Design
+
+**5.1.1 Visual Design**
+- Custom events have subtle visual distinction from system events
+- Event type icons are intuitive and recognizable
+- Color scheme integrates with existing timeline design
+- Clear creator attribution without cluttering interface
+
+**5.1.2 Interaction Design**
+- Smooth animations for event creation and updates
+- Drag-to-reorder capability for future enhancement
+- Keyboard shortcuts for power users (Ctrl+E for new event)
+- Touch-friendly interface for mobile devices
+
+**5.1.3 Accessibility**
+- ARIA labels for all interactive elements
+- Keyboard navigation support
+- Screen reader compatible
+- High contrast mode support
+- Focus indicators for all form elements
+
+### 5.2 Mobile Experience
+
+**5.2.1 Responsive Design**
+- Touch-optimized event creation flow
+- Swipe gestures for event management
+- Optimized modal sizing for mobile screens
+- Consolidated context menus for small screens
+
+**5.2.2 Performance Optimization**
+- Lazy loading of event details
+- Efficient rendering for long timelines
+- Minimal bandwidth usage for mobile users
+
+## 6. Security Requirements
+
+### 6.1 Data Protection
+- All custom event data encrypted at rest
+- HTTPS for all API communications
+- Input sanitization to prevent XSS attacks
+- SQL injection prevention through parameterized queries
+
+### 6.2 Access Control
+- Project-based access control
+- User can only modify their own events
+- Admin override capabilities
+- Audit logging for all modifications
+
+### 6.3 Data Retention
+- Soft delete with 30-day retention
+- GDPR compliance for data deletion requests
+- Backup and recovery procedures
+- Data export capabilities
+
+## 7. Integration Requirements
+
+### 7.1 Existing System Integration
+- Seamless integration with current timeline component
+- Compatibility with existing search and filter functionality
+- Integration with project management system
+- User authentication system integration
+
+### 7.2 Future Enhancement Hooks
+- Event templates for common event types
+- Recurring event support
+- Event reminders and notifications
+- Integration with external calendar systems
+- Collaboration features (comments, reactions)
+
+## 8. Testing Requirements
+
+### 8.1 Unit Testing
+- Component testing for all Svelte components
+- API endpoint testing
+- Database model testing
+- Validation logic testing
+
+### 8.2 Integration Testing
+- End-to-end event creation workflow
+- Timeline rendering with mixed event types
+- Search and filter functionality
+- Mobile responsiveness testing
+
+### 8.3 Performance Testing
+- Load testing with large numbers of events
+- Concurrent user testing
+- Database performance under load
+- Frontend rendering performance
+
+## 9. Deployment and Rollout
+
+### 9.1 Phased Rollout
+- Phase 1: Basic custom event creation and display
+- Phase 2: Advanced editing and management features
+- Phase 3: Enhanced search and filtering
+- Phase 4: Mobile optimization and advanced features
+
+### 9.2 Feature Flags
+- Gradual rollout using feature flags
+- A/B testing for interface variations
+- Quick rollback capability
+- Usage analytics and monitoring
+
+## 10. Success Metrics
+
+### 10.1 Usage Metrics
+- Number of custom events created per user/project
+- Custom event engagement rates (views, interactions)
+- Timeline page retention with custom events
+- Mobile vs desktop usage patterns
+
+### 10.2 Quality Metrics
+- Custom event creation success rate
+- Error rates and user-reported issues
+- Performance metrics (load times, responsiveness)
+- User satisfaction scores from feedback
+
+### 10.3 Business Metrics
+- Increased user engagement with timeline feature
+- Improved project documentation completeness
+- Enhanced user retention rates
+- Positive user feedback and feature requests
+
+## 11. Constraints and Assumptions
+
+### 11.1 Technical Constraints
+- Must work within existing Svelte 5 + AdonisJS architecture
+- Database storage limitations per project
+- API rate limiting considerations
+- Browser compatibility requirements
+
+### 11.2 Business Constraints
+- Development timeline: 4-6 weeks
+- No additional third-party service dependencies
+- Must maintain existing system performance
+- Backward compatibility with existing timeline data
+
+### 11.3 Assumptions
+- Users want to add custom timeline events
+- Current timeline UI patterns are sufficient base
+- Project-based access model is appropriate
+- Mobile usage will be significant but secondary to desktop 
