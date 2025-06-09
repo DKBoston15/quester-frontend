@@ -153,3 +153,26 @@ export interface DepartmentRole {
   user?: User;
   role?: Role;
 }
+
+export interface Grant {
+  id: string;
+  projectId: string;
+  grantName: string;
+  recipient?: string | null;
+  awardNumber?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  awardType?: string | null;
+  directorateDivision?: string | null;
+  principalInvestigator?: string | null;
+  coPrincipalInvestigator?: string | null;
+  programManager?: string | null;
+  amount?: number | null;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | null;
+
+  // Relations
+  project?: Project;
+}

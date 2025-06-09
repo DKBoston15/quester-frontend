@@ -1,0 +1,74 @@
+# Grant Details Management System - Product Requirements Document
+
+## Project Overview
+Replace the basic financial support fields in the ProjectOverview component with a comprehensive grant management system. This will allow researchers to track detailed grant information including NSF funding opportunities and other grant details.
+
+## Current State
+The ProjectOverview.svelte component currently has basic fields:
+- Financial Institution (string)
+- Financial Support Amount (string)
+
+These fields are insufficient for comprehensive grant tracking and need to be replaced with a dedicated grant management component.
+
+## Requirements
+
+### Core Features
+1. **Grant Details Component**: New dedicated component for comprehensive grant information
+2. **Database Schema**: Backend database tables for storing grant information
+3. **API Integration**: RESTful endpoints for grant CRUD operations
+4. **UI/UX**: Modern, accessible interface following existing design patterns
+
+### Grant Data Model
+The system must support the following grant fields:
+- Grant Name (required)
+- Recipient of the Grant
+- Award Number (unique identifier)
+- Start Date
+- End Date  
+- Award Type (dropdown: Research Grant, Fellowship, etc.)
+- Directorate/Division
+- Principal Investigator (PI)
+- Co-Principal Investigator (Co-PI)
+- Program Manager
+- Amount (monetary value)
+- Status (Active, Pending, Completed, etc.)
+
+### Technical Requirements
+
+#### Backend (AdonisJS V6)
+- Database migration for grants table
+- Grant model with relationships to projects
+- API endpoints for CRUD operations
+- Data validation and error handling
+- Authentication/authorization
+
+#### Frontend (Svelte 5 + TypeScript)
+- New GrantDetails.svelte component
+- Integration with existing ProjectOverview page
+- Form validation and error handling
+- Responsive design with Tailwind CSS
+- State management integration
+
+### User Experience
+- Replace basic funding fields with comprehensive grant card
+- Maintain existing edit/save workflow patterns
+- Add ability to manage multiple grants per project
+- Provide clear visual hierarchy and information organization
+
+### Data Migration
+- Plan for migrating existing financial institution/support data
+- Graceful handling of legacy data
+- Backward compatibility considerations
+
+## Success Criteria
+- Users can add, edit, and delete comprehensive grant information
+- Grant data is properly validated and stored
+- UI follows existing design patterns and accessibility standards
+- Performance meets existing application standards
+- All existing functionality remains intact
+
+## Technical Constraints
+- Must use existing tech stack (Svelte 5, AdonisJS V6, TypeScript)
+- Follow established coding patterns and conventions
+- Maintain existing authentication/authorization flow
+- Use existing UI components where possible 
