@@ -68,14 +68,18 @@
   let formState = $derived(customEventsStore.formState);
   let currentProject = $derived(projectStore.currentProject);
 
-  // SIMPLIFIED: Just use the store state directly
-  let isModalOpen = $derived(formState.isOpen);
-
   // SIMPLIFIED: Direct close handler without complex logic
   function handleClose() {
     if (!formState.loading) {
       customEventsStore.closeForm();
       dispatch("close");
+    }
+  }
+
+  // Handle dialog open/close through the store
+  function handleDialogOpenChange(open: boolean) {
+    if (!open && formState.isOpen) {
+      handleClose();
     }
   }
 
@@ -285,8 +289,8 @@
 </script>
 
 <!-- Modal using shadcn Dialog -->
-<!-- SIMPLIFIED: No onOpenChange handler, just bind to isModalOpen -->
-<Dialog.Root bind:open={isModalOpen}>
+<!-- SIMPLIFIED: Use formState.isOpen directly, with onOpenChange handler -->
+<Dialog.Root open={formState.isOpen} onOpenChange={handleDialogOpenChange}>
   <Dialog.Content class="max-w-4xl max-h-[90vh] overflow-hidden">
     <!-- Modal header -->
     <div class="flex flex-col space-y-1.5 text-center sm:text-left">
