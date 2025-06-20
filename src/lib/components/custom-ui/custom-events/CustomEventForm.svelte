@@ -83,6 +83,21 @@
   let formState = $derived(customEventsStore.formState);
   let currentProject = $derived(projectStore.currentProject);
 
+  // Local state that stays in sync with store
+  let isModalOpen = $state(false);
+
+  // Sync local state with store state
+  $effect(() => {
+    isModalOpen = formState.isOpen;
+  });
+
+  // Handle when dialog state changes externally (e.g., ESC key, backdrop click)
+  function handleDialogOpenChange(newOpen: boolean) {
+    if (!newOpen && formState.isOpen) {
+      handleClose();
+    }
+  }
+
   // Local form state
   let formElement: HTMLFormElement;
   let isSubmitting = false;
@@ -158,7 +173,7 @@
   });
 
   $effect(() => {
-    if (open) {
+    if (formState.isOpen) {
       // Lock body scroll when modal opens
       document.body.style.overflow = "hidden";
     } else {
@@ -169,6 +184,10 @@
     // Cleanup on component unmount
     return () => {
       document.body.style.overflow = "";
+      // Ensure modal is closed when component unmounts
+      if (formState.isOpen) {
+        customEventsStore.closeForm();
+      }
     };
   });
 
@@ -292,7 +311,7 @@
 </script>
 
 <!-- Modal using shadcn Dialog -->
-<Dialog.Root bind:open>
+<Dialog.Root open={isModalOpen} onOpenChange={handleDialogOpenChange}>
   <Dialog.Content class="max-w-4xl max-h-[90vh] overflow-hidden">
     <!-- Modal header -->
     <div class="flex flex-col space-y-1.5 text-center sm:text-left">
@@ -636,7 +655,9 @@
     </div>
 
     <!-- Modal footer -->
-    <div class="modal-footer">
+    <div
+      class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-4 pt-4 border-t"
+    >
       <Button
         variant="outline"
         onclick={handleClose}
@@ -667,10 +688,6 @@
   .modal-body {
     @apply flex-1 overflow-y-auto px-6;
     max-height: calc(90vh - 120px); /* Account for header and footer */
-  }
-
-  .modal-footer {
-    @apply flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4 border-t;
   }
 
   /* Form styles */

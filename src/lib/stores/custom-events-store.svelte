@@ -617,6 +617,35 @@
 
       return this.updateFilters({ search: query.trim(), page: 1 });
     },
+
+    // Cleanup method for navigation
+    cleanup() {
+      // Close form if open
+      if (formState.isOpen) {
+        this.closeForm();
+      }
+
+      // Cancel all active requests
+      this.cancelAllRequests();
+
+      // Clear any error states
+      this.clearError();
+
+      // Reset form state completely
+      formState.isOpen = false;
+      formState.mode = "create";
+      formState.eventId = undefined;
+      formState.data = {
+        title: "",
+        description: "",
+        eventType: DEFAULT_EVENT_TYPE,
+        eventTimestamp: new Date(),
+        details: [],
+        tags: [],
+      };
+      formState.loading = false;
+      formState.errors = {};
+    },
   };
 
   // Export the store

@@ -342,6 +342,11 @@
     await loadAchievements();
   });
 
+  onDestroy(() => {
+    // Clean up modal state when leaving the page
+    customEventsStore.cleanup();
+  });
+
   async function loadTimelineData() {
     if (!projectStore.currentProject?.id) return;
 
