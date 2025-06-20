@@ -105,6 +105,7 @@
   let hasAccess = $state(false);
   let accessChecked = $state(false);
   let isCheckingAccess = $state(true);
+  let dataLoadingComplete = $state(false);
 
   // State for selected project in the activity table
   let selectedProjectIds = $state<Set<string>>(new Set());
@@ -134,7 +135,6 @@
 
   // Function to check if user has admin access
   function checkAdminAccess() {
-    console.log("[Analytics] Checking admin access");
     isCheckingAccess = true;
 
     const userId = auth.user?.id;
@@ -142,10 +142,6 @@
     const resources = teamManagement.userResources;
 
     if (!userId || !orgId || !resources) {
-      console.log(
-        "[Analytics] Missing userId, orgId, or resources, denying access"
-      );
-      isCheckingAccess = false;
       accessChecked = true;
       return false;
     }
@@ -165,7 +161,6 @@
       );
 
       if (hasOrgAdminRole) {
-        console.log("[Analytics] User has org admin role, granting access");
         isCheckingAccess = false;
         accessChecked = true;
         return true;
@@ -187,38 +182,121 @@
       );
 
       if (hasDeptAdminRole) {
-        console.log("[Analytics] User has dept admin role, granting access");
         isCheckingAccess = false;
         accessChecked = true;
         return true;
       }
     }
 
-    console.log(
-      "[Analytics] User does not have required admin roles, denying access"
-    );
-    isCheckingAccess = false;
-    accessChecked = true;
     return false;
   }
 
+  // Effect to monitor when data becomes available after access is granted
+  $effect(() => {
+    if (
+      hasAccess &&
+      accessChecked &&
+      !teamManagement.isLoading &&
+      !dataLoadingComplete
+    ) {
+      const hasUserLoginData =
+        teamManagement.userLoginStatsMap &&
+        Object.keys(teamManagement.userLoginStatsMap).length > 0 &&
+        teamManagement.loginStatUsers &&
+        Array.isArray(teamManagement.loginStatUsers) &&
+        teamManagement.loginStatUsers.length > 0;
+
+      const hasProjectData = teamManagement.userResources?.projects;
+
+      if (hasUserLoginData || hasProjectData) {
+        dataLoadingComplete = true;
+      }
+    }
+  });
+
+  // Helper function to check if we need to reload data
+  function needsDataReload() {
+    if (!hasAccess || !accessChecked) return false;
+
+    const hasUserLoginData =
+      teamManagement.userLoginStatsMap &&
+      Object.keys(teamManagement.userLoginStatsMap).length > 0 &&
+      teamManagement.loginStatUsers &&
+      Array.isArray(teamManagement.loginStatUsers) &&
+      teamManagement.loginStatUsers.length > 0;
+
+    const hasProjectData = teamManagement.userResources?.projects;
+
+    return !hasUserLoginData && !hasProjectData;
+  }
+
+  // Effect to check for missing data when page becomes visible (navigation back)
+  $effect(() => {
+    // This runs when the component is active and checks if data is missing
+    if (
+      hasAccess &&
+      accessChecked &&
+      !teamManagement.isLoading &&
+      needsDataReload()
+    ) {
+      dataLoadingComplete = false;
+
+      // Reload the data
+      teamManagement
+        .loadUserResources(true, true)
+        .then(() => {
+          if (hasAccess) {
+            teamManagement.loadSettings();
+          }
+        })
+        .catch((error) => {
+          dataLoadingComplete = true; // Mark complete to prevent infinite loading
+        });
+    }
+  });
+
   // Initialize data loading only once at component mount
   onMount(() => {
-    console.log("[Analytics] Component mounted, loading resources");
-    teamManagement.loadUserResources(true, true).then(() => {
-      console.log("[Analytics] Resources loaded, checking access");
-      hasAccess = checkAdminAccess();
-      console.log(`[Analytics] Access check result: hasAccess = ${hasAccess}`);
+    // Kick off async initialization without making the onMount callback async
+    (async () => {
+      try {
+        await teamManagement.loadUserResources(true, true);
+        hasAccess = checkAdminAccess();
 
-      if (hasAccess) {
-        console.log("[Analytics] User has access, loading settings");
-        teamManagement.loadSettings();
-      } else {
-        console.log("[Analytics] User does not have access, redirecting");
-        // You can choose to redirect or just show an access denied message
-        // navigate("/dashboard");
+        if (hasAccess) {
+          await teamManagement.loadSettings();
+        } else {
+          dataLoadingComplete = true; // Mark as complete even without access
+        }
+      } catch (error) {
+        dataLoadingComplete = true; // Mark complete on error to prevent infinite loading
       }
-    });
+    })();
+
+    // Add visibility change listener to detect navigation back to page
+    const handleVisibilityChange = () => {
+      if (!document.hidden && hasAccess && accessChecked && needsDataReload()) {
+        dataLoadingComplete = false;
+
+        teamManagement
+          .loadUserResources(true, true)
+          .then(() => {
+            if (hasAccess) {
+              teamManagement.loadSettings();
+            }
+          })
+          .catch((error) => {
+            dataLoadingComplete = true;
+          });
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    // Cleanup listener on component destroy
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   });
 
   // Helper function to safely clone reactive objects
@@ -226,7 +304,6 @@
     try {
       return JSON.parse(JSON.stringify(obj));
     } catch (e) {
-      console.error("Failed to clone object:", e);
       return obj;
     }
   }
@@ -234,17 +311,14 @@
   // Helper function to check if a project has activity
   function hasActivity(project: any) {
     if (!project?.$extras?.dailyActivityCounts) {
-      // console.log(`[DEBUG] Project ${project.name} has no dailyActivityCounts property`);
       return false;
     }
 
     // Use safeClone to handle Svelte proxies
     const counts = safeClone(project.$extras.dailyActivityCounts);
-    // console.log(`[DEBUG] Project ${project.name} activity counts:`, counts);
 
     // Check if the counts object is empty
     if (Object.keys(counts).length === 0) {
-      // console.log(`[DEBUG] Project ${project.name} has empty dailyActivityCounts object`);
       return false;
     }
 
@@ -257,17 +331,14 @@
         outcomes: number;
       };
 
-      const activityExists =
+      return (
         (typedCounts.literature || 0) > 0 ||
         (typedCounts.notes || 0) > 0 ||
         (typedCounts.models || 0) > 0 ||
-        (typedCounts.outcomes || 0) > 0;
-
-      // console.log(`[DEBUG] Project ${project.name}, Date ${date}: ${JSON.stringify(dayCount)} - Has activity: ${activityExists}`);
-      return activityExists;
+        (typedCounts.outcomes || 0) > 0
+      );
     });
 
-    // console.log(`[DEBUG] Project ${project.name} final hasActivity result: ${hasAnyActivity}`);
     return hasAnyActivity;
   }
 
@@ -320,7 +391,6 @@
         aggregated.models += typedCounts?.models || 0;
         aggregated.outcomes += typedCounts?.outcomes || 0;
       } catch (e) {
-        console.error(`Error processing date ${dateStr}:`, e);
         // Optionally skip this entry or handle differently
       }
     }
@@ -330,19 +400,13 @@
 
   // Derived state to prepare user login data for the table
   let userLoginTableData = $derived.by(() => {
-    // Don't attempt to process data if user doesn't have access
-    if (!hasAccess || !accessChecked) {
+    // Don't attempt to process data if user doesn't have access or data is still loading
+    if (!hasAccess || !accessChecked || !dataLoadingComplete) {
       return [];
     }
 
     const statsMap = teamManagement.userLoginStatsMap;
     const usersWithDetails = teamManagement.loginStatUsers;
-    // Add detailed logs at the start
-    console.log("[Derived Start] statsMap:", safeClone(statsMap)); // Use safeClone for logging proxies
-    console.log(
-      "[Derived Start] usersWithDetails:",
-      safeClone(usersWithDetails)
-    );
 
     // Strict check including checking if usersWithDetails is an array and has length
     if (
@@ -351,9 +415,6 @@
       !Array.isArray(usersWithDetails) ||
       usersWithDetails.length === 0
     ) {
-      console.log(
-        "[User Derived] Exiting early - missing or empty statsMap or usersWithDetails."
-      );
       return [];
     }
 
@@ -363,25 +424,13 @@
       // Add check for valid user object before setting
       if (user && user.id) {
         userDetailsMap.set(user.id, user);
-      } else {
-        console.warn(
-          "[Derived] Skipping invalid user object in usersWithDetails:",
-          user
-        );
       }
     });
-    console.log("[Derived] Populated userDetailsMap:", userDetailsMap); // Log the created map
 
     // 2. Iterate through the statsMap, combine with user details
     let tableData: UserLoginTableRow[] = [];
     for (const [userId, stats] of Object.entries(statsMap)) {
-      console.log(`[Derived Loop] Processing userId from statsMap: ${userId}`); // Log current key from statsMap
-      const userDetails = userDetailsMap.get(userId); // THE LOOKUP
-      // Log the specific result of the lookup
-      console.log(
-        `[Derived Loop] Result of userDetailsMap.get(${userId}):`,
-        userDetails
-      );
+      const userDetails = userDetailsMap.get(userId);
 
       if (userDetails) {
         // User details found, combine with stats
@@ -394,9 +443,6 @@
         });
       } else {
         // User details not found (edge case), use ID/email from statsMap key if possible
-        console.warn(
-          `[Derived] User details not found for userId: ${userId}. Using default.`
-        );
         tableData.push({
           id: userId,
           firstName: "Unknown",
@@ -406,14 +452,9 @@
         });
       }
     }
-    console.log("[Derived] Combined tableData (before sort):", tableData);
 
     // 3. Filter by user search term (case-insensitive)
     const lowerUserSearch = userSearchTerm.toLowerCase();
-    console.log(
-      "[User Derived] Combined tableData (before search filter):",
-      safeClone(tableData)
-    ); // Log before search filter
     const filteredUserData = lowerUserSearch
       ? tableData.filter((user) => {
           const fullName =
@@ -425,10 +466,6 @@
           );
         })
       : tableData;
-    console.log(
-      "[User Derived] User data after search filter:",
-      safeClone(filteredUserData)
-    ); // Log after search filter
 
     // 4. Apply Sorting based on component state
     const sortCol = sortColumn;
@@ -483,33 +520,26 @@
       if (valA > valB) return sortDir === "asc" ? 1 : -1;
       return 0;
     });
-    console.log("[Derived] Sorted tableData:", filteredUserData);
-    console.log(
-      "[User Derived] Final sorted user data:",
-      safeClone(filteredUserData)
-    ); // Log final result
 
     return filteredUserData;
   });
 
   // Derived state for the project activity table
   let projectActivityTableData = $derived.by(() => {
-    if (!hasAccess || !teamManagement.userResources?.projects) {
+    // Don't attempt to process data if user doesn't have access or data is still loading
+    if (
+      !hasAccess ||
+      !accessChecked ||
+      !dataLoadingComplete ||
+      !teamManagement.userResources?.projects
+    ) {
       return [];
     }
 
     // 1. Filter projects that have activity
-    console.log(
-      "[Project Derived] Raw projects from store:",
-      safeClone(teamManagement.userResources?.projects)
-    ); // Log raw projects
     const projectsWithActivity = teamManagement.userResources.projects.filter(
       (p: any) => hasActivity(p)
     );
-    console.log(
-      "[Project Derived] Projects after hasActivity filter:",
-      safeClone(projectsWithActivity)
-    ); // Log after activity filter
 
     // Map to aggregated data structure
     let tableData: AggregatedProjectActivity[] = projectsWithActivity.map(
@@ -639,7 +669,6 @@
     try {
       return DateTime.fromISO(isoString).toLocaleString(DateTime.DATETIME_MED);
     } catch (e) {
-      console.error("Error formatting date:", isoString, e);
       return "Invalid Date";
     }
   }
@@ -677,16 +706,6 @@
     selectedProjectIds = newSet;
   }
 
-  // Log state changes for debugging
-  $effect(() => {
-    console.log("Selected range changed to:", selectedRange);
-    // Log when user login data is derived
-    console.log("User login table data derived:", userLoginTableData);
-    console.log("Selected project IDs changed:", selectedProjectIds);
-    console.log("Project search term:", projectSearchTerm);
-    console.log("User search term:", userSearchTerm);
-  });
-
   function openProjectUsersModal(projectId: string) {
     viewingProjectUsersId = projectId;
     // Trigger loading the specific project details in the store
@@ -710,7 +729,6 @@
     const _sortDir = projectSortDirection;
     const _range = selectedRange;
 
-    console.log("[Pagination Effect] Filters changed, resetting page to 1");
     projectCurrentPage = 1;
   });
 
@@ -911,7 +929,7 @@
           </div>
 
           <!-- Loading State -->
-        {:else if isCheckingAccess || teamManagement?.isLoading}
+        {:else if isCheckingAccess || (teamManagement?.isLoading && !dataLoadingComplete)}
           <div class="text-center p-8">
             <div
               class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite] mb-4"
