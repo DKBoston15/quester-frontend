@@ -1,8 +1,7 @@
 <!-- Custom Event Form Modal -->
 <script lang="ts">
   import { createEventDispatcher, onMount } from "svelte";
-  import { fade, scale } from "svelte/transition";
-  import { quintOut } from "svelte/easing";
+  import { fade } from "svelte/transition";
   import {
     X,
     Calendar,
@@ -12,7 +11,6 @@
     Save,
     Loader2,
     AlertCircle,
-    Info,
     Trophy,
     Users,
     Lightbulb,
@@ -30,27 +28,14 @@
   import { Label } from "$lib/components/ui/label";
   import { Textarea } from "$lib/components/ui/textarea";
   import { Badge } from "$lib/components/ui/badge";
-  import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-  } from "$lib/components/ui/card";
-  import { Separator } from "$lib/components/ui/separator";
   import * as Dialog from "$lib/components/ui/dialog";
 
   import { customEventsStore } from "$lib/stores/custom-events-store.svelte";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
-  import type {
-    CreateCustomEventForm,
-    CustomEventType,
-  } from "$lib/types/custom-events";
+  import type { CreateCustomEventForm } from "$lib/types/custom-events";
   import {
     getEventTypeOptions,
     getEventTypeConfig,
-    getEventTypeIcon,
-    eventTypeConfigs,
   } from "$lib/config/custom-event-types";
 
   const dispatch = createEventDispatcher<{
@@ -83,25 +68,14 @@
   let formState = $derived(customEventsStore.formState);
   let currentProject = $derived(projectStore.currentProject);
 
-  // Local state that stays in sync with store
-  let isModalOpen = $state(false);
+  // SIMPLIFIED: Just use the store state directly
+  let isModalOpen = $derived(formState.isOpen);
 
-  // Sync local state with store state
-  $effect(() => {
-    isModalOpen = formState.isOpen;
-  });
-
-  // Prevent the dialog from closing instantly due to parent popover/trigger blur.
-  let hasOpenedOnce = false;
-  function handleDialogOpenChange(newOpen: boolean) {
-    if (newOpen) {
-      hasOpenedOnce = true;
-      return;
-    }
-
-    // Only allow close after the dialog has fully opened and the user performs a real close action
-    if (!newOpen && hasOpenedOnce && formState.isOpen) {
-      handleClose();
+  // SIMPLIFIED: Direct close handler without complex logic
+  function handleClose() {
+    if (!formState.loading) {
+      customEventsStore.closeForm();
+      dispatch("close");
     }
   }
 
@@ -199,13 +173,6 @@
   });
 
   // Event handlers
-  function handleClose() {
-    if (!formState.loading) {
-      customEventsStore.closeForm();
-      dispatch("close");
-    }
-  }
-
   async function handleSubmit(event: Event) {
     event.preventDefault();
 
@@ -318,7 +285,8 @@
 </script>
 
 <!-- Modal using shadcn Dialog -->
-<Dialog.Root open={isModalOpen} onOpenChange={handleDialogOpenChange}>
+<!-- SIMPLIFIED: No onOpenChange handler, just bind to isModalOpen -->
+<Dialog.Root bind:open={isModalOpen}>
   <Dialog.Content class="max-w-4xl max-h-[90vh] overflow-hidden">
     <!-- Modal header -->
     <div class="flex flex-col space-y-1.5 text-center sm:text-left">
