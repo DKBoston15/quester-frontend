@@ -91,9 +91,16 @@
     isModalOpen = formState.isOpen;
   });
 
-  // Handle when dialog state changes externally (e.g., ESC key, backdrop click)
+  // Prevent the dialog from closing instantly due to parent popover/trigger blur.
+  let hasOpenedOnce = false;
   function handleDialogOpenChange(newOpen: boolean) {
-    if (!newOpen && formState.isOpen) {
+    if (newOpen) {
+      hasOpenedOnce = true;
+      return;
+    }
+
+    // Only allow close after the dialog has fully opened and the user performs a real close action
+    if (!newOpen && hasOpenedOnce && formState.isOpen) {
       handleClose();
     }
   }

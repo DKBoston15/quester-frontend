@@ -244,10 +244,21 @@
       // Reload the data
       teamManagement
         .loadUserResources(true, true)
-        .then(() => {
+        .then(async () => {
           if (hasAccess) {
-            teamManagement.loadSettings();
+            console.debug(
+              "[OrgAnalytics] Visibility reload – loading settings…"
+            );
+            try {
+              await teamManagement.loadSettings();
+            } catch (settingsErr) {
+              console.error(
+                "[OrgAnalytics] loadSettings (visibility) failed",
+                settingsErr
+              );
+            }
           }
+          dataLoadingComplete = true;
         })
         .catch((error) => {
           dataLoadingComplete = true; // Mark complete to prevent infinite loading
@@ -264,10 +275,16 @@
         hasAccess = checkAdminAccess();
 
         if (hasAccess) {
-          await teamManagement.loadSettings();
-        } else {
-          dataLoadingComplete = true; // Mark as complete even without access
+          console.debug("[OrgAnalytics] Access granted – loading settings…");
+          try {
+            await teamManagement.loadSettings();
+          } catch (settingsErr) {
+            console.error("[OrgAnalytics] loadSettings failed", settingsErr);
+          }
         }
+
+        // Whether or not settings succeeded we have finished loading primary data
+        dataLoadingComplete = true;
       } catch (error) {
         dataLoadingComplete = true; // Mark complete on error to prevent infinite loading
       }
@@ -280,10 +297,21 @@
 
         teamManagement
           .loadUserResources(true, true)
-          .then(() => {
+          .then(async () => {
             if (hasAccess) {
-              teamManagement.loadSettings();
+              console.debug(
+                "[OrgAnalytics] Visibility reload – loading settings…"
+              );
+              try {
+                await teamManagement.loadSettings();
+              } catch (settingsErr) {
+                console.error(
+                  "[OrgAnalytics] loadSettings (visibility) failed",
+                  settingsErr
+                );
+              }
             }
+            dataLoadingComplete = true;
           })
           .catch((error) => {
             dataLoadingComplete = true;
