@@ -189,9 +189,19 @@
         (role: any) => String(role.userId) === String(auth.user?.id)
       );
       if (userRole) {
-        return (
-          userRole.role?.name || ROLE_ID_TO_NAME[userRole.roleId] || "Unknown"
-        );
+        const name =
+          userRole.role?.name || ROLE_ID_TO_NAME[userRole.roleId] || "Unknown";
+        if (name === "Unknown") {
+          console.debug(
+            "[TreeNodeItem] Derived department role returned Unknown",
+            {
+              departmentId: props.item.id,
+              userId: auth.user?.id,
+              userRole,
+            }
+          );
+        }
+        return name;
       }
     }
 
@@ -200,11 +210,35 @@
         (role: any) => String(role.userId) === String(auth.user?.id)
       );
       if (userRole) {
-        return (
-          userRole.role?.name || ROLE_ID_TO_NAME[userRole.roleId] || "Unknown"
-        );
+        const name =
+          userRole.role?.name || ROLE_ID_TO_NAME[userRole.roleId] || "Unknown";
+        if (name === "Unknown") {
+          console.debug(
+            "[TreeNodeItem] Derived project role returned Unknown",
+            {
+              projectId: props.item.id,
+              userId: auth.user?.id,
+              userRole,
+            }
+          );
+        }
+        return name;
       }
     }
+
+    console.debug(
+      "[TreeNodeItem] getUserRoleNameForCurrentItem() fell through to Unknown",
+      {
+        itemId: props.item.id,
+        itemType: isDepartment(props.item)
+          ? "department"
+          : isProject(props.item)
+            ? "project"
+            : "unknown",
+        resourcesPresent: !!resources,
+        userResourcesSnapshot: resources,
+      }
+    );
 
     return "Unknown";
   }
