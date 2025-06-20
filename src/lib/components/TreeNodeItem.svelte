@@ -145,26 +145,68 @@
   // Helper function to get user's role for the current item
   function getUserRoleNameForCurrentItem(): string {
     if (!auth.user) return "Unknown";
+
+    // 1. Try to read the role name from the cached user resources
     const resources = teamManagement.userResources;
-    if (!resources) return "Unknown";
+    if (resources) {
+      let resourceList: any[] | undefined;
 
-    let resourceList;
-    let itemType: "organization" | "department" | "project";
+      if (isDepartment(props.item)) {
+        resourceList = resources.departments;
+      } else if (isProject(props.item)) {
+        resourceList = resources.projects;
+      }
 
-    if (isDepartment(props.item)) {
-      resourceList = resources.departments;
-      itemType = "department";
-    } else if (isProject(props.item)) {
-      resourceList = resources.projects;
-      itemType = "project";
-    } else {
-      return "Unknown"; // Should not happen for this component
+      if (resourceList && resourceList.length) {
+        // Use string comparison for IDs because backend sometimes returns integers
+        const resource = resourceList.find(
+          (r: any) => String(r.id) === String(props.item.id)
+        );
+        if (resource?.$extras?.roleName) {
+          return resource.$extras.roleName;
+        }
+      }
     }
 
-    if (!resourceList) return "Unknown";
+    // 2. Fallback: derive the role name directly from the item's attached roles
+    const ROLE_ID_TO_NAME: Record<string, string> = {
+      // Organization roles are not used here, but kept for completeness
+      "e820de49-d7bd-42d7-8b05-49279cee686f": "Owner", // Org Owner
+      "0c0e5bcc-cd87-462c-8610-ba8fc8f101d2": "Admin", // Org Admin
+      "65449b75-feb3-49c1-b88e-ec59f2083d95": "Member", // Org Member
 
-    const resource = resourceList.find((r: any) => r.id === props.item.id);
-    return resource?.$extras?.roleName || "Unknown";
+      "7dcb0af2-2338-4c03-a797-955925405f90": "Owner", // Dept Owner
+      "8f3352ae-3144-473b-a795-059ea1fcc910": "Admin", // Dept Admin
+      "1f783597-8c81-4fd2-9181-097eef1bb13d": "Member", // Dept Member
+
+      "5495973d-882a-4e54-9e11-7b696a2d2553": "Owner", // Project Owner
+      "acea871e-aef9-4e90-a001-6305ff8cdac8": "Admin", // Project Admin
+      "4111310e-a3c4-4880-aba2-4c8efd405f7a": "Member", // Project Member
+    };
+
+    if (isDepartment(props.item) && props.item.departmentRoles) {
+      const userRole = props.item.departmentRoles.find(
+        (role: any) => String(role.userId) === String(auth.user?.id)
+      );
+      if (userRole) {
+        return (
+          userRole.role?.name || ROLE_ID_TO_NAME[userRole.roleId] || "Unknown"
+        );
+      }
+    }
+
+    if (isProject(props.item) && props.item.projectRoles) {
+      const userRole = props.item.projectRoles.find(
+        (role: any) => String(role.userId) === String(auth.user?.id)
+      );
+      if (userRole) {
+        return (
+          userRole.role?.name || ROLE_ID_TO_NAME[userRole.roleId] || "Unknown"
+        );
+      }
+    }
+
+    return "Unknown";
   }
 
   // Join a project (self-assign)
