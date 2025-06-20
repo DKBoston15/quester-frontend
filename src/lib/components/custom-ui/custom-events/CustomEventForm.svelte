@@ -76,9 +76,34 @@
     }
   }
 
+  // Track when the modal was opened to prevent immediate closing
+  let modalOpenTime = $state(0);
+  let isOpening = $state(false);
+
+  // Watch for modal opening
+  $effect(() => {
+    if (formState.isOpen && modalOpenTime === 0) {
+      modalOpenTime = Date.now();
+      isOpening = true;
+      // Reset opening flag after a short delay
+      setTimeout(() => {
+        isOpening = false;
+      }, 200);
+    } else if (!formState.isOpen) {
+      modalOpenTime = 0;
+      isOpening = false;
+    }
+  });
+
   // Handle dialog open/close through the store
   function handleDialogOpenChange(open: boolean) {
+    // Don't process close events while opening or within 200ms of opening
     if (!open && formState.isOpen) {
+      const timeSinceOpen = Date.now() - modalOpenTime;
+      if (isOpening || timeSinceOpen < 200) {
+        // Too soon, ignore this close event
+        return;
+      }
       handleClose();
     }
   }

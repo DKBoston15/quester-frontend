@@ -319,8 +319,17 @@
   }
 
   // Custom event handlers
-  function handleAddCustomEvent() {
-    customEventsStore.openCreateForm();
+  function handleAddCustomEvent(event?: MouseEvent) {
+    // Prevent any parent events from interfering
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    // Add a small delay to ensure any active popovers/dropdowns have closed
+    setTimeout(() => {
+      customEventsStore.openCreateForm();
+    }, 50);
   }
 
   // Grouping mode handlers
@@ -444,7 +453,7 @@
     <!-- Add Custom Event Button -->
     <Button
       variant="default"
-      onclick={handleAddCustomEvent}
+      onclick={(e: any) => handleAddCustomEvent(e)}
       class="add-event-button"
     >
       <Plus class="w-4 h-4 mr-2" />

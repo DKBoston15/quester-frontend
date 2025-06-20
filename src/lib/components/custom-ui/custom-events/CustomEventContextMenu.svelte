@@ -114,7 +114,6 @@
         icon: "Edit",
         action: (evt: CustomTimelineEvent) => {
           handleEditEvent(evt);
-          handleClose();
         },
         disabled: false,
       });
@@ -265,7 +264,13 @@
 
   // Handle specific actions
   function handleEditEvent(event: CustomTimelineEvent) {
-    customEventsStore.openEditForm(event.id);
+    // Close the context menu first
+    handleClose();
+
+    // Then open the form with a delay to prevent interference
+    setTimeout(() => {
+      customEventsStore.openEditForm(event.id);
+    }, 100);
   }
 
   async function handleCopyDetails(event: CustomTimelineEvent) {
