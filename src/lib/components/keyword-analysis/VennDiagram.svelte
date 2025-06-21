@@ -30,6 +30,7 @@
   let frequencyData = $state<any>(null);
   let keywords = $state<string[]>([]);
   let container: HTMLDivElement;
+  let isInitialized = $state(false);
 
   const dispatch = createEventDispatcher<{
     filter: { include: string[]; exclude: string[]; url: string };
@@ -51,13 +52,19 @@
       if (JSON.stringify(newKeywords) !== JSON.stringify(keywords)) {
         keywords = newKeywords;
         // Reset selectedKeywords when keywords change
-        selectedKeywords =
-          newKeywords.length >= 2 ? newKeywords.slice(0, 2) : [];
+        selectedKeywords = [];
       }
 
       if (JSON.stringify(newFrequencyData) !== JSON.stringify(frequencyData)) {
         frequencyData = newFrequencyData;
       }
+    }
+  });
+
+  // Add effect to render Venn diagram when selectedKeywords change
+  $effect(() => {
+    if (isInitialized && selectedKeywords.length >= 2 && svg && container) {
+      renderVenn();
     }
   });
 
@@ -170,14 +177,27 @@
 
   function updateDimensions() {
     if (container) {
-      width = container.clientWidth;
-      height = container.clientHeight;
-      renderVenn();
+      const newWidth = container.clientWidth;
+      const newHeight = container.clientHeight;
+
+      // Only proceed if we have valid dimensions
+      if (newWidth > 0 && newHeight > 0) {
+        width = newWidth;
+        height = newHeight;
+
+        // Mark as initialized once we have valid dimensions
+        if (!isInitialized) {
+          isInitialized = true;
+        }
+
+        renderVenn();
+      }
     }
   }
 
   function renderVenn() {
-    if (!svg || selectedKeywords.length < 2) return;
+    if (!svg || selectedKeywords.length < 2 || width === 0 || height === 0)
+      return;
 
     // Clear previous content
     d3.select(svg).selectAll("*").remove();
@@ -502,7 +522,11 @@
   }
 
   onMount(() => {
-    updateDimensions();
+    // Use requestAnimationFrame to ensure container dimensions are established
+    requestAnimationFrame(() => {
+      updateDimensions();
+    });
+
     window.addEventListener("resize", updateDimensions);
     return () => window.removeEventListener("resize", updateDimensions);
   });
