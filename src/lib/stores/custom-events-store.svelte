@@ -436,8 +436,7 @@
       // Cancel any existing form-related requests
       this.cancelRequest("createEvent");
 
-      // Clear form state completely first
-      formState.isOpen = false;
+      // Just set the form state without toggling isOpen
       formState.mode = "create";
       formState.eventId = undefined;
       formState.data = {
@@ -450,36 +449,19 @@
       };
       formState.loading = false;
       formState.errors = {};
-
-      // Now set up for create
-      formState.isOpen = true;
-      formState.mode = "create";
-      formState.eventId = undefined;
+      formState.isOpen = true; // Set this last
     },
 
     async openEditForm(eventId: number) {
       // Cancel any existing form-related requests
       this.cancelRequest(`getEvent_${eventId}`);
 
-      // Clear form state completely first
-      formState.isOpen = false;
-      formState.mode = "create";
-      formState.eventId = undefined;
-      formState.data = {
-        title: "",
-        description: "",
-        eventType: DEFAULT_EVENT_TYPE,
-        eventTimestamp: new Date(),
-        details: [],
-        tags: [],
-      };
-      formState.loading = false;
-      formState.errors = {};
-
-      // Now set up for edit
-      formState.isOpen = true;
+      // Set up for edit without toggling isOpen
       formState.mode = "edit";
       formState.eventId = eventId;
+      formState.loading = false;
+      formState.errors = {};
+      formState.isOpen = true; // Set this before async operation
 
       try {
         // Force a fresh fetch by bypassing cache
