@@ -311,8 +311,22 @@
 </script>
 
 <!-- Modal using shadcn Dialog -->
-<!-- SIMPLIFIED: Just control open state, no event handlers -->
-<Dialog.Root open={formState.isOpen}>
+<!-- SAFE: Handle dialog closing but not opening -->
+<Dialog.Root
+  open={formState.isOpen}
+  onOpenChange={(open) => {
+    console.log("[CustomEventForm] Dialog onOpenChange called with:", open);
+    console.log(
+      "[CustomEventForm] Current formState.isOpen:",
+      formState.isOpen
+    );
+    // Only handle closing, not opening
+    if (!open && formState.isOpen) {
+      console.log("[CustomEventForm] Dialog closed by internal mechanism");
+      handleClose();
+    }
+  }}
+>
   <Dialog.Content class="max-w-4xl max-h-[90vh] overflow-hidden">
     <!-- Modal header -->
     <div class="flex flex-col space-y-1.5 text-center sm:text-left">
