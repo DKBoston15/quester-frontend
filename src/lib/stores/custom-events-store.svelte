@@ -65,16 +65,6 @@
   // Optimistic updates tracking
   let optimisticUpdates = $state<Map<string, CustomTimelineEvent>>(new Map());
 
-  // Debugging effect to track form state changes
-  $effect(() => {
-    console.log(
-      "[CustomEventsStore] formState.isOpen changed to:",
-      formState.isOpen
-    );
-    console.log("[CustomEventsStore] formState.mode:", formState.mode);
-    console.log("[CustomEventsStore] formState.eventId:", formState.eventId);
-  });
-
   // Store implementation
   const customEventsStore = {
     // Getters

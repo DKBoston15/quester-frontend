@@ -786,9 +786,9 @@
       setTimeout(() => {
         hasCopied = false;
       }, 2000);
-      toast.success("Citation copied to clipboard");
+      toast.success("Reference copied to clipboard");
     } catch (err) {
-      toast.error("Failed to copy citation");
+      toast.error("Failed to copy reference");
     }
   }
 </script>
@@ -798,7 +798,7 @@
 >
   <Card.Header>
     <Card.Title class="flex items-center justify-between">
-      <span>Citation</span>
+      <span>Reference</span>
       <div class="flex items-center gap-2">
         <Select.Root
           type="single"
