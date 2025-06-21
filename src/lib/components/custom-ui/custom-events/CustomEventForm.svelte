@@ -1,6 +1,6 @@
 <!-- Custom Event Form Modal -->
 <script lang="ts">
-  import { createEventDispatcher, onMount } from "svelte";
+  import { createEventDispatcher, onMount, onDestroy } from "svelte";
   import { fade } from "svelte/transition";
   import {
     X,
@@ -190,15 +190,12 @@
       // Restore body scroll when modal closes
       document.body.style.overflow = "";
     }
+  });
 
-    // Cleanup on component unmount
-    return () => {
-      document.body.style.overflow = "";
-      // Ensure modal is closed when component unmounts
-      if (formState.isOpen) {
-        customEventsStore.closeForm();
-      }
-    };
+  // Separate cleanup on actual component destruction
+  onDestroy(() => {
+    document.body.style.overflow = "";
+    // Don't call closeForm here - it causes the production issue
   });
 
   // Event handlers
@@ -314,30 +311,9 @@
 </script>
 
 <!-- Modal using shadcn Dialog -->
-<!-- NUCLEAR OPTION: Complete dialog control without onOpenChange -->
-<Dialog.Root open={formState.isOpen} modal={true} preventScroll={true}>
-  <Dialog.Content
-    class="max-w-4xl max-h-[90vh] overflow-hidden"
-    onPointerDownOutside={(e) => {
-      e.preventDefault();
-      console.log("[CustomEventForm] Prevented outside click close");
-    }}
-    onInteractOutside={(e) => {
-      e.preventDefault();
-      console.log("[CustomEventForm] Prevented interact outside close");
-    }}
-    onEscapeKeyDown={(e) => {
-      if (!formState.loading) {
-        console.log("[CustomEventForm] Escape key pressed - closing form");
-        handleClose();
-      } else {
-        e.preventDefault();
-        console.log(
-          "[CustomEventForm] Escape key pressed but form is loading - prevented"
-        );
-      }
-    }}
-  >
+<!-- SIMPLIFIED: Just control open state, no event handlers -->
+<Dialog.Root open={formState.isOpen}>
+  <Dialog.Content class="max-w-4xl max-h-[90vh] overflow-hidden">
     <!-- Modal header -->
     <div class="flex flex-col space-y-1.5 text-center sm:text-left">
       <Dialog.Title class="text-lg font-semibold leading-none tracking-tight">
