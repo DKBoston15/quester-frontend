@@ -108,38 +108,6 @@
     }
   });
 
-  // Handle dialog open/close through the store
-  function handleDialogOpenChange(open: boolean) {
-    console.log("[CustomEventForm] Dialog onOpenChange called with:", open);
-    console.log(
-      "[CustomEventForm] Current formState.isOpen:",
-      formState.isOpen
-    );
-
-    // Don't process close events while opening or within 200ms of opening
-    if (!open && formState.isOpen) {
-      const timeSinceOpen = Date.now() - modalOpenTime;
-      console.log(
-        "[CustomEventForm] Time since modal open:",
-        timeSinceOpen,
-        "ms"
-      );
-      console.log("[CustomEventForm] isOpening:", isOpening);
-
-      if (isOpening || timeSinceOpen < 200) {
-        // Too soon, ignore this close event
-        console.log(
-          "[CustomEventForm] Dialog trying to close too soon, ignoring"
-        );
-        return;
-      }
-      console.log(
-        "[CustomEventForm] Dialog trying to close while formState says open"
-      );
-      handleClose();
-    }
-  }
-
   // Local form state
   let formElement: HTMLFormElement;
   let isSubmitting = false;
@@ -346,9 +314,30 @@
 </script>
 
 <!-- Modal using shadcn Dialog -->
-<!-- SIMPLIFIED: Use formState.isOpen directly, with onOpenChange handler -->
-<Dialog.Root open={formState.isOpen} onOpenChange={handleDialogOpenChange}>
-  <Dialog.Content class="max-w-4xl max-h-[90vh] overflow-hidden">
+<!-- NUCLEAR OPTION: Complete dialog control without onOpenChange -->
+<Dialog.Root open={formState.isOpen} modal={true} preventScroll={true}>
+  <Dialog.Content
+    class="max-w-4xl max-h-[90vh] overflow-hidden"
+    onPointerDownOutside={(e) => {
+      e.preventDefault();
+      console.log("[CustomEventForm] Prevented outside click close");
+    }}
+    onInteractOutside={(e) => {
+      e.preventDefault();
+      console.log("[CustomEventForm] Prevented interact outside close");
+    }}
+    onEscapeKeyDown={(e) => {
+      if (!formState.loading) {
+        console.log("[CustomEventForm] Escape key pressed - closing form");
+        handleClose();
+      } else {
+        e.preventDefault();
+        console.log(
+          "[CustomEventForm] Escape key pressed but form is loading - prevented"
+        );
+      }
+    }}
+  >
     <!-- Modal header -->
     <div class="flex flex-col space-y-1.5 text-center sm:text-left">
       <Dialog.Title class="text-lg font-semibold leading-none tracking-tight">

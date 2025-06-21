@@ -518,6 +518,7 @@
 
     closeForm() {
       console.log("[CustomEventsStore] closeForm called");
+      console.log("[CustomEventsStore] Stack trace:", new Error().stack);
       console.log(
         "[CustomEventsStore] Current formState.isOpen:",
         formState.isOpen
