@@ -65,6 +65,16 @@
   // Optimistic updates tracking
   let optimisticUpdates = $state<Map<string, CustomTimelineEvent>>(new Map());
 
+  // Debugging effect to track form state changes
+  $effect(() => {
+    console.log(
+      "[CustomEventsStore] formState.isOpen changed to:",
+      formState.isOpen
+    );
+    console.log("[CustomEventsStore] formState.mode:", formState.mode);
+    console.log("[CustomEventsStore] formState.eventId:", formState.eventId);
+  });
+
   // Store implementation
   const customEventsStore = {
     // Getters
@@ -433,8 +443,16 @@
 
     // Form management
     openCreateForm() {
+      console.log("[CustomEventsStore] openCreateForm called");
+
       // Cancel any existing form-related requests
       this.cancelRequest("createEvent");
+
+      // Log current state
+      console.log(
+        "[CustomEventsStore] Current formState.isOpen:",
+        formState.isOpen
+      );
 
       // Just set the form state without toggling isOpen
       formState.mode = "create";
@@ -450,11 +468,23 @@
       formState.loading = false;
       formState.errors = {};
       formState.isOpen = true; // Set this last
+      console.log("[CustomEventsStore] Set formState.isOpen to true");
     },
 
     async openEditForm(eventId: number) {
+      console.log(
+        "[CustomEventsStore] openEditForm called with eventId:",
+        eventId
+      );
+
       // Cancel any existing form-related requests
       this.cancelRequest(`getEvent_${eventId}`);
+
+      // Log current state
+      console.log(
+        "[CustomEventsStore] Current formState.isOpen:",
+        formState.isOpen
+      );
 
       // Set up for edit without toggling isOpen
       formState.mode = "edit";
@@ -462,6 +492,7 @@
       formState.loading = false;
       formState.errors = {};
       formState.isOpen = true; // Set this before async operation
+      console.log("[CustomEventsStore] Set formState.isOpen to true for edit");
 
       try {
         // Force a fresh fetch by bypassing cache
@@ -469,6 +500,7 @@
         const controller = new AbortController();
         activeRequests.set(requestKey, controller);
 
+        console.log("[CustomEventsStore] Fetching event data for editing");
         const event = await customEventsAPI.getCustomEvent(eventId, {
           signal: controller.signal,
         });
@@ -485,6 +517,7 @@
           details: event.details || [],
           tags: event.tags || [],
         };
+        console.log("[CustomEventsStore] Form data populated for editing");
 
         activeRequests.delete(requestKey);
       } catch (error) {
@@ -494,6 +527,12 @@
     },
 
     closeForm() {
+      console.log("[CustomEventsStore] closeForm called");
+      console.log(
+        "[CustomEventsStore] Current formState.isOpen:",
+        formState.isOpen
+      );
+
       formState.isOpen = false;
       formState.mode = "create";
       formState.eventId = undefined;
@@ -507,6 +546,8 @@
       };
       formState.loading = false;
       formState.errors = {};
+
+      console.log("[CustomEventsStore] Form closed and reset");
     },
 
     updateFormData(updates: Partial<CreateCustomEventForm>) {

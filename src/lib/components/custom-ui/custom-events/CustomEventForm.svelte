@@ -68,8 +68,21 @@
   let formState = $derived(customEventsStore.formState);
   let currentProject = $derived(projectStore.currentProject);
 
+  // Debugging effect to track form state changes
+  $effect(() => {
+    console.log(
+      "[CustomEventForm] formState.isOpen changed to:",
+      formState.isOpen
+    );
+    console.log(
+      "[CustomEventForm] Dialog should be:",
+      formState.isOpen ? "OPEN" : "CLOSED"
+    );
+  });
+
   // SIMPLIFIED: Direct close handler without complex logic
   function handleClose() {
+    console.log("[CustomEventForm] handleClose called");
     if (!formState.loading) {
       customEventsStore.closeForm();
       dispatch("close");
@@ -97,13 +110,32 @@
 
   // Handle dialog open/close through the store
   function handleDialogOpenChange(open: boolean) {
+    console.log("[CustomEventForm] Dialog onOpenChange called with:", open);
+    console.log(
+      "[CustomEventForm] Current formState.isOpen:",
+      formState.isOpen
+    );
+
     // Don't process close events while opening or within 200ms of opening
     if (!open && formState.isOpen) {
       const timeSinceOpen = Date.now() - modalOpenTime;
+      console.log(
+        "[CustomEventForm] Time since modal open:",
+        timeSinceOpen,
+        "ms"
+      );
+      console.log("[CustomEventForm] isOpening:", isOpening);
+
       if (isOpening || timeSinceOpen < 200) {
         // Too soon, ignore this close event
+        console.log(
+          "[CustomEventForm] Dialog trying to close too soon, ignoring"
+        );
         return;
       }
+      console.log(
+        "[CustomEventForm] Dialog trying to close while formState says open"
+      );
       handleClose();
     }
   }

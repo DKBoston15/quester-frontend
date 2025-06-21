@@ -320,16 +320,20 @@
 
   // Custom event handlers
   function handleAddCustomEvent(event?: MouseEvent) {
+    console.log("[TimelineControls] Add Event button clicked");
+
     // Prevent any parent events from interfering
     if (event) {
       event.preventDefault();
       event.stopPropagation();
+      event.stopImmediatePropagation();
     }
 
     // Add a small delay to ensure any active popovers/dropdowns have closed
     setTimeout(() => {
+      console.log("[TimelineControls] Calling openCreateForm");
       customEventsStore.openCreateForm();
-    }, 50);
+    }, 100);
   }
 
   // Grouping mode handlers
