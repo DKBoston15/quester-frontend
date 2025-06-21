@@ -45,8 +45,8 @@
   }
 
   function handleSubmit() {
-    if (keywords.length === 0) {
-      error = "Please add at least one keyword";
+    if (keywords.length < 2) {
+      error = "Please add at least 2 keywords";
       return;
     }
     dispatch("submit", keywords);
@@ -69,7 +69,7 @@
     {/each}
     <Input
       type="text"
-      placeholder="Type a keyword and press Enter..."
+      placeholder="Type a keyword and press enter..."
       class="border-none !outline-none flex-1 min-w-[200px]"
       bind:value={currentInput}
       onkeydown={handleKeydown}
@@ -85,7 +85,7 @@
   <div class="flex justify-end gap-2">
     <Button
       variant="default"
-      disabled={keywords.length === 0}
+      disabled={keywords.length < 2}
       onclick={handleSubmit}
     >
       Analyze Keywords

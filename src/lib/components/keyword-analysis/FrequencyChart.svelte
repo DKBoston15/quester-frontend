@@ -27,19 +27,53 @@
     "#475569", // Gray
   ];
 
+  // Parse the data once using derived state
+  let parsedData = $derived(() => {
+    if (!analysis || !analysis.keywords) {
+      return { keywords: [], frequencyData: {} };
+    }
+
+    try {
+      const keywords =
+        typeof analysis.keywords === "string"
+          ? JSON.parse(analysis.keywords)
+          : analysis.keywords;
+
+      const rawFrequencyData =
+        analysis.frequencyData || analysis.frequency_data;
+      const frequencyData =
+        typeof rawFrequencyData === "string"
+          ? JSON.parse(rawFrequencyData || "{}")
+          : rawFrequencyData || {};
+
+      return {
+        keywords: Array.isArray(keywords) ? keywords : [],
+        frequencyData: frequencyData || {},
+      };
+    } catch (error) {
+      console.error("❌ FrequencyChart - Error parsing analysis data:", error);
+      return { keywords: [], frequencyData: {} };
+    }
+  });
+
   interface DataPoint {
     keyword: string;
     frequency: number;
   }
 
   $effect(() => {
-    if (analysis && svg) {
+    if (
+      analysis &&
+      svg &&
+      parsedData().keywords &&
+      parsedData().keywords.length > 0
+    ) {
       renderChart();
     }
   });
 
   onMount(() => {
-    if (analysis) {
+    if (analysis && parsedData().keywords && parsedData().keywords.length > 0) {
       renderChart();
     }
   });
@@ -52,15 +86,12 @@
   }
 
   function renderChart() {
-    const keywords =
-      typeof analysis.keywords === "string"
-        ? JSON.parse(analysis.keywords)
-        : analysis.keywords;
+    const { keywords, frequencyData } = parsedData();
 
-    const frequencyData =
-      typeof analysis.frequencyData === "string"
-        ? JSON.parse(analysis.frequencyData)
-        : analysis.frequencyData || {};
+    // Additional safety check
+    if (!keywords || !Array.isArray(keywords) || keywords.length === 0) {
+      return;
+    }
 
     // Prepare data for visualization using the new structure
     const data = keywords

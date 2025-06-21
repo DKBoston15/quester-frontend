@@ -27,37 +27,49 @@
   let width = 400;
   let height = 300;
   let selectedKeywords = $state<string[]>([]);
-  let frequencyData = $state<any>(null);
-  let keywords = $state<string[]>([]);
   let container: HTMLDivElement;
   let isInitialized = $state(false);
 
-  const dispatch = createEventDispatcher<{
-    filter: { include: string[]; exclude: string[]; url: string };
-  }>();
+  // Parse the data once using derived state
+  let parsedData = $derived(() => {
+    if (!analysis || !analysis.keywords) {
+      return { keywords: [], frequencyData: {} };
+    }
 
-  $effect(() => {
-    if (analysis) {
+    try {
       const newKeywords =
         typeof analysis.keywords === "string"
           ? JSON.parse(analysis.keywords)
           : analysis.keywords;
 
+      const rawFrequencyData =
+        analysis.frequencyData || analysis.frequency_data;
       const newFrequencyData =
-        typeof analysis.frequencyData === "string"
-          ? JSON.parse(analysis.frequencyData || "{}")
-          : analysis.frequencyData || {};
+        typeof rawFrequencyData === "string"
+          ? JSON.parse(rawFrequencyData || "{}")
+          : rawFrequencyData || {};
 
-      // Only update if data actually changed to prevent loops
-      if (JSON.stringify(newKeywords) !== JSON.stringify(keywords)) {
-        keywords = newKeywords;
-        // Reset selectedKeywords when keywords change
-        selectedKeywords = [];
-      }
+      return {
+        keywords: Array.isArray(newKeywords) ? newKeywords : [],
+        frequencyData: newFrequencyData || {},
+      };
+    } catch (error) {
+      console.error("❌ VennDiagram - Error parsing analysis data:", error);
+      return { keywords: [], frequencyData: {} };
+    }
+  });
 
-      if (JSON.stringify(newFrequencyData) !== JSON.stringify(frequencyData)) {
-        frequencyData = newFrequencyData;
-      }
+  let keywords = $derived(parsedData().keywords);
+  let frequencyData = $derived(parsedData().frequencyData);
+
+  const dispatch = createEventDispatcher<{
+    filter: { include: string[]; exclude: string[]; url: string };
+  }>();
+
+  // Reset selectedKeywords when keywords change
+  $effect(() => {
+    if (keywords && Array.isArray(keywords) && keywords.length > 0) {
+      selectedKeywords = [];
     }
   });
 
@@ -70,6 +82,11 @@
 
   // Helper function to get color index based on frequency order
   function getColorIndex(keyword: string): number {
+    // Additional safety check
+    if (!keywords || !Array.isArray(keywords) || !frequencyData?.individual) {
+      return 0;
+    }
+
     // Sort keywords by frequency in descending order
     const sortedKeywords = [...keywords].sort(
       (a, b) =>

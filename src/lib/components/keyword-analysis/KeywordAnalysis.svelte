@@ -277,10 +277,14 @@
             ? JSON.parse(data.keyword_analysis.report)
             : data.keyword_analysis.report,
         frequencyData:
-          data.keyword_analysis.frequency_data &&
+          (data.keyword_analysis.frequencyData &&
+          typeof data.keyword_analysis.frequencyData === "string"
+            ? JSON.parse(data.keyword_analysis.frequencyData)
+            : data.keyword_analysis.frequencyData) ||
+          (data.keyword_analysis.frequency_data &&
           typeof data.keyword_analysis.frequency_data === "string"
             ? JSON.parse(data.keyword_analysis.frequency_data)
-            : data.keyword_analysis.frequency_data,
+            : data.keyword_analysis.frequency_data),
       };
       analyses = [...analyses, newAnalysis];
       currentAnalysis = newAnalysis;

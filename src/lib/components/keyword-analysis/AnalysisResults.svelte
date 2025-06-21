@@ -17,74 +17,74 @@
 
   const { analysis } = $props<{ analysis: KeywordAnalysis }>();
 
-  let report = $state(
-    typeof analysis.report === "string"
-      ? JSON.parse(analysis.report)
-      : analysis.report
-  );
+  // Initialize all derived state properly
+  function parseAnalysisData(analysis: KeywordAnalysis) {
+    if (!analysis || !analysis.keywords) {
+      return {
+        report: { report: "" },
+        keywords: [],
+        frequencyData: {},
+      };
+    }
 
-  let keywords = $state(
-    typeof analysis.keywords === "string"
-      ? JSON.parse(analysis.keywords)
-      : analysis.keywords
-  );
-
-  let frequencyData = $state(
-    (() => {
-      const rawData = analysis.frequencyData || analysis.frequency_data;
-      return typeof rawData === "string"
-        ? JSON.parse(rawData || "{}")
-        : rawData || {};
-    })()
-  );
-
-  // Format keywords for display
-  let keywordsText = "";
-
-  function updateKeywordsText() {
     try {
-      if (Array.isArray(keywords)) {
-        keywordsText = keywords.join(", ");
-      } else {
-        keywordsText = "";
-      }
+      // Parse report
+      const report =
+        typeof analysis.report === "string"
+          ? JSON.parse(analysis.report)
+          : analysis.report;
+
+      // Parse keywords
+      const keywords =
+        typeof analysis.keywords === "string"
+          ? JSON.parse(analysis.keywords)
+          : analysis.keywords;
+
+      // Parse frequency data - handle both field names
+      const rawFrequencyData =
+        analysis.frequencyData || analysis.frequency_data;
+      const frequencyData =
+        typeof rawFrequencyData === "string"
+          ? JSON.parse(rawFrequencyData || "{}")
+          : rawFrequencyData || {};
+
+      return {
+        report: report || { report: "" },
+        keywords: Array.isArray(keywords) ? keywords : [],
+        frequencyData: frequencyData || {},
+      };
     } catch (error) {
-      console.error("Error processing keywords:", error);
-      keywordsText = "";
+      console.error("❌ AnalysisResults - Error parsing analysis data:", error);
+      return {
+        report: { report: "" },
+        keywords: [],
+        frequencyData: {},
+      };
     }
   }
 
-  $effect(() => {
-    report =
-      typeof analysis.report === "string"
-        ? JSON.parse(analysis.report)
-        : analysis.report;
+  // Use derived state that updates when analysis changes
+  let parsedData = $derived(parseAnalysisData(analysis));
+  let report = $derived(parsedData.report);
+  let keywords = $derived(parsedData.keywords);
+  let frequencyData = $derived(parsedData.frequencyData);
 
-    keywords =
-      typeof analysis.keywords === "string"
-        ? JSON.parse(analysis.keywords)
-        : analysis.keywords;
-
-    // Handle both frequencyData and frequency_data field names
-    const rawFrequencyData = analysis.frequencyData || analysis.frequency_data;
-    frequencyData =
-      typeof rawFrequencyData === "string"
-        ? JSON.parse(rawFrequencyData || "{}")
-        : rawFrequencyData || {};
-
-    updateKeywordsText();
-  });
-
-  // Run this immediately to set initial keywords text
-  updateKeywordsText();
+  // Format keywords for display
+  let keywordsText = $derived(
+    Array.isArray(keywords) ? keywords.join(", ") : ""
+  );
 
   function getKeywordFrequency(keyword: string) {
-    if (!frequencyData?.individual) return { count: 0, url: "" };
+    if (!frequencyData?.individual) {
+      return { count: 0, url: "" };
+    }
 
-    return {
+    const result = {
       count: frequencyData.individual[keyword] || 0,
       url: `https://scholar.google.com/scholar?hl=en&q=${encodeURIComponent(keyword)}`,
     };
+
+    return result;
   }
 
   function getCooccurrenceData(keyword1: string, keyword2: string) {
