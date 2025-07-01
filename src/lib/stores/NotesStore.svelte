@@ -331,7 +331,12 @@
           const friendlyDate = note.updated_at
             ? formatFriendlyDate(new Date(note.updated_at))
             : "";
-          const highlightedDate = highlightText(friendlyDate, query);
+          
+          // Only highlight date if it actually matches the query
+          const dateMatch = friendlyDate
+            .toLowerCase()
+            .includes(query.toLowerCase());
+          const highlightedDate = dateMatch ? highlightText(friendlyDate, query) : friendlyDate;
           return {
             ...note,
             highlightedName,
@@ -817,6 +822,14 @@
   function processNoteData(note: any): Note {
     // Convert snake_case to camelCase if needed
     const processedNote: any = { ...note };
+    
+    // Handle date field mapping - API might send camelCase, frontend expects snake_case
+    if (note.updatedAt && !note.updated_at) {
+      processedNote.updated_at = note.updatedAt;
+    }
+    if (note.createdAt && !note.created_at) {
+      processedNote.created_at = note.createdAt;
+    }
 
     // Handle section_type - it might be a string in the database but needs to be an object in the frontend
     // First check if we have sectionType from the backend (camelCase)

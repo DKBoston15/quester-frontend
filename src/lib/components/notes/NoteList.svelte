@@ -174,8 +174,8 @@
       // Sort by date
       filteredNotes = filtered.sort(
         (a, b) =>
-          new Date(b.updatedAt || 0).getTime() -
-          new Date(a.updatedAt || 0).getTime()
+          new Date(b.updated_at || 0).getTime() -
+          new Date(a.updated_at || 0).getTime()
       );
     }
   });
@@ -215,9 +215,9 @@
 
     notes.forEach((note) => {
       try {
-        const date = note.updatedAt ? new Date(note.updatedAt) : new Date();
+        const date = note.updated_at ? new Date(note.updated_at) : new Date();
         if (isNaN(date.getTime())) {
-          console.warn(`Invalid date for note ${note.id}:`, note.updatedAt);
+          console.warn(`Invalid date for note ${note.id}:`, note.updated_at);
           return; // Skip this note
         }
         const dateStr = format(date, "MMM d, yyyy");
@@ -230,12 +230,12 @@
       }
     });
 
-    // Sort each group by updatedAt date (most recent first)
+    // Sort each group by updated_at date (most recent first)
     for (const dateStr in groups) {
       groups[dateStr].sort(
         (a, b) =>
-          new Date(b.updatedAt || 0).getTime() -
-          new Date(a.updatedAt || 0).getTime()
+          new Date(b.updated_at || 0).getTime() -
+          new Date(a.updated_at || 0).getTime()
       );
     }
 
@@ -347,18 +347,18 @@
             .includes(lowerQuery);
 
           // Use friendly date format for consistent searching
-          const friendlyDate = note.updatedAt
-            ? formatFriendlyDate(new Date(note.updatedAt))
+          const friendlyDate = note.updated_at
+            ? formatFriendlyDate(new Date(note.updated_at))
             : "";
           const dateMatch = friendlyDate.toLowerCase().includes(lowerQuery);
 
           return nameMatch || contentMatch || sectionMatch || dateMatch;
         })
-        // Sort by updatedAt date (most recent first)
+        // Sort by updated_at date (most recent first)
         .sort(
           (a, b) =>
-            new Date(b.updatedAt || 0).getTime() -
-            new Date(a.updatedAt || 0).getTime()
+            new Date(b.updated_at || 0).getTime() -
+            new Date(a.updated_at || 0).getTime()
         )
     );
   }
@@ -746,7 +746,7 @@
                         {#if isSearchActive && "highlightedDate" in note}
                           {@html note.highlightedDate}
                         {:else}
-                          {getFormattedDate(note.updatedAt)}
+                          {getFormattedDate(note.updated_at)}
                         {/if}
                       </span>
                     </div>
