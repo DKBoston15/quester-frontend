@@ -49,13 +49,6 @@
   // Get the model name reactively
   let modelName = $derived(modelStore.currentModel?.name);
 
-  // Log currentModel changes for debugging
-  $effect(() => {
-    console.log(
-      "Model.svelte $effect: currentModel updated",
-      modelStore.currentModel
-    );
-  });
 
   // Function to duplicate a node
   function duplicateNode(nodeToDuplicate: Node) {
@@ -180,88 +173,60 @@
 
   $effect(() => {
     const modelData = modelStore.currentModel;
-    console.log(
-      "Model.svelte: $effect watching currentModel triggered. InitialLoadComplete:",
-      initialLoadComplete,
-      "Data:",
-      modelData
-    );
 
-    if (!modelData) {
-      console.log("Model.svelte: No model data, returning.");
+    if (!modelData || initialLoadComplete) {
       return;
     }
 
-    // Only process if the initial load hasn't happened yet
-    if (!initialLoadComplete) {
-      const model = "model" in modelData ? modelData.model : modelData;
+    const model = "model" in modelData ? modelData.model : modelData;
 
-      if (model && typeof model === "object") {
-        const modelNodes = "nodes" in model ? model.nodes : null;
-        const modelEdges = "edges" in model ? model.edges : null;
+    if (model && typeof model === "object") {
+      const modelNodes = "nodes" in model ? model.nodes : null;
+      const modelEdges = "edges" in model ? model.edges : null;
 
-        if (modelNodes && modelEdges) {
-          try {
-            const parsedNodes =
-              typeof modelNodes === "string"
-                ? JSON.parse(modelNodes)
-                : modelNodes;
-            const parsedEdges =
-              typeof modelEdges === "string"
-                ? JSON.parse(modelEdges)
-                : modelEdges;
+      if (modelNodes && modelEdges) {
+        try {
+          const parsedNodes =
+            typeof modelNodes === "string"
+              ? JSON.parse(modelNodes)
+              : modelNodes;
+          const parsedEdges =
+            typeof modelEdges === "string"
+              ? JSON.parse(modelEdges)
+              : modelEdges;
 
-            if (Array.isArray(parsedNodes) && Array.isArray(parsedEdges)) {
-              console.log(
-                "Model.svelte: Performing initial set of nodes and edges."
-              );
-              nodes.set(parsedNodes);
-              edges.set(parsedEdges);
+          // Convert objects to arrays if needed (for new models that might have {} instead of [])
+          const finalNodes = Array.isArray(parsedNodes) ? parsedNodes : [];
+          const finalEdges = Array.isArray(parsedEdges) ? parsedEdges : [];
+          
+          nodes.set(finalNodes);
+          edges.set(finalEdges);
 
-              // Apply loaded edge settings
-              const firstEdge = parsedEdges[0];
-              if (firstEdge) {
-                edgeSettings.set({
-                  type: firstEdge.type,
-                  color: firstEdge.style.match(/stroke: (#[0-9a-fA-F]{6})/)[1],
-                  width: parseInt(
-                    firstEdge.style.match(/stroke-width: (\d+)px/)[1]
-                  ),
-                  animated: firstEdge.animated,
-                  markerStart: !!firstEdge.markerStart,
-                  markerEnd: !!firstEdge.markerEnd,
-                });
-                console.log(
-                  "Loaded edge settings applied during initial load:",
-                  firstEdge
-                );
-              }
-
-              console.log("Model.svelte: Marking initial load complete.");
-              initialLoadComplete = true; // Mark as complete AFTER setting data
-            }
-          } catch (error) {
-            console.error(
-              "Error parsing nodes or edges during initial load:",
-              error
-            );
-            // Consider setting initialLoadComplete = true even on error?
-            // Maybe not, to allow retry if modelData updates again.
+          // Apply loaded edge settings
+          const firstEdge = finalEdges[0];
+          if (firstEdge) {
+            edgeSettings.set({
+              type: firstEdge.type,
+              color: firstEdge.style.match(/stroke: (#[0-9a-fA-F]{6})/)[1],
+              width: parseInt(
+                firstEdge.style.match(/stroke-width: (\d+)px/)[1]
+              ),
+              animated: firstEdge.animated,
+              markerStart: !!firstEdge.markerStart,
+              markerEnd: !!firstEdge.markerEnd,
+            });
           }
-        } else {
-          console.log(
-            "Model.svelte: modelNodes or modelEdges missing/invalid during initial load."
-          );
+
+          initialLoadComplete = true;
+        } catch (error) {
+          console.error("Error parsing model data:", error);
+          initialLoadComplete = true;
         }
       } else {
-        console.log(
-          "Model.svelte: model is not a valid object during initial load."
-        );
+        initialLoadComplete = true;
       }
     } else {
-      console.log(
-        "Model.svelte: Initial load already complete, skipping set from currentModel."
-      );
+      initialLoadComplete = true;
     }
   });
 
@@ -272,22 +237,18 @@
       if (!modelId) return;
 
       try {
-        const cleanNodes = $nodes.map((node) => ({
+        const currentNodes = $nodes;
+        const currentEdges = $edges;
+
+        const cleanNodes = currentNodes.map((node) => ({
           ...node,
           measured: undefined,
         }));
 
-        const cleanEdges = $edges.map((edge) => {
+        const cleanEdges = currentEdges.map((edge) => {
           const newEdge = { ...edge };
           return newEdge;
         });
-
-        console.log(
-          "Saving model with nodes:",
-          cleanNodes,
-          "and edges:",
-          cleanEdges
-        );
 
         await modelStore.updateModel(modelId, {
           nodes: JSON.stringify(cleanNodes) as any,
@@ -299,14 +260,18 @@
     }, 1000) as unknown as number;
   };
 
+  // Subscribe to nodes changes for saving
   $effect(() => {
-    if (initialLoadComplete && Array.isArray($nodes)) {
+    const currentNodes = $nodes;
+    if (initialLoadComplete && Array.isArray(currentNodes)) {
       debouncedSave();
     }
   });
 
+  // Subscribe to edges changes for saving
   $effect(() => {
-    if (initialLoadComplete && Array.isArray($edges)) {
+    const currentEdges = $edges;
+    if (initialLoadComplete && Array.isArray(currentEdges)) {
       debouncedSave();
     }
   });
@@ -315,9 +280,6 @@
     if (saveTimeout) clearTimeout(saveTimeout);
   });
 
-  $effect(() => {
-    console.log("Current edge settings:", $edgeSettings);
-  });
 
   const onConnect = (params: any) => {
     const newEdge: Edge = {
@@ -330,7 +292,6 @@
       markerStart: undefined,
     };
 
-    console.log("Creating new edge without default settings:", newEdge);
 
     edges.update((eds) => {
       const updatedEdges = [...eds, newEdge];
@@ -351,7 +312,6 @@
 
   // Handle edge customization
   const onEdgeCustomize = (edge: Edge, customSettings: any) => {
-    console.log("Customizing edge:", edge.id, "with settings:", customSettings);
     customizedEdges.add(edge.id);
     edges.update((currentEdges) =>
       currentEdges.map((e) => {

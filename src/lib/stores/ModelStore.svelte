@@ -150,6 +150,7 @@
           edges: data.edges ? JSON.stringify(data.edges) : undefined,
         };
 
+
         const response = await fetch(`${API_BASE_URL}/model/${id}`, {
           method: "PUT",
           headers: {
@@ -165,7 +166,6 @@
 
         const updatedModelResponse = await response.json();
 
-        console.log("Model updated successfully:", updatedModelResponse);
 
         // Extract the actual model data from the response
         const actualUpdatedModel = updatedModelResponse.model;
