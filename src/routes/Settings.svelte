@@ -18,9 +18,11 @@
     User,
     Building2,
     GraduationCap,
+    CreditCard,
   } from "lucide-svelte";
   import * as Tabs from "$lib/components/ui/tabs";
   import TeamSettings from "$lib/components/TeamSettings.svelte";
+  import ManageSubscription from "$lib/components/ManageSubscription.svelte";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import AppSidebar from "$lib/components/AppSidebar.svelte";
   // Import tooltip components
@@ -366,7 +368,7 @@
           >
             <CardHeader class="pb-0">
               <Tabs.Root value={activeTab}>
-                <Tabs.List class="grid grid-cols-5 gap-4" id="settings-tabs">
+                <Tabs.List class="grid grid-cols-6 gap-4" id="settings-tabs">
                   <Tabs.Trigger
                     value="profile"
                     onclick={() => (activeTab = "profile")}
@@ -408,6 +410,16 @@
                         </Tooltip.Content>
                       </Tooltip.Root>
                     </Tooltip.Provider>
+                  {/if}
+                  {#if auth.currentOrganization && isOrganizationOwner()}
+                    <Tabs.Trigger
+                      value="billing"
+                      id="billing-tab-trigger"
+                      onclick={() => (activeTab = "billing")}
+                    >
+                      <CreditCard class="h-4 w-4 mr-2" />
+                      Billing
+                    </Tabs.Trigger>
                   {/if}
                 </Tabs.List>
               </Tabs.Root>
@@ -547,6 +559,51 @@
                         {/if}
                       </CardContent>
                     </Card>
+                  {/if}
+                </div>
+              {/if}
+
+              <!-- Billing Tab -->
+              {#if activeTab === "billing"}
+                <div class="space-y-6" id="billing-tab-content">
+                  {#if auth.currentOrganization}
+                    <!-- Subscription Management -->
+                    {#if auth.currentOrganization.billingProviderId}
+                      <Card class="border-2 dark:border-dark-border">
+                        <CardHeader>
+                          <div class="flex items-center gap-2">
+                            <CreditCard class="h-5 w-5" />
+                            <CardTitle>Subscription</CardTitle>
+                          </div>
+                          <CardDescription>
+                            Current Plan: {auth.currentOrganization.subscription?.plan?.name || "No plan"}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <ManageSubscription organizationId={auth.currentOrganization.id} />
+                        </CardContent>
+                      </Card>
+                    {:else}
+                      <Card class="border-2 dark:border-dark-border">
+                        <CardHeader>
+                          <div class="flex items-center gap-2">
+                            <CreditCard class="h-5 w-5" />
+                            <CardTitle>Subscribe to a Plan</CardTitle>
+                          </div>
+                          <CardDescription>
+                            Choose a subscription plan to continue using Quester
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <Button
+                            onclick={() => window.location.href = "/onboarding"}
+                            class="w-full"
+                          >
+                            View Plans
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    {/if}
                   {/if}
                 </div>
               {/if}

@@ -141,9 +141,6 @@
         try {
           responseBody = await response.json();
         } catch (e) {
-          console.log(
-            "LOCAL LOGOUT: Could not parse response body as JSON or no body."
-          );
         }
       } catch (error) {
         console.error("LOCAL LOGOUT: Network error during fetch:", error);

@@ -308,7 +308,6 @@
                           toolResults = content.results;
                         }
                       } catch (e) {
-                        console.log("Not a tool response JSON");
                       }
                     }
 

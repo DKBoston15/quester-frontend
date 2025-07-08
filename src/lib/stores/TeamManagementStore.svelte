@@ -107,14 +107,7 @@
         // After successfully loading the resource structure and permissions,
         // load its full settings ONLY if the user has management permission.
         if (permissions.canManage) {
-          console.log(
-            "[TeamManagementStore] User can manage, attempting to load full settings."
-          );
           await this.loadSettings();
-        } else {
-          console.log(
-            "[TeamManagementStore] User cannot manage, skipping full settings load."
-          );
         }
       } catch (err) {
         // The specific load functions handle their own errors and state updates
@@ -249,10 +242,6 @@
         // Merge the extracted settings into the main settings state
         if (Object.keys(newSettings).length > 0) {
           settings = { ...settings, ...newSettings };
-          console.log(
-            "[TeamManagementStore] Updated settings from Org Structure:",
-            newSettings
-          );
         }
       } catch (err) {
         console.error("Error loading organization structure:", err);
@@ -495,7 +484,6 @@
           let errorDetails = "";
           try {
             const errorData = await response.json();
-            console.error("Error response from server:", errorData);
             errorDetails = errorData.message || errorData.error || "";
           } catch (parseErr) {
             errorDetails = "Could not parse error details";
@@ -607,10 +595,6 @@
       } else if (userResources) {
         // If departments array didn't exist, create it
         userResources.departments = [newDepartment];
-      } else {
-        console.warn(
-          "[TeamManagementStore] Cannot add department: userResources is not yet loaded."
-        );
       }
     },
 
@@ -623,29 +607,19 @@
 
       try {
         const url = `${API_BASE_URL}/settings/${selectedResourceType}/${selectedResourceId}`;
-        console.log("[TeamManagementStore] Fetching settings from:", url);
 
         const response = await fetch(url, {
           credentials: "include",
         });
 
-        console.log(
-          "[TeamManagementStore] Settings response status:",
-          response.status
-        );
-
         if (!response.ok) {
           if (response.status === 403) {
-            console.log(
-              "[TeamManagementStore] Permission denied (403) loading settings."
-            );
             return; // Exit without modifying settings on 403
           }
           throw new Error(`Failed to load settings (${response.status})`);
         }
 
         const data = await response.json();
-        console.log("[TeamManagementStore] Received settings data:", data);
 
         // Merge fetched settings with existing ones
         settings = { ...settings, ...data };
@@ -684,7 +658,6 @@
           }
 
           const errorData = await response.json().catch(() => ({}));
-          console.error(`[TeamManagementStore] Error response:`, errorData);
           throw new Error(
             `Failed to update setting (${response.status}): ${errorData.message || response.statusText}`
           );
@@ -699,10 +672,7 @@
           try {
             responseData = JSON.parse(responseText);
           } catch (e) {
-            console.warn(
-              "[TeamManagementStore] Could not parse response as JSON:",
-              e
-            );
+            // Ignore JSON parse errors for empty responses
           }
         }
 
@@ -830,8 +800,6 @@
         const data = await response.json();
         // The actual project data is nested under a 'project' key in the response
         modalProjectData = data.project;
-
-        console.log("Loaded project details for modal:", modalProjectData);
       } catch (err) {
         console.error("Error loading project details for modal:", err);
         modalError = err instanceof Error ? err.message : "An error occurred";

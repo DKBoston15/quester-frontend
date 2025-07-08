@@ -303,7 +303,6 @@
     bulkActionInProgress = true;
     try {
       const result = await onBulkAction(action, selectedEvents);
-      console.log("Bulk action result:", result);
     } catch (error) {
       console.error("Bulk action error:", error);
     } finally {
@@ -320,7 +319,6 @@
 
   // Custom event handlers
   function handleAddCustomEvent(event?: MouseEvent) {
-    console.log("[TimelineControls] Add Event button clicked");
 
     // Prevent any parent events from interfering
     if (event) {
@@ -331,7 +329,6 @@
 
     // Add a small delay to ensure any active popovers/dropdowns have closed
     setTimeout(() => {
-      console.log("[TimelineControls] Calling openCreateForm");
       customEventsStore.openCreateForm();
     }, 100);
   }

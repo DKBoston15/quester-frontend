@@ -13,10 +13,9 @@
   } from "$lib/components/ui/card";
   import type { Department, Organization, Project } from "../lib/types/auth";
   import OrganizationStructure from "$lib/components/OrganizationStructure.svelte";
-  import ManageSubscription from "$lib/components/ManageSubscription.svelte";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import AppSidebar from "$lib/components/AppSidebar.svelte";
-  import { CreditCard, FolderTree, GraduationCap } from "lucide-svelte";
+  import { FolderTree, GraduationCap } from "lucide-svelte";
   import { API_BASE_URL } from "$lib/config";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
@@ -378,52 +377,7 @@
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Right Column -->
             <div class="space-y-6">
-              {#if currentOrg && isOrganizationOwner()}
-                <!-- Subscription Management -->
-                {#if currentOrg.billingProviderId}
-                  <Card
-                    id="subscription-card"
-                    class="border dark:border-dark-border shadow-md dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-lg dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
-                  >
-                    <CardHeader>
-                      <div class="flex items-center gap-2">
-                        <CreditCard class="h-5 w-5" />
-                        <CardTitle class="">Subscription</CardTitle>
-                      </div>
-                      <CardDescription>
-                        Current Plan: {currentOrg.subscription?.plan?.name ||
-                          "No plan"}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ManageSubscription organizationId={currentOrg.id} />
-                    </CardContent>
-                  </Card>
-                {:else}
-                  <Card
-                    id="subscription-card"
-                    class="border dark:border-dark-border shadow-md dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-lg dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
-                  >
-                    <CardHeader>
-                      <div class="flex items-center gap-2">
-                        <CreditCard class="h-5 w-5" />
-                        <CardTitle class="">Subscribe to a Plan</CardTitle>
-                      </div>
-                      <CardDescription
-                        >Choose a subscription plan to continue using Quester</CardDescription
-                      >
-                    </CardHeader>
-                    <CardContent>
-                      <Button
-                        onclick={() => navigate("/onboarding")}
-                        class="w-full "
-                      >
-                        View Plans
-                      </Button>
-                    </CardContent>
-                  </Card>
-                {/if}
-              {/if}
+              
             </div>
           </div>
           <!-- Workspace Overview -->

@@ -16,10 +16,6 @@
   $effect(() => {
     function updateDisabledState() {
       const canUndo = editor?.can().chain().focus().undo().run();
-      console.log(
-        "Undo button: updateDisabledState called. Can undo:",
-        canUndo
-      );
       isDisabled = !canUndo;
     }
 

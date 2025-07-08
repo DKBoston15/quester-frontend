@@ -104,7 +104,6 @@
   let accordionValue = $state<string[]>([]);
 
   function checkInsights(project: Project | null, rules: InsightRule[]) {
-    console.log("Checking insights for project:", project);
     if (!project) return [];
     return rules.filter((rule) => {
       if (rule.checkFn) {

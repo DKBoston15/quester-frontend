@@ -305,7 +305,6 @@
 
     try {
       await customEventsStore.deleteEvent(eventToDelete.id);
-      console.log("Event deleted permanently");
       toast.success("Event deleted permanently");
       dispatch("action", { action: "delete", event: eventToDelete });
       showDeleteDialog = false;

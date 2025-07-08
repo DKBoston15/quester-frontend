@@ -83,10 +83,6 @@
       if (hasOrgAdminRole) {
         return true;
       }
-    } else {
-      console.log(
-        "[Sidebar Check] Current organization not found in resources."
-      );
     }
 
     // Check department roles
@@ -105,10 +101,6 @@
       if (hasDeptAdminRole) {
         return true;
       }
-    } else {
-      console.log(
-        "[Sidebar Check] No relevant departments found or user has no roles in them."
-      );
     }
 
     return false;

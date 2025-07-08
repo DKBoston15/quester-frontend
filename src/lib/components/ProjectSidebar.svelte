@@ -293,9 +293,6 @@
       if (response.ok) {
         // Successfully recorded on backend, update localStorage
         localStorage.setItem(storageKey, currentDate);
-        console.log(
-          `Recorded project view for ${projectId} by user ${userId} on ${currentDate}.`
-        );
       } else {
         // Handle potential errors like 401 Unauthorized, 404 Not Found, 500 Server Error
         console.error(

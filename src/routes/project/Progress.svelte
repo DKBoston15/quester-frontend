@@ -1038,7 +1038,6 @@
 
   function exportAsPDF(events: TimelineEvent[]) {
     // This would require a PDF library like jsPDF
-    console.log("PDF export not yet implemented");
   }
 
   function generateShareLink(filters: FilterOptions) {
@@ -1052,7 +1051,6 @@
 
     const shareUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
     navigator.clipboard.writeText(shareUrl).then(() => {
-      console.log("Share link copied to clipboard");
     });
   }
 

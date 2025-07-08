@@ -84,7 +84,6 @@
   }
 
   function handleDuplicate() {
-    console.log(`ResizableNode (${id}): Dispatching duplicate request.`);
     const event = new CustomEvent("duplicate", {
       detail: { id },
       bubbles: true,

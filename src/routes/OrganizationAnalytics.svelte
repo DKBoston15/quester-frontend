@@ -247,9 +247,6 @@
         .loadUserResources(true, true)
         .then(async () => {
           if (hasAccess) {
-            console.debug(
-              "[OrgAnalytics] Visibility reload – loading settings…"
-            );
             try {
               await teamManagement.loadSettings();
             } catch (settingsErr) {
@@ -276,7 +273,6 @@
         hasAccess = checkAdminAccess();
 
         if (hasAccess) {
-          console.debug("[OrgAnalytics] Access granted – loading settings…");
           try {
             await teamManagement.loadSettings();
           } catch (settingsErr) {
@@ -300,9 +296,6 @@
           .loadUserResources(true, true)
           .then(async () => {
             if (hasAccess) {
-              console.debug(
-                "[OrgAnalytics] Visibility reload – loading settings…"
-              );
               try {
                 await teamManagement.loadSettings();
               } catch (settingsErr) {

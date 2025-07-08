@@ -91,10 +91,6 @@
 
   function handleDuplicate() {
     const newPosition = { x: position.x + 20, y: position.y + 20 };
-    console.log(
-      `CircleNode (${id}): Duplicating. Original pos: (${position.x}, ${position.y}), New pos:`,
-      newPosition
-    );
 
     const event = new CustomEvent("duplicate", {
       detail: {
