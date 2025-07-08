@@ -11,7 +11,9 @@
   import { Button } from "$lib/components/ui/button";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
-  import { GraduationCap } from "lucide-svelte";
+  import { GraduationCap, Plus } from "lucide-svelte";
+  import { customEventsStore } from "$lib/stores/custom-events-store.svelte";
+  import CustomEventForm from "$lib/components/custom-ui/custom-events/CustomEventForm.svelte";
 
   const driverObj = driver({
     showProgress: true,
@@ -107,10 +109,20 @@
       <h1 class="text-3xl font-bold ml-1" id="project-overview">
         Project Overview
       </h1>
-      <Button variant="outline" size="icon" onclick={() => driverObj.drive()}>
-        <GraduationCap class="h-4 w-4" />
-        <span class="sr-only">Learn about Project Overview</span>
-      </Button>
+      <div class="flex gap-2">
+        <Button
+          variant="outline"
+          onclick={() => customEventsStore.openCreateForm()}
+          class="h-10 px-3"
+        >
+          <Plus class="h-4 w-4 mr-2" />
+          Add Event
+        </Button>
+        <Button variant="outline" size="icon" onclick={() => driverObj.drive()}>
+          <GraduationCap class="h-4 w-4" />
+          <span class="sr-only">Learn about Project Overview</span>
+        </Button>
+      </div>
     </div>
     <p class="text-muted-foreground mt-2 mb-6 ml-1">
       Get a high-level view of your project's status and key components.
@@ -158,3 +170,6 @@
     </div>
   </div>
 </div>
+
+<!-- Event Form Modal -->
+<CustomEventForm />
