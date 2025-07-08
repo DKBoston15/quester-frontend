@@ -20,6 +20,7 @@
   } from "lucide-svelte";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
+  import EmptyState from "$lib/components/ui/empty-state/EmptyState.svelte";
 
   // Watch for theme changes and update charts
   const observer = new MutationObserver((mutations) => {
@@ -1161,9 +1162,13 @@
   {#if isLoading}
     <div class="loading">Loading data...</div>
   {:else if !data.summary}
-    <div class="no-data" id="analytics-no-data">
-      <h3>No data to analyze yet!</h3>
-      <p>Add literature and notes to see your analytics.</p>
+    <div id="analytics-no-data">
+      <EmptyState
+        title="No data to analyze yet!"
+        description="Add literature and notes to see your analytics."
+        variant="data-empty"
+        height="h-96"
+      />
     </div>
   {:else}
     <Tabs.Root
@@ -1736,18 +1741,11 @@
     border-color: hsl(var(--border));
   }
 
-  .loading,
-  .no-data {
+  .loading {
     text-align: center;
     padding: 2rem;
     font-size: 1.2rem;
     color: var(--text-2);
-  }
-
-  .no-data h3 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
   }
 
   /* Add responsive adjustments */

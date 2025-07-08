@@ -7,6 +7,7 @@
     nodeTypes,
   } from "./data";
   import Button from "$lib/components/ui/button/button.svelte";
+  import EmptyState from "$lib/components/ui/empty-state/EmptyState.svelte";
   let graph;
   let ForceGraph;
   let labels = false;
@@ -503,13 +504,13 @@
         </div>
       </div>
     {:else}
-      <div
-        class="flex flex-col items-center justify-center h-[60vh] text-center"
-      >
-        <h3 class="text-2xl font-semibold mb-4">No data to display yet!</h3>
-        <p class="text-lg text-muted-foreground">
-          Add literature to see your graph start to populate.
-        </p>
+      <div class="h-[60vh]">
+        <EmptyState
+          title="No data to display yet!"
+          description="Add literature to see your graph start to populate."
+          variant="data-empty"
+          height="h-full"
+        />
       </div>
     {/if}
   {/if}

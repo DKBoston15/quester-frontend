@@ -8,6 +8,7 @@
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
   import { auth } from "$lib/stores/AuthStore.svelte";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
+  import { EmptyState } from "$lib/components/ui/empty-state";
 
   // Define a type for team members that includes role information
   type TeamMember = User & {
@@ -421,10 +422,13 @@
       <tbody>
         {#if filteredUsers.length === 0}
           <tr>
-            <td colspan="4" class="p-4 text-center text-muted-foreground">
-              {searchTerm
-                ? "No users matching your search"
-                : "No team members yet"}
+            <td colspan="4" class="p-0">
+              <EmptyState
+                title={searchTerm ? "No users matching your search" : "No team members yet"}
+                description={searchTerm ? "Try adjusting your search terms" : "Team members will appear here once added"}
+                variant={searchTerm ? "search-empty" : "data-empty"}
+                height="h-[400px]"
+              />
             </td>
           </tr>
         {:else}

@@ -15,6 +15,7 @@
     Folder,
   } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button";
+  import { EmptyState } from "$lib/components/ui/empty-state";
   import { API_BASE_URL } from "$lib/config";
 
   interface Source {
@@ -402,20 +403,12 @@
         class="chat-container h-full overflow-y-auto space-y-4 scroll-smooth px-4 pt-6 pb-4 relative"
       >
         {#if messages.length === 0}
-          <div class="text-center text-gray-500 mt-8" transition:fade>
-            <div class="flex flex-col items-center gap-4">
-              <div class="p-3 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
-                <Bot class="h-8 w-8 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div class="max-w-sm">
-                <h3 class="font-semibold mb-2">Welcome to Dr. Quester!</h3>
-                <p class="text-sm">
-                  Start a conversation by asking a question about your project.
-                  I'm here to help with your research.
-                </p>
-              </div>
-            </div>
-          </div>
+          <EmptyState
+            title="Welcome to Dr. Quester!"
+            description="Start a conversation by asking a question about your project. I'm here to help with your research."
+            variant="data-empty"
+            icon={Bot}
+          />
         {/if}
 
         {#each messages.filter((msg) => msg.role === "user" || msg.role === "assistant") as message, i (i)}
@@ -530,11 +523,12 @@
               ></div>
             </div>
           {:else if filteredSessions.length === 0}
-            <div class="text-center text-gray-500 py-4">
-              {searchTerm
-                ? "No matching conversations"
-                : "No previous conversations"}
-            </div>
+            <EmptyState
+              title={searchTerm ? "No matching conversations" : "No previous conversations"}
+              description={searchTerm ? "Try adjusting your search terms" : "Start a new conversation to begin"}
+              variant="search-empty"
+              height="200px"
+            />
           {:else}
             <div class="space-y-2">
               {#each filteredSessions as session}

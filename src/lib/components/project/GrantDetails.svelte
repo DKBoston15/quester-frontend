@@ -10,6 +10,7 @@
   import { Button } from "$lib/components/ui/button";
   import { Badge } from "$lib/components/ui/badge";
   import * as Tooltip from "$lib/components/ui/tooltip";
+  import { EmptyState } from "$lib/components/ui/empty-state";
   import {
     InfoIcon,
     PlusIcon,
@@ -128,14 +129,14 @@
         <Button size="sm" onclick={loadGrants}>Try Again</Button>
       </div>
     {:else if grantStore.grants.length === 0}
-      <div class="text-center py-8">
-        <p class="text-muted-foreground mb-4">
-          No grants found for this project.
-        </p>
-        <p class="text-sm text-muted-foreground">
-          Add your first grant to get started.
-        </p>
-      </div>
+      <EmptyState
+        title="No grants found"
+        description="Add your first grant to get started."
+        variant="data-empty"
+        ctaText="Add Grant"
+        ctaAction={() => (showAddForm = true)}
+        icon={PlusIcon}
+      />
     {:else}
       <!-- Grants container with height limitation -->
       <div class="relative">

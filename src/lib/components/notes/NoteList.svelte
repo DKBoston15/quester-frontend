@@ -27,6 +27,7 @@
   import * as Popover from "$lib/components/ui/popover";
   import { Portal } from "bits-ui";
   import { tick } from "svelte";
+  import { EmptyState } from "$lib/components/ui/empty-state";
 
   // Props
   const { onNoteSelect, showSecondPanelOption = false } = $props<{
@@ -759,12 +760,12 @@
       {/each}
 
       {#if filteredNotes.length === 0}
-        <div class="text-center py-8 text-muted-foreground">
-          <p>No notes found</p>
-          {#if searchInput}
-            <p class="text-sm mt-1">Try adjusting your search terms</p>
-          {/if}
-        </div>
+        <EmptyState
+          title="No notes found"
+          description={searchInput ? "Try adjusting your search terms" : undefined}
+          variant="search-empty"
+          height="py-8"
+        />
       {/if}
     </div>
   </ScrollArea>

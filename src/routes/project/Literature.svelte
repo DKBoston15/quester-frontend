@@ -9,6 +9,7 @@
   import * as Card from "$lib/components/ui/card";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { Plus, GraduationCap, Info } from "lucide-svelte";
+  import { EmptyState } from "$lib/components/ui/empty-state";
   import type { Literature } from "$lib/types/literature";
   import type { GridApi } from "@ag-grid-community/core";
   import { navigate } from "svelte-routing";
@@ -262,11 +263,12 @@
               <p class="text-lg text-destructive">{literatureStore.error}</p>
             </div>
           {:else if !literatureStore.data?.length}
-            <div class="flex justify-center items-center h-[400px]">
-              <p class="text-lg text-muted-foreground">
-                No literature added yet
-              </p>
-            </div>
+            <EmptyState
+              title="No literature added yet"
+              variant="data-empty"
+              ctaText="Add Literature"
+              ctaAction={handleAddLiterature}
+            />
           {:else}
             <div
               class="border dark:border-dark-border rounded-lg overflow-hidden"

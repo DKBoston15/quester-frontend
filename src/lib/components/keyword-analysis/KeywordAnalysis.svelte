@@ -5,6 +5,7 @@
   import AnalysisResults from "./AnalysisResults.svelte";
   import { Button } from "$lib/components/ui/button";
   import { Card } from "$lib/components/ui/card";
+  import { EmptyState } from "$lib/components/ui/empty-state";
   import type { KeywordAnalysis } from "$lib/types/index";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
   import { API_BASE_URL } from "$lib/config";
@@ -405,17 +406,15 @@
       {/if}
     </div>
   {:else if projectStore.currentProject}
-    <div
-      class="text-center py-12 text-muted-foreground"
-      transition:fade
-      id="no-analysis-placeholder"
-    >
-      <p class="mb-4">No keyword analyses yet</p>
-      <Button
-        onclick={() => (showNewAnalysis = true)}
-        disabled={loading}
-        id="create-first-analysis-button">Create Your First Analysis</Button
-      >
+    <div transition:fade id="no-analysis-placeholder">
+      <EmptyState
+        title="No keyword analyses yet"
+        description="Create your first analysis to begin exploring keyword connections in your literature."
+        variant="data-empty"
+        ctaText="Create Your First Analysis"
+        ctaAction={() => (showNewAnalysis = true)}
+        ctaDisabled={loading}
+      />
     </div>
   {/if}
 

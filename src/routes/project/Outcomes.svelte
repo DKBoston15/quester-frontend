@@ -23,6 +23,7 @@
   import * as Select from "$lib/components/ui/select";
   import { auth } from "$lib/stores/AuthStore.svelte";
   import PublisherScore from "$lib/components/custom-ui/dashboard/PublisherScore.svelte";
+  import { EmptyState } from "$lib/components/ui/empty-state";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
 
@@ -449,19 +450,12 @@
             <p class="text-lg text-destructive">{outcomeStore.error}</p>
           </div>
         {:else if !outcomeStore.outcomes.length}
-          <div
-            class="flex flex-col justify-center items-center h-[400px] gap-4"
-          >
-            <p class="text-lg text-muted-foreground">No outcomes created yet</p>
-            <Button
-              variant="outline"
-              onclick={() => (showCreateDialog = true)}
-              class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] transition-all"
-            >
-              <Plus class="h-4 w-4 mr-2" />
-              Create your first outcome
-            </Button>
-          </div>
+          <EmptyState
+            title="No outcomes created yet"
+            variant="data-empty"
+            ctaText="Create your first outcome"
+            ctaAction={() => (showCreateDialog = true)}
+          />
         {:else}
           <div
             id="outcomes-grid"

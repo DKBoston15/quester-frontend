@@ -11,6 +11,7 @@
   import { Input } from "$lib/components/ui/input";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import * as Textarea from "$lib/components/ui/textarea";
+  import { EmptyState } from "$lib/components/ui/empty-state";
   import { format } from "date-fns/format";
   import { parse } from "date-fns/parse";
   import {
@@ -459,9 +460,23 @@
         {/each}
       </div>
     {:else}
-      <p class="text-center text-gray-500 dark:text-gray-400 py-8">
-        No research products defined yet.
-      </p>
+      <EmptyState
+        title="No research products found"
+        description="Add your first research product to get started."
+        variant="data-empty"
+        ctaText="Add Product"
+        ctaAction={() => {
+          editMode = true;
+          newProduct = {
+            name: "",
+            type: "professionalism",
+            status: "planned",
+            description: "",
+            dueDate: undefined,
+          };
+        }}
+        icon={Plus}
+      />
     {/if}
   </CardContent>
 

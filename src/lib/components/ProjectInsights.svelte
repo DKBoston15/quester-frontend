@@ -6,6 +6,7 @@
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
   import { grantStore } from "$lib/stores/GrantStore.svelte";
   import { AlertCircle, CheckCircle2, Sparkles } from "lucide-svelte";
+  import EmptyState from "$lib/components/ui/empty-state/EmptyState.svelte";
   import { navigate } from "svelte-routing";
   import { slide } from "svelte/transition";
   import { quintOut } from "svelte/easing";
@@ -337,15 +338,14 @@
               {/if}
             </div>
           {:else}
-            <div
-              class="text-center py-6"
-              transition:slide={{ duration: 300, easing: quintOut }}
-            >
-              <CheckCircle2 class="h-12 w-12 text-green-500 mx-auto mb-4" />
-              <p class=" text-lg">All project setup tasks completed!</p>
-              <p class="text-sm text-muted-foreground mt-2">
-                Your project is well-configured and ready for research.
-              </p>
+            <div transition:slide={{ duration: 300, easing: quintOut }}>
+              <EmptyState
+                title="All project setup tasks completed!"
+                description="Your project is well-configured and ready for research."
+                variant="completion"
+                icon={CheckCircle2}
+                height="h-auto"
+              />
             </div>
           {/if}
         </Card.Content>
