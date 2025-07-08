@@ -32,6 +32,7 @@
   import AppSidebar from "$lib/components/AppSidebar.svelte";
   import type { User } from "$lib/types/auth";
   import { Badge } from "$lib/components/ui/badge";
+  import * as Tooltip from "$lib/components/ui/tooltip";
   import ResourceSelector from "$lib/components/ResourceSelector.svelte";
   import ResourceUserManager from "$lib/components/ResourceUserManager.svelte";
   import TeamMembersList from "$lib/components/TeamMembersList.svelte";
@@ -598,6 +599,16 @@
             >
               <div class="flex items-center gap-2">
                 <h1 class="text-3xl font-bold">Team Management</h1>
+                <Tooltip.Root>
+                  <Tooltip.Trigger>
+                    <Info class="h-5 w-5 text-muted-foreground" />
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>
+                    <p class="text-sm max-w-xs">
+                      Manage team members, roles, and permissions for your organizations, departments, and projects. Control who can access your resources and what they can do.
+                    </p>
+                  </Tooltip.Content>
+                </Tooltip.Root>
                 {#if teamManagement.isLoading}
                   <RefreshCw class="h-5 w-5 animate-spin" />
                 {/if}

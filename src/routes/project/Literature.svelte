@@ -7,7 +7,8 @@
   import AddLiterature from "$lib/components/custom-ui/literature/AddLiterature.svelte";
   import { Button } from "$lib/components/ui/button";
   import * as Card from "$lib/components/ui/card";
-  import { Plus, GraduationCap } from "lucide-svelte";
+  import * as Tooltip from "$lib/components/ui/tooltip";
+  import { Plus, GraduationCap, Info } from "lucide-svelte";
   import type { Literature } from "$lib/types/literature";
   import type { GridApi } from "@ag-grid-community/core";
   import { navigate } from "svelte-routing";
@@ -191,7 +192,19 @@
   <div class="container mx-auto py-6 px-4">
     <div class="mb-8">
       <div class="flex items-center justify-between" id="literature-header">
-        <h1 class="text-3xl font-bold">Literature</h1>
+        <div class="flex items-center gap-2">
+          <h1 class="text-3xl font-bold">Literature</h1>
+          <Tooltip.Root>
+            <Tooltip.Trigger>
+              <Info class="h-5 w-5 text-muted-foreground" />
+            </Tooltip.Trigger>
+            <Tooltip.Content>
+              <p class="text-sm max-w-xs">
+                Manage and organize your project literature. Add sources, track reading status, and build your research library all in one place.
+              </p>
+            </Tooltip.Content>
+          </Tooltip.Root>
+        </div>
         <div class="flex items-center space-x-2">
           <Button
             onclick={handleAddLiterature}

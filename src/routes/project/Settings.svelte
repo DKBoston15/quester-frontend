@@ -15,7 +15,8 @@
   import { API_BASE_URL } from "$lib/config";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
-  import { GraduationCap } from "lucide-svelte";
+  import { GraduationCap, Info } from "lucide-svelte";
+  import * as Tooltip from "$lib/components/ui/tooltip";
 
   let projectName = $state("");
   let originalName = $state("");
@@ -198,7 +199,19 @@
 
 <div class="container mx-auto py-6 px-4">
   <div class="flex justify-between items-center mb-6" id="settings-header">
-    <h1 class="text-3xl font-bold">Settings</h1>
+    <div class="flex items-center gap-2">
+      <h1 class="text-3xl font-bold">Settings</h1>
+      <Tooltip.Root>
+        <Tooltip.Trigger>
+          <Info class="h-5 w-5 text-muted-foreground" />
+        </Tooltip.Trigger>
+        <Tooltip.Content>
+          <p class="text-sm max-w-xs">
+            Configure your project settings, manage custom designs, and handle data export or deletion options for your research project.
+          </p>
+        </Tooltip.Content>
+      </Tooltip.Root>
+    </div>
     <Button variant="outline" size="icon" onclick={() => driverObj.drive()}>
       <GraduationCap class="h-4 w-4" />
       <span class="sr-only">Learn about Settings</span>

@@ -3,8 +3,9 @@
   import { onMount } from "svelte";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
   import { Button } from "$lib/components/ui/button";
-  import { Building2, RefreshCw } from "lucide-svelte";
+  import { Building2, RefreshCw, Info } from "lucide-svelte";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
+  import * as Tooltip from "$lib/components/ui/tooltip/index.js";
   import AppSidebar from "$lib/components/AppSidebar.svelte";
   import {
     Card,
@@ -172,7 +173,19 @@
           <div class="mb-8" id="org-settings-header">
             <div class="flex justify-between items-center">
               <div class="flex items-center gap-2">
-                <h1 class="text-3xl font-bold">Organization Settings</h1>
+                <div class="flex items-center gap-2">
+                  <h1 class="text-3xl font-bold">Organization Settings</h1>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger>
+                      <Info class="h-5 w-5 text-muted-foreground" />
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>
+                      <p class="text-sm max-w-xs">
+                        Configure and manage settings for your organization, including team permissions, invitation controls, and project creation policies.
+                      </p>
+                    </Tooltip.Content>
+                  </Tooltip.Root>
+                </div>
                 {#if teamManagement.isLoading}
                   <RefreshCw class="h-5 w-5 animate-spin" />
                 {/if}

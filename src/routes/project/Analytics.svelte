@@ -8,6 +8,7 @@
   import { analyzeLiterature } from "./analytics/utils";
   import * as Tabs from "$lib/components/ui/tabs";
   import * as Dialog from "$lib/components/ui/dialog";
+  import * as Tooltip from "$lib/components/ui/tooltip";
   import { Button } from "$lib/components/ui/button";
   import {
     PieChart,
@@ -15,6 +16,7 @@
     BookText,
     FlaskConical,
     GraduationCap,
+    Info,
   } from "lucide-svelte";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
@@ -1124,7 +1126,21 @@
 
 <div class="analytics-container">
   <div class="flex justify-between items-center mb-6" id="analytics-header">
-    <h1 class="text-3xl font-bold">Analytics</h1>
+    <div class="flex items-center gap-2">
+      <h1 class="text-3xl font-bold">Analytics</h1>
+      <Tooltip.Root>
+        <Tooltip.Trigger>
+          <Info class="h-5 w-5 text-muted-foreground" />
+        </Tooltip.Trigger>
+        <Tooltip.Content>
+          <p class="text-sm max-w-xs">
+            Visualize and analyze your project's literature collection and notes
+            content. Track trends in publications, identify common themes, and
+            gain insights into your research landscape.
+          </p>
+        </Tooltip.Content>
+      </Tooltip.Root>
+    </div>
     <Button variant="outline" size="icon" onclick={() => driverObj.drive()}>
       <GraduationCap class="h-4 w-4" />
       <span class="sr-only">Learn about Analytics</span>
@@ -1675,7 +1691,6 @@
   }
 
   h1 {
-    margin-bottom: 2rem;
     font-size: 2rem;
     font-weight: 600;
   }
