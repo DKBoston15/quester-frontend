@@ -4,10 +4,10 @@
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import * as Table from "$lib/components/ui/table";
-  import { Progress } from "$lib/components/ui/progress";
   import { Alert, AlertDescription, AlertTitle } from "$lib/components/ui/alert";
   import { Card, CardContent, CardHeader } from "$lib/components/ui/card";
   import * as Tooltip from "$lib/components/ui/tooltip";
+  import TeamSizeIndicator from "$lib/components/TeamSizeIndicator/TeamSizeIndicator.svelte";
   import { UserCog, Search, UserMinus, Info, MoreHorizontal, ChevronDown, Building } from "lucide-svelte";
   import type { User } from "$lib/types/auth";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
@@ -91,25 +91,6 @@
     })
   );
 
-  // Calculate users limit information
-  let usersRemaining = $state(0);
-  let isFull = $state(false);
-  let isNearLimit = $state(false);
-
-  $effect(() => {
-    if (props.subscriptionLimits && props.subscriptionLimits.maxUsers > 0) {
-      usersRemaining = Math.max(
-        0,
-        props.subscriptionLimits.maxUsers - props.users.length
-      );
-      isFull = usersRemaining === 0;
-      isNearLimit = usersRemaining <= 1;
-    } else {
-      usersRemaining = Infinity;
-      isFull = false;
-      isNearLimit = false;
-    }
-  });
 
   function getRoleName(user: TeamMember): string {
     // Prioritize the roleName from $extras provided by the backend
@@ -318,60 +299,13 @@
 
   <!-- Subscription Limits -->
   {#if props.subscriptionLimits && props.subscriptionLimits.maxUsers > 0}
-    <div class="flex items-center justify-between">
-      <div>
-        <h4 class="text-sm font-medium">Team Members</h4>
-        <p class="text-sm text-muted-foreground">
-          {props.users.length} of {props.subscriptionLimits.maxUsers} seats used
-        </p>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <Progress 
-          value={Math.min(100, (props.users.length / props.subscriptionLimits.maxUsers) * 100)}
-          class="w-32"
-        />
-        <span class="text-xs font-medium text-muted-foreground">
-          {usersRemaining}
-          {usersRemaining === 1 ? "seat" : "seats"} remaining
-        </span>
-      </div>
-    </div>
-
-    {#if isFull}
-      <Alert variant="destructive">
-        <Info class="h-4 w-4" />
-        <AlertTitle>User Limit Reached</AlertTitle>
-        <AlertDescription>
-          You've reached the maximum of {props.subscriptionLimits.maxUsers} users
-          for your {props.subscriptionLimits.subscriptionPlan} plan.
-          {#if props.subscriptionLimits.subscriptionPlan === "Enterprise"}
-            Please contact support to adjust your seat count.
-          {:else if props.subscriptionLimits.subscriptionPlan === "Quester Pro"}
-            Upgrade to Quester Team to add more team members.
-          {:else if props.subscriptionLimits.subscriptionPlan === "Quester Team"}
-            Please contact support to discuss enterprise options for larger teams.
-          {:else}
-            Upgrade your plan to invite users.
-          {/if}
-        </AlertDescription>
-      </Alert>
-    {:else if isNearLimit}
-      <Alert>
-        <Info class="h-4 w-4" />
-        <AlertTitle>Almost at User Limit</AlertTitle>
-        <AlertDescription>
-          You have {usersRemaining}
-          {usersRemaining === 1 ? "seat" : "seats"} remaining on your {props
-            .subscriptionLimits.subscriptionPlan} plan.
-          {#if props.subscriptionLimits.subscriptionPlan === "Enterprise"}
-            <!-- No specific message needed when near limit for Enterprise -->
-          {:else if props.subscriptionLimits.subscriptionPlan === "Quester Pro"}
-            Consider upgrading to Quester Team for up to 5 team members.
-          {/if}
-        </AlertDescription>
-      </Alert>
-    {/if}
+    <TeamSizeIndicator 
+      currentCount={props.users.length}
+      maxUsers={props.subscriptionLimits.maxUsers}
+      subscriptionPlan={props.subscriptionLimits.subscriptionPlan}
+      variant="card"
+      showAlerts={true}
+    />
   {/if}
 
   <!-- Members list -->

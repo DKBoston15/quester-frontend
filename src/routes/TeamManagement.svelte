@@ -42,6 +42,7 @@
   import TeamMembersList from "$lib/components/TeamMembersList.svelte";
   import InvitationManager from "$lib/components/InvitationManager.svelte";
   import RoleManager from "$lib/components/RoleManager.svelte";
+  import TeamSizeIndicator from "$lib/components/TeamSizeIndicator/TeamSizeIndicator.svelte";
   import { API_BASE_URL } from "$lib/config";
   import { driver, type DriveStep } from "driver.js";
   import "driver.js/dist/driver.css";
@@ -770,10 +771,13 @@
                   <CardContent>
                     {#if subscriptionLimits && subscriptionLimits.maxUsers > 0}
                       <div class="mb-4 p-3 bg-muted rounded-lg">
-                        <div class="flex items-center justify-between text-sm">
-                          <span>Team size: {getUsersForCurrentResource().length} of {subscriptionLimits.maxUsers}</span>
-                          <Progress value={Math.min(100, (getUsersForCurrentResource().length / subscriptionLimits.maxUsers) * 100)} class="w-32" />
-                        </div>
+                        <TeamSizeIndicator 
+                          currentCount={getUsersForCurrentResource().length}
+                          maxUsers={subscriptionLimits.maxUsers}
+                          subscriptionPlan={subscriptionLimits.subscriptionPlan}
+                          variant="inline"
+                          showAlerts={false}
+                        />
                       </div>
                     {/if}
                     

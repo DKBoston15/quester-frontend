@@ -1,0 +1,1 @@
+export { default as TeamSizeIndicator } from './TeamSizeIndicator.svelte';
