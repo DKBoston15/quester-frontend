@@ -10,6 +10,7 @@
 - **Updated**: 2025-01-15
 - **Dependencies**: None
 - **Phase 1 Completed**: 2025-01-15 (Table migration, mobile design, design tokens)
+- **Phase 2 Completed**: 2025-01-15 (Progressive disclosure, resource selection, permission system)
 
 ## Problem Statement
 The current Team Management page and ResourceSelector component present a complex, confusing interface that overwhelms users with technical implementation details, inconsistent navigation patterns, and poor information architecture. Users report difficulty understanding the resource selection process, confusion about permission systems, and frustration with inconsistent actions and hidden limitations.
@@ -521,8 +522,35 @@ function handleError(error: any, context: string) {
 - `src/lib/components/InvitationManager.svelte` - Table migration to shadcn
 - Various backlog files for task management
 
+### Phase 2 Completed (2025-01-15)
+
+**Approach Taken:**
+- Enhanced ResourceSelector with visual hierarchy and contextual information
+- Implemented progressive disclosure patterns with better information architecture
+- Simplified permission system with contextual tooltips and user-friendly language
+- Improved subscription handling with semantic Alert components
+
+**Features Implemented:**
+- **ResourceSelector.svelte**: Added resource type icons (Building, FolderKanban, Folder) for better visual recognition
+- **Hierarchy Breadcrumbs**: Implemented org → dept → project relationship visualization
+- **Resource Count Display**: Added badges showing available resources count
+- **Enhanced Empty States**: Better messaging and visual feedback for search results
+- **Permission Tooltips**: Added contextual help explaining role implications and access levels
+- **Improved Organization Privilege Badges**: Better visual distinction and semantic styling
+- **Standardized Subscription Messaging**: Replaced custom divs with shadcn Alert components
+
+**Technical Decisions:**
+- Used Lucide icons for consistent visual language across resource types
+- Implemented Tooltip components for progressive disclosure of complex information
+- Maintained existing functionality while improving information architecture
+- Used semantic colors and design tokens for better accessibility and theming
+
+**Modified Files:**
+- `src/lib/components/ResourceSelector.svelte` - Enhanced with visual hierarchy and contextual information
+- `src/lib/components/TeamMembersList.svelte` - Added permission tooltips and improved badges
+- `src/routes/TeamManagement.svelte` - Cleaned up subscription messaging and imports
+
 **Next Steps:**
-- Phase 2: Progressive disclosure patterns and resource selection redesign
 - Phase 3: State management optimization and form interaction improvements
 - Phase 4: Full accessibility audit and advanced features
 - Phase 5: Performance optimization and micro-interactions

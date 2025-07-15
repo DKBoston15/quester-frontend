@@ -15,6 +15,9 @@
     Info,
     UserCog,
     GraduationCap,
+    Mail,
+    X,
+    Building,
   } from "lucide-svelte";
   import {
     Card,
@@ -28,6 +31,7 @@
     AlertTitle,
     AlertDescription,
   } from "$lib/components/ui/alert";
+  import { Progress } from "$lib/components/ui/progress";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import AppSidebar from "$lib/components/AppSidebar.svelte";
   import type { User } from "$lib/types/auth";
@@ -590,115 +594,149 @@
           <p class="ml-4 text-muted-foreground">Loading team management...</p>
         </div>
       {:else}
-        <div class="container mx-auto py-6 px-4">
-          <!-- Header with Resource Selector -->
-          <div class="mb-8">
-            <div
-              class="flex justify-between items-center"
-              id="team-management-header"
-            >
-              <div class="flex items-center gap-2">
-                <h1 class="text-3xl font-bold">Team Management</h1>
+        <div class="flex h-full">
+          <!-- Left Sidebar - Resource Navigator -->
+          <div class="w-80 border-r bg-card p-6 overflow-y-auto">
+            <div class="mb-6">
+              <div class="flex items-center gap-2 mb-2">
+                <h2 class="text-xl font-semibold">Team Management</h2>
                 <Tooltip.Root>
                   <Tooltip.Trigger>
-                    <Info class="h-5 w-5 text-muted-foreground" />
+                    <Info class="h-4 w-4 text-muted-foreground" />
                   </Tooltip.Trigger>
                   <Tooltip.Content>
                     <p class="text-sm max-w-xs">
-                      Manage team members, roles, and permissions for your organizations, departments, and projects. Control who can access your resources and what they can do.
+                      Select a resource to manage its team members, roles, and permissions.
                     </p>
                   </Tooltip.Content>
                 </Tooltip.Root>
-                {#if teamManagement.isLoading}
-                  <RefreshCw class="h-5 w-5 animate-spin" />
-                {/if}
               </div>
-
-              <div class="flex items-center gap-2">
-                <!-- Driver Tour Button -->
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onclick={() => driverObj.drive()}
-                >
-                  <GraduationCap class="h-4 w-4" />
-                  <span class="sr-only">Learn about Team Management</span>
-                </Button>
-
-                {#if canJoinResource()}
-                  <Button
-                    id="join-button"
-                    variant="outline"
-                    onclick={handleSelfAssign}
-                    disabled={isSelfAssigning}
-                  >
-                    {#if isSelfAssigning}
-                      <div
-                        class="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-current"
-                      ></div>
-                      Joining...
-                    {:else}
-                      <UserPlus class="h-4 w-4 mr-2" />
-                      Join {teamManagement.selectedResourceType === "project"
-                        ? "Project"
-                        : "Department"}
-                    {/if}
-                  </Button>
-                {/if}
-                <Button
-                  id="refresh-button"
-                  variant="outline"
-                  onclick={refreshData}
-                >
-                  <RefreshCw class="h-4 w-4 mr-2" />
-                  Refresh
-                </Button>
-              </div>
+              <p class="text-sm text-muted-foreground">
+                Select a resource to manage its team
+              </p>
             </div>
-            <p class="text-muted-foreground">
-              Manage team members, roles, and permissions for your organization.
-            </p>
-          </div>
 
-          <!-- Resource Selector -->
-          {#if !teamManagement.isLoading && teamManagement.userResources}
-            <Card class="mb-6" id="resource-selector-card">
-              <CardHeader>
-                <CardTitle class="flex items-center gap-2">
-                  <svelte:component this={resourceIcon} class="h-5 w-5" />
-                  {resourceName}
-                </CardTitle>
-                {#if hasElevatedPermissions}
-                  <div class="flex items-center mt-1 mb-1">
-                    <Badge
-                      variant="outline"
-                      class="bg-primary/10 text-primary border-primary/25"
-                    >
-                      <Info class="h-3 w-3 mr-1" />
-                      Access via Organization Privileges
-                    </Badge>
-                    <span class="text-xs text-muted-foreground ml-2">
-                      You can manage this project due to your organization role
-                    </span>
+            <!-- Resource Navigation Tree -->
+            <div class="space-y-2">
+              {#if teamManagement.userResources}
+                <!-- Organizations -->
+                {#if teamManagement.userResources.organizations && teamManagement.userResources.organizations.length > 0}
+                  <div class="space-y-1">
+                    <h3 class="text-sm font-medium text-muted-foreground px-2 py-1">Organizations</h3>
+                    {#each teamManagement.userResources.organizations as org}
+                      <button
+                        class="w-full text-left px-2 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors {teamManagement.selectedResourceType === 'organization' && teamManagement.selectedResourceId === org.id ? 'bg-accent text-accent-foreground' : ''}"
+                        onclick={() => teamManagement.setSelectedResource('organization', org.id)}
+                      >
+                        <div class="flex items-center gap-2">
+                          <Building class="h-4 w-4" />
+                          <span class="font-medium">{org.name}</span>
+                        </div>
+                      </button>
+                    {/each}
                   </div>
                 {/if}
-                <CardDescription>
+
+                <!-- Departments -->
+                {#if teamManagement.userResources.departments && teamManagement.userResources.departments.length > 0}
+                  <div class="space-y-1">
+                    <h3 class="text-sm font-medium text-muted-foreground px-2 py-1">Departments</h3>
+                    {#each teamManagement.userResources.departments as dept}
+                      <button
+                        class="w-full text-left px-2 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors {teamManagement.selectedResourceType === 'department' && teamManagement.selectedResourceId === dept.id ? 'bg-accent text-accent-foreground' : ''}"
+                        onclick={() => teamManagement.setSelectedResource('department', dept.id)}
+                      >
+                        <div class="flex items-center gap-2">
+                          <FolderKanban class="h-4 w-4" />
+                          <span class="font-medium">{dept.name}</span>
+                        </div>
+                      </button>
+                    {/each}
+                  </div>
+                {/if}
+
+                <!-- Projects -->
+                {#if teamManagement.userResources.projects && teamManagement.userResources.projects.length > 0}
+                  <div class="space-y-1">
+                    <h3 class="text-sm font-medium text-muted-foreground px-2 py-1">Projects</h3>
+                    {#each teamManagement.userResources.projects as project}
+                      <button
+                        class="w-full text-left px-2 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors {teamManagement.selectedResourceType === 'project' && teamManagement.selectedResourceId === project.id ? 'bg-accent text-accent-foreground' : ''}"
+                        onclick={() => teamManagement.setSelectedResource('project', project.id)}
+                      >
+                        <div class="flex items-center gap-2">
+                          <FileText class="h-4 w-4" />
+                          <span class="font-medium">{project.name}</span>
+                        </div>
+                      </button>
+                    {/each}
+                  </div>
+                {/if}
+              {/if}
+            </div>
+          </div>
+
+          <!-- Right Content Area -->
+          <div class="flex-1 p-6 overflow-y-auto">
+            {#if !teamManagement.selectedResourceId}
+              <!-- Empty State -->
+              <div class="flex items-center justify-center h-full">
+                <div class="text-center">
+                  <Users class="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 class="text-lg font-medium mb-2">Select a Resource</h3>
+                  <p class="text-muted-foreground max-w-md">
+                    Choose an organization, department, or project from the sidebar to manage its team members and permissions.
+                  </p>
+                </div>
+              </div>
+            {:else}
+              <!-- Resource Header -->
+              <div class="mb-6">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <svelte:component this={resourceIcon} class="h-6 w-6" />
+                    <h1 class="text-2xl font-bold">{resourceName}</h1>
+                    {#if hasElevatedPermissions}
+                      <Badge variant="outline" class="bg-primary/10 text-primary border-primary/25">
+                        <Info class="h-3 w-3 mr-1" />
+                        Organization Access
+                      </Badge>
+                    {/if}
+                  </div>
+                  <div class="flex items-center gap-2">
+                    {#if canJoinResource()}
+                      <Button
+                        variant="outline"
+                        onclick={handleSelfAssign}
+                        disabled={isSelfAssigning}
+                      >
+                        {#if isSelfAssigning}
+                          <div class="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-current"></div>
+                          Joining...
+                        {:else}
+                          <UserPlus class="h-4 w-4 mr-2" />
+                          Join {teamManagement.selectedResourceType === "project" ? "Project" : "Department"}
+                        {/if}
+                      </Button>
+                    {/if}
+                    <Button variant="outline" onclick={refreshData}>
+                      <RefreshCw class="h-4 w-4 mr-2" />
+                      Refresh
+                    </Button>
+                  </div>
+                </div>
+                <p class="text-muted-foreground mt-1">
                   Manage team members and their roles for this {teamManagement.selectedResourceType}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResourceSelector
-                  resources={teamManagement.userResources}
-                  selectedType={teamManagement.selectedResourceType}
-                  selectedId={teamManagement.selectedResourceId}
-                  onSelect={(
-                    type: "organization" | "department" | "project",
-                    id: string
-                  ) => teamManagement.setSelectedResource(type, id)}
-                />
-              </CardContent>
-            </Card>
-          {/if}
+                </p>
+              </div>
+              <!-- Error Display -->
+              {#if teamManagement.error && teamManagement.error !== teamManagement.settingsError}
+                <Alert variant="destructive" class="mb-6">
+                  <Info class="h-4 w-4" />
+                  <AlertTitle>Error</AlertTitle>
+                  <AlertDescription>{teamManagement.error}</AlertDescription>
+                </Alert>
+              {/if}
 
           <!-- Error Display - Only show errors that aren't settings-related -->
           {#if teamManagement.error && teamManagement.error !== teamManagement.settingsError}
