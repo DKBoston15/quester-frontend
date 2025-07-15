@@ -51,7 +51,7 @@
   let showRoleManager = $state(false);
   let selectedUserId = $state<string | null>(null);
   let showInviteModal = $state(false);
-  let pendingInvitations = $state<any[]>([]);
+  let invitationManagerRef = $state<any>(null);
   let resourceName = $derived(getResourceName());
   let resourceIcon = $derived(getResourceIcon());
   let isLoading = $state(true);
@@ -80,13 +80,6 @@
     showProgress: true,
     popoverClass: "quester-driver-theme",
     steps: driveSteps,
-  });
-
-  // Fetch pending invitations when resource changes
-  $effect(() => {
-    if (teamManagement.selectedResourceId && teamManagement.selectedResourceType === 'organization') {
-      fetchPendingInvitations();
-    }
   });
 
   // Load data on mount
@@ -344,47 +337,6 @@
 
   function refreshData() {
     teamManagement.refreshCurrentResource();
-    fetchPendingInvitations();
-  }
-
-  async function fetchPendingInvitations() {
-    if (!teamManagement.selectedResourceId || teamManagement.selectedResourceType !== 'organization') {
-      pendingInvitations = [];
-      return;
-    }
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/invitations?resourceType=${teamManagement.selectedResourceType}&resourceId=${teamManagement.selectedResourceId}`, {
-        credentials: 'include'
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        pendingInvitations = data.invitations || [];
-      } else {
-        pendingInvitations = [];
-      }
-    } catch (error) {
-      console.error('Error fetching pending invitations:', error);
-      pendingInvitations = [];
-    }
-  }
-
-  async function revokeInvitation(invitationId: string) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/invitations/${invitationId}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
-      
-      if (response.ok) {
-        await fetchPendingInvitations();
-      } else {
-        console.error('Failed to revoke invitation');
-      }
-    } catch (error) {
-      console.error('Error revoking invitation:', error);
-    }
   }
 
   function handleUserSelect(userId: string) {
@@ -835,34 +787,25 @@
                   </CardContent>
                 </Card>
 
-                <!-- Pending Invitations Section -->
-                {#if showInvitationsTab && pendingInvitations.length > 0}
+                <!-- Invitations Section -->
+                {#if showInvitationsTab}
                   <Card class="mb-6">
                     <CardHeader>
                       <div class="flex items-center gap-2">
                         <Mail class="h-5 w-5" />
-                        <CardTitle>Pending Invitations ({pendingInvitations.length})</CardTitle>
+                        <CardTitle>Team Invitations</CardTitle>
                       </div>
+                      <CardDescription>
+                        Send invitations to add new team members to this organization
+                      </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div class="space-y-2">
-                        {#each pendingInvitations as invitation}
-                          <div class="flex items-center justify-between p-3 bg-muted rounded-lg">
-                            <div class="flex items-center gap-2">
-                              <Mail class="h-4 w-4 text-muted-foreground" />
-                              <div>
-                                <p class="font-medium">{invitation.email}</p>
-                                <p class="text-sm text-muted-foreground">
-                                  {invitation.roleName || 'Member'} • Sent {new Date(invitation.createdAt).toLocaleDateString()}
-                                </p>
-                              </div>
-                            </div>
-                            <Button variant="ghost" size="sm" onclick={() => revokeInvitation(invitation.id)}>
-                              <X class="h-4 w-4" />
-                            </Button>
-                          </div>
-                        {/each}
-                      </div>
+                      <InvitationManager
+                        resourceType={teamManagement.selectedResourceType}
+                        resourceId={teamManagement.selectedResourceId}
+                        onInviteSent={refreshData}
+                        {subscriptionLimits}
+                      />
                     </CardContent>
                   </Card>
                 {/if}

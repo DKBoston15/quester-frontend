@@ -550,6 +550,43 @@ function handleError(error: any, context: string) {
 - `src/lib/components/TeamMembersList.svelte` - Added permission tooltips and improved badges
 - `src/routes/TeamManagement.svelte` - Cleaned up subscription messaging and imports
 
+### Phase 2B Completed (2025-01-15)
+
+**Approach Taken:**
+- Completely redesigned the fundamental UI layout to eliminate cognitive load
+- Replaced confusing tab-based navigation with intuitive sidebar + single-page view
+- Implemented hierarchical resource navigation matching user mental models
+- Created unified team management experience with contextual actions
+
+**Features Implemented:**
+- **Left Sidebar Navigation**: Hierarchical tree showing Organizations → Departments → Projects
+- **One-Click Resource Selection**: Eliminated dropdown confusion with direct selection
+- **Single-Page Team View**: Unified display of members, invitations, and user management
+- **Empty State Guidance**: Clear instructions when no resource is selected
+- **Contextual Actions**: Invite, join, and manage buttons placed logically
+- **Visual Hierarchy**: Resource type icons and clear section organization
+- **Progress Indicators**: Team size tracking with visual progress bars
+- **Mobile-Responsive**: Sidebar and content areas work on all screen sizes
+
+**Technical Decisions:**
+- Maintained all existing functionality while completely redesigning layout
+- Added proper state management for pending invitations and invitation functions
+- Used semantic HTML structure with proper accessibility patterns
+- Implemented responsive design with consistent spacing and typography
+- Fixed all syntax errors and ensured clean component architecture
+
+**Modified Files:**
+- `src/routes/TeamManagement.svelte` - Complete layout redesign from tab-based to sidebar navigation
+- Added invitation management functions (`fetchPendingInvitations`, `revokeInvitation`)
+- Implemented proper state management for `pendingInvitations` and `showInviteModal`
+
+**Major UX Improvements:**
+- **Eliminated Cognitive Load**: No more multi-step dropdown → tab navigation
+- **Clear Mental Model**: Resource hierarchy matches organizational structure
+- **Reduced Friction**: One-click resource switching instead of dropdown selection
+- **Better Context Awareness**: Always know which resource you're managing
+- **Improved Discoverability**: All team functions visible without tab hunting
+
 **Next Steps:**
 - Phase 3: State management optimization and form interaction improvements
 - Phase 4: Full accessibility audit and advanced features
