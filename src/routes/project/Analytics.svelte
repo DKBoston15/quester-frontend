@@ -5,7 +5,7 @@
   import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
   import { notesStore } from "$lib/stores/NotesStore.svelte";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
-  import { analyzeLiterature } from "./analytics/utils";
+  import { analyzeLiterature, extractTextFromTipTap } from "./analytics/utils";
   import * as Tabs from "$lib/components/ui/tabs";
   import * as Dialog from "$lib/components/ui/dialog";
   import * as Tooltip from "$lib/components/ui/tooltip";
@@ -100,41 +100,6 @@
     }
   }
 
-  // Helper function to recursively extract text from TipTap JSON
-  function extractTextFromTipTap(node: any): string {
-    if (!node) return "";
-
-    // If it's a text node, return its text content
-    if (node.type === "text" && node.text) {
-      return node.text + " ";
-    }
-
-    // If it has content array, recursively process each child
-    if (node.content && Array.isArray(node.content)) {
-      return node.content
-        .map((child: any) => extractTextFromTipTap(child))
-        .join("");
-    }
-
-    // For any other node type that might have content
-    if (typeof node === "object") {
-      return Object.values(node)
-        .map((value: any) => {
-          if (Array.isArray(value)) {
-            return value
-              .map((item: any) => extractTextFromTipTap(item))
-              .join("");
-          }
-          if (typeof value === "object") {
-            return extractTextFromTipTap(value);
-          }
-          return "";
-        })
-        .join("");
-    }
-
-    return "";
-  }
 
   interface DataCounts {
     [key: string]: number;

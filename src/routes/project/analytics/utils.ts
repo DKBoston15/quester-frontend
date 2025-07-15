@@ -23,6 +23,7 @@ interface ItsFunction {
 
 const posIts = its.pos as ItsFunction;
 const lemmaIts = its.lemma as ItsFunction;
+const normalIts = its.normal as ItsFunction;
 
 export class AnalysisData {
   nounsWordCounts: Record<string, number> = {};
@@ -135,7 +136,8 @@ export class AnalysisData {
 async function processTextWithNLP(
   text: string,
   analysisData: AnalysisData,
-  countType: "wordCounts" | "literatureWordCounts"
+  countType: "wordCounts" | "literatureWordCounts",
+  useLemmatization: boolean = true
 ) {
   // Clean and normalize the text
   const cleanText = text
@@ -199,18 +201,17 @@ async function processTextWithNLP(
   ];
 
   // Get all tokens and their parts of speech for debugging
-  const allTokens = doc.tokens().out();
-  const allPos = doc.tokens().out(posIts);
+  // const allTokens = doc.tokens().out();
+  // const allPos = doc.tokens().out(posIts);
 
   // Extract parts of speech with pattern matching
   const nouns = doc
     .tokens()
     .filter((t) => {
       const pos = t.out(posIts);
-      const word = t.out();
       return pos === "NOUN" || pos === "PROPN";
     })
-    .out(lemmaIts);
+    .out(useLemmatization ? lemmaIts : normalIts);
 
   // Combine POS tagging with pattern matching for verbs
   const verbs = doc
@@ -220,7 +221,7 @@ async function processTextWithNLP(
       const word = t.out();
       return pos === "VERB" || verbPatterns.includes(word);
     })
-    .out(lemmaIts);
+    .out(useLemmatization ? lemmaIts : normalIts);
 
   // Combine POS tagging with pattern matching for adjectives
   const adjectives = doc
@@ -230,7 +231,7 @@ async function processTextWithNLP(
       const word = t.out();
       return pos === "ADJ" || adjPatterns.includes(word);
     })
-    .out(lemmaIts);
+    .out(useLemmatization ? lemmaIts : normalIts);
 
   // Additional processing for hyphenated words
   const words = cleanText.split(" ");
@@ -257,7 +258,7 @@ async function processTextWithNLP(
   }
 }
 
-function extractTextFromTipTap(content: any): string {
+export function extractTextFromTipTap(content: any): string {
   try {
     if (!content) {
       return "";
@@ -337,7 +338,7 @@ export async function analyzeLiterature(
       analysisData.countOccurrences(keywordsArray, analysisData.keywords);
     }
     if (lit.name && typeof lit.name === "string" && lit.name.trim()) {
-      processTextWithNLP(lit.name.trim(), analysisData, "literatureWordCounts");
+      processTextWithNLP(lit.name.trim(), analysisData, "literatureWordCounts", false);
     }
     if (lit.authors) {
       let authorsArray: string[];
@@ -397,12 +398,12 @@ export async function analyzeLiterature(
   });
 
   // Process notes
-  notes.forEach((note, index) => {
+  notes.forEach((note, _index) => {
     if (note.content) {
       const plainText = extractTextFromTipTap(note.content);
 
       if (plainText.trim()) {
-        processTextWithNLP(plainText.trim(), analysisData, "wordCounts");
+        processTextWithNLP(plainText.trim(), analysisData, "wordCounts", false);
       }
     }
   });
