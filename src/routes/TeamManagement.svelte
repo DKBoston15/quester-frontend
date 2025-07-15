@@ -759,17 +759,8 @@
                         <Users class="h-5 w-5" />
                         <CardTitle>Team Members ({getUsersForCurrentResource().length})</CardTitle>
                       </div>
-                      {#if teamManagement.permissions.canInviteUsers || isOrganizationOwner() || teamManagement.settings?.allowMemberInvitations}
-                        <Button onclick={() => {
-                          if (showInvitationsTab) {
-                            const invitationSection = document.getElementById('invitation-section');
-                            if (invitationSection) {
-                              invitationSection.scrollIntoView({ behavior: 'smooth' });
-                            }
-                          } else {
-                            showInviteModal = true;
-                          }
-                        }}>
+                      {#if !showInvitationsTab && (teamManagement.permissions.canInviteUsers || isOrganizationOwner() || teamManagement.settings?.allowMemberInvitations)}
+                        <Button onclick={() => (showInviteModal = true)}>
                           <UserPlus class="h-4 w-4 mr-2" />
                           Invite Team
                         </Button>
