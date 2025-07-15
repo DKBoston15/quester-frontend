@@ -51,7 +51,6 @@
   let showRoleManager = $state(false);
   let selectedUserId = $state<string | null>(null);
   let showInviteModal = $state(false);
-  let invitationSectionRef = $state<HTMLElement | null>(null);
   let invitationManagerRef = $state<any>(null);
   let resourceName = $derived(getResourceName());
   let resourceIcon = $derived(getResourceIcon());
@@ -762,8 +761,11 @@
                       </div>
                       {#if teamManagement.permissions.canInviteUsers || isOrganizationOwner() || teamManagement.settings?.allowMemberInvitations}
                         <Button onclick={() => {
-                          if (showInvitationsTab && invitationSectionRef) {
-                            invitationSectionRef.scrollIntoView({ behavior: 'smooth' });
+                          if (showInvitationsTab) {
+                            const invitationSection = document.getElementById('invitation-section');
+                            if (invitationSection) {
+                              invitationSection.scrollIntoView({ behavior: 'smooth' });
+                            }
                           } else {
                             showInviteModal = true;
                           }
@@ -796,7 +798,7 @@
 
                 <!-- Invitations Section -->
                 {#if showInvitationsTab}
-                  <Card class="mb-6" bind:this={invitationSectionRef}>
+                  <Card class="mb-6" id="invitation-section">
                     <CardHeader>
                       <div class="flex items-center gap-2">
                         <Mail class="h-5 w-5" />
@@ -819,7 +821,7 @@
 
                 <!-- Add Users Section (for departments/projects) -->
                 {#if canShowAddUsersTab()}
-                  <Card data-section="add-users">
+                  <Card id="add-users-section">
                     <CardHeader>
                       <div class="flex items-center gap-2">
                         <UserCog class="h-5 w-5" />
@@ -871,7 +873,7 @@
                         onclick={() => {
                           showInviteModal = false;
                           // Scroll to add users section if it exists
-                          const addUsersSection = document.querySelector('[data-section="add-users"]');
+                          const addUsersSection = document.getElementById('add-users-section');
                           if (addUsersSection) {
                             addUsersSection.scrollIntoView({ behavior: 'smooth' });
                           }
