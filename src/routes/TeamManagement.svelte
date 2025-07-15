@@ -51,6 +51,7 @@
   let showRoleManager = $state(false);
   let selectedUserId = $state<string | null>(null);
   let showInviteModal = $state(false);
+  let invitationSectionRef = $state<HTMLElement | null>(null);
   let invitationManagerRef = $state<any>(null);
   let resourceName = $derived(getResourceName());
   let resourceIcon = $derived(getResourceIcon());
@@ -760,7 +761,13 @@
                         <CardTitle>Team Members ({getUsersForCurrentResource().length})</CardTitle>
                       </div>
                       {#if teamManagement.permissions.canInviteUsers || isOrganizationOwner() || teamManagement.settings?.allowMemberInvitations}
-                        <Button onclick={() => (showInviteModal = true)}>
+                        <Button onclick={() => {
+                          if (showInvitationsTab && invitationSectionRef) {
+                            invitationSectionRef.scrollIntoView({ behavior: 'smooth' });
+                          } else {
+                            showInviteModal = true;
+                          }
+                        }}>
                           <UserPlus class="h-4 w-4 mr-2" />
                           Invite Team
                         </Button>
@@ -789,7 +796,7 @@
 
                 <!-- Invitations Section -->
                 {#if showInvitationsTab}
-                  <Card class="mb-6">
+                  <Card class="mb-6" bind:this={invitationSectionRef}>
                     <CardHeader>
                       <div class="flex items-center gap-2">
                         <Mail class="h-5 w-5" />
@@ -812,7 +819,7 @@
 
                 <!-- Add Users Section (for departments/projects) -->
                 {#if canShowAddUsersTab()}
-                  <Card>
+                  <Card data-section="add-users">
                     <CardHeader>
                       <div class="flex items-center gap-2">
                         <UserCog class="h-5 w-5" />
@@ -843,6 +850,39 @@
                   onClose={closeRoleManager}
                   onRoleUpdated={refreshData}
                 />
+              {/if}
+
+              <!-- Invite Modal for Departments/Projects -->
+              {#if showInviteModal && !showInvitationsTab}
+                <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                  <div class="bg-background border rounded-lg p-6 max-w-md w-full mx-4">
+                    <div class="flex items-center justify-between mb-4">
+                      <h2 class="text-lg font-semibold">Invite Team Members</h2>
+                      <Button variant="ghost" size="sm" onclick={() => (showInviteModal = false)}>
+                        <X class="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <p class="text-sm text-muted-foreground mb-4">
+                      For {teamManagement.selectedResourceType}s, you can add existing organization members or use the main organization invitation feature.
+                    </p>
+                    <div class="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        onclick={() => {
+                          showInviteModal = false;
+                          // Scroll to add users section if it exists
+                          const addUsersSection = document.querySelector('[data-section="add-users"]');
+                          if (addUsersSection) {
+                            addUsersSection.scrollIntoView({ behavior: 'smooth' });
+                          }
+                        }}
+                      >
+                        Add Existing Users
+                      </Button>
+                      <Button onclick={() => (showInviteModal = false)}>Close</Button>
+                    </div>
+                  </div>
+                </div>
               {/if}
             {/if}
           </div>
