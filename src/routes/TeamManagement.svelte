@@ -50,6 +50,8 @@
   let activeTab = $state("members");
   let showRoleManager = $state(false);
   let selectedUserId = $state<string | null>(null);
+  let showInviteModal = $state(false);
+  let pendingInvitations = $state<any[]>([]);
   let resourceName = $derived(getResourceName());
   let resourceIcon = $derived(getResourceIcon());
   let isLoading = $state(true);
@@ -78,6 +80,13 @@
     showProgress: true,
     popoverClass: "quester-driver-theme",
     steps: driveSteps,
+  });
+
+  // Fetch pending invitations when resource changes
+  $effect(() => {
+    if (teamManagement.selectedResourceId && teamManagement.selectedResourceType === 'organization') {
+      fetchPendingInvitations();
+    }
   });
 
   // Load data on mount
@@ -335,6 +344,47 @@
 
   function refreshData() {
     teamManagement.refreshCurrentResource();
+    fetchPendingInvitations();
+  }
+
+  async function fetchPendingInvitations() {
+    if (!teamManagement.selectedResourceId || teamManagement.selectedResourceType !== 'organization') {
+      pendingInvitations = [];
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/invitations?resourceType=${teamManagement.selectedResourceType}&resourceId=${teamManagement.selectedResourceId}`, {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        pendingInvitations = data.invitations || [];
+      } else {
+        pendingInvitations = [];
+      }
+    } catch (error) {
+      console.error('Error fetching pending invitations:', error);
+      pendingInvitations = [];
+    }
+  }
+
+  async function revokeInvitation(invitationId: string) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/invitations/${invitationId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        await fetchPendingInvitations();
+      } else {
+        console.error('Failed to revoke invitation');
+      }
+    } catch (error) {
+      console.error('Error revoking invitation:', error);
+    }
   }
 
   function handleUserSelect(userId: string) {
