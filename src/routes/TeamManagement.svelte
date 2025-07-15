@@ -837,68 +837,35 @@
                       </div>
                     {:else if teamManagement.permissions.canInviteUsers || isOrganizationOwner() || teamManagement.settings?.allowMemberInvitations}
                       {#if !subscriptionLimits.canInviteUsers}
-                        <div
-                          class="p-4 mb-6 border-2 border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-900/20 rounded-md"
-                        >
-                          <div class="flex items-start gap-3">
-                            <Info
-                              class="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5"
-                            />
-                            <div>
-                              <h3
-                                class="font-medium text-amber-800 dark:text-amber-300"
-                              >
-                                Subscription Required
-                              </h3>
-                              <p
-                                class="text-amber-700 dark:text-amber-400 mt-1"
-                              >
-                                Your current plan ({subscriptionLimits.subscriptionPlan})
-                                does not include the ability to invite team
-                                members. Upgrade to {subscriptionLimits.subscriptionPlan ===
-                                "Research Explorer"
-                                  ? "Quester Pro or Quester Team"
-                                  : "Quester Team"} to invite collaborators.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
+                        <Alert>
+                          <Info class="h-4 w-4" />
+                          <AlertTitle>Subscription Required</AlertTitle>
+                          <AlertDescription>
+                            Your current plan ({subscriptionLimits.subscriptionPlan})
+                            does not include the ability to invite team members.
+                            Upgrade to {subscriptionLimits.subscriptionPlan === "Research Explorer"
+                              ? "Quester Pro or Quester Team"
+                              : "Quester Team"} to invite collaborators.
+                          </AlertDescription>
+                        </Alert>
                       {:else if subscriptionLimits.currentUserCount >= subscriptionLimits.maxUsers && subscriptionLimits.maxUsers > 0}
-                        <div
-                          class="p-4 mb-6 border-2 border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-900/20 rounded-md"
-                        >
-                          <div class="flex items-start gap-3">
-                            <Info
-                              class="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5"
-                            />
-                            <div>
-                              <h3
-                                class="font-medium text-amber-800 dark:text-amber-300"
-                              >
-                                User Limit Reached
-                              </h3>
-                              <p
-                                class="text-amber-700 dark:text-amber-400 mt-1"
-                              >
-                                You've reached the maximum of {subscriptionLimits.maxUsers}
-                                users for your {subscriptionLimits.subscriptionPlan}
-                                plan.
-                                {#if subscriptionLimits.subscriptionPlan === "Enterprise"}
-                                  Please contact support to adjust your seat
-                                  count.
-                                {:else if subscriptionLimits.subscriptionPlan === "Quester Pro"}
-                                  Upgrade to Quester Team to add more team
-                                  members.
-                                {:else if subscriptionLimits.subscriptionPlan === "Quester Team"}
-                                  Please contact support to discuss custom team
-                                  sizes.
-                                {:else}
-                                  Upgrade your plan to invite users.
-                                {/if}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
+                        <Alert variant="destructive">
+                          <Info class="h-4 w-4" />
+                          <AlertTitle>User Limit Reached</AlertTitle>
+                          <AlertDescription>
+                            You've reached the maximum of {subscriptionLimits.maxUsers}
+                            users for your {subscriptionLimits.subscriptionPlan} plan.
+                            {#if subscriptionLimits.subscriptionPlan === "Enterprise"}
+                              Please contact support to adjust your seat count.
+                            {:else if subscriptionLimits.subscriptionPlan === "Quester Pro"}
+                              Upgrade to Quester Team to add more team members.
+                            {:else if subscriptionLimits.subscriptionPlan === "Quester Team"}
+                              Please contact support to discuss custom team sizes.
+                            {:else}
+                              Upgrade your plan to invite users.
+                            {/if}
+                          </AlertDescription>
+                        </Alert>
                       {/if}
                       <InvitationManager
                         resourceType={teamManagement.selectedResourceType}

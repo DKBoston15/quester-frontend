@@ -7,7 +7,8 @@
   import { Progress } from "$lib/components/ui/progress";
   import { Alert, AlertDescription, AlertTitle } from "$lib/components/ui/alert";
   import { Card, CardContent, CardHeader } from "$lib/components/ui/card";
-  import { UserCog, Search, UserMinus, Info, MoreHorizontal, ChevronDown } from "lucide-svelte";
+  import * as Tooltip from "$lib/components/ui/tooltip";
+  import { UserCog, Search, UserMinus, Info, MoreHorizontal, ChevronDown, Building } from "lucide-svelte";
   import type { User } from "$lib/types/auth";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
   import { auth } from "$lib/stores/AuthStore.svelte";
@@ -419,25 +420,60 @@
               <Table.Cell>{user.email}</Table.Cell>
               <Table.Cell>
                 <div class="flex items-center gap-1">
-                  <Badge variant="secondary" class="font-medium">
-                    {getRoleName(user)}
-                  </Badge>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger>
+                      <Badge variant="secondary" class="font-medium">
+                        {getRoleName(user)}
+                      </Badge>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>
+                      <p class="text-xs max-w-xs">
+                        {#if getRoleName(user) === "Owner"}
+                          Full control over this {props.resourceType} including team management and settings.
+                        {:else if getRoleName(user) === "Admin"}
+                          Can manage team members and most settings for this {props.resourceType}.
+                        {:else if getRoleName(user) === "Member"}
+                          Can access and contribute to this {props.resourceType}.
+                        {:else}
+                          {getRoleName(user)} role in this {props.resourceType}.
+                        {/if}
+                      </p>
+                    </Tooltip.Content>
+                  </Tooltip.Root>
                   {#if props.resourceType === "project" && getOrgPrivilegeLevel(user) === "Owner"}
-                    <Badge
-                      variant="outline"
-                      title="Organization Owner"
-                      class="font-medium text-xs px-1.5 py-0.5"
-                    >
-                      Org. Owner
-                    </Badge>
+                    <Tooltip.Root>
+                      <Tooltip.Trigger>
+                        <Badge
+                          variant="outline"
+                          class="font-medium text-xs px-1.5 py-0.5 bg-primary/10 text-primary border-primary/20"
+                        >
+                          <Building class="h-3 w-3 mr-1" />
+                          Organization Owner
+                        </Badge>
+                      </Tooltip.Trigger>
+                      <Tooltip.Content>
+                        <p class="text-xs max-w-xs">
+                          This user has full access to this project because they own the parent organization.
+                        </p>
+                      </Tooltip.Content>
+                    </Tooltip.Root>
                   {:else if props.resourceType === "project" && getOrgPrivilegeLevel(user) === "Admin"}
-                    <Badge
-                      variant="outline"
-                      title="Organization Admin"
-                      class="font-medium text-xs px-1.5 py-0.5"
-                    >
-                      Org. Admin
-                    </Badge>
+                    <Tooltip.Root>
+                      <Tooltip.Trigger>
+                        <Badge
+                          variant="outline"
+                          class="font-medium text-xs px-1.5 py-0.5 bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800"
+                        >
+                          <Building class="h-3 w-3 mr-1" />
+                          Organization Admin
+                        </Badge>
+                      </Tooltip.Trigger>
+                      <Tooltip.Content>
+                        <p class="text-xs max-w-xs">
+                          This user has admin access to this project through their organization role.
+                        </p>
+                      </Tooltip.Content>
+                    </Tooltip.Root>
                   {/if}
                 </div>
               </Table.Cell>
@@ -516,17 +552,60 @@
               <div class="flex items-center gap-2">
                 <span class="font-medium">Role:</span>
                 <div class="flex items-center gap-1">
-                  <Badge variant="secondary" class="font-medium">
-                    {getRoleName(user)}
-                  </Badge>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger>
+                      <Badge variant="secondary" class="font-medium">
+                        {getRoleName(user)}
+                      </Badge>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>
+                      <p class="text-xs max-w-xs">
+                        {#if getRoleName(user) === "Owner"}
+                          Full control over this {props.resourceType} including team management and settings.
+                        {:else if getRoleName(user) === "Admin"}
+                          Can manage team members and most settings for this {props.resourceType}.
+                        {:else if getRoleName(user) === "Member"}
+                          Can access and contribute to this {props.resourceType}.
+                        {:else}
+                          {getRoleName(user)} role in this {props.resourceType}.
+                        {/if}
+                      </p>
+                    </Tooltip.Content>
+                  </Tooltip.Root>
                   {#if props.resourceType === "project" && getOrgPrivilegeLevel(user) === "Owner"}
-                    <Badge variant="outline" title="Organization Owner" class="font-medium text-xs px-1.5 py-0.5">
-                      Org. Owner
-                    </Badge>
+                    <Tooltip.Root>
+                      <Tooltip.Trigger>
+                        <Badge
+                          variant="outline"
+                          class="font-medium text-xs px-1.5 py-0.5 bg-primary/10 text-primary border-primary/20"
+                        >
+                          <Building class="h-3 w-3 mr-1" />
+                          Organization Owner
+                        </Badge>
+                      </Tooltip.Trigger>
+                      <Tooltip.Content>
+                        <p class="text-xs max-w-xs">
+                          This user has full access to this project because they own the parent organization.
+                        </p>
+                      </Tooltip.Content>
+                    </Tooltip.Root>
                   {:else if props.resourceType === "project" && getOrgPrivilegeLevel(user) === "Admin"}
-                    <Badge variant="outline" title="Organization Admin" class="font-medium text-xs px-1.5 py-0.5">
-                      Org. Admin
-                    </Badge>
+                    <Tooltip.Root>
+                      <Tooltip.Trigger>
+                        <Badge
+                          variant="outline"
+                          class="font-medium text-xs px-1.5 py-0.5 bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800"
+                        >
+                          <Building class="h-3 w-3 mr-1" />
+                          Organization Admin
+                        </Badge>
+                      </Tooltip.Trigger>
+                      <Tooltip.Content>
+                        <p class="text-xs max-w-xs">
+                          This user has admin access to this project through their organization role.
+                        </p>
+                      </Tooltip.Content>
+                    </Tooltip.Root>
                   {/if}
                 </div>
               </div>
