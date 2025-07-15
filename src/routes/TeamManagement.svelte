@@ -851,6 +851,8 @@
                   onRoleUpdated={refreshData}
                 />
               {/if}
+            {/if}
+          </div>
         </div>
       {/if}
     </main>
