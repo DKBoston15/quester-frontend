@@ -3,7 +3,11 @@
   import { Badge } from "$lib/components/ui/badge";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
-  import { UserCog, Search, UserMinus, Info } from "lucide-svelte";
+  import * as Table from "$lib/components/ui/table";
+  import { Progress } from "$lib/components/ui/progress";
+  import { Alert, AlertDescription, AlertTitle } from "$lib/components/ui/alert";
+  import { Card, CardContent, CardHeader } from "$lib/components/ui/card";
+  import { UserCog, Search, UserMinus, Info, MoreHorizontal, ChevronDown } from "lucide-svelte";
   import type { User } from "$lib/types/auth";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
   import { auth } from "$lib/stores/AuthStore.svelte";
@@ -305,7 +309,7 @@
       <Input
         type="text"
         placeholder="Search members..."
-        class="pl-8 border-2  dark:border-dark-border"
+        class="pl-8"
         bind:value={searchTerm}
       />
     </div>
@@ -321,29 +325,12 @@
         </p>
       </div>
 
-      <!-- Reverted progress bar structure -->
       <div class="flex items-center gap-2">
-        <div class="w-32 bg-muted rounded-full h-2">
-          <div
-            class="h-2 rounded-full {isFull
-              ? 'bg-red-500'
-              : isNearLimit
-                ? 'bg-amber-500'
-                : 'bg-green-500'}"
-            style="width: {Math.min(
-              100,
-              (props.users.length / props.subscriptionLimits.maxUsers) * 100
-            )}%"
-          ></div>
-        </div>
-
-        <span
-          class="text-xs font-medium {isFull
-            ? 'text-red-500'
-            : isNearLimit
-              ? 'text-amber-500'
-              : 'text-green-500'}"
-        >
+        <Progress 
+          value={Math.min(100, (props.users.length / props.subscriptionLimits.maxUsers) * 100)}
+          class="w-32"
+        />
+        <span class="text-xs font-medium text-muted-foreground">
           {usersRemaining}
           {usersRemaining === 1 ? "seat" : "seats"} remaining
         </span>
@@ -351,94 +338,71 @@
     </div>
 
     {#if isFull}
-      <div
-        class="p-3 border-2 border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-900/20 rounded-md"
-      >
-        <div class="flex items-start gap-2">
-          <Info
-            class="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0"
-          />
-          <div>
-            <h4 class="font-medium text-amber-800 dark:text-amber-300">
-              User Limit Reached
-            </h4>
-            <p class="text-sm text-amber-700 dark:text-amber-400 mt-1">
-              You've reached the maximum of {props.subscriptionLimits.maxUsers} users
-              for your {props.subscriptionLimits.subscriptionPlan} plan.
-              {#if props.subscriptionLimits.subscriptionPlan === "Enterprise"}
-                Please contact support to adjust your seat count.
-              {:else if props.subscriptionLimits.subscriptionPlan === "Quester Pro"}
-                Upgrade to Quester Team to add more team members.
-              {:else if props.subscriptionLimits.subscriptionPlan === "Quester Team"}
-                Please contact support to discuss enterprise options for larger
-                teams.
-              {:else}
-                <!-- Default / Research Explorer -->
-                Upgrade your plan to invite users.
-              {/if}
-            </p>
-          </div>
-        </div>
-      </div>
+      <Alert variant="destructive">
+        <Info class="h-4 w-4" />
+        <AlertTitle>User Limit Reached</AlertTitle>
+        <AlertDescription>
+          You've reached the maximum of {props.subscriptionLimits.maxUsers} users
+          for your {props.subscriptionLimits.subscriptionPlan} plan.
+          {#if props.subscriptionLimits.subscriptionPlan === "Enterprise"}
+            Please contact support to adjust your seat count.
+          {:else if props.subscriptionLimits.subscriptionPlan === "Quester Pro"}
+            Upgrade to Quester Team to add more team members.
+          {:else if props.subscriptionLimits.subscriptionPlan === "Quester Team"}
+            Please contact support to discuss enterprise options for larger teams.
+          {:else}
+            Upgrade your plan to invite users.
+          {/if}
+        </AlertDescription>
+      </Alert>
     {:else if isNearLimit}
-      <div
-        class="p-3 border-2 border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-900/20 rounded-md"
-      >
-        <div class="flex items-start gap-2">
-          <Info
-            class="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0"
-          />
-          <div>
-            <h4 class="font-medium text-amber-800 dark:text-amber-300">
-              Almost at User Limit
-            </h4>
-            <p class="text-sm text-amber-700 dark:text-amber-400 mt-1">
-              You have {usersRemaining}
-              {usersRemaining === 1 ? "seat" : "seats"} remaining on your {props
-                .subscriptionLimits.subscriptionPlan} plan.
-              {#if props.subscriptionLimits.subscriptionPlan === "Enterprise"}
-                <!-- No specific message needed when near limit for Enterprise, maybe contact support if concerned -->
-              {:else if props.subscriptionLimits.subscriptionPlan === "Quester Pro"}
-                Consider upgrading to Quester Team for up to 5 team members.
-              {/if}
-            </p>
-          </div>
-        </div>
-      </div>
+      <Alert>
+        <Info class="h-4 w-4" />
+        <AlertTitle>Almost at User Limit</AlertTitle>
+        <AlertDescription>
+          You have {usersRemaining}
+          {usersRemaining === 1 ? "seat" : "seats"} remaining on your {props
+            .subscriptionLimits.subscriptionPlan} plan.
+          {#if props.subscriptionLimits.subscriptionPlan === "Enterprise"}
+            <!-- No specific message needed when near limit for Enterprise -->
+          {:else if props.subscriptionLimits.subscriptionPlan === "Quester Pro"}
+            Consider upgrading to Quester Team for up to 5 team members.
+          {/if}
+        </AlertDescription>
+      </Alert>
     {/if}
   {/if}
 
   <!-- Members list -->
-  <div class="border-2 dark:border-dark-border rounded-md overflow-hidden">
-    <table class="w-full">
-      <thead class="bg-accent text-accent-foreground">
-        <tr>
-          <th class="text-left p-3">Name</th>
-          <th class="text-left p-3">Email</th>
-          <th class="text-left p-3">Role</th>
-          <th class="text-right p-3">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
+  <!-- Desktop view -->
+  <div class="hidden md:block">
+    <Table.Root>
+      <Table.Header>
+        <Table.Row>
+          <Table.Head>Name</Table.Head>
+          <Table.Head>Email</Table.Head>
+          <Table.Head>Role</Table.Head>
+          <Table.Head class="text-right">Actions</Table.Head>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
         {#if filteredUsers.length === 0}
-          <tr>
-            <td colspan="4" class="p-0">
+          <Table.Row>
+            <Table.Cell colspan="4" class="p-0">
               <EmptyState
                 title={searchTerm ? "No users matching your search" : "No team members yet"}
                 description={searchTerm ? "Try adjusting your search terms" : "Team members will appear here once added"}
                 variant={searchTerm ? "search-empty" : "data-empty"}
                 height="h-[400px]"
               />
-            </td>
-          </tr>
+            </Table.Cell>
+          </Table.Row>
         {:else}
           {#each filteredUsers as user (user.id)}
-            <tr class="border-t dark:border-dark-border hover:bg-accent/20">
-              <td class="p-3">
+            <Table.Row>
+              <Table.Cell>
                 <div class="flex items-center gap-2">
-                  <div
-                    class="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium"
-                  >
+                  <div class="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
                     {user.firstName?.[0]}{user.lastName?.[0]}
                   </div>
                   <div class="flex items-center gap-2">
@@ -451,21 +415,18 @@
                     {/if}
                   </div>
                 </div>
-              </td>
-              <td class="p-3">{user.email}</td>
-              <td class="p-3">
+              </Table.Cell>
+              <Table.Cell>{user.email}</Table.Cell>
+              <Table.Cell>
                 <div class="flex items-center gap-1">
-                  <!-- Always display the user's role in the CURRENT resource -->
                   <Badge variant="secondary" class="font-medium">
                     {getRoleName(user)}
                   </Badge>
-
-                  <!-- Add secondary badge if user has elevated Org privileges -->
                   {#if props.resourceType === "project" && getOrgPrivilegeLevel(user) === "Owner"}
                     <Badge
                       variant="outline"
                       title="Organization Owner"
-                      class="font-medium text-xs px-1.5 py-0.5 bg-primary/10 text-primary border-primary/25"
+                      class="font-medium text-xs px-1.5 py-0.5"
                     >
                       Org. Owner
                     </Badge>
@@ -473,14 +434,14 @@
                     <Badge
                       variant="outline"
                       title="Organization Admin"
-                      class="font-medium text-xs px-1.5 py-0.5 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
+                      class="font-medium text-xs px-1.5 py-0.5"
                     >
                       Org. Admin
                     </Badge>
                   {/if}
                 </div>
-              </td>
-              <td class="p-3 text-right">
+              </Table.Cell>
+              <Table.Cell class="text-right">
                 <div class="flex items-center justify-end gap-2">
                   {#if props.canChangeRoles && !isCurrentUser(user) && (!isOrganizationOwner(user) || (props.resourceType === "organization" && countOwners() > 1))}
                     <Button
@@ -492,7 +453,6 @@
                       <UserCog class="h-4 w-4 mr-1" />
                       Manage
                     </Button>
-
                     <Button
                       variant="destructive"
                       size="sm"
@@ -501,29 +461,113 @@
                       class="h-8 px-2"
                     >
                       {#if isRemoving === user.id}
-                        <div
-                          class="h-4 w-4 border-2 border-t-transparent rounded-full animate-spin"
-                        ></div>
+                        <div class="h-4 w-4 border-2 border-t-transparent rounded-full animate-spin"></div>
                       {:else}
                         <UserMinus class="h-4 w-4" />
                       {/if}
                     </Button>
                   {/if}
                 </div>
-              </td>
-            </tr>
+              </Table.Cell>
+            </Table.Row>
           {/each}
         {/if}
-      </tbody>
-    </table>
+      </Table.Body>
+    </Table.Root>
+  </div>
+
+  <!-- Mobile view -->
+  <div class="md:hidden space-y-4">
+    {#if filteredUsers.length === 0}
+      <EmptyState
+        title={searchTerm ? "No users matching your search" : "No team members yet"}
+        description={searchTerm ? "Try adjusting your search terms" : "Team members will appear here once added"}
+        variant={searchTerm ? "search-empty" : "data-empty"}
+        height="h-[400px]"
+      />
+    {:else}
+      {#each filteredUsers as user (user.id)}
+        <Card>
+          <CardHeader class="pb-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
+                {user.firstName?.[0]}{user.lastName?.[0]}
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center gap-2">
+                  <h3 class="font-medium">
+                    {user.firstName} {user.lastName}
+                  </h3>
+                  {#if isCurrentUser(user)}
+                    <Badge variant="outline" class="text-xs">You</Badge>
+                  {/if}
+                </div>
+                <p class="text-sm text-muted-foreground">{user.email}</p>
+              </div>
+              {#if props.canChangeRoles && !isCurrentUser(user) && (!isOrganizationOwner(user) || (props.resourceType === "organization" && countOwners() > 1))}
+                <Button variant="ghost" size="sm" class="h-8 w-8 p-0">
+                  <MoreHorizontal class="h-4 w-4" />
+                </Button>
+              {/if}
+            </div>
+          </CardHeader>
+          <CardContent class="pt-0">
+            <div class="grid grid-cols-1 gap-4 text-sm">
+              <div class="flex items-center gap-2">
+                <span class="font-medium">Role:</span>
+                <div class="flex items-center gap-1">
+                  <Badge variant="secondary" class="font-medium">
+                    {getRoleName(user)}
+                  </Badge>
+                  {#if props.resourceType === "project" && getOrgPrivilegeLevel(user) === "Owner"}
+                    <Badge variant="outline" title="Organization Owner" class="font-medium text-xs px-1.5 py-0.5">
+                      Org. Owner
+                    </Badge>
+                  {:else if props.resourceType === "project" && getOrgPrivilegeLevel(user) === "Admin"}
+                    <Badge variant="outline" title="Organization Admin" class="font-medium text-xs px-1.5 py-0.5">
+                      Org. Admin
+                    </Badge>
+                  {/if}
+                </div>
+              </div>
+              {#if props.canChangeRoles && !isCurrentUser(user) && (!isOrganizationOwner(user) || (props.resourceType === "organization" && countOwners() > 1))}
+                <div class="flex gap-2 pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onclick={() => props.onUserSelect(user.id)}
+                    class="flex-1"
+                  >
+                    <UserCog class="h-4 w-4 mr-1" />
+                    Manage
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onclick={() => handleRemoveUser(user.id)}
+                    disabled={isRemoving === user.id}
+                    class="flex-1"
+                  >
+                    {#if isRemoving === user.id}
+                      <div class="h-4 w-4 border-2 border-t-transparent rounded-full animate-spin"></div>
+                    {:else}
+                      <UserMinus class="h-4 w-4 mr-1" />
+                      Remove
+                    {/if}
+                  </Button>
+                </div>
+              {/if}
+            </div>
+          </CardContent>
+        </Card>
+      {/each}
+    {/if}
   </div>
 </div>
 
 <!-- Delete Dialog -->
 <AlertDialog.Root bind:open={showDeleteDialog}>
-  <AlertDialog.Content
-    class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
-  >
+  <AlertDialog.Content>
     <AlertDialog.Header>
       <AlertDialog.Title>Remove Team Member</AlertDialog.Title>
       <AlertDialog.Description>
@@ -544,14 +588,12 @@
             showDeleteDialog = false;
             userToRemove = null;
           }}
-          class="border-2  dark:border-dark-border"
         >
           Cancel
         </Button>
         <Button
           variant="destructive"
           onclick={confirmRemoveUser}
-          class="border-2 border-destructive dark:border-destructive"
         >
           Remove
         </Button>

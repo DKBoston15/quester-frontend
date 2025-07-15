@@ -4,6 +4,7 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { Badge } from "$lib/components/ui/badge";
+  import * as Table from "$lib/components/ui/table";
   import { Mail, Send, X, Info } from "lucide-svelte";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
   import { API_BASE_URL } from "$lib/config";
@@ -440,59 +441,57 @@
         No pending invitations
       </div>
     {:else}
-      <div class="border-2 dark:border-dark-border rounded-md overflow-hidden">
-        <table class="w-full">
-          <thead class="bg-accent text-accent-foreground">
-            <tr>
-              <th class="text-left p-3">Email</th>
-              <th class="text-left p-3">Role</th>
-              <th class="text-left p-3">Sent</th>
-              <th class="text-right p-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each pendingInvitations as invitation (invitation.id)}
-              <tr class="border-t dark:border-dark-border hover:bg-accent/20">
-                <td class="p-3">
-                  <div class="flex items-center gap-2">
-                    <Mail class="h-4 w-4 text-muted-foreground" />
-                    {invitation.email}
-                  </div>
-                </td>
-                <td class="p-3">
-                  <Badge variant="secondary">
-                    {(props.resourceType === "organization"
-                      ? invitation.accessMapping?.organization?.roleName
-                      : props.resourceType === "department"
-                        ? invitation.accessMapping?.departments?.find(
-                            (d: any) => d.id === props.resourceId
+      <Table.Root>
+        <Table.Header>
+          <Table.Row>
+            <Table.Head>Email</Table.Head>
+            <Table.Head>Role</Table.Head>
+            <Table.Head>Sent</Table.Head>
+            <Table.Head class="text-right">Actions</Table.Head>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {#each pendingInvitations as invitation (invitation.id)}
+            <Table.Row>
+              <Table.Cell>
+                <div class="flex items-center gap-2">
+                  <Mail class="h-4 w-4 text-muted-foreground" />
+                  {invitation.email}
+                </div>
+              </Table.Cell>
+              <Table.Cell>
+                <Badge variant="secondary">
+                  {(props.resourceType === "organization"
+                    ? invitation.accessMapping?.organization?.roleName
+                    : props.resourceType === "department"
+                      ? invitation.accessMapping?.departments?.find(
+                          (d: any) => d.id === props.resourceId
+                        )?.roleName
+                      : props.resourceType === "project"
+                        ? invitation.accessMapping?.projects?.find(
+                            (p: any) => p.id === props.resourceId
                           )?.roleName
-                        : props.resourceType === "project"
-                          ? invitation.accessMapping?.projects?.find(
-                              (p: any) => p.id === props.resourceId
-                            )?.roleName
-                          : undefined) || "Member"}
-                  </Badge>
-                </td>
-                <td class="p-3 text-muted-foreground">
-                  {new Date(invitation.createdAt).toLocaleDateString()}
-                </td>
-                <td class="p-3 text-right">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onclick={() => revokeInvitation(invitation.id)}
-                    class="h-8 px-2 text-red-500 hover:text-red-700 hover:bg-red-100"
-                  >
-                    <X class="h-4 w-4" />
-                    <span class="sr-only">Revoke invitation</span>
-                  </Button>
-                </td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
+                        : undefined) || "Member"}
+                </Badge>
+              </Table.Cell>
+              <Table.Cell class="text-muted-foreground">
+                {new Date(invitation.createdAt).toLocaleDateString()}
+              </Table.Cell>
+              <Table.Cell class="text-right">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onclick={() => revokeInvitation(invitation.id)}
+                  class="h-8 px-2 text-destructive hover:text-destructive-foreground hover:bg-destructive"
+                >
+                  <X class="h-4 w-4" />
+                  <span class="sr-only">Revoke invitation</span>
+                </Button>
+              </Table.Cell>
+            </Table.Row>
+          {/each}
+        </Table.Body>
+      </Table.Root>
     {/if}
   </div>
 </div>
