@@ -8,7 +8,6 @@
     currentCount: number;
     maxUsers: number;
     subscriptionPlan: string;
-    variant?: "inline" | "card" | "compact";
     showAlerts?: boolean;
   }>();
 
@@ -33,62 +32,42 @@
 </script>
 
 {#if props.maxUsers > 0}
-  {#if props.variant === "compact"}
-    <!-- Compact variant for header areas -->
-    <div class="flex items-center gap-2 text-sm">
-      <span class="text-muted-foreground">
-        {props.currentCount} of {props.maxUsers} seats
-      </span>
-      <Progress value={percentage} class="w-16 h-2" />
-    </div>
-  {:else if props.variant === "inline"}
-    <!-- Inline variant for single-line display -->
-    <div class="flex items-center gap-2">
-      <span class="text-sm">Team size: {props.currentCount} of {props.maxUsers}</span>
-      <Progress value={percentage} class="w-32" />
-      <span class="text-xs text-muted-foreground">
-        {usersRemaining} {usersRemaining === 1 ? "seat" : "seats"} remaining
-      </span>
-    </div>
-  {:else}
-    <!-- Card variant (default) for detailed display -->
-    <div class="space-y-4">
-      <div class="flex items-center justify-between">
-        <div>
-          <h4 class="text-sm font-medium">Team Members</h4>
-          <p class="text-sm text-muted-foreground">
-            {props.currentCount} of {props.maxUsers} seats used
-          </p>
-        </div>
-        <div class="flex items-center gap-2">
-          <Progress value={percentage} class="w-32" />
-          <span class="text-xs font-medium text-muted-foreground">
-            {usersRemaining} {usersRemaining === 1 ? "seat" : "seats"} remaining
-          </span>
-        </div>
+  <div class="space-y-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <h4 class="text-sm font-medium">Team Members</h4>
+        <p class="text-sm text-muted-foreground">
+          {props.currentCount} of {props.maxUsers} seats used
+        </p>
       </div>
-
-      {#if props.showAlerts !== false}
-        {#if isFull}
-          <Alert variant="destructive">
-            <Info class="h-4 w-4" />
-            <AlertTitle>User Limit Reached</AlertTitle>
-            <AlertDescription>
-              You've reached the maximum of {props.maxUsers} users for your {props.subscriptionPlan} plan.
-              {getUpgradeSuggestion(props.subscriptionPlan, true)}
-            </AlertDescription>
-          </Alert>
-        {:else if isNearLimit}
-          <Alert>
-            <Info class="h-4 w-4" />
-            <AlertTitle>Almost at User Limit</AlertTitle>
-            <AlertDescription>
-              You have {usersRemaining} {usersRemaining === 1 ? "seat" : "seats"} remaining on your {props.subscriptionPlan} plan.
-              {getUpgradeSuggestion(props.subscriptionPlan, false)}
-            </AlertDescription>
-          </Alert>
-        {/if}
-      {/if}
+      <div class="flex items-center gap-2">
+        <Progress value={percentage} class="w-32" />
+        <span class="text-xs font-medium text-muted-foreground">
+          {usersRemaining} {usersRemaining === 1 ? "seat" : "seats"} remaining
+        </span>
+      </div>
     </div>
-  {/if}
+
+    {#if props.showAlerts !== false}
+      {#if isFull}
+        <Alert variant="destructive">
+          <Info class="h-4 w-4" />
+          <AlertTitle>User Limit Reached</AlertTitle>
+          <AlertDescription>
+            You've reached the maximum of {props.maxUsers} users for your {props.subscriptionPlan} plan.
+            {getUpgradeSuggestion(props.subscriptionPlan, true)}
+          </AlertDescription>
+        </Alert>
+      {:else if isNearLimit}
+        <Alert>
+          <Info class="h-4 w-4" />
+          <AlertTitle>Almost at User Limit</AlertTitle>
+          <AlertDescription>
+            You have {usersRemaining} {usersRemaining === 1 ? "seat" : "seats"} remaining on your {props.subscriptionPlan} plan.
+            {getUpgradeSuggestion(props.subscriptionPlan, false)}
+          </AlertDescription>
+        </Alert>
+      {/if}
+    {/if}
+  </div>
 {/if}

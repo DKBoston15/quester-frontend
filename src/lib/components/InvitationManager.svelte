@@ -8,6 +8,8 @@
   import { Mail, Send, X, Info } from "lucide-svelte";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
   import { API_BASE_URL } from "$lib/config";
+  import TeamSizeIndicator from "$lib/components/TeamSizeIndicator/TeamSizeIndicator.svelte";
+  import { toast } from "svelte-sonner";
 
   const props = $props<{
     resourceType: "organization" | "department" | "project";
@@ -27,6 +29,33 @@
   let isLoading = $state(false);
   let error = $state<string | null>(null);
   let success = $state<string | null>(null);
+  
+  // Form validation
+  let emailError = $state<string | null>(null);
+  let roleError = $state<string | null>(null);
+
+  // Real-time email validation
+  $effect(() => {
+    if (email && email.length > 0) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        emailError = "Please enter a valid email address";
+      } else {
+        emailError = null;
+      }
+    } else {
+      emailError = null;
+    }
+  });
+
+  // Real-time role validation
+  $effect(() => {
+    if (selectedRoleId === "" && availableRoles.length > 0) {
+      roleError = "Please select a role";
+    } else {
+      roleError = null;
+    }
+  });
 
   // API response state
   let pendingInvitations = $state<any[]>([]);
@@ -136,15 +165,26 @@
   }
 
   async function sendInvitation() {
+    // Clear previous states
+    error = null;
+    success = null;
+
+    // Validate form
     if (!email || !selectedRoleId || !props.resourceId) {
-      error = "Please fill in all required fields";
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    if (emailError || roleError) {
+      toast.error("Please fix the validation errors before submitting");
       return;
     }
 
     if (!canSendInvitations) {
-      error = props.subscriptionLimits?.maxUsers
+      const message = props.subscriptionLimits?.maxUsers
         ? `You've reached the maximum number of users (${props.subscriptionLimits.maxUsers}) for your subscription plan.`
         : "Your subscription doesn't allow sending invitations.";
+      toast.error(message);
       return;
     }
 
@@ -187,7 +227,7 @@
       }
 
       // On success
-      success = `Invitation sent to ${email}`;
+      toast.success(`Invitation sent to ${email}`);
       email = "";
       selectedRoleId = "";
       props.onInviteSent();
@@ -195,7 +235,8 @@
       // Refresh the invitations list
       await loadPendingInvitations();
     } catch (err) {
-      error = err instanceof Error ? err.message : "Failed to send invitation";
+      const message = err instanceof Error ? err.message : "Failed to send invitation";
+      toast.error(message);
     } finally {
       isLoading = false;
     }
@@ -260,13 +301,10 @@
       );
 
       // Show success message
-      success = "Invitation revoked successfully";
-      setTimeout(() => {
-        success = null;
-      }, 3000);
+      toast.success("Invitation revoked successfully");
     } catch (err) {
-      error =
-        err instanceof Error ? err.message : "Failed to revoke invitation";
+      const message = err instanceof Error ? err.message : "Failed to revoke invitation";
+      toast.error(message);
     }
   }
 
@@ -284,46 +322,13 @@
     <h3 class="text-lg font-medium mb-4">Send New Invitation</h3>
 
     {#if props.subscriptionLimits && props.subscriptionLimits.maxUsers > 0}
-      <!-- Apply styling from TeamMembersList -->
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <h4 class="text-sm font-medium">Available Invitations</h4>
-          <p class="text-sm text-muted-foreground">
-            {props.subscriptionLimits.currentUserCount +
-              pendingInvitations.length} of {props.subscriptionLimits.maxUsers} seats
-            used
-          </p>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <div class="w-32 bg-muted rounded-full h-2">
-            <div
-              class="h-2 rounded-full {remainingInvitations === 0
-                ? 'bg-red-500'
-                : remainingInvitations <= 1
-                  ? 'text-amber-500'
-                  : 'bg-green-500'}"
-              style="width: {Math.min(
-                100,
-                ((props.subscriptionLimits.currentUserCount +
-                  pendingInvitations.length) /
-                  props.subscriptionLimits.maxUsers) *
-                  100
-              )}%"
-            ></div>
-          </div>
-
-          <span
-            class="text-xs font-medium {remainingInvitations === 0
-              ? 'text-red-500'
-              : remainingInvitations <= 1
-                ? 'text-amber-500'
-                : 'text-green-500'}"
-          >
-            {remainingInvitations}
-            {remainingInvitations === 1 ? "seat" : "seats"} remaining
-          </span>
-        </div>
+      <div class="mb-4">
+        <TeamSizeIndicator 
+          currentCount={props.subscriptionLimits.currentUserCount + pendingInvitations.length}
+          maxUsers={props.subscriptionLimits.maxUsers}
+          subscriptionPlan={props.subscriptionLimits.subscriptionPlan}
+          showAlerts={false}
+        />
       </div>
     {/if}
 
@@ -342,10 +347,13 @@
             type="email"
             placeholder="user@example.com"
             bind:value={email}
-            class="border-2  dark:border-dark-border"
+            class="border-2 dark:border-dark-border {emailError ? 'border-destructive' : ''}"
             required
             disabled={!canSendInvitations}
           />
+          {#if emailError}
+            <p class="text-sm text-destructive">{emailError}</p>
+          {/if}
         </div>
 
         <div class="space-y-2">
@@ -353,7 +361,7 @@
           <select
             id="role"
             bind:value={selectedRoleId}
-            class="w-full rounded-md border-2 dark:border-dark-border bg-card dark:bg-dark-card p-2"
+            class="w-full rounded-md border-2 dark:border-dark-border bg-card dark:bg-dark-card p-2 {roleError ? 'border-destructive' : ''}"
             required
             disabled={!canSendInvitations}
           >
@@ -362,6 +370,9 @@
               <option value={role.id}>{role.name}</option>
             {/each}
           </select>
+          {#if roleError}
+            <p class="text-sm text-destructive">{roleError}</p>
+          {/if}
         </div>
 
         <div class="space-y-2 flex items-end">
@@ -406,12 +417,6 @@
         </div>
       {/if}
 
-      {#if error}
-        <div class="text-red-500 text-sm">{error}</div>
-      {/if}
-      {#if success}
-        <div class="text-green-500 text-sm">{success}</div>
-      {/if}
     </form>
   </div>
 
@@ -420,10 +425,15 @@
     <h3 class="text-lg font-medium mb-4">Pending Invitations</h3>
     {#if invitationsLoading}
       <div class="text-center p-6 border-2 dark:border-dark-border rounded-md">
-        <div
-          class="animate-spin inline-block h-6 w-6 border-2 border-primary border-t-transparent rounded-full"
-        ></div>
-        <p class="mt-2 text-muted-foreground">Loading invitations...</p>
+        <div class="space-y-3">
+          <div
+            class="animate-spin inline-block h-6 w-6 border-2 border-primary border-t-transparent rounded-full"
+          ></div>
+          <div class="space-y-1">
+            <p class="font-medium">Loading Pending Invitations</p>
+            <p class="text-sm text-muted-foreground">Fetching invitation status from server...</p>
+          </div>
+        </div>
       </div>
     {:else if invitationsError}
       <div

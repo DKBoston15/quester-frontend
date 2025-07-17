@@ -46,6 +46,9 @@
   import { API_BASE_URL } from "$lib/config";
   import { driver, type DriveStep } from "driver.js";
   import "driver.js/dist/driver.css";
+  import { toast } from "svelte-sonner";
+  import { slideTransition, fadeTransition, scaleTransition } from "$lib/utils/animations";
+  import { fly, fade, scale } from "svelte/transition";
 
   // Reactive state
   let activeTab = $state("members");
@@ -74,13 +77,20 @@
   });
   let checkingSubscription = $state(false);
 
-  // Driver.js instance
+  // Driver.js instance and tour state
   let driveSteps: DriveStep[] = $state([]);
+  let showTourPrompt = $state(false);
+  let tourCompleted = $state(false);
 
   const driverObj = driver({
     showProgress: true,
+    showButtons: ['next', 'previous', 'close'],
     popoverClass: "quester-driver-theme",
     steps: driveSteps,
+    onDestroyed: () => {
+      tourCompleted = true;
+      toast.success("Tour completed! You're ready to manage your teams.");
+    },
   });
 
   // Load data on mount
@@ -109,123 +119,104 @@
         );
       }
 
-      // Update driver steps dynamically based on conditional rendering
-      await Promise.resolve();
-
-      // Build steps array dynamically
-      const steps: DriveStep[] = [
-        {
-          element: "#team-management-header",
-          popover: {
-            title: "Welcome to Team Management",
-            description:
-              "This is where you manage access and roles for your organizations, departments, and projects. Let's explore!",
-            side: "bottom",
-            align: "start",
-          },
-        },
-        {
-          element: "#resource-selector-card",
-          popover: {
-            title: "Select Your Team Context",
-            description:
-              "Use this dropdown to choose which Organization, Department, or Project team you want to manage. Your selection here updates the members and options below.",
-            side: "bottom",
-            align: "start",
-          },
-        },
-        {
-          element: "#team-tabs",
-          popover: {
-            title: "Manage Your Team",
-            description:
-              "Use these tabs to navigate between viewing members, adding users (for Departments/Projects), and managing invitations (for Organizations).",
-            side: "bottom",
-            align: "start",
-          },
-        },
-        {
-          element: "#team-members-tab-trigger",
-          popover: {
-            title: "View Team Members",
-            description:
-              "See who is currently part of this team. You can view their roles and, if you have permission, manage roles or remove members.",
-            side: "bottom",
-            align: "start",
-          },
-        },
-      ];
-
-      if (canShowAddUsersTab()) {
-        steps.push({
-          element: "#add-users-tab-trigger",
-          popover: {
-            title: "Add Existing Users",
-            description:
-              "For Departments and Projects, you can add users who are already part of the parent Organization directly to this team.",
-            side: "bottom",
-            align: "start",
-          },
-        });
+      // Check if user should see tour prompt (first time or no resource selected)
+      const hasSeenTour = localStorage.getItem('teamManagement-tour-completed');
+      if (!hasSeenTour && !teamManagement.selectedResourceId) {
+        showTourPrompt = true;
       }
 
-      if (showInvitationsTab) {
-        steps.push({
-          element: "#invitations-tab-trigger",
-          popover: {
-            title: "Manage Invitations",
-            description:
-              "For Organizations, invite new users via email and manage pending invitations here. Note: Invitations might be limited by your subscription plan.",
-            side: "bottom",
-            align: "start",
-          },
-        });
-      }
-
-      steps.push({
-        element: "#refresh-button",
-        popover: {
-          title: "Refresh Data",
-          description:
-            "Click here anytime to load the latest team information.",
-          side: "left",
-          align: "start",
-        },
-      });
-
-      if (canJoinResource()) {
-        steps.push({
-          element: "#join-button",
-          popover: {
-            title: "Join This Team",
-            description:
-              "If you have organization privileges (like Admin/Owner) but aren't a member of this specific Department or Project, you can add yourself here.",
-            side: "left",
-            align: "start",
-          },
-        });
-      }
-
-      steps.push({
-        element: ".container",
-        popover: {
-          title: "Ready to Collaborate?",
-          description:
-            "Use these tools to build and manage your research teams effectively. Select a resource to begin!",
-          side: "top",
-          align: "center",
-        },
-      });
-
-      // Update the state variable and the driver instance
-      driveSteps = steps;
-      driverObj.setSteps(driveSteps);
+      // Build simplified tour steps
+      buildTourSteps();
     } catch (error) {
       console.error("Error initializing team management:", error);
     } finally {
       isLoading = false;
     }
   });
+
+  // Rebuild tour when resource selection changes
+  $effect(() => {
+    if (teamManagement.selectedResourceId && !isLoading) {
+      buildTourSteps();
+    }
+  });
+
+  // Build contextual tour steps based on current state
+  function buildTourSteps() {
+    const steps: DriveStep[] = [];
+
+    // Always start with the resource navigation
+    steps.push({
+      element: ".w-80.border-r",
+      popover: {
+        title: "Choose Your Team",
+        description: "Select an organization, department, or project from the sidebar to start managing its team members.",
+        side: "right",
+        align: "start",
+      },
+    });
+
+    // If a resource is selected, show relevant next steps
+    if (teamManagement.selectedResourceId) {
+      steps.push({
+        element: "[data-tour='team-members']",
+        popover: {
+          title: "Your Team Members",
+          description: "Here you can see all team members, their roles, and manage their access permissions.",
+          side: "top",
+          align: "start",
+        },
+      });
+
+      // Context-specific steps
+      if (showInvitationsTab) {
+        steps.push({
+          element: "[data-tour='invitations']",
+          popover: {
+            title: "Invite New Members",
+            description: "Send email invitations to add new people to your organization.",
+            side: "top",
+            align: "start",
+          },
+        });
+      }
+
+      if (canShowAddUsersTab()) {
+        steps.push({
+          element: "[data-tour='add-users']",
+          popover: {
+            title: "Add Existing Users",
+            description: "Add people who are already in your organization to this specific project or department.",
+            side: "top",
+            align: "start",
+          },
+        });
+      }
+    }
+
+    driveSteps = steps;
+    driverObj.setSteps(driveSteps);
+  }
+
+  // Start tour function
+  function startTour() {
+    showTourPrompt = false;
+    buildTourSteps();
+    driverObj.drive();
+  }
+
+  // Dismiss tour function
+  function dismissTour() {
+    showTourPrompt = false;
+    localStorage.setItem('teamManagement-tour-completed', 'true');
+    toast.info("You can always restart the tour from the help menu");
+  }
+
+  // Public function to restart tour
+  function restartTour() {
+    buildTourSteps();
+    driverObj.drive();
+  }
 
   // Add function to check subscription limits
   async function checkSubscriptionLimits() {
@@ -437,13 +428,16 @@
       if (success) {
         // Refresh the data to show the updated team
         refreshData();
+        toast.success(`Successfully joined ${teamManagement.selectedResourceType}`);
       } else {
-        selfAssignError =
-          teamManagement.error || "Failed to join. Please try again.";
+        const errorMessage = teamManagement.error || "Failed to join. Please try again.";
+        toast.error(errorMessage);
+        selfAssignError = errorMessage;
       }
     } catch (err) {
-      selfAssignError =
-        err instanceof Error ? err.message : "An unexpected error occurred";
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
+      toast.error(errorMessage);
+      selfAssignError = errorMessage;
     } finally {
       isSelfAssigning = false;
     }
@@ -591,15 +585,20 @@
     <main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-background">
       {#if isLoading}
         <div class="flex items-center justify-center h-full">
-          <div
-            class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"
-          ></div>
-          <p class="ml-4 text-muted-foreground">Loading team management...</p>
+          <div class="text-center space-y-4">
+            <div
+              class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"
+            ></div>
+            <div class="space-y-2">
+              <p class="text-lg font-medium">Setting up Team Management</p>
+              <p class="text-sm text-muted-foreground">Loading your resources and permissions...</p>
+            </div>
+          </div>
         </div>
       {:else}
         <div class="flex h-full">
           <!-- Left Sidebar - Resource Navigator -->
-          <div class="w-80 border-r bg-card p-6 overflow-y-auto">
+          <div class="w-80 border-r bg-card p-6 overflow-y-auto custom-scrollbar">
             <div class="mb-6">
               <div class="flex items-center gap-2 mb-2">
                 <h2 class="text-xl font-semibold">Team Management</h2>
@@ -628,7 +627,7 @@
                     <h3 class="text-sm font-medium text-muted-foreground px-2 py-1">Organizations</h3>
                     {#each teamManagement.userResources.organizations as org}
                       <button
-                        class="w-full text-left px-2 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors {teamManagement.selectedResourceType === 'organization' && teamManagement.selectedResourceId === org.id ? 'bg-accent text-accent-foreground' : ''}"
+                        class="w-full text-left px-2 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-all duration-200 hover:translate-x-1 {teamManagement.selectedResourceType === 'organization' && teamManagement.selectedResourceId === org.id ? 'bg-accent text-accent-foreground scale-105' : ''}"
                         onclick={() => teamManagement.setSelectedResource('organization', org.id)}
                       >
                         <div class="flex items-center gap-2">
@@ -646,7 +645,7 @@
                     <h3 class="text-sm font-medium text-muted-foreground px-2 py-1">Departments</h3>
                     {#each teamManagement.userResources.departments as dept}
                       <button
-                        class="w-full text-left px-2 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors {teamManagement.selectedResourceType === 'department' && teamManagement.selectedResourceId === dept.id ? 'bg-accent text-accent-foreground' : ''}"
+                        class="w-full text-left px-2 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-all duration-200 hover:translate-x-1 {teamManagement.selectedResourceType === 'department' && teamManagement.selectedResourceId === dept.id ? 'bg-accent text-accent-foreground scale-105' : ''}"
                         onclick={() => teamManagement.setSelectedResource('department', dept.id)}
                       >
                         <div class="flex items-center gap-2">
@@ -664,7 +663,7 @@
                     <h3 class="text-sm font-medium text-muted-foreground px-2 py-1">Projects</h3>
                     {#each teamManagement.userResources.projects as project}
                       <button
-                        class="w-full text-left px-2 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors {teamManagement.selectedResourceType === 'project' && teamManagement.selectedResourceId === project.id ? 'bg-accent text-accent-foreground' : ''}"
+                        class="w-full text-left px-2 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-all duration-200 hover:translate-x-1 {teamManagement.selectedResourceType === 'project' && teamManagement.selectedResourceId === project.id ? 'bg-accent text-accent-foreground scale-105' : ''}"
                         onclick={() => teamManagement.setSelectedResource('project', project.id)}
                       >
                         <div class="flex items-center gap-2">
@@ -684,7 +683,7 @@
             {#if !teamManagement.selectedResourceId}
               <!-- Empty State -->
               <div class="flex items-center justify-center h-full">
-                <div class="text-center">
+                <div class="text-center" in:fly={{ y: 20, duration: 400, delay: 100 }}>
                   <Users class="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                   <h3 class="text-lg font-medium mb-2">Select a Resource</h3>
                   <p class="text-muted-foreground max-w-md">
@@ -694,7 +693,7 @@
               </div>
             {:else}
               <!-- Resource Header -->
-              <div class="mb-6">
+              <div class="mb-6" in:fly={{ y: -20, duration: 300 }}>
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-2">
                     <svelte:component this={resourceIcon} class="h-6 w-6" />
@@ -726,6 +725,10 @@
                       <RefreshCw class="h-4 w-4 mr-2" />
                       Refresh
                     </Button>
+                    <Button variant="outline" onclick={restartTour}>
+                      <GraduationCap class="h-4 w-4 mr-2" />
+                      Tour
+                    </Button>
                   </div>
                 </div>
                 <p class="text-muted-foreground mt-1">
@@ -753,8 +756,9 @@
           <!-- Main Content -->
           {#if !teamManagement.isLoading && (teamManagement.organizationStructure || teamManagement.departmentStructure || teamManagement.projectTeam)}
                 <!-- Team Members Section -->
-                <Card class="mb-6">
-                  <CardHeader>
+                <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
+                  <Card class="mb-6 hover-lift" data-tour="team-members">
+                    <CardHeader>
                     <div class="flex items-center justify-between">
                       <div class="flex items-center gap-2">
                         <Users class="h-5 w-5" />
@@ -775,7 +779,6 @@
                           currentCount={getUsersForCurrentResource().length}
                           maxUsers={subscriptionLimits.maxUsers}
                           subscriptionPlan={subscriptionLimits.subscriptionPlan}
-                          variant="inline"
                           showAlerts={false}
                         />
                       </div>
@@ -790,11 +793,13 @@
                     />
                   </CardContent>
                 </Card>
+                </div>
 
                 <!-- Invitations Section -->
                 {#if showInvitationsTab}
-                  <Card class="mb-6" id="invitation-section">
-                    <CardHeader>
+                  <div in:fly={{ y: 20, duration: 400, delay: 200 }}>
+                    <Card class="mb-6 hover-lift" id="invitation-section" data-tour="invitations">
+                      <CardHeader>
                       <div class="flex items-center gap-2">
                         <Mail class="h-5 w-5" />
                         <CardTitle>Team Invitations</CardTitle>
@@ -812,12 +817,14 @@
                       />
                     </CardContent>
                   </Card>
+                  </div>
                 {/if}
 
                 <!-- Add Users Section (for departments/projects) -->
                 {#if canShowAddUsersTab()}
-                  <Card id="add-users-section">
-                    <CardHeader>
+                  <div in:fly={{ y: 20, duration: 400, delay: 300 }}>
+                    <Card class="hover-lift" id="add-users-section" data-tour="add-users">
+                      <CardHeader>
                       <div class="flex items-center gap-2">
                         <UserCog class="h-5 w-5" />
                         <CardTitle>Add Existing Users</CardTitle>
@@ -835,6 +842,7 @@
                       />
                     </CardContent>
                   </Card>
+                  </div>
                 {/if}
               {/if}
 
@@ -888,3 +896,36 @@
     </main>
   </div>
 </Sidebar.Provider>
+
+<!-- Tour Prompt Modal -->
+{#if showTourPrompt}
+  <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" in:fade={{ duration: 200 }}>
+    <div in:scale={{ duration: 300, delay: 100 }}>
+      <Card class="max-w-md mx-4">
+        <CardHeader>
+        <div class="flex items-center gap-2">
+          <GraduationCap class="h-5 w-5 text-primary" />
+          <CardTitle>Welcome to Team Management!</CardTitle>
+        </div>
+        <CardDescription>
+          Would you like a quick tour to learn how to manage your teams effectively?
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div class="flex gap-2">
+          <Button onclick={startTour} class="flex-1">
+            <GraduationCap class="h-4 w-4 mr-2" />
+            Start Tour
+          </Button>
+          <Button variant="outline" onclick={dismissTour} class="flex-1">
+            Skip for now
+          </Button>
+        </div>
+        <p class="text-xs text-muted-foreground mt-2">
+          You can restart the tour anytime using the "Tour" button in the header.
+        </p>
+      </CardContent>
+    </Card>
+    </div>
+  </div>
+{/if}

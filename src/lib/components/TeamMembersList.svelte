@@ -8,12 +8,15 @@
   import { Card, CardContent, CardHeader } from "$lib/components/ui/card";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import TeamSizeIndicator from "$lib/components/TeamSizeIndicator/TeamSizeIndicator.svelte";
-  import { UserCog, Search, UserMinus, Info, MoreHorizontal, ChevronDown, Building } from "lucide-svelte";
+  import { UserCog, Search, UserMinus, Info, MoreHorizontal, ChevronDown, Building, Loader2 } from "lucide-svelte";
   import type { User } from "$lib/types/auth";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
   import { auth } from "$lib/stores/AuthStore.svelte";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { EmptyState } from "$lib/components/ui/empty-state";
+  import { debounce } from "$lib/utils/debounce";
+  import { toast } from "svelte-sonner";
+  import { fly, fade } from "svelte/transition";
 
   // Define a type for team members that includes role information
   type TeamMember = User & {
@@ -64,9 +67,25 @@
   }>();
 
   let searchTerm = $state("");
+  let debouncedSearchTerm = $state("");
+  let isSearching = $state(false);
   let isRemoving = $state<string | null>(null);
   let showDeleteDialog = $state(false);
   let userToRemove = $state<TeamMember | null>(null);
+
+  // Debounced search function
+  const debouncedSearch = debounce((term: string) => {
+    debouncedSearchTerm = term;
+    isSearching = false;
+  }, 300);
+
+  // Effect to handle search term changes
+  $effect(() => {
+    if (searchTerm !== debouncedSearchTerm) {
+      isSearching = true;
+      debouncedSearch(searchTerm);
+    }
+  });
 
   // Map of role IDs to readable names (fallback)
   // Note: In production, roleIds should be UUIDs that match the database
@@ -80,13 +99,13 @@
     // Project roles
   };
 
-  // Filter users based on search term
+  // Filter users based on debounced search term
   let filteredUsers = $derived(
     props.users.filter((user: TeamMember) => {
-      if (!searchTerm) return true;
+      if (!debouncedSearchTerm) return true;
       const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
       const email = user.email.toLowerCase();
-      const searchLower = searchTerm.toLowerCase();
+      const searchLower = debouncedSearchTerm.toLowerCase();
       return fullName.includes(searchLower) || email.includes(searchLower);
     })
   );
@@ -255,7 +274,7 @@
     if (props.resourceType === "organization" && isOrganizationOwner(user)) {
       // Only prevent removal if this is the last owner
       if (countOwners() <= 1) {
-        alert("Cannot remove the last organization owner");
+        toast.error("Cannot remove the last organization owner");
         return;
       }
     }
@@ -274,8 +293,10 @@
     const success = await teamManagement.removeUser(String(userToRemove.id));
     isRemoving = null;
 
-    if (!success) {
-      alert("Failed to remove user: " + teamManagement.error);
+    if (success) {
+      toast.success(`${userToRemove.firstName} ${userToRemove.lastName} has been removed from the team`);
+    } else {
+      toast.error("Failed to remove user: " + teamManagement.error);
     }
 
     userToRemove = null;
@@ -291,22 +312,15 @@
       <Input
         type="text"
         placeholder="Search members..."
-        class="pl-8"
+        class="pl-8 pr-8"
         bind:value={searchTerm}
       />
+      {#if isSearching}
+        <Loader2 class="absolute right-2 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />
+      {/if}
     </div>
   </div>
 
-  <!-- Subscription Limits -->
-  {#if props.subscriptionLimits && props.subscriptionLimits.maxUsers > 0}
-    <TeamSizeIndicator 
-      currentCount={props.users.length}
-      maxUsers={props.subscriptionLimits.maxUsers}
-      subscriptionPlan={props.subscriptionLimits.subscriptionPlan}
-      variant="card"
-      showAlerts={true}
-    />
-  {/if}
 
   <!-- Members list -->
   <!-- Desktop view -->
@@ -325,9 +339,9 @@
           <Table.Row>
             <Table.Cell colspan="4" class="p-0">
               <EmptyState
-                title={searchTerm ? "No users matching your search" : "No team members yet"}
-                description={searchTerm ? "Try adjusting your search terms" : "Team members will appear here once added"}
-                variant={searchTerm ? "search-empty" : "data-empty"}
+                title={debouncedSearchTerm ? "No users matching your search" : "No team members yet"}
+                description={debouncedSearchTerm ? "Try adjusting your search terms" : "Team members will appear here once added"}
+                variant={debouncedSearchTerm ? "search-empty" : "data-empty"}
                 height="h-[400px]"
               />
             </Table.Cell>
@@ -450,15 +464,16 @@
   <div class="md:hidden space-y-4">
     {#if filteredUsers.length === 0}
       <EmptyState
-        title={searchTerm ? "No users matching your search" : "No team members yet"}
-        description={searchTerm ? "Try adjusting your search terms" : "Team members will appear here once added"}
-        variant={searchTerm ? "search-empty" : "data-empty"}
+        title={debouncedSearchTerm ? "No users matching your search" : "No team members yet"}
+        description={debouncedSearchTerm ? "Try adjusting your search terms" : "Team members will appear here once added"}
+        variant={debouncedSearchTerm ? "search-empty" : "data-empty"}
         height="h-[400px]"
       />
     {:else}
-      {#each filteredUsers as user (user.id)}
-        <Card>
-          <CardHeader class="pb-3">
+      {#each filteredUsers as user, index (user.id)}
+        <div in:fly={{ y: 20, duration: 300, delay: index * 50 }}>
+          <Card>
+            <CardHeader class="pb-3">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
                 {user.firstName?.[0]}{user.lastName?.[0]}
@@ -573,6 +588,7 @@
             </div>
           </CardContent>
         </Card>
+        </div>
       {/each}
     {/if}
   </div>
