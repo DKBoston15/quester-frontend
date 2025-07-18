@@ -9,6 +9,7 @@
   import { Switch } from "$lib/components/ui/switch";
   import { cn } from "$lib/utils";
   import { AIChat } from "$lib/components/global-search";
+  import { navigate } from "svelte-routing";
   
   // Icons
   import Search from "lucide-svelte/icons/search";
@@ -21,6 +22,7 @@
   import Target from "lucide-svelte/icons/target";
   import Clock from "lucide-svelte/icons/clock";
   import Globe from "lucide-svelte/icons/globe";
+  import Network from "lucide-svelte/icons/network";
 
   // Reactive bindings to store state
   let isOpen = $derived(globalSearchStore.isOpen);
@@ -117,6 +119,8 @@
         return Folder;
       case "outcome":
         return Target;
+      case "model":
+        return Network;
       default:
         return FileText;
     }
@@ -139,6 +143,57 @@
 
   // Get placeholder text for search mode
   const placeholderText = "Search across all your projects, notes, and literature...";
+
+  // Handle search result navigation
+  function handleResultClick(result: any) {
+    // Extract project ID based on result type and available fields
+    let projectId;
+    
+    if (result.type === 'project') {
+      // For project results, use the result ID as the project ID
+      projectId = result.id;
+    } else {
+      // For other content types, try multiple possible locations for project ID
+      projectId = result.projectId || 
+                  result.content?.projectId || 
+                  result.content?.project_id || 
+                  result.metadata?.project_id ||
+                  result.project_id;
+    }
+    
+    if (!projectId) {
+      console.warn('No project ID found for result:', $state.snapshot(result));
+      return;
+    }
+
+    let path = '';
+    
+    switch (result.type) {
+      case 'literature':
+        path = `/project/${projectId}/literature/${result.id}`;
+        break;
+      case 'note':
+        // Notes don't have detail views, navigate to notes list
+        path = `/project/${projectId}/notes`;
+        break;
+      case 'project':
+        path = `/project/${projectId}`;
+        break;
+      case 'outcome':
+        path = `/project/${projectId}/outcomes/${result.id}`;
+        break;
+      case 'model':
+        path = `/project/${projectId}/models/${result.id}`;
+        break;
+      default:
+        console.warn('Unknown result type:', result.type);
+        return;
+    }
+    
+    // Close the search dialog and navigate
+    globalSearchStore.close();
+    navigate(path);
+  }
 </script>
 
 <!-- Global Search Button Trigger -->
@@ -261,13 +316,14 @@
                     <Search class="size-12 mx-auto text-muted-foreground/50 mb-4" />
                     <h3 class="font-medium mb-2">Search your research</h3>
                     <p class="text-sm text-muted-foreground mb-4">
-                      Find notes, literature, projects, and outcomes across your entire workspace
+                      Find notes, literature, projects, outcomes, and models across your entire workspace
                     </p>
                     <div class="flex flex-wrap gap-2 justify-center">
                       <Badge variant="outline">Notes</Badge>
                       <Badge variant="outline">Literature</Badge>
                       <Badge variant="outline">Projects</Badge>
                       <Badge variant="outline">Outcomes</Badge>
+                      <Badge variant="outline">Models</Badge>
                     </div>
                   </div>
                 {/if}
@@ -305,7 +361,7 @@
                   
                   {#each searchResults as result}
                     {@const Icon = getResultIcon(result.type)}
-                    <div class="rounded-md border p-3 hover:bg-muted/50 cursor-pointer">
+                    <div class="rounded-md border p-3 hover:bg-muted/50 cursor-pointer" onclick={() => handleResultClick(result)}>
                       <div class="flex items-start gap-3">
                         <Icon class="size-4 mt-0.5 text-muted-foreground" />
                         <div class="flex-1 min-w-0">

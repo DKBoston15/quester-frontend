@@ -8,8 +8,9 @@
   import { Badge } from "$lib/components/ui/badge";
   import { ScrollArea } from "$lib/components/ui/scroll-area";
   import { Input } from "$lib/components/ui/input";
+  import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { cn } from "$lib/utils";
-  
+
   // Icons
   import Search from "lucide-svelte/icons/search";
   import Star from "lucide-svelte/icons/star";
@@ -24,6 +25,7 @@
   import X from "lucide-svelte/icons/x";
   import Filter from "lucide-svelte/icons/filter";
   import RefreshCw from "lucide-svelte/icons/refresh-cw";
+  import Loader2 from "lucide-svelte/icons/loader-2";
 
   // Props
   interface Props {
@@ -32,7 +34,11 @@
     onNewSession?: () => void;
   }
 
-  let { class: className = "", onSessionSelect, onNewSession }: Props = $props();
+  let {
+    class: className = "",
+    onSessionSelect,
+    onNewSession,
+  }: Props = $props();
 
   // Reactive bindings to store state
   let sessions = $derived(globalSearchStore.chatHistorySessions);
@@ -47,6 +53,9 @@
   let showProjectFilter = $state(false);
   let selectedProjectId = $state<string | null>(null);
   let hoveredSessionId = $state<string | null>(null);
+  let showDeleteDialog = $state(false);
+  let sessionToDelete = $state<string | null>(null);
+  let isDeleting = $state(false);
 
   // Manual filtered sessions using $state and $effect
   let filteredSessions = $state([]);
@@ -58,44 +67,50 @@
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(session => {
+      filtered = filtered.filter((session) => {
         const titleMatch = session.title?.toLowerCase().includes(query);
-        
+
         // Handle messages that might be a string
         let messages = session.messages;
-        if (typeof messages === 'string') {
+        if (typeof messages === "string") {
           try {
             messages = JSON.parse(messages);
           } catch {
             messages = [];
           }
         }
-        
-        const messagesMatch = Array.isArray(messages) && messages.some(msg => msg.content?.toLowerCase().includes(query));
+
+        const messagesMatch =
+          Array.isArray(messages) &&
+          messages.some((msg) => msg.content?.toLowerCase().includes(query));
         return titleMatch || messagesMatch;
       });
     }
 
     // Filter by starred status
     if (showStarredOnly) {
-      filtered = filtered.filter(session => session.metadata?.isStarred === true);
+      filtered = filtered.filter(
+        (session) => session.metadata?.isStarred === true
+      );
     }
 
     // Filter by project
     if (selectedProjectId) {
-      filtered = filtered.filter(session => session.projectId === selectedProjectId);
+      filtered = filtered.filter(
+        (session) => session.projectId === selectedProjectId
+      );
     }
 
     filteredSessions = filtered;
   });
 
-  const starredSessions = $derived(() => 
-    sessions.filter(session => session.metadata?.isStarred === true)
+  const starredSessions = $derived(() =>
+    sessions.filter((session) => session.metadata?.isStarred === true)
   );
 
   const projects = $derived(() => {
     const projectMap = new Map();
-    sessions.forEach(session => {
+    sessions.forEach((session) => {
       if (session.project) {
         projectMap.set(session.project.id, session.project);
       }
@@ -131,11 +146,25 @@
   }
 
   // Handle session deletion
-  async function handleDeleteSession(sessionId: string, event: Event) {
+  function handleDeleteSession(sessionId: string, event: Event) {
     event.stopPropagation();
-    
-    if (confirm("Are you sure you want to delete this chat session?")) {
-      await globalSearchStore.deleteSession(sessionId);
+    sessionToDelete = sessionId;
+    showDeleteDialog = true;
+  }
+
+  // Confirm session deletion
+  async function confirmDeleteSession() {
+    if (!sessionToDelete) return;
+
+    isDeleting = true;
+    try {
+      await globalSearchStore.deleteSession(sessionToDelete);
+      showDeleteDialog = false;
+      sessionToDelete = null;
+    } catch (error) {
+      console.error("Failed to delete session:", error);
+    } finally {
+      isDeleting = false;
     }
   }
 
@@ -179,7 +208,7 @@
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
-    
+
     return date.toLocaleDateString();
   }
 
@@ -187,25 +216,25 @@
   function getSessionPreview(session: any): string {
     // Handle case where messages might be a string (not yet parsed)
     let messages = session.messages;
-    if (typeof messages === 'string') {
+    if (typeof messages === "string") {
       try {
         messages = JSON.parse(messages);
       } catch {
         return "No messages yet";
       }
     }
-    
+
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return "No messages yet";
     }
-    
-    const firstUserMessage = messages.find((msg: any) => msg.role === 'user');
+
+    const firstUserMessage = messages.find((msg: any) => msg.role === "user");
     if (firstUserMessage) {
-      return firstUserMessage.content.length > 60 
+      return firstUserMessage.content.length > 60
         ? firstUserMessage.content.slice(0, 60) + "..."
         : firstUserMessage.content;
     }
-    
+
     return "No messages yet";
   }
 
@@ -213,14 +242,14 @@
   function getMessageCount(session: any): number {
     // Handle case where messages might be a string (not yet parsed)
     let messages = session.messages;
-    if (typeof messages === 'string') {
+    if (typeof messages === "string") {
       try {
         messages = JSON.parse(messages);
       } catch {
         return 0;
       }
     }
-    
+
     return Array.isArray(messages) ? messages.length : 0;
   }
 </script>
@@ -259,7 +288,9 @@
 
     <!-- Search Bar -->
     <div class="relative mb-3">
-      <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 size-3 text-muted-foreground" />
+      <Search
+        class="absolute left-3 top-1/2 transform -translate-y-1/2 size-3 text-muted-foreground"
+      />
       <Input
         bind:value={searchQuery}
         placeholder="Search chat history..."
@@ -270,7 +301,10 @@
         <Button
           variant="ghost"
           size="sm"
-          onclick={() => { searchQuery = ""; handleSearch(); }}
+          onclick={() => {
+            searchQuery = "";
+            handleSearch();
+          }}
           class="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
         >
           <X class="size-3" />
@@ -283,7 +317,9 @@
       <Button
         variant={showStarredOnly ? "default" : "outline"}
         size="sm"
-        onclick={() => { showStarredOnly = !showStarredOnly; }}
+        onclick={() => {
+          showStarredOnly = !showStarredOnly;
+        }}
         class="h-7 text-xs"
       >
         <Star class="size-3 mr-1 {showStarredOnly ? 'fill-current' : ''}" />
@@ -294,7 +330,7 @@
           </Badge>
         {/if}
       </Button>
-      
+
       {#if hasFilters}
         <Button
           variant="ghost"
@@ -318,7 +354,10 @@
   <ScrollArea class="flex-1">
     <div class="p-2 space-y-1">
       {#if error}
-        <div class="flex items-center gap-2 p-3 text-sm text-destructive bg-destructive/10 rounded-md" transition:slide>
+        <div
+          class="flex items-center gap-2 p-3 text-sm text-destructive bg-destructive/10 rounded-md"
+          transition:slide
+        >
           <AlertCircle class="size-4" />
           <span>{error}</span>
         </div>
@@ -335,18 +374,21 @@
             {hasFilters ? "No matching sessions found" : "No chat sessions yet"}
           </p>
           {#if !hasFilters}
-            <p class="text-xs mt-1">Start a conversation to see your chat history</p>
+            <p class="text-xs mt-1">
+              Start a conversation to see your chat history
+            </p>
           {/if}
         </div>
       {:else}
         {#each filteredSessions as session (session.id)}
           <div
-            class="group relative p-3 rounded-lg border transition-all cursor-pointer hover:bg-muted/50 {
-              currentSession?.id === session.id ? 'bg-muted border-primary' : 'hover:border-muted-foreground/20'
-            }"
+            class="group relative p-3 rounded-lg border transition-all cursor-pointer hover:bg-muted/50 {currentSession?.id ===
+            session.id
+              ? 'bg-muted border-primary'
+              : 'hover:border-muted-foreground/20'}"
             onclick={() => handleSessionSelect(session.id)}
-            onmouseenter={() => hoveredSessionId = session.id}
-            onmouseleave={() => hoveredSessionId = null}
+            onmouseenter={() => (hoveredSessionId = session.id)}
+            onmouseleave={() => (hoveredSessionId = null)}
             animate:flip={{ duration: 300, easing: quintOut }}
             transition:slide|local={{ duration: 200 }}
           >
@@ -357,29 +399,37 @@
                   {session.title || "Untitled Chat"}
                 </h3>
                 <div class="flex items-center gap-2 mt-1">
-                  <div class="flex items-center gap-1 text-xs text-muted-foreground">
+                  <div
+                    class="flex items-center gap-1 text-xs text-muted-foreground"
+                  >
                     <Clock class="size-3" />
                     {formatTimestamp(session.updatedAt)}
                   </div>
                   {#if session.project}
-                    <div class="flex items-center gap-1 text-xs text-muted-foreground">
+                    <div
+                      class="flex items-center gap-1 text-xs text-muted-foreground"
+                    >
                       <Folder class="size-3" />
                       {session.project.name}
                     </div>
                   {/if}
                 </div>
               </div>
-              
+
               <!-- Actions -->
-              <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div
+                class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
                 <Button
                   variant="ghost"
                   size="sm"
                   onclick={(e) => handleToggleStar(session.id, e)}
                   class="h-6 w-6 p-0"
                 >
-                  <Star 
-                    class="size-3 {session.metadata?.isStarred ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}" 
+                  <Star
+                    class="size-3 {session.metadata?.isStarred
+                      ? 'fill-yellow-400 text-yellow-400'
+                      : 'text-muted-foreground'}"
                   />
                 </Button>
                 <Button
@@ -412,7 +462,7 @@
                   </Badge>
                 {/if}
               </div>
-              
+
               {#if hoveredSessionId === session.id}
                 <div class="text-xs text-muted-foreground" transition:fade>
                   Click to open
@@ -425,6 +475,32 @@
     </div>
   </ScrollArea>
 </div>
+
+<!-- Delete Confirmation Dialog -->
+<AlertDialog.Root bind:open={showDeleteDialog}>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>Delete Chat Session</AlertDialog.Title>
+      <AlertDialog.Description>
+        Are you sure you want to delete this chat session? This action cannot be
+        undone.
+      </AlertDialog.Description>
+    </AlertDialog.Header>
+    <AlertDialog.Footer>
+      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+      <AlertDialog.Action
+        onclick={confirmDeleteSession}
+        disabled={isDeleting}
+        class="bg-destructive dark:text-white hover:bg-destructive/90"
+      >
+        {#if isDeleting}
+          <Loader2 class="h-4 w-4 animate-spin mr-2" />
+        {/if}
+        Delete Session
+      </AlertDialog.Action>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>
 
 <style>
   .line-clamp-2 {
