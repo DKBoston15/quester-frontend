@@ -1,7 +1,7 @@
 <script lang="ts">
   import { writable } from "svelte/store";
   import type { Node } from "@xyflow/svelte";
-  import { toPng } from "html-to-image";
+  import { toPng, toSvg } from "html-to-image";
   import {
     getNodesBounds,
     getViewportForBounds,
@@ -63,24 +63,46 @@
   };
 
   const downloadImage = async () => {
-    const imageWidth = 1024;
-    const imageHeight = 768;
     const nodesBounds = getNodesBounds($nodes);
+    
+    // Add padding around the content (20% on each side)
+    const padding = 100;
+    const contentWidth = nodesBounds.width + padding * 2;
+    const contentHeight = nodesBounds.height + padding * 2;
+    
+    // Ensure minimum dimensions for very small models
+    const minWidth = 400;
+    const minHeight = 300;
+    const imageWidth = Math.max(contentWidth, minWidth);
+    const imageHeight = Math.max(contentHeight, minHeight);
+    
+    // Calculate viewport to fit all content with padding
     const viewport = getViewportForBounds(
-      nodesBounds,
+      {
+        x: nodesBounds.x - padding,
+        y: nodesBounds.y - padding,
+        width: contentWidth,
+        height: contentHeight,
+      },
       imageWidth,
       imageHeight,
-      0.5,
-      2.0,
-      0.2
+      0.1, // Lower min zoom to accommodate larger models
+      3.0, // Higher max zoom for better quality
+      0.05 // Smaller padding since we already added manual padding
     );
-    const viewportDomNode = document.querySelector<HTMLElement>(
-      ".svelte-flow__viewport"
-    );
+    
+    // Try multiple possible target elements for the flow content
+    let viewportDomNode = document.querySelector<HTMLElement>(".svelte-flow__viewport");
+    
+    if (!viewportDomNode) {
+      viewportDomNode = document.querySelector<HTMLElement>(".svelte-flow");
+    }
+    
 
     if (viewport && viewportDomNode) {
       try {
-        const dataUrl = await toPng(viewportDomNode, {
+        // Capture options for image generation
+        const captureOptions = {
           backgroundColor: isTransparent ? "transparent" : bgColor,
           width: imageWidth,
           height: imageHeight,
@@ -89,12 +111,119 @@
             height: `${imageHeight}px`,
             transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
           },
-        });
+          // Filter out UI elements that shouldn't be in export
+          filter: (node: Element) => {
+            if (node.id === 'flow-toolbar' || 
+                node.classList?.contains('svelte-flow__controls') ||
+                node.classList?.contains('svelte-flow__minimap') ||
+                node.id === 'edge-customization-panel') {
+              return false;
+            }
+            return true;
+          },
+        };
 
-        const link = document.createElement("a");
-        link.download = "flow-diagram.png";
-        link.href = dataUrl;
-        link.click();
+        // First try to generate SVG to preserve vector graphics, then convert to PNG
+        const svgDataUrl = await toSvg(viewportDomNode, captureOptions);
+
+        // Convert SVG to PNG using a canvas for better compatibility
+        const img = new Image();
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = imageWidth * 2; // Higher resolution
+        canvas.height = imageHeight * 2;
+        
+        // Set canvas background if not transparent
+        if (!isTransparent && ctx) {
+          ctx.fillStyle = bgColor;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        img.onload = () => {
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/png');
+            
+            const fileName = modelName ? `${modelName.replace(/[^a-zA-Z0-9]/g, '-')}-model.png` : "flow-diagram.png";
+            const link = document.createElement("a");
+            link.download = fileName;
+            link.href = dataUrl;
+            link.click();
+          }
+        };
+
+        img.onerror = async () => {
+          // Fallback approaches if SVG conversion fails
+          console.warn("SVG conversion failed, trying alternative approaches");
+          
+          try {
+            // Try capturing the entire flow container without transforms
+            const flowContainer = document.querySelector<HTMLElement>(".svelte-flow");
+            if (flowContainer) {
+              console.log("Trying full flow container capture");
+              const dataUrl = await toPng(flowContainer, {
+                backgroundColor: isTransparent ? "transparent" : bgColor,
+                pixelRatio: 2,
+                filter: (node: Element) => {
+                  // Skip UI elements but keep everything else
+                  if (node.id === 'flow-toolbar' || 
+                      node.classList?.contains('svelte-flow__controls') ||
+                      node.classList?.contains('svelte-flow__minimap') ||
+                      node.id === 'edge-customization-panel') {
+                    return false;
+                  }
+                  return true;
+                },
+              });
+              
+              const fileName = modelName ? `${modelName.replace(/[^a-zA-Z0-9]/g, '-')}-model.png` : "flow-diagram.png";
+              const link = document.createElement("a");
+              link.download = fileName;
+              link.href = dataUrl;
+              link.click();
+              return;
+            }
+          } catch (error) {
+            console.warn("Full container capture failed:", error);
+          }
+          
+          // Final fallback - original viewport approach
+          try {
+            console.log("Using final fallback approach");
+            const dataUrl = await toPng(viewportDomNode, {
+              backgroundColor: isTransparent ? "transparent" : bgColor,
+              width: imageWidth,
+              height: imageHeight,
+              style: {
+                width: `${imageWidth}px`,
+                height: `${imageHeight}px`,
+                transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
+              },
+              pixelRatio: 2,
+              skipAutoScale: true,
+              filter: (node: Element) => {
+                if (node.id === 'flow-toolbar' || 
+                    node.classList?.contains('svelte-flow__controls') ||
+                    node.classList?.contains('svelte-flow__minimap') ||
+                    node.id === 'edge-customization-panel') {
+                  return false;
+                }
+                return true;
+              },
+            });
+
+            const fileName = modelName ? `${modelName.replace(/[^a-zA-Z0-9]/g, '-')}-model.png` : "flow-diagram.png";
+            const link = document.createElement("a");
+            link.download = fileName;
+            link.href = dataUrl;
+            link.click();
+          } catch (finalError) {
+            console.error("All export methods failed:", finalError);
+          }
+        };
+
+        img.src = svgDataUrl;
       } catch (error) {
         console.error("Error generating image:", error);
       }
