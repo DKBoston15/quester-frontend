@@ -18,6 +18,7 @@
   import TeamManagement from "./routes/TeamManagement.svelte";
   import Settings from "./routes/Settings.svelte";
   import { API_BASE_URL } from "$lib/config";
+  import { GlobalSearchDialog } from "$lib/components/global-search";
 
   const props = $props<{ url: string }>();
 
@@ -127,6 +128,8 @@
       {#if !auth.isAuthenticated && !auth.isLoading}
         <SignIn onLogin={login} />
       {:else}
+        <!-- Global Search Dialog - Available across all authenticated routes -->
+        <GlobalSearchDialog />
         <ProtectedLayout>
           <Route path="/">
             {#if auth.isAuthenticated}
