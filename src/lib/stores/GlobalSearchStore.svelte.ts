@@ -5,7 +5,7 @@ import { chatHistoryAPI, type ChatSession, type ChatHistoryAPIError } from '$lib
 
 export interface SearchResult {
   id: string;
-  type: 'literature' | 'note' | 'project' | 'outcome' | 'model';
+  type: 'literature' | 'note' | 'project' | 'outcome' | 'model' | 'keyword_analysis';
   title: string;
   snippet?: string;
   content?: any; // The actual content object from backend
@@ -143,7 +143,7 @@ let error = $state<string | null>(null);
 let selectedIndex = $state(0);
 let recentSearches = $state<string[]>([]);
 let activeFilters = $state<SearchFilters>({
-  content_types: ['literature', 'note', 'project', 'outcome', 'model'],
+  content_types: ['literature', 'note', 'project', 'outcome', 'model', 'keyword_analysis'],
   projects: [],
   section_types: []
 });
@@ -161,7 +161,7 @@ let lastSaveTime = $state<Date | null>(null);
 // Derived states
 const hasResults = $derived(results.length > 0);
 const hasActiveFilters = $derived(
-  activeFilters.content_types.length < 5 ||
+  activeFilters.content_types.length < 6 ||
   activeFilters.projects.length > 0 ||
   activeFilters.section_types.length > 0 ||
   activeFilters.date_range?.start ||
@@ -734,7 +734,7 @@ export const globalSearchStore = {
 
   clearFilters() {
     activeFilters = {
-      content_types: ['literature', 'note', 'project', 'outcome', 'model'],
+      content_types: ['literature', 'note', 'project', 'outcome', 'model', 'keyword_analysis'],
       projects: [],
       section_types: []
     };

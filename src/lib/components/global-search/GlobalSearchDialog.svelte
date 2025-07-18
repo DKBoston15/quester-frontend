@@ -23,6 +23,7 @@
   import Clock from "lucide-svelte/icons/clock";
   import Globe from "lucide-svelte/icons/globe";
   import Network from "lucide-svelte/icons/network";
+  import BarChart from "lucide-svelte/icons/bar-chart";
 
   // Reactive bindings to store state
   let isOpen = $derived(globalSearchStore.isOpen);
@@ -121,6 +122,8 @@
         return Target;
       case "model":
         return Network;
+      case "keyword_analysis":
+        return BarChart;
       default:
         return FileText;
     }
@@ -184,6 +187,10 @@
         break;
       case 'model':
         path = `/project/${projectId}/models/${result.id}`;
+        break;
+      case 'keyword_analysis':
+        // Navigate to insights page - keyword analyses don't have individual detail views
+        path = `/project/${projectId}/insights`;
         break;
       default:
         console.warn('Unknown result type:', result.type);
@@ -316,7 +323,7 @@
                     <Search class="size-12 mx-auto text-muted-foreground/50 mb-4" />
                     <h3 class="font-medium mb-2">Search your research</h3>
                     <p class="text-sm text-muted-foreground mb-4">
-                      Find notes, literature, projects, outcomes, and models across your entire workspace
+                      Find notes, literature, projects, outcomes, models, and keyword analyses across your entire workspace
                     </p>
                     <div class="flex flex-wrap gap-2 justify-center">
                       <Badge variant="outline">Notes</Badge>
@@ -324,6 +331,7 @@
                       <Badge variant="outline">Projects</Badge>
                       <Badge variant="outline">Outcomes</Badge>
                       <Badge variant="outline">Models</Badge>
+                      <Badge variant="outline">Keyword Analyses</Badge>
                     </div>
                   </div>
                 {/if}
