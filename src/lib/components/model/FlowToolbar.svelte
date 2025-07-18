@@ -1,7 +1,7 @@
 <script lang="ts">
   import { writable } from "svelte/store";
   import type { Node } from "@xyflow/svelte";
-  import { toPng, toSvg } from "html-to-image";
+  import { toPng } from "html-to-image";
   import {
     getNodesBounds,
     getViewportForBounds,
@@ -91,18 +91,11 @@
       0.05 // Smaller padding since we already added manual padding
     );
     
-    // Try multiple possible target elements for the flow content
-    let viewportDomNode = document.querySelector<HTMLElement>(".svelte-flow__viewport");
-    
-    if (!viewportDomNode) {
-      viewportDomNode = document.querySelector<HTMLElement>(".svelte-flow");
-    }
-    
+    const viewportDomNode = document.querySelector<HTMLElement>(".svelte-flow__viewport");
 
     if (viewport && viewportDomNode) {
       try {
-        // Capture options for image generation
-        const captureOptions = {
+        const dataUrl = await toPng(viewportDomNode, {
           backgroundColor: isTransparent ? "transparent" : bgColor,
           width: imageWidth,
           height: imageHeight,
@@ -111,6 +104,7 @@
             height: `${imageHeight}px`,
             transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
           },
+          pixelRatio: 2, // Higher resolution for better quality
           // Filter out UI elements that shouldn't be in export
           filter: (node: Element) => {
             if (node.id === 'flow-toolbar' || 
@@ -121,109 +115,13 @@
             }
             return true;
           },
-        };
+        });
 
-        // First try to generate SVG to preserve vector graphics, then convert to PNG
-        const svgDataUrl = await toSvg(viewportDomNode, captureOptions);
-
-        // Convert SVG to PNG using a canvas for better compatibility
-        const img = new Image();
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        canvas.width = imageWidth * 2; // Higher resolution
-        canvas.height = imageHeight * 2;
-        
-        // Set canvas background if not transparent
-        if (!isTransparent && ctx) {
-          ctx.fillStyle = bgColor;
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-
-        img.onload = () => {
-          if (ctx) {
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            const dataUrl = canvas.toDataURL('image/png');
-            
-            const fileName = modelName ? `${modelName.replace(/[^a-zA-Z0-9]/g, '-')}-model.png` : "flow-diagram.png";
-            const link = document.createElement("a");
-            link.download = fileName;
-            link.href = dataUrl;
-            link.click();
-          }
-        };
-
-        img.onerror = async () => {
-          // Fallback approaches if SVG conversion fails
-          console.warn("SVG conversion failed, trying alternative approaches");
-          
-          try {
-            // Try capturing the entire flow container without transforms
-            const flowContainer = document.querySelector<HTMLElement>(".svelte-flow");
-            if (flowContainer) {
-              console.log("Trying full flow container capture");
-              const dataUrl = await toPng(flowContainer, {
-                backgroundColor: isTransparent ? "transparent" : bgColor,
-                pixelRatio: 2,
-                filter: (node: Element) => {
-                  // Skip UI elements but keep everything else
-                  if (node.id === 'flow-toolbar' || 
-                      node.classList?.contains('svelte-flow__controls') ||
-                      node.classList?.contains('svelte-flow__minimap') ||
-                      node.id === 'edge-customization-panel') {
-                    return false;
-                  }
-                  return true;
-                },
-              });
-              
-              const fileName = modelName ? `${modelName.replace(/[^a-zA-Z0-9]/g, '-')}-model.png` : "flow-diagram.png";
-              const link = document.createElement("a");
-              link.download = fileName;
-              link.href = dataUrl;
-              link.click();
-              return;
-            }
-          } catch (error) {
-            console.warn("Full container capture failed:", error);
-          }
-          
-          // Final fallback - original viewport approach
-          try {
-            console.log("Using final fallback approach");
-            const dataUrl = await toPng(viewportDomNode, {
-              backgroundColor: isTransparent ? "transparent" : bgColor,
-              width: imageWidth,
-              height: imageHeight,
-              style: {
-                width: `${imageWidth}px`,
-                height: `${imageHeight}px`,
-                transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
-              },
-              pixelRatio: 2,
-              skipAutoScale: true,
-              filter: (node: Element) => {
-                if (node.id === 'flow-toolbar' || 
-                    node.classList?.contains('svelte-flow__controls') ||
-                    node.classList?.contains('svelte-flow__minimap') ||
-                    node.id === 'edge-customization-panel') {
-                  return false;
-                }
-                return true;
-              },
-            });
-
-            const fileName = modelName ? `${modelName.replace(/[^a-zA-Z0-9]/g, '-')}-model.png` : "flow-diagram.png";
-            const link = document.createElement("a");
-            link.download = fileName;
-            link.href = dataUrl;
-            link.click();
-          } catch (finalError) {
-            console.error("All export methods failed:", finalError);
-          }
-        };
-
-        img.src = svgDataUrl;
+        const fileName = modelName ? `${modelName.replace(/[^a-zA-Z0-9]/g, '-')}-model.png` : "flow-diagram.png";
+        const link = document.createElement("a");
+        link.download = fileName;
+        link.href = dataUrl;
+        link.click();
       } catch (error) {
         console.error("Error generating image:", error);
       }
