@@ -51,7 +51,6 @@
   
   // Expose method for tutorial to add nodes
   export function addTutorialNode(nodeType: string = 'ResizableNode') {
-    console.log('Model.addTutorialNode called');
     const position = {
       x: 300,
       y: 200,
@@ -65,7 +64,6 @@
       selected: false,
     };
     
-    console.log('Adding node to store:', newNode);
     nodes.update((currentNodes) => [...currentNodes, newNode]);
     
     return newNode.id;
@@ -73,8 +71,6 @@
   
   // Expose method for tutorial to add nodes at specific position
   export function addTutorialNodeAt(nodeType: string = 'ResizableNode', x: number, y: number, label?: string) {
-    console.log('Model.addTutorialNodeAt called:', nodeType, 'at', x, y);
-    
     const newNode: Node = {
       id: `tutorial-${nodeType}-${Date.now()}`,
       type: nodeType,
@@ -83,7 +79,6 @@
       selected: false,
     };
     
-    console.log('Adding positioned node to store:', newNode);
     nodes.update((currentNodes) => [...currentNodes, newNode]);
     
     return newNode.id;
@@ -101,8 +96,6 @@
   
   // Expose method to create an edge between two nodes
   export function addTutorialEdge(sourceNodeId: string, targetNodeId: string) {
-    console.log('Model.addTutorialEdge called:', sourceNodeId, '->', targetNodeId);
-    
     const newEdge: Edge = {
       id: `tutorial-edge-${Date.now()}`,
       source: sourceNodeId,
@@ -115,7 +108,6 @@
       markerStart: undefined,
     };
     
-    console.log('Adding edge to store:', newEdge);
     edges.update((currentEdges) => [...currentEdges, newEdge]);
     
     return newEdge.id;
@@ -123,7 +115,6 @@
   
   // Register globally for tutorial access
   onMount(() => {
-    console.log('Model: Registering global tutorial methods');
     (window as any).tutorialMethods = {
       addTutorialNode,
       addTutorialNodeAt,
@@ -318,14 +309,15 @@
 
           // Apply loaded edge settings
           const firstEdge = finalEdges[0];
-          if (firstEdge) {
+          if (firstEdge && firstEdge.style) {
+            const colorMatch = firstEdge.style.match(/stroke: (#[0-9a-fA-F]{6})/);
+            const widthMatch = firstEdge.style.match(/stroke-width: (\d+)px/);
+            
             edgeSettings.set({
-              type: firstEdge.type,
-              color: firstEdge.style.match(/stroke: (#[0-9a-fA-F]{6})/)[1],
-              width: parseInt(
-                firstEdge.style.match(/stroke-width: (\d+)px/)[1]
-              ),
-              animated: firstEdge.animated,
+              type: firstEdge.type || 'default',
+              color: colorMatch ? colorMatch[1] : '#000000',
+              width: widthMatch ? parseInt(widthMatch[1]) : 1,
+              animated: firstEdge.animated || false,
               markerStart: !!firstEdge.markerStart,
               markerEnd: !!firstEdge.markerEnd,
             });

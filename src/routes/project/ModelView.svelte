@@ -19,9 +19,6 @@
   let hasAccess = $state(false);
   let modelComponentRef = $state<any>(null);
   
-  $effect(() => {
-    console.log('ModelView: modelComponentRef changed:', modelComponentRef);
-  });
 
   // Check if user has access to model features
   async function checkModelAccessCapability() {
@@ -121,10 +118,7 @@
             modelStore.error ||
             !modelStore.currentModel
           ) {
-            console.log('Tutorial: Skipping model view step - model not ready');
             driverObj.moveNext(); // Skip if model isn't loaded
-          } else {
-            console.log('Tutorial: Model is ready, proceeding with tour');
           }
         },
       },
@@ -175,19 +169,13 @@
           align: "center",
         },
         onHighlightStarted: async (_element, _step, _options) => {
-          console.log('Tutorial: Node step highlighted');
           // Select the node to show the NodeToolbar
           setTimeout(() => {
             const nodeId = (window as any).tutorialNodeId;
             const tutorialMethods = (window as any).tutorialMethods;
             
-            console.log('Tutorial: Attempting to select node:', nodeId);
-            
             if (nodeId && tutorialMethods && typeof tutorialMethods.selectNode === 'function') {
-              console.log('Tutorial: Selecting node:', nodeId);
               tutorialMethods.selectNode(nodeId);
-            } else {
-              console.warn('Tutorial: Unable to select node - missing nodeId or tutorial methods');
             }
           }, 500);
         },
@@ -234,7 +222,6 @@
           setTimeout(() => {
             const tutorialMethods = (window as any).tutorialMethods;
             if (tutorialMethods && typeof tutorialMethods.addTutorialNode === 'function') {
-              console.log('Tutorial: Creating second node (CircleNode)');
               tutorialMethods.addTutorialNode('CircleNode');
             }
           }, 500);
@@ -359,12 +346,10 @@
       variant="outline"
       size="icon"
       onclick={() => {
-        console.log('Tutorial button clicked, starting tour...');
         driverObj.drive();
         
         // Create the tutorial nodes and edge after a delay
         setTimeout(() => {
-          console.log('Tutorial: Creating demonstration nodes...');
           const tutorialMethods = (window as any).tutorialMethods;
           
           if (tutorialMethods) {
@@ -378,13 +363,12 @@
               if (nodeId1 && nodeId2) {
                 (window as any).tutorialNodeId = nodeId1;
                 (window as any).tutorialNodeId2 = nodeId2;
-                console.log('Tutorial: Created demo nodes:', nodeId1, nodeId2);
                 
                 // Create edge between the nodes
                 setTimeout(() => {
                   if (tutorialMethods.addTutorialEdge) {
                     const edgeId = tutorialMethods.addTutorialEdge(nodeId1, nodeId2);
-                    console.log('Tutorial: Created edge between nodes:', edgeId);
+                    (window as any).tutorialEdgeId = edgeId;
                   }
                 }, 500);
               }
