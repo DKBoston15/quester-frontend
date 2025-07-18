@@ -71,6 +71,24 @@
     return newNode.id;
   }
   
+  // Expose method for tutorial to add nodes at specific position
+  export function addTutorialNodeAt(nodeType: string = 'ResizableNode', x: number, y: number, label?: string) {
+    console.log('Model.addTutorialNodeAt called:', nodeType, 'at', x, y);
+    
+    const newNode: Node = {
+      id: `tutorial-${nodeType}-${Date.now()}`,
+      type: nodeType,
+      position: { x, y },
+      data: { label: label || "Tutorial Node" },
+      selected: false,
+    };
+    
+    console.log('Adding positioned node to store:', newNode);
+    nodes.update((currentNodes) => [...currentNodes, newNode]);
+    
+    return newNode.id;
+  }
+  
   // Expose method to select a node
   export function selectNode(nodeId: string) {
     nodes.update((currentNodes) => 
@@ -81,12 +99,36 @@
     );
   }
   
+  // Expose method to create an edge between two nodes
+  export function addTutorialEdge(sourceNodeId: string, targetNodeId: string) {
+    console.log('Model.addTutorialEdge called:', sourceNodeId, '->', targetNodeId);
+    
+    const newEdge: Edge = {
+      id: `tutorial-edge-${Date.now()}`,
+      source: sourceNodeId,
+      target: targetNodeId,
+      sourceHandle: null,
+      targetHandle: null,
+      data: { customized: false },
+      style: "",
+      markerEnd: undefined,
+      markerStart: undefined,
+    };
+    
+    console.log('Adding edge to store:', newEdge);
+    edges.update((currentEdges) => [...currentEdges, newEdge]);
+    
+    return newEdge.id;
+  }
+  
   // Register globally for tutorial access
   onMount(() => {
     console.log('Model: Registering global tutorial methods');
     (window as any).tutorialMethods = {
       addTutorialNode,
-      selectNode
+      addTutorialNodeAt,
+      selectNode,
+      addTutorialEdge
     };
     
     return () => {

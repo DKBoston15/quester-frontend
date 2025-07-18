@@ -362,17 +362,33 @@
         console.log('Tutorial button clicked, starting tour...');
         driverObj.drive();
         
-        // Create the tutorial node after a delay
+        // Create the tutorial nodes and edge after a delay
         setTimeout(() => {
-          console.log('Tutorial: Creating demonstration node...');
+          console.log('Tutorial: Creating demonstration nodes...');
           const tutorialMethods = (window as any).tutorialMethods;
           
-          if (tutorialMethods && typeof tutorialMethods.addTutorialNode === 'function') {
-            const nodeId = tutorialMethods.addTutorialNode('ResizableNode');
-            if (nodeId) {
-              (window as any).tutorialNodeId = nodeId;
-              console.log('Tutorial: Created demo node with ID:', nodeId);
-            }
+          if (tutorialMethods) {
+            // Create first node (rectangle) at left position
+            const nodeId1 = tutorialMethods.addTutorialNodeAt('ResizableNode', 250, 200, 'Concept A');
+            
+            // Create second node (circle) at right position
+            setTimeout(() => {
+              const nodeId2 = tutorialMethods.addTutorialNodeAt('CircleNode', 450, 200, 'Concept B');
+              
+              if (nodeId1 && nodeId2) {
+                (window as any).tutorialNodeId = nodeId1;
+                (window as any).tutorialNodeId2 = nodeId2;
+                console.log('Tutorial: Created demo nodes:', nodeId1, nodeId2);
+                
+                // Create edge between the nodes
+                setTimeout(() => {
+                  if (tutorialMethods.addTutorialEdge) {
+                    const edgeId = tutorialMethods.addTutorialEdge(nodeId1, nodeId2);
+                    console.log('Tutorial: Created edge between nodes:', edgeId);
+                  }
+                }, 500);
+              }
+            }, 500);
           }
         }, 3000); // 3 second delay to let tutorial get to the right step
       }}
