@@ -1,16 +1,26 @@
 <script lang="ts">
-  import { Handle, NodeResizer, NodeToolbar, Position } from "@xyflow/svelte";
+  import {
+    Handle,
+    NodeResizer,
+    NodeToolbar,
+    Position,
+    type NodeProps,
+  } from "@xyflow/svelte";
+  import { createEventDispatcher } from "svelte";
+
+  type $$Props = NodeProps;
 
   let {
     data = {},
     selected = false,
     id = "",
     position = { x: 0, y: 0 },
-    width = 150, // Default width if not provided
-    height = 50, // Default height if not provided
+    width = 120,
+    height = 80,
     sourcePosition,
     targetPosition,
   } = $props();
+  const dispatch = createEventDispatcher();
 
   // Local state
   let bgColor = $state((data.bgColor as string) || "#ffffff");
@@ -22,7 +32,6 @@
   let fontWeight = $state((data.fontWeight as string) || "normal");
   let bgOpacity = $state((data.bgOpacity as number) || 1);
   let textOpacity = $state((data.textOpacity as number) || 1);
-  let shape = $state((data.shape as string) || "square");
   let textAlign = $state((data.textAlign as string) || "center");
   let shadowColor = $state((data.shadowColor as string) || "#000000");
   let shadowBlur = $state((data.shadowBlur as number) || 0);
@@ -42,7 +51,6 @@
     data.fontWeight = fontWeight;
     data.bgOpacity = bgOpacity;
     data.textOpacity = textOpacity;
-    data.shape = shape;
     data.textAlign = textAlign;
     data.shadowColor = shadowColor;
     data.shadowBlur = shadowBlur;
@@ -52,6 +60,7 @@
   });
 
   // Derived values based on transparent options
+  let effectiveBgColor = $derived(transparentBg ? "transparent" : bgColor);
   let effectiveBorderColor = $derived(
     transparentBorder ? "transparent" : borderColor
   );
@@ -74,9 +83,6 @@
   let effectiveBgColorWithOpacity = $derived(
     transparentBg ? "transparent" : hexToRgba(bgColor, bgOpacity)
   );
-
-  // Determine border radius based on shape
-  let borderRadius = $derived(shape === "square" ? "0px" : "12px");
 
   // Set tab
   function setTab(tab: "style" | "text" | "effects") {
@@ -260,18 +266,8 @@
           </div>
         </div>
 
-        <!-- Shape and Handles section -->
+        <!-- Handles section -->
         <div class="flex flex-col gap-2">
-          <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-700 dark:text-gray-300">Shape</span>
-            <select
-              bind:value={shape}
-              class="text-xs p-1 bg-white dark:bg-slate-700 border border-gray-200 dark:border-gray-600 rounded w-24"
-            >
-              <option value="square">Square</option>
-              <option value="rounded">Rounded</option>
-            </select>
-          </div>
           <label
             class="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300"
           >
@@ -288,67 +284,56 @@
 
     <!-- TEXT TAB -->
     {#if activeTab === "text"}
-      <div class="flex flex-wrap gap-3">
-        <div class="flex flex-col items-center">
-          <span class="text-xs text-gray-700 dark:text-gray-300 mb-1"
-            >Color</span
-          >
-          <input
-            type="color"
-            bind:value={textColor}
-            class="w-8 h-8 rounded cursor-pointer"
-          />
+      <div class="grid grid-cols-[auto_auto_auto] gap-4">
+        <div class="flex flex-col gap-2">
+          <span class="text-xs text-gray-700 dark:text-gray-300">Color</span>
+          <div class="flex items-center gap-2">
+            <input
+              type="color"
+              bind:value={textColor}
+              class="w-8 h-8 rounded cursor-pointer"
+            />
+            <input
+              type="range"
+              min="0.1"
+              max="1"
+              step="0.1"
+              bind:value={textOpacity}
+              class="w-32 h-6 accent-indigo-600"
+            />
+          </div>
         </div>
-        <div class="flex flex-col">
-          <span class="text-xs text-gray-700 dark:text-gray-300 mb-1"
-            >Opacity</span
-          >
-          <input
-            type="range"
-            min="0.1"
-            max="1"
-            step="0.1"
-            bind:value={textOpacity}
-            class="w-24 h-6 accent-indigo-600"
-          />
+        <div class="flex flex-col gap-2">
+          <span class="text-xs text-gray-700 dark:text-gray-300">Text</span>
+          <div class="flex gap-2">
+            <select
+              bind:value={fontSize}
+              class="text-xs p-1 bg-white dark:bg-slate-700 border border-gray-200 dark:border-gray-600 rounded w-20"
+            >
+              <option value={12}>12px</option>
+              <option value={14}>14px</option>
+              <option value={16}>16px</option>
+              <option value={18}>18px</option>
+              <option value={20}>20px</option>
+              <option value={24}>24px</option>
+              <option value={28}>28px</option>
+              <option value={32}>32px</option>
+            </select>
+            <select
+              bind:value={fontWeight}
+              class="text-xs p-1 bg-white dark:bg-slate-700 border border-gray-200 dark:border-gray-600 rounded w-20"
+            >
+              <option value="normal">Normal</option>
+              <option value="bold">Bold</option>
+              <option value="light">Light</option>
+            </select>
+          </div>
         </div>
-        <div class="flex flex-col">
-          <span class="text-xs text-gray-700 dark:text-gray-300 mb-1">Size</span
-          >
-          <select
-            bind:value={fontSize}
-            class="text-xs p-1 bg-white dark:bg-slate-700 border border-gray-200 dark:border-gray-600 rounded"
-          >
-            <option value={12}>12px</option>
-            <option value={14}>14px</option>
-            <option value={16}>16px</option>
-            <option value={18}>18px</option>
-            <option value={20}>20px</option>
-            <option value={24}>24px</option>
-            <option value={28}>28px</option>
-            <option value={32}>32px</option>
-          </select>
-        </div>
-        <div class="flex flex-col">
-          <span class="text-xs text-gray-700 dark:text-gray-300 mb-1"
-            >Weight</span
-          >
-          <select
-            bind:value={fontWeight}
-            class="text-xs p-1 bg-white dark:bg-slate-700 border border-gray-200 dark:border-gray-600 rounded"
-          >
-            <option value="normal">Normal</option>
-            <option value="bold">Bold</option>
-            <option value="light">Light</option>
-          </select>
-        </div>
-        <div class="flex flex-col">
-          <span class="text-xs text-gray-700 dark:text-gray-300 mb-1"
-            >Align</span
-          >
+        <div class="flex flex-col gap-2">
+          <span class="text-xs text-gray-700 dark:text-gray-300">Align</span>
           <select
             bind:value={textAlign}
-            class="text-xs p-1 bg-white dark:bg-slate-700 border border-gray-200 dark:border-gray-600 rounded"
+            class="text-xs p-1 bg-white dark:bg-slate-700 border border-gray-200 dark:border-gray-600 rounded w-24"
           >
             <option value="left">Left</option>
             <option value="center">Center</option>
@@ -360,16 +345,14 @@
 
     <!-- EFFECTS TAB -->
     {#if activeTab === "effects"}
-      <div class="flex flex-wrap gap-3">
-        <div class="flex flex-col">
-          <span class="text-xs text-gray-700 dark:text-gray-300 mb-1"
-            >Shadow</span
-          >
-          <div class="flex gap-1 items-center">
+      <div class="flex items-center gap-4">
+        <div class="flex flex-col gap-2">
+          <span class="text-xs text-gray-700 dark:text-gray-300">Shadow</span>
+          <div class="flex items-center gap-2">
             <input
               type="color"
               bind:value={shadowColor}
-              class="w-6 h-6 rounded cursor-pointer"
+              class="w-8 h-8 rounded cursor-pointer"
             />
             <input
               type="range"
@@ -377,7 +360,7 @@
               max="20"
               step="1"
               bind:value={shadowBlur}
-              class="w-20 h-6 accent-indigo-600"
+              class="w-32 h-6 accent-indigo-600"
             />
           </div>
         </div>
@@ -385,8 +368,7 @@
     {/if}
   </div>
 </NodeToolbar>
-<NodeResizer minWidth={5} minHeight={5} isVisible={selected} />
-
+<NodeResizer minWidth={40} minHeight={30} isVisible={selected} />
 <!-- Top Handles -->
 <Handle
   id="top-target"
@@ -400,7 +382,6 @@
   position={Position.Top}
   class={!showHandles ? "hidden" : ""}
 />
-
 <!-- Left Handles -->
 <Handle
   id="left-target"
@@ -414,7 +395,29 @@
   position={Position.Left}
   class={!showHandles ? "hidden" : ""}
 />
-
+<div
+  class="h-full w-full flex items-center justify-center overflow-hidden"
+  style=" 
+    background-color: {effectiveBgColorWithOpacity}; 
+    border: {transparentBorder
+    ? '0'
+    : `${borderWidth}px ${borderStyle} ${effectiveBorderColor}`}; 
+    {shadowBlur > 0 ? `box-shadow: 0 0 ${shadowBlur}px ${shadowColor};` : ''}
+    border-radius: 50%;
+  "
+>
+  <textarea
+    bind:value={data.label}
+    class="bg-transparent w-full h-full focus:outline-none resize-none overflow-hidden p-4"
+    style="
+      font-size: {fontSize}px; 
+      color: {textColor}; 
+      font-weight: {fontWeight};
+      text-align: {textAlign};
+      opacity: {textOpacity};
+    "
+  ></textarea>
+</div>
 <!-- Right Handles -->
 <Handle
   id="right-source"
@@ -428,7 +431,6 @@
   position={Position.Right}
   class={!showHandles ? "hidden" : ""}
 />
-
 <!-- Bottom Handles -->
 <Handle
   id="bottom-source"
@@ -442,27 +444,3 @@
   position={Position.Bottom}
   class={!showHandles ? "hidden" : ""}
 />
-
-<div
-  class="h-full w-full flex items-center justify-center overflow-hidden"
-  style="
-    border-radius: {borderRadius}; 
-    background-color: {effectiveBgColorWithOpacity}; 
-    border: {transparentBorder
-    ? '0'
-    : `${borderWidth}px ${borderStyle} ${effectiveBorderColor}`}; 
-    {shadowBlur > 0 ? `box-shadow: 0 0 ${shadowBlur}px ${shadowColor};` : ''}
-  "
->
-  <textarea
-    bind:value={data.label}
-    class="bg-transparent w-full h-full focus:outline-none resize-none overflow-hidden mt-6"
-    style="
-      font-size: {fontSize}px; 
-      color: {textColor}; 
-      font-weight: {fontWeight};
-      text-align: {textAlign};
-      opacity: {textOpacity};
-    "
-  ></textarea>
-</div>

@@ -14,9 +14,11 @@
   import { onDestroy, onMount } from "svelte";
   import "@xyflow/svelte/dist/style.css";
   import { modelStore } from "$lib/stores/ModelStore.svelte";
+  import { undoRedoStore } from "$lib/stores/UndoRedoStore.svelte";
   import { edgeSettings } from "./edge-settings-store";
   import ResizableNode from "./ResizableNode.svelte";
   import CircleNode from "./CircleNode.svelte";
+  import EllipseNode from "./EllipseNode.svelte";
 
   import EdgeCustomizationPanel from "./EdgeCustomizationPanel.svelte";
 
@@ -34,6 +36,7 @@
   const nodeTypes: NodeTypes = {
     ResizableNode: ResizableNode as any,
     CircleNode: CircleNode as any,
+    EllipseNode: EllipseNode as any,
   } satisfies NodeTypes;
 
   const nodes = writable<Node[]>([]);
@@ -68,6 +71,25 @@
     
     return newNode.id;
   }
+
+  // Undo/Redo functions
+  function performUndo() {
+    const previousState = undoRedoStore.undo();
+    if (previousState) {
+      nodes.set(previousState.nodes);
+      edges.set(previousState.edges);
+      undoRedoStore.completeHistoryChange();
+    }
+  }
+
+  function performRedo() {
+    const nextState = undoRedoStore.redo();
+    if (nextState) {
+      nodes.set(nextState.nodes);
+      edges.set(nextState.edges);
+      undoRedoStore.completeHistoryChange();
+    }
+  }
   
   // Expose method for tutorial to add nodes at specific position
   export function addTutorialNodeAt(nodeType: string = 'ResizableNode', x: number, y: number, label?: string) {
@@ -94,6 +116,9 @@
     );
   }
   
+  // Expose undo/redo methods
+  export { performUndo, performRedo };
+
   // Expose method to create an edge between two nodes
   export function addTutorialEdge(sourceNodeId: string, targetNodeId: string) {
     const newEdge: Edge = {
@@ -214,7 +239,7 @@
     nodes.update((currentNodes) => [...currentNodes, newNode]);
   }
 
-  // Listen for duplicate and auto-connect events
+  // Listen for duplicate, z-index, and auto-connect events
   onMount(() => {
     const handleDuplicate = (event: CustomEvent) => {
       // Extract the id from the event detail
@@ -237,6 +262,52 @@
       } else {
         console.error(`Node with ID ${nodeIdToDuplicate} not found in store.`);
       }
+    };
+
+    const handleBringToFront = (event: CustomEvent) => {
+      const detail = event.detail;
+      const nodeId = detail?.id;
+
+      if (!nodeId) {
+        console.error("BringToFront event received without a valid node ID.");
+        return;
+      }
+
+      nodes.update((currentNodes) => {
+        // Find the node to bring to front
+        const nodeIndex = currentNodes.findIndex(node => node.id === nodeId);
+        if (nodeIndex === -1) return currentNodes;
+
+        // Remove the node from its current position
+        const nodeToMove = currentNodes[nodeIndex];
+        const remainingNodes = currentNodes.filter(node => node.id !== nodeId);
+        
+        // Add it to the end (top layer)
+        return [...remainingNodes, nodeToMove];
+      });
+    };
+
+    const handleSendToBack = (event: CustomEvent) => {
+      const detail = event.detail;
+      const nodeId = detail?.id;
+
+      if (!nodeId) {
+        console.error("SendToBack event received without a valid node ID.");
+        return;
+      }
+
+      nodes.update((currentNodes) => {
+        // Find the node to send to back
+        const nodeIndex = currentNodes.findIndex(node => node.id === nodeId);
+        if (nodeIndex === -1) return currentNodes;
+
+        // Remove the node from its current position
+        const nodeToMove = currentNodes[nodeIndex];
+        const remainingNodes = currentNodes.filter(node => node.id !== nodeId);
+        
+        // Add it to the beginning (back layer)
+        return [nodeToMove, ...remainingNodes];
+      });
     };
 
     const handleAutoConnect = (event: CustomEvent) => {
@@ -262,12 +333,22 @@
     };
 
     document.addEventListener("duplicate", handleDuplicate as EventListener);
+    document.addEventListener("bringToFront", handleBringToFront as EventListener);
+    document.addEventListener("sendToBack", handleSendToBack as EventListener);
     document.addEventListener("autoConnectNodes", handleAutoConnect as EventListener);
 
     return () => {
       document.removeEventListener(
         "duplicate",
         handleDuplicate as EventListener
+      );
+      document.removeEventListener(
+        "bringToFront",
+        handleBringToFront as EventListener
+      );
+      document.removeEventListener(
+        "sendToBack", 
+        handleSendToBack as EventListener
       );
       document.removeEventListener(
         "autoConnectNodes",
@@ -307,6 +388,9 @@
           nodes.set(finalNodes);
           edges.set(finalEdges);
 
+          // Initialize undo/redo history
+          undoRedoStore.initialize(finalNodes, finalEdges);
+
           // Apply loaded edge settings
           const firstEdge = finalEdges[0];
           if (firstEdge && firstEdge.style) {
@@ -337,6 +421,17 @@
   });
 
   let saveTimeout: number;
+  let historyTimeout: number;
+
+  const debouncedHistorySave = () => {
+    if (historyTimeout) clearTimeout(historyTimeout);
+    historyTimeout = setTimeout(() => {
+      if (!undoRedoStore.isApplyingChange) {
+        undoRedoStore.saveState($nodes, $edges);
+      }
+    }, 500) as unknown as number;
+  };
+
   const debouncedSave = () => {
     if (saveTimeout) clearTimeout(saveTimeout);
     saveTimeout = setTimeout(async () => {
@@ -366,24 +461,27 @@
     }, 1000) as unknown as number;
   };
 
-  // Subscribe to nodes changes for saving
+  // Subscribe to nodes changes for saving and history
   $effect(() => {
     const currentNodes = $nodes;
     if (initialLoadComplete && Array.isArray(currentNodes)) {
       debouncedSave();
+      debouncedHistorySave();
     }
   });
 
-  // Subscribe to edges changes for saving
+  // Subscribe to edges changes for saving and history
   $effect(() => {
     const currentEdges = $edges;
     if (initialLoadComplete && Array.isArray(currentEdges)) {
       debouncedSave();
+      debouncedHistorySave();
     }
   });
 
   onDestroy(() => {
     if (saveTimeout) clearTimeout(saveTimeout);
+    if (historyTimeout) clearTimeout(historyTimeout);
   });
 
 

@@ -158,7 +158,7 @@
       <span class="text-xs font-medium text-gray-700 dark:text-gray-300"
         >Add Nodes</span
       >
-      <div class="flex gap-2">
+      <div class="flex gap-2 flex-wrap">
         <button
           id="add-rectangle-node"
           onclick={() => addNode("ResizableNode")}
@@ -174,6 +174,14 @@
         >
           <span class="w-4 h-4 border-2 border-current rounded-full"></span>
           Circle
+        </button>
+        <button
+          id="add-ellipse-node"
+          onclick={() => addNode("EllipseNode")}
+          class="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-md bg-white dark:bg-slate-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors"
+        >
+          <span class="w-5 h-3 border-2 border-current rounded-full"></span>
+          Ellipse
         </button>
       </div>
     </div>

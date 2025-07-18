@@ -18,6 +18,25 @@
   let isLoadingCapability = $state(true);
   let hasAccess = $state(false);
   let modelComponentRef = $state<any>(null);
+
+  // Keyboard shortcuts for undo/redo
+  function handleKeydown(event: KeyboardEvent) {
+    if (!modelComponentRef) return;
+
+    const isCtrl = event.ctrlKey || event.metaKey;
+    
+    if (isCtrl && event.key === 'z' && !event.shiftKey) {
+      event.preventDefault();
+      if (typeof modelComponentRef.performUndo === 'function') {
+        modelComponentRef.performUndo();
+      }
+    } else if (isCtrl && (event.key === 'y' || (event.key === 'z' && event.shiftKey))) {
+      event.preventDefault();
+      if (typeof modelComponentRef.performRedo === 'function') {
+        modelComponentRef.performRedo();
+      }
+    }
+  }
   
 
   // Check if user has access to model features
@@ -339,6 +358,8 @@
     ],
   });
 </script>
+
+<svelte:window on:keydown={handleKeydown} />
 
 <div class="h-full relative" id="model-view-outer-container">
   <div class="absolute top-2 right-2 z-50">
