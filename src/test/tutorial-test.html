@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tutorial Test</title>
+</head>
+<body>
+    <h1>Tutorial Event Test</h1>
+    <button id="test-add-node">Test Add Node</button>
+    <button id="test-select-node">Test Select Node</button>
+    <div id="output"></div>
+
+    <script>
+        const output = document.getElementById('output');
+        
+        // Listen for tutorial node created event
+        document.addEventListener('tutorialNodeCreated', (event) => {
+            output.innerHTML += `<p>Node created: ${event.detail.nodeId}</p>`;
+            window.testNodeId = event.detail.nodeId;
+        });
+        
+        // Test add node button
+        document.getElementById('test-add-node').addEventListener('click', () => {
+            const event = new CustomEvent('tutorialAddNode', {
+                detail: { nodeType: 'ResizableNode' }
+            });
+            document.dispatchEvent(event);
+            output.innerHTML += '<p>Dispatched tutorialAddNode event</p>';
+        });
+        
+        // Test select node button
+        document.getElementById('test-select-node').addEventListener('click', () => {
+            if (window.testNodeId) {
+                const event = new CustomEvent('tutorialSelectNode', {
+                    detail: { nodeId: window.testNodeId }
+                });
+                document.dispatchEvent(event);
+                output.innerHTML += `<p>Dispatched tutorialSelectNode for ${window.testNodeId}</p>`;
+            } else {
+                output.innerHTML += '<p>No node ID available yet</p>';
+            }
+        });
+    </script>
+</body>
+</html>

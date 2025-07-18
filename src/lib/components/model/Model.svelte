@@ -48,6 +48,51 @@
 
   // Get the model name reactively
   let modelName = $derived(modelStore.currentModel?.name);
+  
+  // Expose method for tutorial to add nodes
+  export function addTutorialNode(nodeType: string = 'ResizableNode') {
+    console.log('Model.addTutorialNode called');
+    const position = {
+      x: 300,
+      y: 200,
+    };
+    
+    const newNode: Node = {
+      id: `tutorial-${nodeType}-${Date.now()}`,
+      type: nodeType,
+      position: position,
+      data: { label: "Tutorial Node" },
+      selected: false,
+    };
+    
+    console.log('Adding node to store:', newNode);
+    nodes.update((currentNodes) => [...currentNodes, newNode]);
+    
+    return newNode.id;
+  }
+  
+  // Expose method to select a node
+  export function selectNode(nodeId: string) {
+    nodes.update((currentNodes) => 
+      currentNodes.map(node => ({
+        ...node,
+        selected: node.id === nodeId
+      }))
+    );
+  }
+  
+  // Register globally for tutorial access
+  onMount(() => {
+    console.log('Model: Registering global tutorial methods');
+    (window as any).tutorialMethods = {
+      addTutorialNode,
+      selectNode
+    };
+    
+    return () => {
+      delete (window as any).tutorialMethods;
+    };
+  });
 
 
   // Function to duplicate a node
@@ -136,7 +181,7 @@
     nodes.update((currentNodes) => [...currentNodes, newNode]);
   }
 
-  // Listen for duplicate events
+  // Listen for duplicate and auto-connect events
   onMount(() => {
     const handleDuplicate = (event: CustomEvent) => {
       // Extract the id from the event detail
@@ -161,12 +206,39 @@
       }
     };
 
+    const handleAutoConnect = (event: CustomEvent) => {
+      const detail = event.detail;
+      if (detail?.action === 'connect-latest-nodes') {
+        // Get the two most recent nodes
+        const currentNodes = $nodes;
+        if (currentNodes.length >= 2) {
+          const sourceNode = currentNodes[currentNodes.length - 2];
+          const targetNode = currentNodes[currentNodes.length - 1];
+          
+          // Create connection
+          const connection = {
+            source: sourceNode.id,
+            target: targetNode.id,
+            sourceHandle: null,
+            targetHandle: null,
+          };
+          
+          onConnect(connection);
+        }
+      }
+    };
+
     document.addEventListener("duplicate", handleDuplicate as EventListener);
+    document.addEventListener("autoConnectNodes", handleAutoConnect as EventListener);
 
     return () => {
       document.removeEventListener(
         "duplicate",
         handleDuplicate as EventListener
+      );
+      document.removeEventListener(
+        "autoConnectNodes",
+        handleAutoConnect as EventListener
       );
     };
   });
@@ -360,8 +432,26 @@
     );
   };
 
-  // Create a reactive statement to log edge settings changes
+  // Create a reactive statement to update edge settings
+  let lastEdgeSettings = $state($edgeSettings);
   $effect(() => {
+    const currentSettings = $edgeSettings;
+    
+    // Only update if settings actually changed to prevent infinite loops
+    if (
+      !initialLoadComplete ||
+      (lastEdgeSettings.type === currentSettings.type &&
+        lastEdgeSettings.color === currentSettings.color &&
+        lastEdgeSettings.width === currentSettings.width &&
+        lastEdgeSettings.animated === currentSettings.animated &&
+        lastEdgeSettings.markerEnd === currentSettings.markerEnd &&
+        lastEdgeSettings.markerStart === currentSettings.markerStart)
+    ) {
+      return;
+    }
+
+    lastEdgeSettings = { ...currentSettings };
+
     // Update only non-customized edges when settings change
     edges.update((currentEdges) =>
       currentEdges.map((edge) => {
@@ -370,14 +460,14 @@
         }
         return {
           ...edge,
-          type: $edgeSettings.type,
-          animated: $edgeSettings.animated,
-          style: `stroke: ${$edgeSettings.color}; stroke-width: ${$edgeSettings.width}px;`,
-          markerEnd: $edgeSettings.markerEnd
-            ? { type: MarkerType.ArrowClosed, color: $edgeSettings.color }
+          type: currentSettings.type,
+          animated: currentSettings.animated,
+          style: `stroke: ${currentSettings.color}; stroke-width: ${currentSettings.width}px;`,
+          markerEnd: currentSettings.markerEnd
+            ? { type: MarkerType.ArrowClosed, color: currentSettings.color }
             : undefined,
-          markerStart: $edgeSettings.markerStart
-            ? { type: MarkerType.ArrowClosed, color: $edgeSettings.color }
+          markerStart: currentSettings.markerStart
+            ? { type: MarkerType.ArrowClosed, color: currentSettings.color }
             : undefined,
         };
       })

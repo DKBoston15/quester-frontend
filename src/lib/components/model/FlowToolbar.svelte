@@ -103,6 +103,7 @@
 </script>
 
 <div
+  id="flow-toolbar"
   class="inline-block p-3 backdrop-blur-md bg-white/80 dark:bg-slate-800/90 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 transition-all absolute top-4 left-4 z-10"
 >
   <div class="flex flex-col gap-4">
@@ -132,6 +133,7 @@
       >
       <div class="flex gap-2">
         <button
+          id="add-rectangle-node"
           onclick={() => addNode("ResizableNode")}
           class="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-md bg-white dark:bg-slate-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors"
         >
@@ -139,6 +141,7 @@
           Rectangle
         </button>
         <button
+          id="add-circle-node"
           onclick={() => addNode("CircleNode")}
           class="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-md bg-white dark:bg-slate-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors"
         >

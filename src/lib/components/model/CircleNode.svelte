@@ -129,6 +129,7 @@
 
 <NodeToolbar isVisible={selected} position={Position.Top}>
   <div
+    data-node-toolbar
     class="inline-block p-3 backdrop-blur-md bg-white/80 dark:bg-slate-800/90 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 transition-all"
   >
     <!-- Tabs -->
