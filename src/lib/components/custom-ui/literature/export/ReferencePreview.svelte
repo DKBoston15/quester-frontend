@@ -11,9 +11,11 @@
   interface Props {
     literature: Literature[];
     citationStyle: CitationStyle;
+    internalSelectedIds?: Set<string>;
+    onToggleReference?: (literature: Literature) => void;
   }
 
-  let { literature, citationStyle }: Props = $props();
+  let { literature, citationStyle, internalSelectedIds, onToggleReference }: Props = $props();
 
   // Simple state-based approach
   let formattedCitations = $state<Array<{literature: Literature, formatted: string}>>([]);
@@ -111,15 +113,32 @@
         <div class="prose prose-sm max-w-none">
           <div class="space-y-6">
             {#each formattedCitations as citationItem, index}
+              {@const isSelected = !internalSelectedIds || !citationItem.literature.id || internalSelectedIds.has(citationItem.literature.id)}
               <div class="reference-item border-l-2 border-muted pl-4 py-2">
-                <div class="citation-text leading-relaxed">
-                  {@html citationItem.formatted}
-                </div>
-                {#if citationItem.literature.doi}
-                  <div class="text-xs text-muted-foreground mt-1">
-                    DOI: {citationItem.literature.doi}
+                <!-- Checkbox and citation -->
+                <div class="flex items-start gap-3">
+                  {#if internalSelectedIds && onToggleReference && citationItem.literature.id}
+                    <label class="flex items-center mt-1 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onchange={() => onToggleReference?.(citationItem.literature)}
+                        class="h-4 w-4 text-primary border-2 border-input rounded focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
+                      />
+                    </label>
+                  {/if}
+                  
+                  <div class="flex-1 transition-opacity duration-200 {isSelected ? 'opacity-100' : 'opacity-40'}">
+                    <div class="citation-text leading-relaxed">
+                      {@html citationItem.formatted}
+                    </div>
+                    {#if citationItem.literature.doi}
+                      <div class="text-xs text-muted-foreground mt-1">
+                        DOI: {citationItem.literature.doi}
+                      </div>
+                    {/if}
                   </div>
-                {/if}
+                </div>
               </div>
             {/each}
           </div>

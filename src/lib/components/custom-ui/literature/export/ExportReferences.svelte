@@ -4,7 +4,7 @@
   import { Button } from "$lib/components/ui/button";
   import * as Select from "$lib/components/ui/select";
   import { Badge } from "$lib/components/ui/badge";
-  import { Copy, Download, FileText } from "lucide-svelte";
+  import { Copy, Download, FileText, CheckSquare, Square, RotateCcw } from "lucide-svelte";
   import type { Literature } from "$lib/types/literature";
   import type { CitationStyle } from "$lib/utils/citationFormatters";
   import { citationStyles, formatCitation, stripHtmlTags } from "$lib/utils/citationFormatters";
@@ -25,6 +25,52 @@
 
   let { open = $bindable(), selectedLiterature, onOpenChange }: Props = $props();
 
+  // Internal selection state for the modal
+  let internalSelectedIds = $state<Set<string>>(new Set());
+  
+  // Initialize internal selection when modal opens or selectedLiterature changes
+  $effect(() => {
+    if (open && selectedLiterature) {
+      internalSelectedIds = new Set(selectedLiterature.map(item => item.id).filter(Boolean));
+    }
+  });
+
+  // Get currently selected literature based on internal state
+  const currentlySelected = $derived(() => {
+    return selectedLiterature.filter(item => item.id && internalSelectedIds.has(item.id));
+  });
+
+  function toggleReference(literature: Literature) {
+    if (!literature.id) return;
+    
+    const newSelected = new Set(internalSelectedIds);
+    if (newSelected.has(literature.id)) {
+      newSelected.delete(literature.id);
+    } else {
+      newSelected.add(literature.id);
+    }
+    internalSelectedIds = newSelected;
+  }
+
+  function selectAll() {
+    internalSelectedIds = new Set(selectedLiterature.map(item => item.id).filter(Boolean));
+  }
+
+  function deselectAll() {
+    internalSelectedIds = new Set();
+  }
+
+  function invertSelection() {
+    const allIds = new Set(selectedLiterature.map(item => item.id).filter(Boolean));
+    const newSelected = new Set<string>();
+    
+    for (const id of allIds) {
+      if (!internalSelectedIds.has(id)) {
+        newSelected.add(id);
+      }
+    }
+    internalSelectedIds = newSelected;
+  }
 
   let selectedStyle = $state<CitationStyle>("APA");
   let selectedFormat = $state<"copy" | "pdf" | "docx" | "bibtex" | "ris" | "csv">("copy");
@@ -63,7 +109,7 @@
   });
 
   async function handleExport() {
-    if (selectedLiterature.length === 0) {
+    if (currentlySelected().length === 0) {
       toast.error("No references selected");
       return;
     }
@@ -77,41 +123,41 @@
           break;
         case "pdf":
           await exportToPDFSimple({
-            literature: selectedLiterature,
+            literature: currentlySelected(),
             citationStyle: selectedStyle,
             projectTitle: "Research Bibliography"
           });
-          toast.success(`PDF exported successfully with ${selectedLiterature.length} references`);
+          toast.success(`PDF exported successfully with ${currentlySelected().length} references`);
           open = false;
           break;
         case "docx":
           await exportToDOCX({
-            literature: selectedLiterature,
+            literature: currentlySelected(),
             citationStyle: selectedStyle,
             projectTitle: "Research Bibliography"
           });
-          toast.success(`DOCX exported successfully with ${selectedLiterature.length} references`);
+          toast.success(`DOCX exported successfully with ${currentlySelected().length} references`);
           open = false;
           break;
         case "bibtex":
           await exportToBibTeX({
-            literature: selectedLiterature
+            literature: currentlySelected()
           });
-          toast.success(`BibTeX exported successfully with ${selectedLiterature.length} references`);
+          toast.success(`BibTeX exported successfully with ${currentlySelected().length} references`);
           open = false;
           break;
         case "ris":
           await exportToRIS({
-            literature: selectedLiterature
+            literature: currentlySelected()
           });
-          toast.success(`RIS exported successfully with ${selectedLiterature.length} references`);
+          toast.success(`RIS exported successfully with ${currentlySelected().length} references`);
           open = false;
           break;
         case "csv":
           await exportToCSV({
-            literature: selectedLiterature
+            literature: currentlySelected()
           });
-          toast.success(`CSV exported successfully with ${selectedLiterature.length} references`);
+          toast.success(`CSV exported successfully with ${currentlySelected().length} references`);
           open = false;
           break;
       }
@@ -124,13 +170,14 @@
   }
 
   async function copyToClipboard() {
-    if (selectedLiterature.length === 0) {
+    const currentLiterature = currentlySelected();
+    if (currentLiterature.length === 0) {
       throw new Error("No references to copy");
     }
 
     try {
       // Get formatted citations and create properly formatted text
-      const compiledLiterature = compileBibliography(selectedLiterature, { sortBy: "author", sortOrder: "asc" });
+      const compiledLiterature = compileBibliography(currentLiterature, { sortBy: "author", sortOrder: "asc" });
       
       // Create bibliography header
       const header = `Bibliography\n\nGenerated on ${new Date().toLocaleDateString("en-US", { 
@@ -151,7 +198,7 @@
       const fullText = header + formattedText;
       
       await navigator.clipboard.writeText(fullText);
-      toast.success(`${selectedLiterature.length} references copied to clipboard`);
+      toast.success(`${currentLiterature.length} references copied to clipboard`);
       open = false;
     } catch (err) {
       throw new Error("Failed to copy to clipboard");
@@ -186,8 +233,24 @@
       <div class="flex items-center justify-between gap-4 px-6 pt-4">
         <div class="flex items-center gap-4">
           <Badge variant="secondary" class="px-3 py-1">
-            {selectedLiterature.length} reference{selectedLiterature.length !== 1 ? 's' : ''} selected
+            {currentlySelected().length} of {selectedLiterature.length} reference{selectedLiterature.length !== 1 ? 's' : ''} selected
           </Badge>
+          
+          <!-- Selection controls -->
+          <div class="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onclick={selectAll} disabled={currentlySelected().length === selectedLiterature.length}>
+              <CheckSquare class="h-4 w-4 mr-1" />
+              All
+            </Button>
+            <Button variant="ghost" size="sm" onclick={deselectAll} disabled={currentlySelected().length === 0}>
+              <Square class="h-4 w-4 mr-1" />
+              None
+            </Button>
+            <Button variant="ghost" size="sm" onclick={invertSelection} disabled={selectedLiterature.length === 0}>
+              <RotateCcw class="h-4 w-4 mr-1" />
+              Invert
+            </Button>
+          </div>
         </div>
 
         <div class="flex items-center gap-2">
@@ -224,6 +287,8 @@
         <ReferencePreview 
           literature={selectedLiterature} 
           citationStyle={selectedStyle}
+          {internalSelectedIds}
+          onToggleReference={toggleReference}
         />
       </div>
     </div>
@@ -234,7 +299,7 @@
       </Button>
       <Button 
         onclick={handleExport} 
-        disabled={isExporting || selectedLiterature.length === 0}
+        disabled={isExporting || currentlySelected().length === 0}
       >
         {#if isExporting}
           <span class="animate-spin mr-2">⏳</span>
