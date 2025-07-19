@@ -9,11 +9,15 @@
     MoreVertical,
     FolderInput,
     AlertTriangle,
+    Edit3,
+    Check,
+    X,
   } from "lucide-svelte";
   import type { Department, Project } from "$lib/types/auth";
   import { auth } from "$lib/stores/AuthStore.svelte";
   import { Button } from "$lib/components/ui/button";
   import { Badge } from "$lib/components/ui/badge";
+  import { Input } from "$lib/components/ui/input";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
   import * as Tooltip from "$lib/components/ui/tooltip/index.js";
@@ -32,6 +36,11 @@
   let showErrorDialog = $state(false);
   let dialogErrorTitle = $state("Action Failed");
   let dialogErrorMessage = $state("An unexpected error occurred.");
+
+  // State for renaming
+  let isRenaming = $state(false);
+  let newName = $state("");
+  let isRenameLoading = $state(false);
 
   // Auto-expand departments when filtering is active and has results
   $effect(() => {
@@ -127,7 +136,16 @@
 
   // Toggle expanded state for departments
   function toggleExpanded(e: MouseEvent) {
-    if (isDepartment(props.item)) {
+    if (isDepartment(props.item) && !isRenaming) {
+      e.stopPropagation();
+      isExpanded = !isExpanded;
+    }
+  }
+
+  // Handle keyboard events for department toggle
+  function handleKeydown(e: KeyboardEvent) {
+    if ((e.key === 'Enter' || e.key === ' ') && isDepartment(props.item) && !isRenaming) {
+      e.preventDefault();
       e.stopPropagation();
       isExpanded = !isExpanded;
     }
@@ -243,6 +261,116 @@
     return "Unknown";
   }
 
+  // Start renaming a department
+  function startRename(e: MouseEvent) {
+    if (!isDepartment(props.item)) return;
+    e.stopPropagation();
+    
+    newName = props.item.name;
+    isRenaming = true;
+    
+    // Focus the input after a short delay to ensure it's rendered
+    setTimeout(() => {
+      const input = document.querySelector('input[placeholder="Department name"]') as HTMLInputElement;
+      if (input) {
+        input.focus();
+        input.select();
+      }
+    }, 50);
+  }
+
+  // Cancel renaming
+  function cancelRename() {
+    isRenaming = false;
+    newName = "";
+  }
+
+  // Save the new department name
+  async function saveRename() {
+    if (!isDepartment(props.item) || !newName.trim() || newName.trim() === props.item.name) {
+      cancelRename();
+      return;
+    }
+
+    isRenameLoading = true;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/departments/${props.item.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          name: newName.trim(),
+          organizationId: props.item.organizationId,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        dialogErrorTitle = "Rename Failed";
+        dialogErrorMessage =
+          errorData.message || "Could not rename department. Please try again.";
+        showErrorDialog = true;
+        return;
+      }
+
+      // Update was successful, refresh data
+      await teamManagement.loadUserResources();
+      isRenaming = false;
+      newName = "";
+    } catch (error) {
+      console.error("Error renaming department:", error);
+      dialogErrorTitle = "Rename Failed";
+      dialogErrorMessage =
+        error instanceof Error
+          ? error.message
+          : "Could not rename department. Please try again.";
+      showErrorDialog = true;
+    } finally {
+      isRenameLoading = false;
+    }
+  }
+
+  // Handle Enter and Escape keys in rename input
+  function handleRenameKeydown(e: KeyboardEvent) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      saveRename();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      cancelRename();
+    }
+  }
+
+  // Check if user can rename department
+  function canRenameDepartment(department: Department): boolean {
+    if (!auth.user || !teamManagement.userResources) return false;
+
+    // Check if user is Department Owner or Admin
+    const deptResource = teamManagement.userResources.departments?.find(
+      (d: any) => d.id === department.id
+    );
+    if (deptResource?.$extras?.roleName === "Owner" || deptResource?.$extras?.roleName === "Admin") {
+      return true;
+    }
+
+    // Check if user is Org Admin or Org Owner
+    const orgResource = teamManagement.userResources.organizations?.find(
+      (o: any) => o.id === department.organizationId
+    );
+    if (
+      orgResource?.$extras?.roleName === "Admin" ||
+      orgResource?.$extras?.roleName === "Owner"
+    ) {
+      return true;
+    }
+
+    return false;
+  }
+
   // Join a project (self-assign)
   async function joinProject(project: Project, e: MouseEvent) {
     if (!auth.user) return;
@@ -307,6 +435,7 @@
   <div
     class="flex items-center gap-2 p-2 hover:bg-accent hover:text-accent-foreground rounded-md cursor-pointer ml-2 my-1 transition-colors"
     onclick={toggleExpanded}
+    onkeydown={handleKeydown}
     role="button"
     tabindex="0"
   >
@@ -317,7 +446,44 @@
     </div>
 
     <FolderKanban class="h-4 w-4 text-amber-500" />
-    <span class="font-medium">{props.item.name}</span>
+    
+    {#if isRenaming}
+      <!-- Rename input mode -->
+      <div class="flex items-center gap-2 flex-1">
+        <Input
+          bind:value={newName}
+          onkeydown={handleRenameKeydown}
+          class="h-8 text-sm font-medium"
+          placeholder="Department name"
+          disabled={isRenameLoading}
+        />
+        <Button
+          size="icon"
+          variant="ghost"
+          class="h-6 w-6"
+          onclick={saveRename}
+          disabled={isRenameLoading || !newName.trim()}
+        >
+          {#if isRenameLoading}
+            <div class="w-3 h-3 border border-t-transparent rounded-full animate-spin"></div>
+          {:else}
+            <Check class="h-3 w-3" />
+          {/if}
+        </Button>
+        <Button
+          size="icon"
+          variant="ghost"
+          class="h-6 w-6"
+          onclick={cancelRename}
+          disabled={isRenameLoading}
+        >
+          <X class="h-3 w-3" />
+        </Button>
+      </div>
+    {:else}
+      <!-- Normal display mode -->
+      <span class="font-medium">{props.item.name}</span>
+    {/if}
 
     <div class="ml-auto flex gap-2">
       {#if !props.isUserMember}
@@ -340,12 +506,13 @@
       {/if}
 
       <!-- Add dropdown menu for department actions -->
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger onclick={(e: MouseEvent) => e.stopPropagation()}>
-          <Button variant="ghost" size="icon" class="relative z-10">
-            <MoreVertical class="h-4 w-4" />
-          </Button>
-        </DropdownMenu.Trigger>
+      {#if !isRenaming}
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger onclick={(e: MouseEvent) => e.stopPropagation()}>
+            <Button variant="ghost" size="icon" class="relative z-10">
+              <MoreVertical class="h-4 w-4" />
+            </Button>
+          </DropdownMenu.Trigger>
         <DropdownMenu.Content
           onclick={(e: MouseEvent) => e.stopPropagation()}
           class="relative z-20"
@@ -361,6 +528,18 @@
             <Plus class="h-4 w-4 mr-2" />
             New Project
           </DropdownMenu.Item>
+          
+          {#if isDepartment(props.item) && canRenameDepartment(props.item)}
+            <DropdownMenu.Item
+              onclick={(e: MouseEvent) => {
+                e.stopPropagation();
+                startRename(e);
+              }}
+            >
+              <Edit3 class="h-4 w-4 mr-2" />
+              Rename Department
+            </DropdownMenu.Item>
+          {/if}
 
           <!-- Delete Department Item -->
           {#if isDepartment(props.item) && canPotentiallyDeleteDepartment(props.item)}
@@ -409,7 +588,8 @@
             {/if}
           {/if}
         </DropdownMenu.Content>
-      </DropdownMenu.Root>
+        </DropdownMenu.Root>
+      {/if}
     </div>
   </div>
 
