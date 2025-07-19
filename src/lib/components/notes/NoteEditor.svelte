@@ -17,6 +17,7 @@
   } from "$lib/components/ui/select";
   import LiteratureSelector from "$lib/components/custom-ui/literature/LiteratureSelector.svelte";
   import { API_BASE_URL } from "$lib/config";
+  import { isAuthError } from "$lib/services/api-client";
 
   // Props
   const { note, onDelete } = $props<{
@@ -50,6 +51,9 @@
   );
 
   const SAVE_DEBOUNCE = 2000; // 2 seconds between saves
+  
+  // Track auth errors to stop auto-save when session expires
+  let authErrorOccurred = $state(false);
 
   // Add section type options
   const sectionTypeOptions = [
@@ -324,6 +328,12 @@
 
   // Auto-save functionality
   function scheduleSave() {
+    // Don't schedule save if auth error occurred
+    if (authErrorOccurred) {
+      console.log("Skipping save scheduling due to previous auth error");
+      return;
+    }
+    
     clearTimeout(saveTimeout);
 
     // If we recently saved, wait the full debounce period
@@ -432,6 +442,16 @@
       return Promise.resolve(); // Return a resolved promise
     } catch (error) {
       console.error("Failed to save note:", error);
+      
+      // Check if this is an authentication error
+      if (isAuthError(error)) {
+        console.warn("Authentication error during save - stopping auto-save to prevent half-logout state");
+        authErrorOccurred = true;
+        // Don't mark content as changed - let the user re-authenticate to save
+        // The API client will trigger logout automatically
+        return Promise.reject(error);
+      }
+      
       if (!isUnmounting) {
         contentChanged = true; // Mark as still needing save, but only if not unmounting
       }
@@ -440,8 +460,10 @@
       isSaving = false;
 
       // Check if content changed during save operation
+      // Don't schedule another save if auth error occurred to prevent infinite failed requests
       if (
         !isUnmounting &&
+        !authErrorOccurred &&
         (currentTitle !== title ||
           currentContentStr !== JSON.stringify(content))
       ) {

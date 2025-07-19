@@ -1,5 +1,6 @@
 <script lang="ts" module>
   import { API_BASE_URL } from "$lib/config";
+  import { setGlobalLogoutHandler, api } from "../services/api-client";
   import type { Organization, User } from "../types/auth";
 
   let user: User | null = $state(null);
@@ -63,6 +64,17 @@
       isLoading = false;
     },
 
+    // Global logout handler for API client - called automatically on 401/403 errors
+    handleGlobalLogout() {
+      console.log("Global logout triggered by API client due to authentication error");
+      
+      // Clear user state immediately to prevent half-logout
+      this.clearUser();
+      
+      // Redirect to login page
+      window.location.href = "/";
+    },
+
     async fetchUserOrganizations() {
       try {
         const response = await fetch(
@@ -84,6 +96,7 @@
 
     async verifySession() {
       try {
+        // Skip auth check for verify endpoint to prevent loops
         const response = await fetch(`${API_BASE_URL}/auth/verify`, {
           credentials: "include",
         });
@@ -154,20 +167,8 @@
 
     async updateUser(userData: Partial<User>) {
       try {
-        const response = await fetch(`${API_BASE_URL}/users/${user?.id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify(userData),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to update user");
-        }
-
-        const updatedUser = await response.json();
+        // Use centralized API client which handles auth errors automatically
+        const updatedUser = await api.put(`/users/${user?.id}`, userData);
         await this.setUser({ ...user!, ...updatedUser });
         return { success: true, user: updatedUser };
       } catch (error) {
@@ -176,4 +177,8 @@
       }
     },
   };
+
+  // Register the global logout handler with the API client
+  // This ensures all API calls will trigger logout on 401/403 errors
+  setGlobalLogoutHandler(() => auth.handleGlobalLogout());
 </script>
