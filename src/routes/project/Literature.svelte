@@ -8,18 +8,21 @@
   import { Button } from "$lib/components/ui/button";
   import * as Card from "$lib/components/ui/card";
   import * as Tooltip from "$lib/components/ui/tooltip";
-  import { Plus, GraduationCap, Info } from "lucide-svelte";
+  import { Plus, GraduationCap, Info, Download } from "lucide-svelte";
   import { EmptyState } from "$lib/components/ui/empty-state";
   import type { Literature } from "$lib/types/literature";
   import type { GridApi } from "@ag-grid-community/core";
   import { navigate } from "svelte-routing";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
+  import ExportReferences from "$lib/components/custom-ui/literature/export/ExportReferences.svelte";
 
   let searchQuery = $state("");
   let gridApi = $state<GridApi<Literature>>();
   let isAddLiteratureOpen = $state(false);
   let selectedLiterature = $state<Literature | null>(null);
+  let selectedLiteratureItems = $state<Literature[]>([]);
+  let isExportDialogOpen = $state(false);
 
   const driverObj = driver({
     showProgress: true,
@@ -187,6 +190,26 @@
   function handleGridReady(event: CustomEvent<{ api: GridApi<Literature> }>) {
     gridApi = event.detail.api;
   }
+
+  function handleSelectionChanged(event: CustomEvent<{ selectedItems: Literature[] }>) {
+    selectedLiteratureItems = event.detail.selectedItems;
+  }
+
+  function handleExportReferences() {
+    if (selectedLiteratureItems.length === 0) {
+      // If no items selected, select all visible items
+      if (gridApi) {
+        gridApi.selectAll();
+        // Wait a moment for selection to update
+        setTimeout(() => {
+          selectedLiteratureItems = gridApi.getSelectedRows();
+          isExportDialogOpen = true;
+        }, 100);
+        return;
+      }
+    }
+    isExportDialogOpen = true;
+  }
 </script>
 
 <div class="flex-1 w-full">
@@ -207,6 +230,20 @@
           </Tooltip.Root>
         </div>
         <div class="flex items-center space-x-2">
+          <Button
+            onclick={handleExportReferences}
+            variant="outline"
+            disabled={!literatureStore.data?.length}
+            class="border-2 dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
+          >
+            <Download class="h-4 w-4 mr-2" />
+            Export References
+            {#if selectedLiteratureItems.length > 0}
+              <span class="ml-1 px-1.5 py-0.5 text-xs bg-primary text-primary-foreground rounded-full">
+                {selectedLiteratureItems.length}
+              </span>
+            {/if}
+          </Button>
           <Button
             onclick={handleAddLiterature}
             id="add-literature-button"
@@ -277,6 +314,7 @@
                 data={literatureStore.data}
                 on:literatureSelect={handleLiteratureSelect}
                 on:gridReady={handleGridReady}
+                on:selectionChanged={handleSelectionChanged}
               />
             </div>
           {/if}
@@ -290,6 +328,12 @@
   isOpen={isAddLiteratureOpen}
   onOpenChange={(open: boolean) => (isAddLiteratureOpen = open)}
   projectId={projectStore.currentProject?.id}
+/>
+
+<ExportReferences
+  bind:open={isExportDialogOpen}
+  selectedLiterature={selectedLiteratureItems}
+  onOpenChange={(open: boolean) => (isExportDialogOpen = open)}
 />
 
 <style>
