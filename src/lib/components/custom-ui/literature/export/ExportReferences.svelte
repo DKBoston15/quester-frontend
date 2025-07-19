@@ -12,6 +12,10 @@
   import ReferencePreview from "./ReferencePreview.svelte";
   import { toast } from "svelte-sonner";
   import { exportToPDFSimple } from "$lib/utils/pdfExportSimple";
+  import { exportToDOCX } from "$lib/utils/exportFormats/docx";
+  import { exportToBibTeX } from "$lib/utils/exportFormats/bibtex";
+  import { exportToRIS } from "$lib/utils/exportFormats/ris";
+  import { exportToCSV } from "$lib/utils/exportFormats/csv";
 
   interface Props {
     open: boolean;
@@ -29,10 +33,10 @@
   const exportFormats = [
     { value: "copy", label: "Copy to Clipboard", icon: Copy },
     { value: "pdf", label: "PDF", icon: FileText, disabled: false },
-    { value: "docx", label: "Word (DOCX)", icon: FileText, disabled: true },
-    { value: "bibtex", label: "BibTeX", icon: FileText, disabled: true },
-    { value: "ris", label: "RIS", icon: FileText, disabled: true },
-    { value: "csv", label: "CSV", icon: FileText, disabled: true },
+    { value: "docx", label: "Word (DOCX)", icon: FileText, disabled: false },
+    { value: "bibtex", label: "BibTeX", icon: FileText, disabled: false },
+    { value: "ris", label: "RIS", icon: FileText, disabled: false },
+    { value: "csv", label: "CSV", icon: FileText, disabled: false },
   ];
 
   $effect(() => {
@@ -81,20 +85,34 @@
           open = false;
           break;
         case "docx":
-          // TODO: Implement DOCX export
-          toast.info("DOCX export coming soon!");
+          await exportToDOCX({
+            literature: selectedLiterature,
+            citationStyle: selectedStyle,
+            projectTitle: "Research Bibliography"
+          });
+          toast.success(`DOCX exported successfully with ${selectedLiterature.length} references`);
+          open = false;
           break;
         case "bibtex":
-          // TODO: Implement BibTeX export
-          toast.info("BibTeX export coming soon!");
+          await exportToBibTeX({
+            literature: selectedLiterature
+          });
+          toast.success(`BibTeX exported successfully with ${selectedLiterature.length} references`);
+          open = false;
           break;
         case "ris":
-          // TODO: Implement RIS export
-          toast.info("RIS export coming soon!");
+          await exportToRIS({
+            literature: selectedLiterature
+          });
+          toast.success(`RIS exported successfully with ${selectedLiterature.length} references`);
+          open = false;
           break;
         case "csv":
-          // TODO: Implement CSV export
-          toast.info("CSV export coming soon!");
+          await exportToCSV({
+            literature: selectedLiterature
+          });
+          toast.success(`CSV exported successfully with ${selectedLiterature.length} references`);
+          open = false;
           break;
       }
     } catch (error) {

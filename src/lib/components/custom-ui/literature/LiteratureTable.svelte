@@ -488,4 +488,5 @@
     background-repeat: no-repeat;
     background-size: contain;
   }
+
 </style>
