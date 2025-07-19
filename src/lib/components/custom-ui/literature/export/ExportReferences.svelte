@@ -11,6 +11,7 @@
   import { compileBibliography } from "$lib/utils/bibliographyUtils";
   import ReferencePreview from "./ReferencePreview.svelte";
   import { toast } from "svelte-sonner";
+  import { exportToPDFSimple } from "$lib/utils/pdfExportSimple";
 
   interface Props {
     open: boolean;
@@ -27,7 +28,7 @@
 
   const exportFormats = [
     { value: "copy", label: "Copy to Clipboard", icon: Copy },
-    { value: "pdf", label: "PDF", icon: FileText, disabled: true },
+    { value: "pdf", label: "PDF", icon: FileText, disabled: false },
     { value: "docx", label: "Word (DOCX)", icon: FileText, disabled: true },
     { value: "bibtex", label: "BibTeX", icon: FileText, disabled: true },
     { value: "ris", label: "RIS", icon: FileText, disabled: true },
@@ -71,8 +72,13 @@
           await copyToClipboard();
           break;
         case "pdf":
-          // TODO: Implement PDF export
-          toast.info("PDF export coming soon!");
+          await exportToPDFSimple({
+            literature: selectedLiterature,
+            citationStyle: selectedStyle,
+            projectTitle: "Research Bibliography"
+          });
+          toast.success(`PDF exported successfully with ${selectedLiterature.length} references`);
+          open = false;
           break;
         case "docx":
           // TODO: Implement DOCX export
