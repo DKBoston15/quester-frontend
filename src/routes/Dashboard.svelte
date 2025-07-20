@@ -15,6 +15,7 @@
   import OrganizationStructure from "$lib/components/OrganizationStructure.svelte";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import AppSidebar from "$lib/components/AppSidebar.svelte";
+  import AnnouncementBar from "$lib/components/announcements/AnnouncementBar.svelte";
   import { FolderTree, GraduationCap } from "lucide-svelte";
   import { API_BASE_URL } from "$lib/config";
   import { driver } from "driver.js";
@@ -325,6 +326,9 @@
               Here's what's happening in your workspace.
             </p>
           </div>
+
+          <!-- Announcement Bar -->
+          <AnnouncementBar />
 
           {#if error}
             <div class="mb-6">

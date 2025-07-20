@@ -19,6 +19,8 @@
   import Settings from "./routes/Settings.svelte";
   import { API_BASE_URL } from "$lib/config";
   import { GlobalSearchDialog } from "$lib/components/global-search";
+  import AnnouncementModal from "$lib/components/announcements/AnnouncementModal.svelte";
+  import { announcementStore } from "$lib/stores/AnnouncementStore.svelte";
 
   const props = $props<{ url: string }>();
 
@@ -93,6 +95,20 @@
   }
 
   const currentOrgName = $derived(auth.currentOrganization?.name || "");
+
+  // Initialize announcements when user is authenticated
+  $effect(() => {
+    if (auth.isAuthenticated && !auth.isLoading) {
+      // Initialize announcement store and check for unread announcements
+      announcementStore.initialize().then(() => {
+        // Check for unread announcements and auto-show modal if needed
+        announcementStore.checkAndShowAnnouncements();
+      });
+    } else if (!auth.isAuthenticated) {
+      // Reset announcement store when user logs out
+      announcementStore.reset();
+    }
+  });
 </script>
 
 {#if isCheckingAuth}
@@ -130,6 +146,9 @@
       {:else}
         <!-- Global Search Dialog - Available across all authenticated routes -->
         <GlobalSearchDialog />
+        
+        <!-- Announcement Modal - Available across all authenticated routes -->
+        <AnnouncementModal />
         <ProtectedLayout>
           <Route path="/">
             {#if auth.isAuthenticated}
