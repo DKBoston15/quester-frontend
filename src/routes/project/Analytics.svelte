@@ -21,6 +21,7 @@
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
   import EmptyState from "$lib/components/ui/empty-state/EmptyState.svelte";
+  import KeyInsights from "$lib/components/analytics/KeyInsights.svelte";
 
   // Watch for theme changes and update charts
   const observer = new MutationObserver((mutations) => {
@@ -1123,6 +1124,14 @@
       </div>
     </Dialog.Content>
   </Dialog.Root>
+
+  <!-- Key Insights Section -->
+  {#if projectStore.currentProject}
+    <KeyInsights 
+      projectId={projectStore.currentProject.id} 
+      analyticsData={data?.summary}
+    />
+  {/if}
 
   {#if isLoading}
     <div class="loading">Loading data...</div>

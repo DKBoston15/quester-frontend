@@ -65,6 +65,7 @@ npx svelte-check --tsconfig ./tsconfig.app.json
    - Use `$derived` for computed values
    - Use `$props()` for component props
    - Use `$effect` for side effects
+   - **IMPORTANT**: Runes (`$state`, `$derived`, `$effect`, etc.) can ONLY be used in `.svelte` or `.svelte.ts` files, NOT in regular `.ts` files
 
 2. **Import Paths**
    - Use `$lib` alias for imports from src/lib
