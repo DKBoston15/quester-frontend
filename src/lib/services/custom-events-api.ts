@@ -208,16 +208,18 @@ export class CustomEventsAPI {
   ): Promise<CustomEventResponse> {
     const url = `${API_BASE_URL}/projects/${projectId}/custom-events`;
 
-    const body = {
-      ...eventData,
-      eventTimestamp: eventData.eventTimestamp.toISOString(),
+    const requestPayload = {
+      body: {
+        ...eventData,
+        eventTimestamp: eventData.eventTimestamp.toISOString(),
+      }
     };
 
     return apiRequest<CustomEventResponse>(
       url,
       {
         method: "POST",
-        body: JSON.stringify(body),
+        body: JSON.stringify(requestPayload),
       },
       config
     );
@@ -244,16 +246,18 @@ export class CustomEventsAPI {
   ): Promise<CustomEventResponse> {
     const url = `${API_BASE_URL}/custom-events/${eventId}`;
 
-    const body = {
-      ...eventData,
-      eventTimestamp: eventData.eventTimestamp?.toISOString(),
+    const requestPayload = {
+      body: {
+        ...eventData,
+        eventTimestamp: eventData.eventTimestamp?.toISOString(),
+      }
     };
 
     return apiRequest<CustomEventResponse>(
       url,
       {
         method: "PUT",
-        body: JSON.stringify(body),
+        body: JSON.stringify(requestPayload),
       },
       config
     );
