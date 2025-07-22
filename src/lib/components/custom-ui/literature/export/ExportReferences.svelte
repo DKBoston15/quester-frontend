@@ -20,10 +20,12 @@
   interface Props {
     open: boolean;
     selectedLiterature: Literature[];
+    projectTitle?: string;
+    userName?: string;
     onOpenChange: (open: boolean) => void;
   }
 
-  let { open = $bindable(), selectedLiterature, onOpenChange }: Props = $props();
+  let { open = $bindable(), selectedLiterature, projectTitle, userName, onOpenChange }: Props = $props();
 
   // Internal selection state for the modal
   let internalSelectedIds = $state<Set<string>>(new Set());
@@ -125,7 +127,8 @@
           await exportToPDFSimple({
             literature: currentlySelected(),
             citationStyle: selectedStyle,
-            projectTitle: "Research Bibliography"
+            projectTitle: projectTitle || "Research Bibliography",
+            authorName: userName
           });
           toast.success(`PDF exported successfully with ${currentlySelected().length} references`);
           open = false;
@@ -134,7 +137,8 @@
           await exportToDOCX({
             literature: currentlySelected(),
             citationStyle: selectedStyle,
-            projectTitle: "Research Bibliography"
+            projectTitle: projectTitle || "Research Bibliography",
+            authorName: userName
           });
           toast.success(`DOCX exported successfully with ${currentlySelected().length} references`);
           open = false;

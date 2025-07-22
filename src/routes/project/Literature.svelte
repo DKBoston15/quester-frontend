@@ -333,6 +333,8 @@
 <ExportReferences
   bind:open={isExportDialogOpen}
   selectedLiterature={selectedLiteratureItems}
+  projectTitle={projectStore.currentProject?.name}
+  userName={projectStore.currentUser?.name || projectStore.currentUser?.email}
   onOpenChange={(open: boolean) => (isExportDialogOpen = open)}
 />
 

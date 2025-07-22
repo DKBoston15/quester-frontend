@@ -87,19 +87,18 @@
       <h2 class="subtitle">Bibliography</h2>
 
       <div class="metadata">
-        {#if safeAuthorName}
-          <p class="author">Prepared by: {safeAuthorName}</p>
-        {/if}
-        {#if safeInstitution}
-          <p class="institution">{safeInstitution}</p>
-        {/if}
-        <p class="date">Generated on {currentDate}</p>
+        <p class="date">
+          Generated on {currentDate} by Quester{safeAuthorName ? ` for ${safeAuthorName}` : ''}
+        </p>
         <p class="style">Citation Style: {citationStyle}</p>
         <p class="count">
           {formattedCitations.length} Reference{formattedCitations.length !== 1
             ? "s"
             : ""}
         </p>
+        {#if safeInstitution}
+          <p class="institution">{safeInstitution}</p>
+        {/if}
       </div>
     </div>
   </div>
