@@ -8,12 +8,10 @@
   import { ScrollArea } from "$lib/components/ui/scroll-area";
   import { Switch } from "$lib/components/ui/switch";
   import { cn } from "$lib/utils";
-  import { AIChat } from "$lib/components/global-search";
   import { navigate } from "svelte-routing";
   
   // Icons
   import Search from "lucide-svelte/icons/search";
-  import MessageSquare from "lucide-svelte/icons/message-square";
   import CommandIcon from "lucide-svelte/icons/command";
   import Loader from "lucide-svelte/icons/loader";
   import FileText from "lucide-svelte/icons/file-text";
@@ -70,7 +68,7 @@
 
   // Focus input when dialog opens
   $effect(() => {
-    if (isOpen && searchMode === "search") {
+    if (isOpen) {
       setTimeout(() => {
         if (searchInputRef) {
           searchInputRef.focus();
@@ -79,10 +77,6 @@
     }
   });
 
-  // Handle mode switching
-  function switchMode(mode: "search" | "chat") {
-    globalSearchStore.setMode(mode);
-  }
 
   // Handle search input changes
   function handleSearchInput(event: Event) {
@@ -203,20 +197,6 @@
   }
 </script>
 
-<!-- Global Search Button Trigger -->
-<Button
-  variant="outline"
-  size="sm"
-  class="fixed top-4 right-4 z-40 gap-2 bg-background/80 backdrop-blur-sm"
-  onclick={() => globalSearchStore.open()}
->
-  <Search class="size-4" />
-  <span class="hidden sm:inline">Search</span>
-  <kbd class="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-    <CommandIcon class="size-3" />
-    K
-  </kbd>
-</Button>
 
 <!-- Dialog -->
 <Dialog.Root open={isOpen} onOpenChange={(open) => {
@@ -227,27 +207,7 @@
       <!-- Header with mode toggle -->
       <div class="border-b p-4">
         <div class="flex items-center justify-between mb-3">
-          <h2 class="text-lg font-semibold">Global Search</h2>
-          <div class="flex gap-1 rounded-lg bg-muted p-1">
-            <Button
-              variant={searchMode === "search" ? "default" : "ghost"}
-              size="sm"
-              class="h-8 px-3 text-xs"
-              onclick={() => switchMode("search")}
-            >
-              <Search class="size-3 mr-1" />
-              Search
-            </Button>
-            <Button
-              variant={searchMode === "chat" ? "default" : "ghost"}
-              size="sm"
-              class="h-8 px-3 text-xs"
-              onclick={() => switchMode("chat")}
-            >
-              <MessageSquare class="size-3 mr-1" />
-              Ask AI
-            </Button>
-          </div>
+          <h2 class="text-lg font-semibold">Search</h2>
         </div>
 
         <!-- Scope Toggle -->
@@ -267,24 +227,22 @@
           </div>
         </div>
 
-        <!-- Search Input for Search Mode -->
-        {#if searchMode === "search"}
-          <div class="relative">
-            <Search class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              bind:this={searchInputRef}
-              type="text"
-              placeholder={placeholderText}
-              value={query}
-              oninput={handleSearchInput}
-              onkeydown={(e) => e.key === "Enter" && handleSearchSubmit()}
-              class="w-full rounded-md border bg-background pl-10 pr-4 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-            />
-            {#if isLoading}
-              <Loader class="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
-            {/if}
-          </div>
-        {/if}
+        <!-- Search Input -->
+        <div class="relative">
+          <Search class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            bind:this={searchInputRef}
+            type="text"
+            placeholder={placeholderText}
+            value={query}
+            oninput={handleSearchInput}
+            onkeydown={(e) => e.key === "Enter" && handleSearchSubmit()}
+            class="w-full rounded-md border bg-background pl-10 pr-4 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          />
+          {#if isLoading}
+            <Loader class="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+          {/if}
+        </div>
 
 
         <!-- Error Display -->
@@ -297,11 +255,10 @@
 
       <!-- Content Area -->
       <div class="flex-1 overflow-hidden">
-        {#if searchMode === "search"}
-          <!-- Search Results -->
-          <div class="h-[75vh] overflow-hidden">
-            <ScrollArea class="h-full">
-              <div class="p-4">
+        <!-- Search Results -->
+        <div class="h-[75vh] overflow-hidden">
+          <ScrollArea class="h-full">
+            <div class="p-4">
               {#if query.trim() === ""}
                 <!-- Recent Searches -->
                 {#if recentSearches.length > 0}
@@ -397,12 +354,6 @@
               </div>
             </ScrollArea>
           </div>
-        {:else}
-          <!-- AI Chat Interface -->
-          <div class="h-[75vh] overflow-hidden">
-            <AIChat />
-          </div>
-        {/if}
       </div>
 
       <!-- Footer -->
@@ -419,14 +370,6 @@
             </kbd>
             <span>to close</span>
           </div>
-          {#if searchMode === "chat"}
-            <div class="flex items-center gap-2">
-              <kbd class="inline-flex items-center gap-1 rounded border bg-muted px-1.5 py-0.5 font-mono">
-                Enter
-              </kbd>
-              <span>to send</span>
-            </div>
-          {/if}
         </div>
       </div>
     </div>
