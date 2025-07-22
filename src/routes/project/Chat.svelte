@@ -8,6 +8,7 @@
   import { Button } from "$lib/components/ui/button";
   import { Badge } from "$lib/components/ui/badge";
   import { API_BASE_URL } from "$lib/config";
+  import MarkdownIt from "markdown-it";
   
   // Icons
   import Send from "lucide-svelte/icons/send";
@@ -93,6 +94,23 @@
       description: "Get recommendations for continuing your work"
     }
   ];
+
+  // Initialize markdown renderer
+  const md = new MarkdownIt({
+    html: true,
+    linkify: true,
+    typographer: true,
+    breaks: true,
+    highlight: function (str, lang) {
+      // Basic code highlighting - you can enhance this later
+      return `<pre class="language-${lang}"><code>${md.utils.escapeHtml(str)}</code></pre>`;
+    }
+  });
+
+  // Render markdown content for AI messages
+  function renderMarkdown(content: string): string {
+    return md.render(content);
+  }
 
   // Auto-scroll to bottom when new messages arrive
   $effect(() => {
@@ -675,9 +693,15 @@
                             : 'bg-muted border border-border'
                         } relative group">
                           <!-- Message Content -->
-                          <div class="whitespace-pre-wrap text-sm leading-relaxed">
-                            {content || message.content}
-                          </div>
+                          {#if isAssistant}
+                            <div class="prose-chat text-sm leading-relaxed">
+                              {@html renderMarkdown(content || message.content)}
+                            </div>
+                          {:else}
+                            <div class="whitespace-pre-wrap text-sm leading-relaxed">
+                              {content || message.content}
+                            </div>
+                          {/if}
 
                           <!-- Streaming Indicator -->
                           {#if message.streaming}

@@ -9,6 +9,7 @@
   import { ScrollArea } from "$lib/components/ui/scroll-area";
   import { cn } from "$lib/utils";
   import { ChatHistory } from "$lib/components/global-search";
+  import MarkdownIt from "markdown-it";
   
   // Icons
   import Send from "lucide-svelte/icons/send";
@@ -55,6 +56,18 @@
   let chatContainer: HTMLDivElement | null = null;
   let isTyping = $state(false);
   let typingTimeout: NodeJS.Timeout;
+
+  // Initialize markdown renderer
+  const md = new MarkdownIt({
+    html: true,
+    linkify: true,
+    typographer: true,
+    breaks: true,
+    highlight: function (str, lang) {
+      // Basic code highlighting - you can enhance this later
+      return `<pre class="language-${lang}"><code>${md.utils.escapeHtml(str)}</code></pre>`;
+    }
+  });
 
   // Research question suggestions
   const researchSuggestions = [
@@ -216,6 +229,11 @@
     const currentTime = new Date(currentMessage.timestamp).getTime();
     
     return currentTime - prevTime > 5 * 60 * 1000;
+  }
+
+  // Render markdown content for AI messages
+  function renderMarkdown(content: string): string {
+    return md.render(content);
   }
 
   // Parse source citations from AI responses
@@ -479,9 +497,15 @@
                         : 'bg-muted border border-border'
                     } relative group">
                       <!-- Message Content -->
-                      <div class="whitespace-pre-wrap text-sm leading-relaxed">
-                        {content || message.content}
-                      </div>
+                      {#if isAssistant}
+                        <div class="prose-chat text-sm leading-relaxed">
+                          {@html renderMarkdown(content || message.content)}
+                        </div>
+                      {:else}
+                        <div class="whitespace-pre-wrap text-sm leading-relaxed">
+                          {content || message.content}
+                        </div>
+                      {/if}
 
                       <!-- Streaming Indicator -->
                       {#if message.streaming}
