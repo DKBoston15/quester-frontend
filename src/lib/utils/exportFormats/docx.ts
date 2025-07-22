@@ -4,6 +4,67 @@ import type { CitationStyle } from '../citationFormatters';
 import { formatCitation, stripHtmlTags } from '../citationFormatters';
 import { compileBibliography } from '../bibliographyUtils';
 
+/**
+ * Parse HTML text to create TextRun objects with formatting
+ */
+function parseHtmlToTextRuns(htmlText: string): TextRun[] {
+  const textRuns: TextRun[] = [];
+  
+  // First, remove all non-italic HTML tags (like <span>)
+  let cleanedHtml = htmlText.replace(/<(?!\/?(i|em)(?=>|\s.*>))\/?[^>]+>/g, '');
+  
+  // Regular expression to match italic tags and content
+  const italicRegex = /<(i|em)>(.*?)<\/\1>/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = italicRegex.exec(cleanedHtml)) !== null) {
+    // Add regular text before italic
+    if (match.index > lastIndex) {
+      const regularText = cleanedHtml.slice(lastIndex, match.index);
+      if (regularText) {
+        textRuns.push(new TextRun({
+          text: regularText,
+          size: 24 // 12pt font
+        }));
+      }
+    }
+    
+    // Add italic text
+    const italicText = match[2];
+    if (italicText) {
+      textRuns.push(new TextRun({
+        text: italicText,
+        size: 24, // 12pt font
+        italics: true
+      }));
+    }
+    
+    lastIndex = match.index + match[0].length;
+  }
+  
+  // Add remaining regular text
+  if (lastIndex < cleanedHtml.length) {
+    const remainingText = cleanedHtml.slice(lastIndex);
+    if (remainingText) {
+      textRuns.push(new TextRun({
+        text: remainingText,
+        size: 24 // 12pt font
+      }));
+    }
+  }
+  
+  // If no text runs were created, return the entire text as a single run
+  if (textRuns.length === 0 && cleanedHtml) {
+    textRuns.push(new TextRun({
+      text: cleanedHtml,
+      size: 24 // 12pt font
+    }));
+  }
+  
+  return textRuns;
+}
+
 interface DOCXExportOptions {
   literature: Literature[];
   citationStyle: CitationStyle;
@@ -152,17 +213,14 @@ export async function generateDOCX(options: DOCXExportOptions): Promise<Blob> {
   compiledLiterature.forEach((item, index) => {
     try {
       const formattedCitation = formatCitation(item, citationStyle);
-      const plainText = stripHtmlTags(formattedCitation);
+      
+      // Parse HTML to create TextRun objects with proper formatting
+      const textRuns = parseHtmlToTextRuns(formattedCitation);
       
       // Create citation paragraph with hanging indent
       bibliographyParagraphs.push(
         new Paragraph({
-          children: [
-            new TextRun({
-              text: plainText,
-              size: 24 // 12pt font
-            })
-          ],
+          children: textRuns,
           spacing: {
             after: 240, // Add space between citations
             line: 360 // 1.5 line spacing
