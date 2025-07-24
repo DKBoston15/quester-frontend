@@ -651,20 +651,25 @@
         {/if}
 
         {#if note && note.type === "LITERATURE"}
-          <Select
-            type="single"
-            value={currentSectionType.value}
-            onValueChange={handleSectionTypeChange}
-          >
-            <SelectTrigger class="h-8 w-[180px]">
-              <span>{currentSectionType.label}</span>
-            </SelectTrigger>
-            <SelectContent>
-              {#each sectionTypeOptions as option}
-                <SelectItem value={option.value}>{option.label}</SelectItem>
-              {/each}
-            </SelectContent>
-          </Select>
+          <div class="flex items-center gap-2">
+            <label for="section-type-select" class="text-sm font-medium text-muted-foreground">
+              Section:
+            </label>
+            <Select
+              type="single"
+              value={currentSectionType.value}
+              onValueChange={handleSectionTypeChange}
+            >
+              <SelectTrigger id="section-type-select" class="h-8 w-[180px]">
+                <span>{currentSectionType.label}</span>
+              </SelectTrigger>
+              <SelectContent>
+                {#each sectionTypeOptions as option}
+                  <SelectItem value={option.value}>{option.label}</SelectItem>
+                {/each}
+              </SelectContent>
+            </Select>
+          </div>
         {/if}
 
         <Button
