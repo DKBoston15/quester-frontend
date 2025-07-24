@@ -9,8 +9,8 @@
   const { analysis } = $props<{ analysis: KeywordAnalysis }>();
 
   let svg: SVGSVGElement;
-  let width = 400;
-  let height = 300;
+  let width = 360;
+  let height = 270;
   let margin = { top: 20, right: 20, bottom: 70, left: 60 };
 
   // Define a consistent color scheme for up to 10 keywords
@@ -291,7 +291,7 @@
       Download PNG
     </Button>
   </div>
-  <div class="relative w-full aspect-[4/3]">
+  <div class="relative w-full aspect-[4/3] max-w-lg mx-auto">
     <svg
       bind:this={svg}
       class="w-full h-full"
