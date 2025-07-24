@@ -1,7 +1,7 @@
 # Task Management Configuration and AI Rules
 
 project_name: "Quester Frontend"
-task_id_counter: 24  # Increment as tasks are created
+task_id_counter: 36  # Increment as tasks are created
 
 # Valid Values
 statuses: ["todo", "in-progress", "completed"]

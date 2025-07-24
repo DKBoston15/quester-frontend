@@ -39,6 +39,7 @@
   let titleChanged = $state(false);
   let isTitleFocused = $state(false);
   let isUserEditingTitle = $state(false);
+  let titleInputRef: HTMLInputElement;
 
   // Track section type locally to avoid remounting
   let currentSectionType = $state(
@@ -594,15 +595,22 @@
       <div class="flex-1 mr-4 flex items-center">
         <div class="relative flex-1">
           <Input
+            bind:this={titleInputRef}
             type="text"
             placeholder="Untitled Note"
-            class="text-lg font-medium bg-transparent border-none shadow-none h-auto px-0 focus-visible:ring-0"
+            class="text-lg font-medium border border-input rounded-md bg-background px-3 py-2 h-auto focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 hover:bg-muted/50 focus:bg-muted/30 transition-colors"
             bind:value={title}
-            onfocus={() => {
+            onfocus={(e) => {
               // When the input is focused, mark as editing and ensure save button is visible
               isUserEditingTitle = true;
               isTitleFocused = true;
               titleChanged = true;
+              
+              // Auto-select text if it's "Untitled Note"
+              if (title === "Untitled Note") {
+                const target = e.target as HTMLInputElement;
+                setTimeout(() => target.select(), 0);
+              }
             }}
             onblur={() => {
               // When input loses focus, save if changed
