@@ -335,6 +335,11 @@
                             <Badge variant="outline" class="text-xs capitalize">
                               {result.type}
                             </Badge>
+                            {#if searchScope === 'all' && result.projectInfo}
+                              <Badge variant="secondary" class="text-xs bg-blue-100 text-blue-800 hover:bg-blue-200">
+                                {result.projectInfo.name}
+                              </Badge>
+                            {/if}
                           </div>
                           <p class="text-sm text-muted-foreground mb-2 line-clamp-2">
                             {result.snippet}

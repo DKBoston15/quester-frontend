@@ -20,6 +20,10 @@ export interface SearchResult {
     updated_at?: string;
   };
   citation?: string;
+  projectInfo?: {
+    id: string;
+    name: string;
+  } | null;
 }
 
 export interface ChatMessage {
@@ -415,10 +419,10 @@ async function performSearch(searchQuery: string = query): Promise<void> {
     return;
   }
 
-  // Get current project ID - required by the API
+  // Get current project ID - only required for current project scope
   const projectId = getCurrentProjectId();
-  if (!projectId) {
-    error = 'Please navigate to a project to use global search';
+  if (scope === 'current' && !projectId) {
+    error = 'Please navigate to a project to search within current project';
     results = [];
     return;
   }
@@ -449,7 +453,7 @@ async function performSearch(searchQuery: string = query): Promise<void> {
       body: JSON.stringify({
         query: searchQuery,
         mode: 'search',
-        projectId: projectId,
+        projectId: projectId || null, // Allow null for "All Projects" searches
         scope: scope,
         contentTypes: activeFilters.content_types,
         filters: {
@@ -505,10 +509,10 @@ const debouncedSearch = debounce(performSearch, 300);
 async function sendChatMessage(message: string): Promise<void> {
   if (!message.trim() || isStreaming) return;
 
-  // Get current project ID - required by the API
+  // Get current project ID - only required for current project scope
   const projectId = getCurrentProjectId();
-  if (!projectId) {
-    error = 'Please navigate to a project to use AI chat';
+  if (scope === 'current' && !projectId) {
+    error = 'Please navigate to a project to use AI chat in current project mode';
     return;
   }
 
@@ -533,7 +537,7 @@ async function sendChatMessage(message: string): Promise<void> {
       body: JSON.stringify({
         query: message,
         mode: 'chat',
-        projectId: projectId,
+        projectId: projectId || null, // Allow null for "All Projects" chats
         scope: scope,
         provider: 'openai', // Default to OpenAI
         context: results.length > 0 ? { searchResults: results } : undefined
