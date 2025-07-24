@@ -23,6 +23,7 @@
   import "driver.js/dist/driver.css";
   import EmptyState from "$lib/components/ui/empty-state/EmptyState.svelte";
   import KeyInsights from "$lib/components/analytics/KeyInsights.svelte";
+  import { insightsStore } from "$lib/stores/InsightsStore.svelte";
 
   // Watch for theme changes and update charts
   const observer = new MutationObserver((mutations) => {
@@ -597,6 +598,53 @@
     };
   });
 
+  // Auto-generate insights if conditions are met
+  async function tryAutoGenerateInsights(projectId: string, analyticsData: any) {
+    try {
+      // Check if we can generate insights (daily limit not reached)
+      if (!insightsStore.canGenerateInsights(projectId)) {
+        console.log('[Analytics] Cannot auto-generate - daily limit reached');
+        return;
+      }
+
+      // Check if there are existing insights for this project
+      const existingInsights = insightsStore.getInsights(projectId);
+      
+      // Check if we have significant data to warrant insights generation
+      const hasSignificantData = (
+        (analyticsData.totalLiteratureCount || 0) >= 5 || // At least 5 pieces of literature
+        (analyticsData.totalNotesCount || 0) >= 3        // Or at least 3 notes
+      );
+
+      if (!hasSignificantData) {
+        console.log('[Analytics] Not enough data for auto-generation - literature:', analyticsData.totalLiteratureCount, 'notes:', analyticsData.totalNotesCount);
+        return;
+      }
+
+      // If no existing insights, auto-generate
+      if (existingInsights.length === 0) {
+        console.log('[Analytics] No existing insights found, auto-generating for new data');
+        await insightsStore.generateInsights(projectId, false, analyticsData);
+        return;
+      }
+
+      // If significant change in data (more than 25% increase), auto-generate
+      const lastUpdate = insightsStore.getLastUpdated(projectId);
+      if (lastUpdate) {
+        const timeSinceLastUpdate = Date.now() - lastUpdate.getTime();
+        const hoursOld = timeSinceLastUpdate / (1000 * 60 * 60);
+        
+        // Auto-regenerate if insights are more than 24 hours old and we have new data
+        if (hoursOld > 24) {
+          console.log('[Analytics] Insights are old (', Math.round(hoursOld), 'hours), auto-generating with new data');
+          await insightsStore.generateInsights(projectId, false, analyticsData);
+        }
+      }
+    } catch (error) {
+      console.error('[Analytics] Error in auto-generation:', error);
+    }
+  }
+
   async function loadData() {
     const projectId = projectStore.currentProject?.id;
     if (!projectId) return;
@@ -619,6 +667,10 @@
       );
 
       data = { summary: analysisData };
+      
+      // Auto-generate insights if there's significant new data and we can generate
+      console.log('[Analytics] Checking if insights should be auto-generated');
+      await tryAutoGenerateInsights(projectId, analysisData);
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {

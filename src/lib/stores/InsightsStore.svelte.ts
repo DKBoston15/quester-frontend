@@ -70,28 +70,35 @@ class InsightsStore {
 
   // Load insights from API (with caching)
   async loadInsights(projectId: string): Promise<void> {
+    console.log('[InsightsStore] loadInsights called for project:', projectId);
+    
     // Check if we have recent insights (within 30 minutes)
     const lastUpdate = this.state.lastUpdated[projectId];
     const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
     
     if (lastUpdate && lastUpdate > thirtyMinutesAgo && this.state.insights[projectId]?.length > 0) {
+      console.log('[InsightsStore] Using cached insights from:', lastUpdate);
       return; // Use cached data
     }
 
+    console.log('[InsightsStore] Making API call to load insights');
     this.state.loading[projectId] = true;
     this.state.error[projectId] = null;
 
     try {
       const response = await api.get(`/projects/${projectId}/insights`);
+      console.log('[InsightsStore] Load insights API response:', response);
       
       if (response.success) {
         this.state.insights[projectId] = response.data;
         this.state.lastUpdated[projectId] = new Date();
+        console.log('[InsightsStore] Loaded insights successfully, count:', response.data?.length);
       } else {
+        console.error('[InsightsStore] Load insights API error:', response.error);
         throw new Error(response.error || 'Failed to load insights');
       }
     } catch (error) {
-      console.error('Error loading insights:', error);
+      console.error('[InsightsStore] Error loading insights:', error);
       this.state.error[projectId] = error instanceof Error ? error.message : 'Failed to load insights';
     } finally {
       this.state.loading[projectId] = false;
@@ -100,6 +107,7 @@ class InsightsStore {
 
   // Generate new insights (bypass cache)
   async generateInsights(projectId: string, force = false, analyticsData?: any): Promise<void> {
+    console.log('[InsightsStore] generateInsights called for project:', projectId, 'force:', force, 'hasAnalyticsData:', !!analyticsData);
     this.state.loading[projectId] = true;
     this.state.error[projectId] = null;
 
@@ -109,16 +117,20 @@ class InsightsStore {
         payload.analyticsData = analyticsData;
       }
       
+      console.log('[InsightsStore] Making API call to generate insights with payload:', payload);
       const response = await api.post(`/projects/${projectId}/insights/generate`, payload);
+      console.log('[InsightsStore] API response:', response);
       
       if (response.success) {
         this.state.insights[projectId] = response.data;
         this.state.lastUpdated[projectId] = new Date();
+        console.log('[InsightsStore] Successfully generated insights, count:', response.data?.length);
       } else {
+        console.error('[InsightsStore] API returned error:', response.error);
         throw new Error(response.error || 'Failed to generate insights');
       }
     } catch (error) {
-      console.error('Error generating insights:', error);
+      console.error('[InsightsStore] Error generating insights:', error);
       this.state.error[projectId] = error instanceof Error ? error.message : 'Failed to generate insights';
     } finally {
       this.state.loading[projectId] = false;
@@ -183,20 +195,23 @@ class InsightsStore {
 
   // Check if user can generate more insights today
   async checkGenerationLimit(projectId: string): Promise<void> {
+    console.log('[InsightsStore] checkGenerationLimit called for project:', projectId);
     this.state.limitCheckLoading[projectId] = true;
 
     try {
       const response = await api.get(`/projects/${projectId}/insights/can-generate`);
+      console.log('[InsightsStore] Generation limit check response:', response);
       
       if (response.success) {
         this.state.canGenerate[projectId] = response.canGenerate;
+        console.log('[InsightsStore] Can generate insights:', response.canGenerate);
       } else {
-        console.warn('Failed to check generation limit:', response.error);
+        console.warn('[InsightsStore] Failed to check generation limit:', response.error);
         // If we can't check the limit, assume they can generate (fail open)
         this.state.canGenerate[projectId] = true;
       }
     } catch (error) {
-      console.error('Error checking generation limit:', error);
+      console.error('[InsightsStore] Error checking generation limit:', error);
       // If we can't check the limit, assume they can generate (fail open)
       this.state.canGenerate[projectId] = true;
     } finally {
