@@ -10,6 +10,7 @@
   import * as Dialog from "$lib/components/ui/dialog";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { Button } from "$lib/components/ui/button";
+  import { Switch } from "$lib/components/ui/switch";
   import {
     PieChart,
     FileText,
@@ -101,19 +102,21 @@
     }
   }
 
-
   interface DataCounts {
     [key: string]: number;
   }
 
   interface AnalyticsData {
     summary: {
+      totalLiteratureCount?: number;
+      totalNotesCount?: number;
       keywords: { names: string[]; counts: number[] };
       topAuthors: { names: string[]; counts: number[] };
       topPublishers: { names: string[]; counts: number[] };
       publicationYears: { names: string[]; counts: number[] };
+      publicationYearFrequency?: { names: string[]; counts: number[] };
       literatureTypes: { names: string[]; counts: number[] };
-      noteTypes: { names: string[]; counts: number[] };
+      noteTypes?: { names: string[]; counts: number[] };
       researchDesigns: { names: string[]; counts: number[] };
       analyticDesigns: { names: string[]; counts: number[] };
       samplingDesigns: { names: string[]; counts: number[] };
@@ -135,6 +138,8 @@
   let activeTab = $state("overview");
   let isLoading = $state(true);
   let data = $state<AnalyticsData>({ summary: null });
+  let yearChartMode = $state<"individual" | "frequency">("individual");
+  let switchPressed = $state(false);
 
   // Canvas references
   let canvasRefs = $state<Record<string, HTMLCanvasElement | null>>({
@@ -336,7 +341,8 @@
 
     // Check if this is the years chart or stacked chart
     const isYearsChart =
-      activeChart.title === "Distribution of Publication Years";
+      activeChart.title === "Distribution of Publication Years" ||
+      activeChart.title === "Publication Year Frequency Distribution";
     const isStackedChart =
       activeChart.title === "Literature Types by Publication Year";
 
@@ -360,109 +366,197 @@
         );
       }
     } else {
-      // Create a new chart with the same data but adjusted options for fullscreen
-      fullscreenChart = new Chart(fullscreenCanvas, {
-        type: "bar",
-        data: {
-          labels: originalChart.data.labels,
-          datasets: [
-            {
-              label: "Count",
-              data: originalChart.data.datasets[0].data,
-              backgroundColor: activeChart?.color || "rgb(75, 192, 192)",
-            },
-          ],
-        },
-        options: {
-          indexAxis: isYearsChart ? "x" : ("y" as const),
-          responsive: true,
-          maintainAspectRatio: false,
-          layout: {
-            padding: {
-              left: 10,
-              right: 10,
-              top: 5,
-              bottom: 5,
-            },
-          },
-          plugins: {
-            title: {
-              display: true,
-              text: activeChart?.title || "",
-              color: textColor,
-              font: {
-                size: 16,
-                weight: "bold" as const,
-              },
-              padding: {
-                top: 10,
-                bottom: 20,
-              },
-            },
-            legend: {
-              display: false,
-              labels: {
-                color: textColor,
-              },
-            },
-          },
-          scales: {
-            x: {
-              grid: {
-                color: "rgba(128, 128, 128, 0.1)",
-              },
-              ticks: {
-                color: textColor,
-                stepSize: 1,
-                // @ts-ignore
-                callback: function (this: any, value: number | string) {
-                  // Check if the indexAxis is 'y' (horizontal bar chart)
-                  if (this.chart.options.indexAxis === "y") {
-                    // For horizontal bars, x-axis is numerical count
-                    const numValue = Number(value);
-                    return Number.isInteger(numValue) ? numValue : null;
-                  } else {
-                    // For vertical bars (like Years), x-axis uses labels
-                    const labels = this.chart.data.labels;
-                    return labels[Number(value)] || value;
-                  }
-                },
-                maxRotation: 0,
-                minRotation: 0,
-              },
-            },
-            y: {
-              grid: {
-                display: isYearsChart,
-                color: isYearsChart ? "rgba(128, 128, 128, 0.1)" : undefined,
-              },
-              ticks: {
-                color: textColor,
-                stepSize: 1,
-                callback: function (value: number | string) {
-                  if (isYearsChart) {
-                    const numValue = Number(value);
-                    return Number.isInteger(numValue) ? numValue : null;
-                  }
-                  const labels = originalChart.data.labels;
-                  if (!Array.isArray(labels)) return value;
-                  const label = labels[Number(value)];
-                  if (typeof label !== "string") return value;
+      // For years chart, use dynamic data based on mode
+      if (isYearsChart) {
+        const summary = JSON.parse(JSON.stringify(data.summary));
+        const isFrequencyMode = yearChartMode === "frequency";
+        const chartData = isFrequencyMode
+          ? summary.publicationYearFrequency || { names: [], counts: [] }
+          : summary.publicationYears;
+        const chartColor = isFrequencyMode
+          ? "rgb(147, 197, 253)"
+          : "rgb(255, 206, 86)";
 
-                  const title = activeChart?.title || "";
-                  if (title === "Prevalent Publishers" && label.length > 10) {
-                    return label.slice(0, 10) + "...";
-                  }
-                  if (label.length > 35) {
-                    return label.slice(0, 35) + "...";
-                  }
-                  return label;
+        fullscreenChart = new Chart(fullscreenCanvas, {
+          type: "bar",
+          data: {
+            labels: chartData.names || [],
+            datasets: [
+              {
+                label: "Count",
+                data: chartData.counts || [],
+                backgroundColor: chartColor,
+              },
+            ],
+          },
+          options: {
+            indexAxis: "x",
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+              padding: {
+                left: 10,
+                right: 10,
+                top: 5,
+                bottom: 5,
+              },
+            },
+            plugins: {
+              title: {
+                display: true,
+                text: activeChart?.title || "",
+                color: textColor,
+                font: {
+                  size: 16,
+                  weight: "bold" as const,
+                },
+                padding: {
+                  top: 10,
+                  bottom: 20,
+                },
+              },
+              legend: {
+                display: false,
+                labels: {
+                  color: textColor,
+                },
+              },
+            },
+            scales: {
+              x: {
+                grid: {
+                  color: "rgba(128, 128, 128, 0.1)",
+                },
+                ticks: {
+                  color: textColor,
+                  maxRotation: 45,
+                  minRotation: 0,
+                },
+              },
+              y: {
+                grid: {
+                  color: "rgba(128, 128, 128, 0.1)",
+                },
+                ticks: {
+                  color: textColor,
+                  stepSize: 1,
+                  callback: function (value: number | string) {
+                    const numValue = Number(value);
+                    if (Number.isInteger(numValue)) {
+                      return numValue;
+                    }
+                    return null;
+                  },
                 },
               },
             },
           },
-        },
-      });
+        });
+      } else {
+        // Create a new chart with the same data but adjusted options for fullscreen
+        fullscreenChart = new Chart(fullscreenCanvas, {
+          type: "bar",
+          data: {
+            labels: originalChart.data.labels,
+            datasets: [
+              {
+                label: "Count",
+                data: originalChart.data.datasets[0].data,
+                backgroundColor: activeChart?.color || "rgb(75, 192, 192)",
+              },
+            ],
+          },
+          options: {
+            indexAxis: isYearsChart ? "x" : ("y" as const),
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+              padding: {
+                left: 10,
+                right: 10,
+                top: 5,
+                bottom: 5,
+              },
+            },
+            plugins: {
+              title: {
+                display: true,
+                text: activeChart?.title || "",
+                color: textColor,
+                font: {
+                  size: 16,
+                  weight: "bold" as const,
+                },
+                padding: {
+                  top: 10,
+                  bottom: 20,
+                },
+              },
+              legend: {
+                display: false,
+                labels: {
+                  color: textColor,
+                },
+              },
+            },
+            scales: {
+              x: {
+                grid: {
+                  color: "rgba(128, 128, 128, 0.1)",
+                },
+                ticks: {
+                  color: textColor,
+                  stepSize: 1,
+                  // @ts-ignore
+                  callback: function (this: any, value: number | string) {
+                    // Check if the indexAxis is 'y' (horizontal bar chart)
+                    if (this.chart.options.indexAxis === "y") {
+                      // For horizontal bars, x-axis is numerical count
+                      const numValue = Number(value);
+                      return Number.isInteger(numValue) ? numValue : null;
+                    } else {
+                      // For vertical bars (like Years), x-axis uses labels
+                      const labels = this.chart.data.labels;
+                      return labels[Number(value)] || value;
+                    }
+                  },
+                  maxRotation: 0,
+                  minRotation: 0,
+                },
+              },
+              y: {
+                grid: {
+                  display: isYearsChart,
+                  color: isYearsChart ? "rgba(128, 128, 128, 0.1)" : undefined,
+                },
+                ticks: {
+                  color: textColor,
+                  stepSize: 1,
+                  callback: function (value: number | string) {
+                    if (isYearsChart) {
+                      const numValue = Number(value);
+                      return Number.isInteger(numValue) ? numValue : null;
+                    }
+                    const labels = originalChart.data.labels;
+                    if (!Array.isArray(labels)) return value;
+                    const label = labels[Number(value)];
+                    if (typeof label !== "string") return value;
+
+                    const title = activeChart?.title || "";
+                    if (title === "Prevalent Publishers" && label.length > 10) {
+                      return label.slice(0, 10) + "...";
+                    }
+                    if (label.length > 35) {
+                      return label.slice(0, 35) + "...";
+                    }
+                    return label;
+                  },
+                },
+              },
+            },
+          },
+        });
+      }
     }
 
     return {
@@ -778,6 +872,200 @@
     });
   }
 
+  function createYearChart() {
+    if (!data.summary || !canvasRefs.years) return;
+
+    // Destroy existing chart
+    if (charts.years) {
+      charts.years.destroy();
+    }
+
+    const summary = JSON.parse(JSON.stringify(data.summary));
+    const isDark = document.documentElement.classList.contains("dark");
+    const textColor = isDark ? "#ffffff" : "#000000";
+
+    const isFrequencyMode = yearChartMode === "frequency";
+    const chartData = isFrequencyMode
+      ? summary.publicationYearFrequency || { names: [], counts: [] }
+      : summary.publicationYears;
+    const chartTitle = isFrequencyMode
+      ? "Publication Year Frequency Distribution"
+      : "Distribution of Publication Years";
+    const chartColor = isFrequencyMode
+      ? "rgb(147, 197, 253)"
+      : "rgb(255, 206, 86)";
+
+    if (chartData.names.length === 0) {
+      charts.years = new Chart(canvasRefs.years, {
+        type: "bar",
+        data: {
+          labels: ["No data"],
+          datasets: [
+            {
+              label: "Publications",
+              data: [0],
+              backgroundColor: "rgb(200, 200, 200)",
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: chartTitle,
+              color: textColor,
+              font: {
+                size: 16,
+                weight: "bold" as const,
+              },
+              padding: {
+                top: 10,
+                bottom: 20,
+              },
+            },
+            legend: {
+              display: false,
+              labels: {
+                color: textColor,
+              },
+            },
+          },
+          scales: {
+            x: {
+              grid: {
+                color: "rgba(128, 128, 128, 0.1)",
+              },
+              ticks: {
+                color: textColor,
+                maxRotation: 0,
+                minRotation: 0,
+              },
+            },
+            y: {
+              grid: {
+                color: "rgba(128, 128, 128, 0.1)",
+              },
+              ticks: {
+                color: textColor,
+                stepSize: 1,
+                callback: function (this: any, value: number | string) {
+                  const numValue = Number(value);
+                  if (Number.isInteger(numValue)) {
+                    return numValue;
+                  }
+                  return null;
+                },
+              },
+            },
+          },
+        },
+      });
+    } else {
+      charts.years = new Chart(canvasRefs.years, {
+        type: "bar",
+        data: {
+          labels: [...chartData.names],
+          datasets: [
+            {
+              label: "Publications",
+              data: [...chartData.counts],
+              backgroundColor: chartColor,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: chartTitle,
+              color: textColor,
+              font: {
+                size: 16,
+                weight: "bold" as const,
+              },
+              padding: {
+                top: 10,
+                bottom: 20,
+              },
+            },
+            legend: {
+              display: false,
+              labels: {
+                color: textColor,
+              },
+            },
+          },
+          scales: {
+            x: {
+              grid: {
+                color: "rgba(128, 128, 128, 0.1)",
+              },
+              ticks: {
+                color: textColor,
+                maxRotation: 0,
+                minRotation: 0,
+              },
+            },
+            y: {
+              grid: {
+                color: "rgba(128, 128, 128, 0.1)",
+              },
+              ticks: {
+                color: textColor,
+                stepSize: 1,
+                callback: function (this: any, value: number | string) {
+                  const numValue = Number(value);
+                  if (Number.isInteger(numValue)) {
+                    return numValue;
+                  }
+                  return null;
+                },
+              },
+            },
+          },
+        },
+      });
+    }
+  }
+
+  // Sync switch state with yearChartMode
+  $effect(() => {
+    switchPressed = yearChartMode === "frequency";
+  });
+
+  // React to yearChartMode changes
+  $effect(() => {
+    if (data.summary) {
+      createYearChart();
+    }
+  });
+
+  // Effect to recreate fullscreen chart when year chart mode changes
+  $effect(() => {
+    if (
+      fullscreenChart &&
+      activeChart &&
+      (activeChart.title === "Distribution of Publication Years" ||
+        activeChart.title === "Publication Year Frequency Distribution")
+    ) {
+      fullscreenChart.destroy();
+      fullscreenChart = null;
+      // Trigger chart recreation
+      setTimeout(() => {
+        const fullscreenCanvas = document.getElementById(
+          "fullscreen-canvas"
+        ) as HTMLCanvasElement;
+        if (fullscreenCanvas) {
+          createFullscreenChart(fullscreenCanvas.parentElement!);
+        }
+      }, 0);
+    }
+  });
+
   function setupCharts() {
     if (!data.summary) return;
     const summary = JSON.parse(JSON.stringify(data.summary));
@@ -807,158 +1095,8 @@
       );
     }
 
-    if (canvasRefs.years) {
-      if (summary.publicationYears.names.length === 0) {
-        charts.years = new Chart(canvasRefs.years, {
-          type: "bar",
-          data: {
-            labels: ["No data"],
-            datasets: [
-              {
-                label: "Publications",
-                data: [0],
-                backgroundColor: "rgb(200, 200, 200)",
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              title: {
-                display: true,
-                text: "Distribution of Publication Years",
-                color: textColor,
-                font: {
-                  size: 16,
-                  weight: "bold" as const,
-                },
-                padding: {
-                  top: 10,
-                  bottom: 20,
-                },
-              },
-              legend: {
-                display: false,
-                labels: {
-                  color: textColor,
-                },
-              },
-            },
-            scales: {
-              x: {
-                grid: {
-                  color: "rgba(128, 128, 128, 0.1)",
-                },
-                ticks: {
-                  color: textColor,
-                  stepSize: 1,
-                  // @ts-ignore
-                  callback: function (this: any, value: number | string) {
-                    // Get the labels from the chart instance
-                    const labels = this.chart.data.labels;
-                    // Return the label corresponding to the index (value)
-                    return labels[Number(value)] || value;
-                  },
-                  maxRotation: 0,
-                  minRotation: 0,
-                },
-              },
-              y: {
-                grid: {
-                  color: "rgba(128, 128, 128, 0.1)",
-                },
-                ticks: {
-                  color: textColor,
-                  stepSize: 1,
-                  callback: function (this: any, value: number | string) {
-                    const numValue = Number(value);
-                    if (Number.isInteger(numValue)) {
-                      return numValue;
-                    }
-                    return null;
-                  },
-                },
-              },
-            },
-          },
-        });
-      } else {
-        charts.years = new Chart(canvasRefs.years, {
-          type: "bar",
-          data: {
-            labels: [...summary.publicationYears.names],
-            datasets: [
-              {
-                label: "Publications",
-                data: [...summary.publicationYears.counts],
-                backgroundColor: "rgb(255, 206, 86)",
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              title: {
-                display: true,
-                text: "Distribution of Publication Years",
-                color: textColor,
-                font: {
-                  size: 16,
-                  weight: "bold" as const,
-                },
-                padding: {
-                  top: 10,
-                  bottom: 20,
-                },
-              },
-              legend: {
-                display: false,
-                labels: {
-                  color: textColor,
-                },
-              },
-            },
-            scales: {
-              x: {
-                grid: {
-                  color: "rgba(128, 128, 128, 0.1)",
-                },
-                ticks: {
-                  color: textColor,
-                  stepSize: 1,
-                  // @ts-ignore
-                  callback: function (this: any, value: number | string) {
-                    // Get the labels from the chart instance
-                    const labels = this.chart.data.labels;
-                    // Return the label corresponding to the index (value)
-                    return labels[Number(value)] || value;
-                  },
-                  maxRotation: 0,
-                  minRotation: 0,
-                },
-              },
-              y: {
-                grid: {
-                  color: "rgba(128, 128, 128, 0.1)",
-                },
-                ticks: {
-                  color: textColor,
-                  stepSize: 1,
-                  callback: function (this: any, value: number | string) {
-                    const numValue = Number(value);
-                    if (Number.isInteger(numValue)) {
-                      return numValue;
-                    }
-                    return null;
-                  },
-                },
-              },
-            },
-          },
-        });
-      }
-    }
+    // Year chart is now handled by createYearChart() function
+    createYearChart();
 
     if (canvasRefs.types) {
       charts.types = createHorizontalBarChart(
@@ -971,10 +1109,11 @@
     }
 
     if (canvasRefs.noteTypes) {
+      const noteTypesData = summary.noteTypes || { names: [], counts: [] };
       charts.noteTypes = createHorizontalBarChart(
         canvasRefs.noteTypes,
-        summary.noteTypes.names,
-        summary.noteTypes.counts,
+        noteTypesData.names,
+        noteTypesData.counts,
         "Note Section Types",
         "rgb(34, 197, 94)"
       );
@@ -1132,6 +1271,46 @@
   >
     <Dialog.Content class="fullscreen-dialog">
       <div class="fullscreen-canvas-container">
+        {#if activeChart && (activeChart.title === "Distribution of Publication Years" || activeChart.title === "Publication Year Frequency Distribution")}
+          <div class="fullscreen-controls">
+            <div class="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2">
+              <span class="text-sm font-medium {yearChartMode === 'individual' ? 'text-foreground' : 'text-muted-foreground'}">
+                Individual
+              </span>
+              <Switch 
+                bind:pressed={switchPressed}
+                onPressedChange={(pressed: boolean) => {
+                  yearChartMode = pressed ? "frequency" : "individual";
+                  // Update the active chart title
+                  if (activeChart) {
+                    activeChart.title = yearChartMode === "individual"
+                      ? "Distribution of Publication Years"
+                      : "Publication Year Frequency Distribution";
+                    activeChart.color = yearChartMode === "individual"
+                      ? "rgb(255, 206, 86)"
+                      : "rgb(147, 197, 253)";
+                  }
+                  // Recreate the fullscreen chart with new mode
+                  if (fullscreenChart) {
+                    fullscreenChart.destroy();
+                    fullscreenChart = null;
+                  }
+                  // Immediately recreate the chart
+                  setTimeout(() => {
+                    const fullscreenCanvas = document.getElementById("fullscreen-canvas") as HTMLCanvasElement;
+                    if (fullscreenCanvas) {
+                      createFullscreenChart(fullscreenCanvas.parentElement!);
+                    }
+                  }, 0);
+                }}
+                aria-label="Toggle between individual years and time periods"
+              />
+              <span class="text-sm font-medium {yearChartMode === 'frequency' ? 'text-foreground' : 'text-muted-foreground'}">
+                Time Periods
+              </span>
+            </div>
+          </div>
+        {/if}
         <canvas id="fullscreen-canvas"></canvas>
       </div>
     </Dialog.Content>
@@ -1139,8 +1318,8 @@
 
   <!-- Key Insights Section -->
   {#if projectStore.currentProject}
-    <KeyInsights 
-      projectId={projectStore.currentProject.id} 
+    <KeyInsights
+      projectId={projectStore.currentProject.id}
       analyticsData={data?.summary}
     />
   {/if}
@@ -1248,33 +1427,54 @@
             <canvas bind:this={canvasRefs.keywords}></canvas>
           </div>
           <div class="chart-card">
-            <button
-              class="fullscreen-button"
-              aria-label="View chart in fullscreen"
-              onclick={() =>
-                openFullscreen(
-                  canvasRefs.years,
-                  "Distribution of Publication Years",
-                  "rgb(255, 206, 86)"
-                )}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+            <div class="chart-controls">
+              <div class="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2">
+                <span class="text-sm font-medium {yearChartMode === 'individual' ? 'text-foreground' : 'text-muted-foreground'}">
+                  Individual
+                </span>
+                <Switch 
+                  bind:pressed={switchPressed}
+                  onPressedChange={(pressed: boolean) => {
+                    yearChartMode = pressed ? "frequency" : "individual";
+                  }}
+                  aria-label="Toggle between individual years and time periods"
+                />
+                <span class="text-sm font-medium {yearChartMode === 'frequency' ? 'text-foreground' : 'text-muted-foreground'}">
+                  Time Periods
+                </span>
+              </div>
+              <button
+                class="fullscreen-button"
+                aria-label="View chart in fullscreen"
+                onclick={() =>
+                  openFullscreen(
+                    canvasRefs.years,
+                    yearChartMode === "individual"
+                      ? "Distribution of Publication Years"
+                      : "Publication Year Frequency Distribution",
+                    yearChartMode === "individual"
+                      ? "rgb(255, 206, 86)"
+                      : "rgb(147, 197, 253)"
+                  )}
               >
-                <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
-                <path d="M21 8V5a2 2 0 0 0-2-2h-3"></path>
-                <path d="M3 16v3a2 2 0 0 0 2 2h3"></path>
-                <path d="M16 21h3a2 2 0 0 0 2-2v-3"></path>
-              </svg>
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
+                  <path d="M21 8V5a2 2 0 0 0-2-2h-3"></path>
+                  <path d="M3 16v3a2 2 0 0 0 2 2h3"></path>
+                  <path d="M16 21h3a2 2 0 0 0 2-2v-3"></path>
+                </svg>
+              </button>
+            </div>
             <canvas bind:this={canvasRefs.years}></canvas>
           </div>
           <div class="chart-card">
@@ -1727,6 +1927,7 @@
     background: var(--card);
     border-radius: 0.75rem;
     padding: 1.5rem;
+    padding-top: 4rem;
     box-shadow:
       0 1px 3px 0 rgb(0 0 0 / 0.1),
       0 1px 2px -1px rgb(0 0 0 / 0.1);
@@ -1779,10 +1980,22 @@
     }
   }
 
+  .chart-controls {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 10;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    max-width: calc(100% - 2rem);
+  }
+
+
   .fullscreen-button {
     position: absolute;
-    top: 2rem;
-    right: 2rem;
+    top: 1rem;
+    right: 1rem;
     z-index: 10;
     padding: 0.5rem;
     border-radius: 0.375rem;
@@ -1801,11 +2014,27 @@
     background: var(--accent);
   }
 
+  .chart-controls .fullscreen-button {
+    position: relative;
+    top: auto;
+    right: auto;
+  }
+
   .fullscreen-canvas-container {
     width: 90%;
     height: calc(85vh - 10rem);
     padding: 2rem;
+    padding-top: 4rem;
     margin: 0 auto;
+    position: relative;
+  }
+
+  .fullscreen-controls {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 20;
+    max-width: calc(100% - 2rem);
   }
 
   .fullscreen-canvas-container canvas {
@@ -1819,7 +2048,4 @@
     margin: 2.5vh auto;
   }
 
-  .tab-button {
-    @apply inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-muted-foreground hover:text-foreground data-[state=active]:text-foreground data-[state=active]:font-semibold;
-  }
 </style>
