@@ -14,6 +14,7 @@
   import { GraduationCap, Plus } from "lucide-svelte";
   import { customEventsStore } from "$lib/stores/custom-events-store.svelte";
   import CustomEventForm from "$lib/components/custom-ui/custom-events/CustomEventForm.svelte";
+  import GrantDetails from "$lib/components/project/GrantDetails.svelte";
 
   const driverObj = driver({
     showProgress: true,
@@ -153,8 +154,9 @@
         <div class="w-full min-w-0" id="research-designs-card">
           <ResearchDesigns />
         </div>
-        <div class="w-full min-w-0" id="research-products-card">
-          <ResearchProducts />
+
+        <div class="w-full min-w-0" id="grant-details-card">
+          <GrantDetails />
         </div>
       </div>
 
@@ -165,6 +167,9 @@
         </div>
         <div class="w-full min-w-0" id="next-best-actions-card">
           <NextBestActions />
+        </div>
+        <div class="w-full min-w-0" id="research-products-card">
+          <ResearchProducts />
         </div>
       </div>
     </div>
