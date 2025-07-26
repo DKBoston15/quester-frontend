@@ -17,7 +17,7 @@
   } from "$lib/components/ui/select";
   import LiteratureSelector from "$lib/components/custom-ui/literature/LiteratureSelector.svelte";
   import { API_BASE_URL } from "$lib/config";
-  import { isAuthError } from "$lib/services/api-client";
+  import { isAuthError, api } from "$lib/services/api-client";
 
   // Props
   const { note, onDelete } = $props<{
@@ -36,6 +36,8 @@
   let lastSaveTime = Date.now();
   let currentNoteId = note.id;
   let originalTitle = $state(note.name);
+  let lastKnownUpdatedAt = $state(note.updated_at);
+  let saveConflictDetected = $state(false);
   let titleChanged = $state(false);
   let isTitleFocused = $state(false);
   let isUserEditingTitle = $state(false);
@@ -81,7 +83,7 @@
   });
 
   // Direct function to save title
-  function saveTitle() {
+  async function saveTitle() {
     // If the title is still the default and hasn't been changed, don't save
     if (title === "Untitled Note" && originalTitle === "Untitled Note") {
       return;
@@ -90,75 +92,44 @@
     if (!isUnmounting && note) {
       isSaving = true;
 
-      // Store the current title in case it changes during the save operation
-      const titleToSave = title;
+      try {
+        // Store the current title in case it changes during the save operation
+        const titleToSave = title;
 
-      // Make a direct API call to update just the title
-      fetch(`${API_BASE_URL}/note/${note.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ name: titleToSave }),
-      })
-        .then((response) => {
-          if (!response.ok) {
-            console.error("Failed to update title");
-            return;
+        // Use centralized API client with proper auth error handling
+        await api.put(`/note/${note.id}`, { name: titleToSave });
+
+        // Update the note object directly to prevent future effect runs from resetting
+        note.name = titleToSave;
+
+        // Update the note in the store's notes array
+        const storeNotes = notesStore.notes;
+        for (let i = 0; i < storeNotes.length; i++) {
+          if (storeNotes[i].id === note.id) {
+            storeNotes[i].name = titleToSave;
+            storeNotes[i].updated_at = new Date().toISOString();
+            break;
           }
+        }
 
-          // Update the note object directly to prevent future effect runs from resetting
-          note.name = titleToSave;
+        // Update original title to match current title
+        originalTitle = titleToSave;
+        titleChanged = false; // Reset the title changed flag
 
-          // Update the note in the store's notes array
-          const storeNotes = notesStore.notes;
-          for (let i = 0; i < storeNotes.length; i++) {
-            if (storeNotes[i].id === note.id) {
-              storeNotes[i].name = titleToSave;
-              storeNotes[i].updated_at = new Date().toISOString();
-              break;
-            }
-          }
-
-          // Update original title to match current title
-          originalTitle = titleToSave;
-          titleChanged = false; // Reset the title changed flag
-
-          // Try to update the note title in the NoteList directly
-          setTimeout(() => {
-            try {
-              // Find the note item in the DOM
-              const noteElements = document.querySelectorAll(
-                `[data-note-id="${note.id}"]`
-              );
-              if (noteElements.length > 0) {
-                // Update the title in each found element
-                noteElements.forEach((noteEl) => {
-                  // Find the title heading
-                  const titleEl = noteEl.querySelector(
-                    ".font-medium.leading-none"
-                  );
-                  if (titleEl) {
-                    titleEl.textContent = titleToSave || "Untitled Note";
-                  }
-                });
-              }
-            } catch (e) {
-              console.warn("Error updating note title in DOM:", e);
-            }
-          }, 50);
-
-          // Also try the search query approach as a fallback
-          const currentQuery = notesStore.searchQuery;
-          if (currentQuery) {
-            notesStore.setSearchQuery(currentQuery);
-          }
-        })
-        .catch((error) => {
-          console.error("Error updating title:", error);
-        })
-        .finally(() => {
-          isSaving = false;
-        });
+        // Trigger reactivity update through search query refresh
+        const currentQuery = notesStore.searchQuery;
+        if (currentQuery) {
+          notesStore.setSearchQuery(currentQuery);
+        }
+      } catch (error) {
+        console.error("Error updating title:", error);
+        // Auth errors are handled automatically by the API client
+        if (isAuthError(error)) {
+          authErrorOccurred = true;
+        }
+      } finally {
+        isSaving = false;
+      }
     }
   }
 
@@ -168,19 +139,8 @@
       isSaving = true;
 
       try {
-        // Make a direct API call to update the literature connection
-        const response = await fetch(`${API_BASE_URL}/note/${note.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ literatureId: literatureId || null }),
-        });
-
-        if (!response.ok) {
-          throw new Error(
-            `Failed to update literature connection (${response.status})`
-          );
-        }
+        // Use centralized API client with proper auth error handling
+        await api.put(`/note/${note.id}`, { literatureId: literatureId || null });
 
         // Update the note object directly
         note.literatureId = literatureId;
@@ -195,53 +155,17 @@
           }
         }
 
-        // Try to update the literature badge in the NoteList
-        setTimeout(() => {
-          try {
-            // Find the note item in the DOM
-            const noteElements = document.querySelectorAll(
-              `[data-note-id="${note.id}"]`
-            );
-
-            if (noteElements.length > 0) {
-              noteElements.forEach((noteEl) => {
-                // Find the badges container
-                const badgesContainer = noteEl.querySelector(
-                  ".flex.items-center.gap-2.mt-2"
-                );
-
-                if (badgesContainer) {
-                  // Check if literature badge exists
-                  const existingLitBadge =
-                    noteEl.querySelector(".badge-literature");
-
-                  if (literatureId && !existingLitBadge) {
-                    // Add literature badge if it doesn't exist
-                    const newBadge = document.createElement("div");
-                    newBadge.className =
-                      "badge-literature text-xs flex items-center gap-1 border rounded-full px-2 py-1";
-                    newBadge.innerHTML =
-                      '<svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></svg> Literature';
-                    badgesContainer.appendChild(newBadge);
-                  } else if (!literatureId && existingLitBadge) {
-                    // Remove literature badge if it exists
-                    existingLitBadge.remove();
-                  }
-                }
-              });
-            }
-          } catch (e) {
-            console.warn("Error updating literature badge in DOM:", e);
-          }
-        }, 50);
-
-        // Refresh the notes list via search query as a fallback
+        // Refresh the notes list via search query to trigger reactivity
         const currentQuery = notesStore.searchQuery;
         if (currentQuery) {
           notesStore.setSearchQuery(currentQuery);
         }
       } catch (error) {
         console.error("Error updating literature connection:", error);
+        // Auth errors are handled automatically by the API client
+        if (isAuthError(error)) {
+          authErrorOccurred = true;
+        }
       } finally {
         isSaving = false;
       }
@@ -361,17 +285,35 @@
     // Only reset contentChanged if we're actually going to save
     if (!isUnmounting) {
       contentChanged = false;
+      saveConflictDetected = false;
     }
 
     isSaving = true;
     try {
       const contentToSave = JSON.stringify(content);
 
+      // Check for conflicts by comparing last known updated_at with current server state
+      try {
+        const currentServerNote = await api.get(`/note/${note.id}`);
+        if (currentServerNote.updated_at !== lastKnownUpdatedAt) {
+          saveConflictDetected = true;
+          console.warn('Note conflict detected - note was updated by another source');
+          // Still proceed with save but log the conflict
+        }
+      } catch (conflictError) {
+        console.warn('Could not check for conflicts:', conflictError);
+      }
+
       // Use the store's update method to ensure the note list updates
-      await notesStore.updateNote(note.id, {
+      const updatedNote = await notesStore.updateNote(note.id, {
         name: currentTitle,
         content: contentToSave,
       });
+      
+      // Update our conflict detection timestamp
+      if (updatedNote && updatedNote.updated_at) {
+        lastKnownUpdatedAt = updatedNote.updated_at;
+      }
 
       // Update the note in the store's notes array to ensure NoteList updates
       const storeNotes = notesStore.notes;
@@ -385,56 +327,7 @@
         }
       }
 
-      // Try to update the note preview in the NoteList directly
-      // This is a more direct approach that should work even if the store reactivity fails
-      setTimeout(() => {
-        try {
-          // Find the note item in the DOM
-          const noteElements = document.querySelectorAll(
-            `[data-note-id="${note.id}"]`
-          );
-          if (noteElements.length > 0) {
-            // Update the preview text in each found element
-            noteElements.forEach((noteEl) => {
-              // Find the preview paragraph
-              const previewEl = noteEl.querySelector(
-                ".text-sm.text-muted-foreground.line-clamp-2"
-              );
-              if (previewEl) {
-                // Extract a preview from the content
-                let previewText = "";
-                try {
-                  const parsedContent = JSON.parse(contentToSave);
-                  if (parsedContent.type === "doc" && parsedContent.content) {
-                    for (const node of parsedContent.content) {
-                      if (node.content) {
-                        for (const contentNode of node.content) {
-                          if (contentNode.type === "text" && contentNode.text) {
-                            previewText += contentNode.text + " ";
-                          }
-                        }
-                      }
-                    }
-                    // Limit preview length
-                    previewText = previewText.trim().substring(0, 100);
-                    if (previewText.length === 100) previewText += "...";
-                  }
-                } catch (e) {
-                  console.warn("Error parsing content for preview:", e);
-                }
-
-                if (previewText) {
-                  previewEl.textContent = previewText;
-                }
-              }
-            });
-          }
-        } catch (e) {
-          console.warn("Error updating note preview in DOM:", e);
-        }
-      }, 50);
-
-      // Also try the search query approach as a fallback
+      // Trigger reactivity update through search query refresh
       const currentQuery = notesStore.searchQuery;
       if (currentQuery) {
         notesStore.setSearchQuery(currentQuery);
@@ -475,7 +368,7 @@
   }
 
   // Add function to handle section type change
-  function handleSectionTypeChange(value: string) {
+  async function handleSectionTypeChange(value: string) {
     const selectedType = sectionTypeOptions.find(
       (option) => option.value === value
     );
@@ -483,43 +376,43 @@
     if (selectedType) {
       // Update our local state first
       currentSectionType = selectedType;
+      isSaving = true;
 
-      // Make a direct API call to update the section type without going through the store's update mechanism
-      // This avoids the remounting issue while ensuring the data is saved to the database
-      fetch(`${API_BASE_URL}/note/${note.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ sectionType: selectedType.value }),
-      })
-        .then(async (response) => {
-          if (!response.ok) {
-            console.error("Failed to update section type");
-          } else {
-            // Update the note in the store's notes array
-            // This is a hack but it's the only way to update the UI without remounting
-            const storeNotes = notesStore.notes;
-            for (let i = 0; i < storeNotes.length; i++) {
-              if (storeNotes[i].id === note.id) {
-                setTimeout(() => {
-                  const badgeElements = document.querySelectorAll(
-                    `[data-note-id="${note.id}"] .badge-section-type`
-                  );
-                  if (badgeElements.length > 0) {
-                    badgeElements.forEach((badge) => {
-                      badge.textContent = selectedType.label;
-                    });
-                  }
-                }, 100);
+      try {
+        // Use centralized API client with proper auth error handling
+        await api.put(`/note/${note.id}`, { sectionType: selectedType.value });
 
-                break;
-              }
-            }
+        // Update the note in the store's notes array
+        const storeNotes = notesStore.notes;
+        for (let i = 0; i < storeNotes.length; i++) {
+          if (storeNotes[i].id === note.id) {
+            storeNotes[i].section_type = selectedType.value;
+            storeNotes[i].updated_at = new Date().toISOString();
+            break;
           }
-        })
-        .catch((error) => {
-          console.error("Error updating section type:", error);
-        });
+        }
+
+        // Trigger reactivity update through search query refresh
+        const currentQuery = notesStore.searchQuery;
+        if (currentQuery) {
+          notesStore.setSearchQuery(currentQuery);
+        }
+      } catch (error) {
+        console.error("Error updating section type:", error);
+        // Auth errors are handled automatically by the API client
+        if (isAuthError(error)) {
+          authErrorOccurred = true;
+        }
+        // Revert local state on error
+        currentSectionType = typeof note.section_type === "object"
+          ? { ...note.section_type }
+          : {
+              value: note.section_type || "Other",
+              label: note.section_type || "Other",
+            };
+      } finally {
+        isSaving = false;
+      }
     }
   }
 
@@ -584,6 +477,16 @@
     >
       <Save class="h-3 w-3 animate-spin" />
       Saving...
+    </div>
+  {:else if saveConflictDetected}
+    <div
+      class="absolute top-4 right-4 z-10 px-3 py-1 rounded-full bg-yellow-50 dark:bg-yellow-900/20 backdrop-blur border border-yellow-200 dark:border-yellow-800 shadow-sm flex items-center gap-2 text-sm text-yellow-700 dark:text-yellow-300"
+      transition:fade={{ duration: 200 }}
+    >
+      <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+      </svg>
+      Conflict detected
     </div>
   {/if}
 

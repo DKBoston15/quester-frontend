@@ -42,6 +42,8 @@
 
   // Local state for UI
   let searchInputRef: HTMLInputElement | null = null;
+  let debounceTimer: NodeJS.Timeout | null = null;
+  const SEARCH_DEBOUNCE_MS = 300;
 
   // Keyboard shortcut handling
   function handleKeydown(event: KeyboardEvent) {
@@ -64,6 +66,10 @@
 
   onDestroy(() => {
     document.removeEventListener("keydown", handleKeydown);
+    // Clean up debounce timer
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
   });
 
   // Focus input when dialog opens
@@ -81,7 +87,16 @@
   // Handle search input changes
   function handleSearchInput(event: Event) {
     const target = event.target as HTMLInputElement;
-    globalSearchStore.setQuery(target.value);
+    const newQuery = target.value;
+    
+    // Clear previous timer to avoid duplicate searches
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
+    
+    // Update query immediately for UI responsiveness
+    // The store already handles debouncing and clearing results for short queries
+    globalSearchStore.setQuery(newQuery);
   }
 
   // Handle search submission

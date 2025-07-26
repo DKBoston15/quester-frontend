@@ -47,12 +47,35 @@
   // Internal selection state for the modal
   let internalSelectedIds = $state<Set<string>>(new Set());
 
-  // Initialize internal selection when modal opens or selectedLiterature changes
+  // Initialize internal selection when modal opens (but preserve user changes)
   $effect(() => {
     if (open && selectedLiterature) {
-      internalSelectedIds = new Set(
-        selectedLiterature.map((item) => item.id).filter(Boolean)
-      );
+      // Only reset if this is the first time opening the modal or if no internal state exists
+      if (internalSelectedIds.size === 0) {
+        internalSelectedIds = new Set(
+          selectedLiterature.map((item) => item.id).filter(Boolean)
+        );
+      } else {
+        // Validate that internal selection is still valid against current literature
+        const validIds = new Set(selectedLiterature.map((item) => item.id).filter(Boolean));
+        const validatedSelection = new Set<string>();
+        
+        // Only keep internal selections that are still valid
+        for (const id of internalSelectedIds) {
+          if (validIds.has(id)) {
+            validatedSelection.add(id);
+          }
+        }
+        
+        // Add any new literature items that weren't in the previous selection
+        for (const item of selectedLiterature) {
+          if (item.id && !internalSelectedIds.has(item.id)) {
+            validatedSelection.add(item.id);
+          }
+        }
+        
+        internalSelectedIds = validatedSelection;
+      }
     }
   });
 
@@ -153,6 +176,26 @@
     isExporting = true;
 
     try {
+      // Validate export data completeness
+      const selectedItems = currentlySelected();
+      
+      if (selectedItems.length === 0) {
+        toast.error('No references selected for export');
+        return;
+      }
+      
+      // Validate that all selected items have required data
+      const invalidItems = selectedItems.filter(item => 
+        !item.title || !item.authors || item.authors.length === 0
+      );
+      
+      if (invalidItems.length > 0) {
+        console.warn('Found literature items with missing data:', invalidItems);
+        toast.warning(
+          `${invalidItems.length} references are missing title or authors. Export may be incomplete.`
+        );
+      }
+      
       switch (selectedFormat) {
         case "copy":
           await copyToClipboard();

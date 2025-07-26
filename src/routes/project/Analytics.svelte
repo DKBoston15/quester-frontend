@@ -603,7 +603,6 @@
     try {
       // Check if we can generate insights (daily limit not reached)
       if (!insightsStore.canGenerateInsights(projectId)) {
-        console.log('[Analytics] Cannot auto-generate - daily limit reached');
         return;
       }
 
@@ -617,13 +616,11 @@
       );
 
       if (!hasSignificantData) {
-        console.log('[Analytics] Not enough data for auto-generation - literature:', analyticsData.totalLiteratureCount, 'notes:', analyticsData.totalNotesCount);
         return;
       }
 
       // If no existing insights, auto-generate
       if (existingInsights.length === 0) {
-        console.log('[Analytics] No existing insights found, auto-generating for new data');
         await insightsStore.generateInsights(projectId, false, analyticsData);
         return;
       }
@@ -636,12 +633,11 @@
         
         // Auto-regenerate if insights are more than 24 hours old and we have new data
         if (hoursOld > 24) {
-          console.log('[Analytics] Insights are old (', Math.round(hoursOld), 'hours), auto-generating with new data');
           await insightsStore.generateInsights(projectId, false, analyticsData);
         }
       }
     } catch (error) {
-      console.error('[Analytics] Error in auto-generation:', error);
+      console.error('Error in auto-generation:', error);
     }
   }
 
@@ -669,7 +665,6 @@
       data = { summary: analysisData };
       
       // Auto-generate insights if there's significant new data and we can generate
-      console.log('[Analytics] Checking if insights should be auto-generated');
       await tryAutoGenerateInsights(projectId, analysisData);
     } catch (error) {
       console.error("Error loading data:", error);

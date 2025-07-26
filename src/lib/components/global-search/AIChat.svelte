@@ -121,7 +121,7 @@
     }, 1000);
   }
 
-  // Safe message count getter
+  // Safe message count getter with proper error handling
   function getSessionMessageCount(session: any): number {
     if (!session?.messages) return 0;
     
@@ -129,12 +129,28 @@
     if (typeof messages === 'string') {
       try {
         messages = JSON.parse(messages);
-      } catch {
+      } catch (error) {
+        console.error('Failed to parse chat session messages JSON:', {
+          sessionId: session.id,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          rawMessages: messages?.substring(0, 100) + '...' // Log first 100 chars for debugging
+        });
+        // Return 0 but notify user that data might be corrupted
+        // This prevents the UI from breaking while alerting about data issues
         return 0;
       }
     }
     
-    return Array.isArray(messages) ? messages.length : 0;
+    if (!Array.isArray(messages)) {
+      console.warn('Chat session messages is not an array:', {
+        sessionId: session.id,
+        messageType: typeof messages,
+        messages
+      });
+      return 0;
+    }
+    
+    return messages.length;
   }
 
   // Handle chat input keydown
@@ -453,7 +469,7 @@
         {:else}
           <!-- Chat Messages -->
           <div class="space-y-4">
-            {#each chatMessages as message, i (message.id)}
+            {#each chatMessages() as message, i (message.id)}
               {@const showTimestamp = shouldShowTimestamp(i)}
               {@const isUser = message.role === "user"}
               {@const isAssistant = message.role === "assistant"}

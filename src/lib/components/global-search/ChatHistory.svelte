@@ -75,7 +75,11 @@
         if (typeof messages === "string") {
           try {
             messages = JSON.parse(messages);
-          } catch {
+          } catch (error) {
+            console.error('Failed to parse chat history messages for filtering:', {
+              sessionId: session.id,
+              error: error instanceof Error ? error.message : 'Unknown error'
+            });
             messages = [];
           }
         }
@@ -219,7 +223,11 @@
     if (typeof messages === "string") {
       try {
         messages = JSON.parse(messages);
-      } catch {
+      } catch (error) {
+        console.error('Failed to parse chat history messages for preview:', {
+          sessionId: session.id,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
         return "No messages yet";
       }
     }
@@ -245,12 +253,24 @@
     if (typeof messages === "string") {
       try {
         messages = JSON.parse(messages);
-      } catch {
+      } catch (error) {
+        console.error('Failed to parse chat history messages for count:', {
+          sessionId: session.id,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
         return 0;
       }
     }
 
-    return Array.isArray(messages) ? messages.length : 0;
+    if (!Array.isArray(messages)) {
+      console.warn('Chat history messages is not an array:', {
+        sessionId: session.id,
+        messageType: typeof messages
+      });
+      return 0;
+    }
+
+    return messages.length;
   }
 </script>
 

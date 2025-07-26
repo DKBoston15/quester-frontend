@@ -283,7 +283,16 @@
         const remainingNodes = currentNodes.filter(node => node.id !== nodeId);
         
         // Add it to the end (top layer)
-        return [...remainingNodes, nodeToMove];
+        const newNodes = [...remainingNodes, nodeToMove];
+        
+        // Save state for undo/redo after a short delay
+        setTimeout(() => {
+          if (!undoRedoStore.isApplyingChange) {
+            undoRedoStore.saveState(newNodes, $edges);
+          }
+        }, 100);
+        
+        return newNodes;
       });
     };
 
@@ -306,7 +315,16 @@
         const remainingNodes = currentNodes.filter(node => node.id !== nodeId);
         
         // Add it to the beginning (back layer)
-        return [nodeToMove, ...remainingNodes];
+        const newNodes = [nodeToMove, ...remainingNodes];
+        
+        // Save state for undo/redo after a short delay
+        setTimeout(() => {
+          if (!undoRedoStore.isApplyingChange) {
+            undoRedoStore.saveState(newNodes, $edges);
+          }
+        }, 100);
+        
+        return newNodes;
       });
     };
 

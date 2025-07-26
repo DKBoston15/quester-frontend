@@ -8,6 +8,7 @@
   import { Mail, Send, X, Info } from "lucide-svelte";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
   import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
   import TeamSizeIndicator from "$lib/components/TeamSizeIndicator/TeamSizeIndicator.svelte";
   import { toast } from "svelte-sonner";
 
@@ -30,31 +31,18 @@
   let error = $state<string | null>(null);
   let success = $state<string | null>(null);
   
-  // Form validation
-  let emailError = $state<string | null>(null);
-  let roleError = $state<string | null>(null);
-
-  // Real-time email validation
-  $effect(() => {
-    if (email && email.length > 0) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        emailError = "Please enter a valid email address";
-      } else {
-        emailError = null;
-      }
-    } else {
-      emailError = null;
-    }
+  // Use derived for validation instead of effects to prevent loops
+  const emailError = $derived(() => {
+    if (!email || email.length === 0) return null;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email) ? null : "Please enter a valid email address";
   });
 
-  // Real-time role validation
-  $effect(() => {
-    if (selectedRoleId === "" && availableRoles.length > 0) {
-      roleError = "Please select a role";
-    } else {
-      roleError = null;
+  const roleError = $derived(() => {
+    if (selectedRoleId === "" && availableRoles().length > 0) {
+      return "Please select a role";
     }
+    return null;
   });
 
   // API response state
@@ -62,59 +50,48 @@
   let invitationsLoading = $state(false);
   let invitationsError = $state<string | null>(null);
 
-  // Change from $derived to $state for subscription limit calculations
-  let remainingInvitations = $state<number>(Infinity);
-  let canSendInvitations = $state(true);
-
-  // Calculate remaining invitations and permission when relevant data changes
-  $effect(() => {
-    // Calculate remaining invitations
+  // Use $derived for computed values to avoid race conditions
+  const remainingInvitations = $derived(() => {
     if (!props.subscriptionLimits || props.subscriptionLimits.maxUsers === 0) {
-      remainingInvitations = Infinity;
-    } else {
-      const pendingCount = pendingInvitations.length;
-      remainingInvitations = Math.max(
-        0,
-        props.subscriptionLimits.maxUsers -
-          props.subscriptionLimits.currentUserCount -
-          pendingCount
-      );
+      return Infinity;
     }
+    const pendingCount = pendingInvitations.length;
+    return Math.max(
+      0,
+      props.subscriptionLimits.maxUsers -
+        props.subscriptionLimits.currentUserCount -
+        pendingCount
+    );
+  });
 
-    // Calculate if invitations can be sent
+  const canSendInvitations = $derived(() => {
     if (!props.subscriptionLimits) {
-      canSendInvitations = true;
-    } else {
-      // Check if user has invitation capability from subscription
-      if (!props.subscriptionLimits.canInviteUsers) {
-        canSendInvitations = false;
-      } else {
-        // Check if user hasn't reached their limit
-        if (props.subscriptionLimits.maxUsers > 0) {
-          canSendInvitations = remainingInvitations > 0;
-        } else {
-          canSendInvitations = true;
-        }
-      }
+      return true;
     }
+    
+    // Check if user has invitation capability from subscription
+    if (!props.subscriptionLimits.canInviteUsers) {
+      return false;
+    }
+    
+    // Check if user hasn't reached their limit
+    if (props.subscriptionLimits.maxUsers > 0) {
+      return remainingInvitations > 0;
+    }
+    
+    return true;
   });
 
   type Role = { id: string; name: string };
-  let availableRoles = $state<Role[]>([]);
-
-  // When props change, update the available roles
-  $effect(() => {
-    updateAvailableRoles();
-  });
-
-  // Function to extract available roles from the current team management data
-  function updateAvailableRoles() {
+  
+  // Use $derived for available roles to prevent infinite loops
+  const availableRoles = $derived(() => {
     if (
       props.resourceType === "organization" &&
       teamManagement.organizationStructure
     ) {
       if (teamManagement.organizationStructure.availableRoles) {
-        availableRoles = teamManagement.organizationStructure.availableRoles;
+        return teamManagement.organizationStructure.availableRoles;
       } else if (teamManagement.organizationStructure.users) {
         // Extract unique roles from user data if available roles not present
         const uniqueRoles = new Map<string, Role>();
@@ -123,14 +100,14 @@
             uniqueRoles.set(user.role.id, user.role);
           }
         });
-        availableRoles = Array.from(uniqueRoles.values());
+        return Array.from(uniqueRoles.values());
       }
     } else if (
       props.resourceType === "department" &&
       teamManagement.departmentStructure
     ) {
       if (teamManagement.departmentStructure.availableRoles) {
-        availableRoles = teamManagement.departmentStructure.availableRoles;
+        return teamManagement.departmentStructure.availableRoles;
       } else if (teamManagement.departmentStructure.users) {
         const uniqueRoles = new Map<string, Role>();
         teamManagement.departmentStructure.users.forEach((user: any) => {
@@ -138,11 +115,11 @@
             uniqueRoles.set(user.role.id, user.role);
           }
         });
-        availableRoles = Array.from(uniqueRoles.values());
+        return Array.from(uniqueRoles.values());
       }
     } else if (props.resourceType === "project" && teamManagement.projectTeam) {
       if (teamManagement.projectTeam.availableRoles) {
-        availableRoles = teamManagement.projectTeam.availableRoles;
+        return teamManagement.projectTeam.availableRoles;
       } else if (teamManagement.projectTeam.users) {
         const uniqueRoles = new Map<string, Role>();
         teamManagement.projectTeam.users.forEach((user: any) => {
@@ -150,19 +127,32 @@
             uniqueRoles.set(user.role.id, user.role);
           }
         });
-        availableRoles = Array.from(uniqueRoles.values());
+        return Array.from(uniqueRoles.values());
       }
     }
+    
+    return [];
+  });
 
-    // Select default role if we have roles
-    if (availableRoles.length > 0 && !selectedRoleId) {
+  // Auto-select default role when available roles change (with guard to prevent loops)
+  let hasAutoSelectedRole = $state(false);
+  $effect(() => {
+    const roles = availableRoles(); // Call the derived function
+    // Only auto-select once and when we have roles but no selection
+    if (roles.length > 0 && !selectedRoleId && !hasAutoSelectedRole) {
       // Try to find a "Member" role as default
-      const memberRole = availableRoles.find(
+      const memberRole = roles.find(
         (r) => r.name.toLowerCase() === "member"
       );
-      selectedRoleId = memberRole ? memberRole.id : availableRoles[0].id;
+      selectedRoleId = memberRole ? memberRole.id : roles[0].id;
+      hasAutoSelectedRole = true;
     }
-  }
+    
+    // Reset the guard when roles change completely
+    if (roles.length === 0 && hasAutoSelectedRole) {
+      hasAutoSelectedRole = false;
+    }
+  });
 
   async function sendInvitation() {
     // Clear previous states
@@ -175,7 +165,7 @@
       return;
     }
 
-    if (emailError || roleError) {
+    if (emailError() || roleError()) {
       toast.error("Please fix the validation errors before submitting");
       return;
     }
@@ -214,17 +204,10 @@
           break;
       }
 
-      const response = await fetch(`${API_BASE_URL}/invitations`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
+      // Use centralized API client
+      const response = await api.post(`/invitations`, payload);
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || "Failed to send invitation");
-      }
+      // Response from api client is already parsed JSON
 
       // On success
       toast.success(`Invitation sent to ${email}`);
@@ -249,19 +232,10 @@
     invitationsError = null;
 
     try {
-      // Use the generic invitations endpoint with query params to filter
-      // Since the backend doesn't have a specific route for filtering by resource
-      let endpoint = `${API_BASE_URL}/invitations?${props.resourceType}Id=${props.resourceId}`;
-
-      const response = await fetch(endpoint, {
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to load invitations (${response.status})`);
-      }
-
-      const data = await response.json();
+      // Use centralized API client with query params
+      const endpoint = `/invitations?${props.resourceType}Id=${props.resourceId}`;
+      const data = await api.get(endpoint);
+      
       // Filter for pending invitations only - exclude both acceptedAt and status "accepted"
       pendingInvitations = data.filter(
         (inv: any) =>
@@ -282,18 +256,8 @@
 
   async function revokeInvitation(invitationId: string) {
     try {
-      // Backend uses POST to revoke, not DELETE
-      const response = await fetch(
-        `${API_BASE_URL}/invitations/${invitationId}/revoke`,
-        {
-          method: "POST",
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to revoke invitation");
-      }
+      // Use centralized API client for revoke
+      await api.post(`/invitations/${invitationId}/revoke`);
 
       // Filter out the revoked invitation from local state
       pendingInvitations = pendingInvitations.filter(
@@ -309,8 +273,11 @@
   }
 
   // Load pending invitations when component mounts or resourceId changes
+  // Use a guard to prevent infinite loops
+  let lastLoadedResourceId = $state<string | null>(null);
   $effect(() => {
-    if (props.resourceId) {
+    if (props.resourceId && props.resourceId !== lastLoadedResourceId) {
+      lastLoadedResourceId = props.resourceId;
       loadPendingInvitations();
     }
   });
@@ -347,12 +314,12 @@
             type="email"
             placeholder="user@example.com"
             bind:value={email}
-            class="border-2 dark:border-dark-border {emailError ? 'border-destructive' : ''}"
+            class="border-2 dark:border-dark-border {emailError() ? 'border-destructive' : ''}"
             required
             disabled={!canSendInvitations}
           />
-          {#if emailError}
-            <p class="text-sm text-destructive">{emailError}</p>
+          {#if emailError()}
+            <p class="text-sm text-destructive">{emailError()}</p>
           {/if}
         </div>
 
@@ -361,17 +328,17 @@
           <select
             id="role"
             bind:value={selectedRoleId}
-            class="w-full rounded-md border-2 dark:border-dark-border bg-card dark:bg-dark-card p-2 {roleError ? 'border-destructive' : ''}"
+            class="w-full rounded-md border-2 dark:border-dark-border bg-card dark:bg-dark-card p-2 {roleError() ? 'border-destructive' : ''}"
             required
             disabled={!canSendInvitations}
           >
             <option value="" disabled>Select role...</option>
-            {#each availableRoles as role}
+            {#each availableRoles() as role}
               <option value={role.id}>{role.name}</option>
             {/each}
           </select>
-          {#if roleError}
-            <p class="text-sm text-destructive">{roleError}</p>
+          {#if roleError()}
+            <p class="text-sm text-destructive">{roleError()}</p>
           {/if}
         </div>
 

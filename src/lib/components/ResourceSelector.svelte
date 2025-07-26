@@ -154,12 +154,16 @@
     return item.label.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
   }
 
-  // Sync internal state if props change externally
+  // Sync internal state if props change externally (with guard to prevent loops)
+  let lastSyncedPropsValue = $state<string | null>(null);
   $effect(() => {
     const externalValue = props.selectedId
       ? `${props.selectedType}:${props.selectedId}`
       : null;
-    if (externalValue !== selectedValue) {
+    
+    // Only update if external value changed and it's different from our internal state
+    if (externalValue !== lastSyncedPropsValue && externalValue !== selectedValue) {
+      lastSyncedPropsValue = externalValue;
       selectedValue = externalValue;
     }
   });
@@ -233,6 +237,7 @@
                   class="text-left flex items-center gap-2 py-3"
                   onSelect={() => {
                     selectedValue = item.value;
+                    lastSyncedPropsValue = item.value; // Update sync tracker
                     props.onSelect(item.type, item.id);
                     closeAndFocusTrigger();
                   }}

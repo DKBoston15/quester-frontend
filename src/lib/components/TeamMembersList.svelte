@@ -14,9 +14,9 @@
   import { auth } from "$lib/stores/AuthStore.svelte";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { EmptyState } from "$lib/components/ui/empty-state";
-  import { debounce } from "$lib/utils/debounce";
   import { toast } from "svelte-sonner";
   import { fly, fade } from "svelte/transition";
+  import { onDestroy } from "svelte";
 
   // Define a type for team members that includes role information
   type TeamMember = User & {
@@ -72,18 +72,32 @@
   let isRemoving = $state<string | null>(null);
   let showDeleteDialog = $state(false);
   let userToRemove = $state<TeamMember | null>(null);
+  let searchDebounceTimeout: NodeJS.Timeout | null = null;
 
-  // Debounced search function
-  const debouncedSearch = debounce((term: string) => {
-    debouncedSearchTerm = term;
-    isSearching = false;
-  }, 300);
-
-  // Effect to handle search term changes
-  $effect(() => {
-    if (searchTerm !== debouncedSearchTerm) {
-      isSearching = true;
-      debouncedSearch(searchTerm);
+  // Function to handle search input changes
+  function handleSearchInput(event: Event) {
+    const target = event.target as HTMLInputElement;
+    const newSearchTerm = target.value;
+    
+    searchTerm = newSearchTerm;
+    isSearching = true;
+    
+    // Clear previous timeout
+    if (searchDebounceTimeout) {
+      clearTimeout(searchDebounceTimeout);
+    }
+    
+    // Set new timeout
+    searchDebounceTimeout = setTimeout(() => {
+      debouncedSearchTerm = newSearchTerm;
+      isSearching = false;
+    }, 300);
+  }
+  
+  // Cleanup timeout on destroy
+  onDestroy(() => {
+    if (searchDebounceTimeout) {
+      clearTimeout(searchDebounceTimeout);
     }
   });
 
@@ -313,7 +327,8 @@
         type="text"
         placeholder="Search members..."
         class="pl-8 pr-8"
-        bind:value={searchTerm}
+        value={searchTerm}
+        oninput={handleSearchInput}
       />
       {#if isSearching}
         <Loader2 class="absolute right-2 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />

@@ -31,30 +31,24 @@
   // Load insights from store/API
   async function loadInsights() {
     if (!projectId) {
-      console.log('[KeyInsights] No projectId provided');
       return;
     }
-    console.log('[KeyInsights] Loading insights for project:', projectId);
     await insightsStore.loadInsights(projectId);
-    console.log('[KeyInsights] Insights loaded, count:', insights.length);
   }
 
   // Generate new insights
   async function generateInsights(force = false) {
     if (!projectId) {
-      console.log('[KeyInsights] No projectId for generation');
       return;
     }
     
-    console.log('[KeyInsights] Generating insights for project:', projectId, 'force:', force, 'analyticsData:', !!analyticsData);
     isRefreshing = true;
     try {
       await insightsStore.generateInsights(projectId, force, analyticsData);
-      console.log('[KeyInsights] Insights generation completed');
       // Refresh the generation limit check after successful generation
       await insightsStore.checkGenerationLimit(projectId);
     } catch (error) {
-      console.error('[KeyInsights] Error generating insights:', error);
+      console.error('Error generating insights:', error);
     } finally {
       isRefreshing = false;
     }
@@ -67,11 +61,9 @@
 
   // Load insights on component mount
   onMount(async () => {
-    console.log('[KeyInsights] Component mounted for project:', projectId);
     // Run these sequentially to avoid race conditions with button state
     await loadInsights();
     if (projectId) {
-      console.log('[KeyInsights] Checking generation limit for project:', projectId);
       // Don't await this - let it run in background without blocking UI
       insightsStore.checkGenerationLimit(projectId);
     }

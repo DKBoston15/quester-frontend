@@ -134,9 +134,12 @@
     }
   });
 
-  // Rebuild tour when resource selection changes
+  // Rebuild tour when resource selection changes (with guard to prevent infinite loops)
+  let lastResourceId = $state<string | null>(null);
   $effect(() => {
-    if (teamManagement.selectedResourceId && !isLoading) {
+    const currentResourceId = teamManagement.selectedResourceId;
+    if (currentResourceId && !isLoading && currentResourceId !== lastResourceId) {
+      lastResourceId = currentResourceId;
       buildTourSteps();
     }
   });
