@@ -216,7 +216,7 @@
         </Tooltip.Root>
       </EmptyState>
     {:else}
-      <div class="grid gap-4 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+      <div class="grid gap-4 grid-cols-1 lg:grid-cols-2">
         {#each insights as insight}
           <InsightCard 
             {insight} 

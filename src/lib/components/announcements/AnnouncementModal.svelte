@@ -108,7 +108,7 @@
             </DialogDescription>
             
             {#if currentAnnouncement.metadata?.additionalContent}
-              <div class="prose prose-sm max-w-none">
+              <div class="prose prose-sm max-w-none prose-gray dark:prose-invert">
                 {@html currentAnnouncement.metadata.additionalContent}
               </div>
             {/if}
@@ -159,5 +159,22 @@
   
   .overflow-y-auto::-webkit-scrollbar-thumb:hover {
     background-color: rgb(148 163 184);
+  }
+
+  /* Enhanced contrast for announcement content */
+  .prose :global(p) {
+    @apply text-gray-800 dark:text-gray-200;
+  }
+  
+  .prose :global(ul li) {
+    @apply text-gray-700 dark:text-gray-300;
+  }
+  
+  .prose :global(ol li) {
+    @apply text-gray-700 dark:text-gray-300;
+  }
+  
+  .prose :global(strong) {
+    @apply text-gray-900 dark:text-gray-100 font-semibold;
   }
 </style>

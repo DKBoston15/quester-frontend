@@ -3,7 +3,10 @@
   import type { Literature } from "$lib/types/literature";
   import type { CitationStyle } from "$lib/utils/citationFormatters";
   import { formatCitation } from "$lib/utils/citationFormatters";
-  import { compileBibliography, estimatePageCount } from "$lib/utils/bibliographyUtils";
+  import {
+    compileBibliography,
+    estimatePageCount,
+  } from "$lib/utils/bibliographyUtils";
   import { Card } from "$lib/components/ui/card";
   import { Badge } from "$lib/components/ui/badge";
   import { FileText, Clock } from "lucide-svelte";
@@ -15,10 +18,17 @@
     onToggleReference?: (literature: Literature) => void;
   }
 
-  let { literature, citationStyle, internalSelectedIds, onToggleReference }: Props = $props();
+  let {
+    literature,
+    citationStyle,
+    internalSelectedIds,
+    onToggleReference,
+  }: Props = $props();
 
   // Simple state-based approach
-  let formattedCitations = $state<Array<{literature: Literature, formatted: string}>>([]);
+  let formattedCitations = $state<
+    Array<{ literature: Literature; formatted: string }>
+  >([]);
   let pageCount = $state(0);
   let wordCount = $state(0);
 
@@ -33,23 +43,26 @@
 
     try {
       // Compile and sort literature
-      const compiledLiterature = compileBibliography(literature, { sortBy: "author", sortOrder: "asc" });
-      
+      const compiledLiterature = compileBibliography(literature, {
+        sortBy: "author",
+        sortOrder: "asc",
+      });
+
       // Format citations with the current style
-      const citations = compiledLiterature.map(item => ({
+      const citations = compiledLiterature.map((item) => ({
         literature: item,
-        formatted: formatCitation(item, citationStyle)
+        formatted: formatCitation(item, citationStyle),
       }));
-      
+
       formattedCitations = citations;
       pageCount = estimatePageCount(literature.length, 3, 25);
-      
+
       // Calculate word count
       if (citations.length > 0) {
         const text = citations
-          .map(c => c.formatted.replace(/<[^>]*>/g, ""))
+          .map((c) => c.formatted.replace(/<[^>]*>/g, ""))
           .join(" ");
-        wordCount = text.split(/\s+/).filter(word => word.length > 0).length;
+        wordCount = text.split(/\s+/).filter((word) => word.length > 0).length;
       } else {
         wordCount = 0;
       }
@@ -66,7 +79,7 @@
     // Read both dependencies
     const currentLiterature = literature;
     const currentStyle = citationStyle;
-    
+
     // Update citations when either changes
     updateCitations();
   });
@@ -79,7 +92,7 @@
       <div class="flex items-center gap-3 text-sm text-muted-foreground">
         <div class="flex items-center gap-1">
           <FileText class="h-4 w-4" />
-          <span>~{pageCount} page{pageCount !== 1 ? 's' : ''}</span>
+          <span>~{pageCount} page{pageCount !== 1 ? "s" : ""}</span>
         </div>
         <div class="flex items-center gap-1">
           <Clock class="h-4 w-4" />
@@ -95,10 +108,10 @@
       <div class="text-center mb-8">
         <h1 class="text-2xl font-bold mb-2">Bibliography</h1>
         <p class="text-muted-foreground">
-          Generated on {new Date().toLocaleDateString("en-US", { 
-            year: "numeric", 
-            month: "long", 
-            day: "numeric" 
+          Generated on {new Date().toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
           })}
         </p>
       </div>
@@ -107,29 +120,45 @@
         <div class="text-center py-12 text-muted-foreground">
           <FileText class="h-12 w-12 mx-auto mb-4 opacity-50" />
           <p class="text-lg font-medium">No references selected</p>
-          <p class="text-sm">Select some literature items to see the bibliography preview</p>
+          <p class="text-sm">
+            Select some literature items to see the bibliography preview
+          </p>
         </div>
       {:else}
         <div class="prose prose-sm max-w-none">
           <div class="space-y-6">
             {#each formattedCitations as citationItem, index}
-              {@const isSelected = !internalSelectedIds || !citationItem.literature.id || internalSelectedIds.has(citationItem.literature.id)}
-              <div class="reference-item border-l-2 border-muted pl-4 py-2">
+              {@const isSelected =
+                !internalSelectedIds ||
+                !citationItem.literature.id ||
+                internalSelectedIds.has(citationItem.literature.id)}
+              <div
+                class="reference-item border-l-2 border-muted pl-4 py-2 flex items-center"
+              >
                 <!-- Checkbox and citation -->
                 <div class="flex items-start gap-3">
                   {#if internalSelectedIds && onToggleReference && citationItem.literature.id}
-                    <label class="flex items-center mt-1 cursor-pointer">
+                    <label
+                      class="flex items-center mt-1 cursor-pointer text-foreground"
+                    >
                       <input
                         type="checkbox"
                         checked={isSelected}
-                        onchange={() => onToggleReference?.(citationItem.literature)}
-                        class="h-4 w-4 text-primary border-2 border-input rounded focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
+                        onchange={() =>
+                          onToggleReference?.(citationItem.literature)}
+                        class="h-4 w-4 text-primary border-2 border-input rounded focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer bg-background"
                       />
                     </label>
                   {/if}
-                  
-                  <div class="flex-1 transition-opacity duration-200 {isSelected ? 'opacity-100' : 'opacity-40'}">
-                    <div class="citation-text leading-relaxed">
+
+                  <div
+                    class="flex-1 transition-opacity duration-200 {isSelected
+                      ? 'opacity-100'
+                      : 'opacity-40'}"
+                  >
+                    <div
+                      class="citation-text leading-relaxed text-black dark:text-white"
+                    >
                       {@html citationItem.formatted}
                     </div>
                     {#if citationItem.literature.doi}
@@ -149,8 +178,15 @@
 
   {#if formattedCitations.length > 0}
     <div class="p-4 border-t bg-muted/30">
-      <div class="flex items-center justify-between text-sm text-muted-foreground">
-        <span>Total: {formattedCitations.length} reference{formattedCitations.length !== 1 ? 's' : ''}</span>
+      <div
+        class="flex items-center justify-between text-sm text-muted-foreground"
+      >
+        <span
+          >Total: {formattedCitations.length} reference{formattedCitations.length !==
+          1
+            ? "s"
+            : ""}</span
+        >
         <span>Sorted alphabetically by author</span>
       </div>
     </div>

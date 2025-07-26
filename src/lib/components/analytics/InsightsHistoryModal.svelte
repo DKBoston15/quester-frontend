@@ -143,7 +143,7 @@
                 </Badge>
               </div>
 
-              <div class="grid gap-3 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+              <div class="grid gap-3 grid-cols-1 lg:grid-cols-2">
                 {#each insights as insight}
                   {@const config = getInsightConfig(insight.type)}
                   <div class={`border rounded-lg p-3 ${config.bgColor} border-l-4 ${config.borderColor}`}>

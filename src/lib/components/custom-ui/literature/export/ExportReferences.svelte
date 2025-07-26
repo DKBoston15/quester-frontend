@@ -4,10 +4,21 @@
   import { Button } from "$lib/components/ui/button";
   import * as Select from "$lib/components/ui/select";
   import { Badge } from "$lib/components/ui/badge";
-  import { Copy, Download, FileText, CheckSquare, Square, RotateCcw } from "lucide-svelte";
+  import {
+    Copy,
+    Download,
+    FileText,
+    CheckSquare,
+    Square,
+    RotateCcw,
+  } from "lucide-svelte";
   import type { Literature } from "$lib/types/literature";
   import type { CitationStyle } from "$lib/utils/citationFormatters";
-  import { citationStyles, formatCitation, stripHtmlTags } from "$lib/utils/citationFormatters";
+  import {
+    citationStyles,
+    formatCitation,
+    stripHtmlTags,
+  } from "$lib/utils/citationFormatters";
   import { compileBibliography } from "$lib/utils/bibliographyUtils";
   import ReferencePreview from "./ReferencePreview.svelte";
   import { toast } from "svelte-sonner";
@@ -25,26 +36,36 @@
     onOpenChange: (open: boolean) => void;
   }
 
-  let { open = $bindable(), selectedLiterature, projectTitle, userName, onOpenChange }: Props = $props();
+  let {
+    open = $bindable(),
+    selectedLiterature,
+    projectTitle,
+    userName,
+    onOpenChange,
+  }: Props = $props();
 
   // Internal selection state for the modal
   let internalSelectedIds = $state<Set<string>>(new Set());
-  
+
   // Initialize internal selection when modal opens or selectedLiterature changes
   $effect(() => {
     if (open && selectedLiterature) {
-      internalSelectedIds = new Set(selectedLiterature.map(item => item.id).filter(Boolean));
+      internalSelectedIds = new Set(
+        selectedLiterature.map((item) => item.id).filter(Boolean)
+      );
     }
   });
 
   // Get currently selected literature based on internal state
   const currentlySelected = $derived(() => {
-    return selectedLiterature.filter(item => item.id && internalSelectedIds.has(item.id));
+    return selectedLiterature.filter(
+      (item) => item.id && internalSelectedIds.has(item.id)
+    );
   });
 
   function toggleReference(literature: Literature) {
     if (!literature.id) return;
-    
+
     const newSelected = new Set(internalSelectedIds);
     if (newSelected.has(literature.id)) {
       newSelected.delete(literature.id);
@@ -55,7 +76,9 @@
   }
 
   function selectAll() {
-    internalSelectedIds = new Set(selectedLiterature.map(item => item.id).filter(Boolean));
+    internalSelectedIds = new Set(
+      selectedLiterature.map((item) => item.id).filter(Boolean)
+    );
   }
 
   function deselectAll() {
@@ -63,9 +86,11 @@
   }
 
   function invertSelection() {
-    const allIds = new Set(selectedLiterature.map(item => item.id).filter(Boolean));
+    const allIds = new Set(
+      selectedLiterature.map((item) => item.id).filter(Boolean)
+    );
     const newSelected = new Set<string>();
-    
+
     for (const id of allIds) {
       if (!internalSelectedIds.has(id)) {
         newSelected.add(id);
@@ -75,7 +100,9 @@
   }
 
   let selectedStyle = $state<CitationStyle>("APA");
-  let selectedFormat = $state<"copy" | "pdf" | "docx" | "bibtex" | "ris" | "csv">("copy");
+  let selectedFormat = $state<
+    "copy" | "pdf" | "docx" | "bibtex" | "ris" | "csv"
+  >("copy");
   let isExporting = $state(false);
 
   const exportFormats = [
@@ -99,13 +126,20 @@
 
   // Load user preferences
   $effect(() => {
-    const savedStyle = localStorage.getItem("preferredCitationStyle") as CitationStyle;
-    const savedFormat = localStorage.getItem("preferredExportFormat") as typeof selectedFormat;
-    
-    if (savedStyle && citationStyles.some(s => s.value === savedStyle)) {
+    const savedStyle = localStorage.getItem(
+      "preferredCitationStyle"
+    ) as CitationStyle;
+    const savedFormat = localStorage.getItem(
+      "preferredExportFormat"
+    ) as typeof selectedFormat;
+
+    if (savedStyle && citationStyles.some((s) => s.value === savedStyle)) {
       selectedStyle = savedStyle;
     }
-    if (savedFormat && exportFormats.some(f => f.value === savedFormat && !f.disabled)) {
+    if (
+      savedFormat &&
+      exportFormats.some((f) => f.value === savedFormat && !f.disabled)
+    ) {
       selectedFormat = savedFormat;
     }
   });
@@ -128,9 +162,11 @@
             literature: currentlySelected(),
             citationStyle: selectedStyle,
             projectTitle: projectTitle || "Research Bibliography",
-            authorName: userName
+            authorName: userName,
           });
-          toast.success(`PDF exported successfully with ${currentlySelected().length} references`);
+          toast.success(
+            `PDF exported successfully with ${currentlySelected().length} references`
+          );
           open = false;
           break;
         case "docx":
@@ -138,30 +174,38 @@
             literature: currentlySelected(),
             citationStyle: selectedStyle,
             projectTitle: projectTitle || "Research Bibliography",
-            authorName: userName
+            authorName: userName,
           });
-          toast.success(`DOCX exported successfully with ${currentlySelected().length} references`);
+          toast.success(
+            `DOCX exported successfully with ${currentlySelected().length} references`
+          );
           open = false;
           break;
         case "bibtex":
           await exportToBibTeX({
-            literature: currentlySelected()
+            literature: currentlySelected(),
           });
-          toast.success(`BibTeX exported successfully with ${currentlySelected().length} references`);
+          toast.success(
+            `BibTeX exported successfully with ${currentlySelected().length} references`
+          );
           open = false;
           break;
         case "ris":
           await exportToRIS({
-            literature: currentlySelected()
+            literature: currentlySelected(),
           });
-          toast.success(`RIS exported successfully with ${currentlySelected().length} references`);
+          toast.success(
+            `RIS exported successfully with ${currentlySelected().length} references`
+          );
           open = false;
           break;
         case "csv":
           await exportToCSV({
-            literature: currentlySelected()
+            literature: currentlySelected(),
           });
-          toast.success(`CSV exported successfully with ${currentlySelected().length} references`);
+          toast.success(
+            `CSV exported successfully with ${currentlySelected().length} references`
+          );
           open = false;
           break;
       }
@@ -181,28 +225,38 @@
 
     try {
       // Get formatted citations and create properly formatted text
-      const compiledLiterature = compileBibliography(currentLiterature, { sortBy: "author", sortOrder: "asc" });
-      
+      const compiledLiterature = compileBibliography(currentLiterature, {
+        sortBy: "author",
+        sortOrder: "asc",
+      });
+
       // Create bibliography header
-      const header = `Bibliography\n\nGenerated on ${new Date().toLocaleDateString("en-US", { 
-        year: "numeric", 
-        month: "long", 
-        day: "numeric" 
-      })}\n\n`;
-      
+      const header = `Bibliography\n\nGenerated on ${new Date().toLocaleDateString(
+        "en-US",
+        {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }
+      )}\n\n`;
+
       // Format each citation with proper spacing
-      const formattedText = compiledLiterature.map(item => {
-        const citation = formatCitation(item, selectedStyle);
-        // Remove HTML tags and replace with proper spacing
-        return stripHtmlTags(citation)
-          .replace(/\s+/g, ' ') // Replace multiple spaces with single space
-          .trim();
-      }).join('\n\n'); // Double line break between citations
-      
+      const formattedText = compiledLiterature
+        .map((item) => {
+          const citation = formatCitation(item, selectedStyle);
+          // Remove HTML tags and replace with proper spacing
+          return stripHtmlTags(citation)
+            .replace(/\s+/g, " ") // Replace multiple spaces with single space
+            .trim();
+        })
+        .join("\n\n"); // Double line break between citations
+
       const fullText = header + formattedText;
-      
+
       await navigator.clipboard.writeText(fullText);
-      toast.success(`${currentLiterature.length} references copied to clipboard`);
+      toast.success(
+        `${currentLiterature.length} references copied to clipboard`
+      );
       open = false;
     } catch (err) {
       throw new Error("Failed to copy to clipboard");
@@ -210,7 +264,7 @@
   }
 
   function getExportButtonText() {
-    const format = exportFormats.find(f => f.value === selectedFormat);
+    const format = exportFormats.find((f) => f.value === selectedFormat);
     if (selectedFormat === "copy") {
       return "Copy to Clipboard";
     }
@@ -218,12 +272,12 @@
   }
 
   function getExportButtonIcon() {
-    const format = exportFormats.find(f => f.value === selectedFormat);
+    const format = exportFormats.find((f) => f.value === selectedFormat);
     return format?.icon || Download;
   }
 </script>
 
-<Dialog.Root bind:open onOpenChange={onOpenChange}>
+<Dialog.Root bind:open {onOpenChange}>
   <Dialog.Content class="max-w-5xl h-[90vh] overflow-hidden flex flex-col">
     <Dialog.Header>
       <Dialog.Title>Export References</Dialog.Title>
@@ -237,20 +291,39 @@
       <div class="flex items-center justify-between gap-4 px-6 pt-4">
         <div class="flex items-center gap-4">
           <Badge variant="secondary" class="px-3 py-1">
-            {currentlySelected().length} of {selectedLiterature.length} reference{selectedLiterature.length !== 1 ? 's' : ''} selected
+            {currentlySelected().length} of {selectedLiterature.length} reference{selectedLiterature.length !==
+            1
+              ? "s"
+              : ""} selected
           </Badge>
-          
+
           <!-- Selection controls -->
           <div class="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onclick={selectAll} disabled={currentlySelected().length === selectedLiterature.length}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onclick={selectAll}
+              disabled={currentlySelected().length ===
+                selectedLiterature.length}
+            >
               <CheckSquare class="h-4 w-4 mr-1" />
               All
             </Button>
-            <Button variant="ghost" size="sm" onclick={deselectAll} disabled={currentlySelected().length === 0}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onclick={deselectAll}
+              disabled={currentlySelected().length === 0}
+            >
               <Square class="h-4 w-4 mr-1" />
               None
             </Button>
-            <Button variant="ghost" size="sm" onclick={invertSelection} disabled={selectedLiterature.length === 0}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onclick={invertSelection}
+              disabled={selectedLiterature.length === 0}
+            >
               <RotateCcw class="h-4 w-4 mr-1" />
               Invert
             </Button>
@@ -260,24 +333,31 @@
         <div class="flex items-center gap-2">
           <!-- Citation Style Selector -->
           <div class="relative">
-            <select 
+            <select
               bind:value={selectedStyle}
-              class="w-[140px] h-10 px-3 py-2 text-sm border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              class="w-[140px] h-10 px-3 py-2 text-sm border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             >
               {#each citationStyles as style}
-                <option value={style.value}>{style.label}</option>
+                <option
+                  value={style.value}
+                  class="bg-background text-foreground">{style.label}</option
+                >
               {/each}
             </select>
           </div>
 
           <!-- Export Format Selector -->
           <div class="relative">
-            <select 
+            <select
               bind:value={selectedFormat}
-              class="w-[180px] h-10 px-3 py-2 text-sm border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              class="w-[180px] h-10 px-3 py-2 text-sm border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             >
               {#each exportFormats as format}
-                <option value={format.value} disabled={format.disabled}>
+                <option
+                  value={format.value}
+                  disabled={format.disabled}
+                  class="bg-background text-foreground"
+                >
                   {format.label}{format.disabled ? " (Soon)" : ""}
                 </option>
               {/each}
@@ -288,8 +368,8 @@
 
       <!-- Preview -->
       <div class="flex-1 overflow-hidden px-6 min-h-0">
-        <ReferencePreview 
-          literature={selectedLiterature} 
+        <ReferencePreview
+          literature={selectedLiterature}
           citationStyle={selectedStyle}
           {internalSelectedIds}
           onToggleReference={toggleReference}
@@ -298,18 +378,17 @@
     </div>
 
     <Dialog.Footer class="px-6 py-4">
-      <Button variant="outline" onclick={() => open = false}>
-        Cancel
-      </Button>
-      <Button 
-        onclick={handleExport} 
+      <Button variant="outline" onclick={() => (open = false)}>Cancel</Button>
+      <Button
+        onclick={handleExport}
         disabled={isExporting || currentlySelected().length === 0}
       >
         {#if isExporting}
           <span class="animate-spin mr-2">⏳</span>
           Exporting...
         {:else}
-          <svelte:component this={getExportButtonIcon()} class="h-4 w-4 mr-2" />
+          {@const IconComponent = getExportButtonIcon()}
+          <IconComponent class="h-4 w-4 mr-2" />
           {getExportButtonText()}
         {/if}
       </Button>
