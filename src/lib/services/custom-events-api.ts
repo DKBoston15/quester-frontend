@@ -209,10 +209,8 @@ export class CustomEventsAPI {
     const url = `${API_BASE_URL}/projects/${projectId}/custom-events`;
 
     const requestPayload = {
-      body: {
-        ...eventData,
-        eventTimestamp: eventData.eventTimestamp.toISOString(),
-      }
+      ...eventData,
+      eventTimestamp: eventData.eventTimestamp.toISOString(),
     };
 
     return apiRequest<CustomEventResponse>(

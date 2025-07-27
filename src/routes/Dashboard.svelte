@@ -20,6 +20,7 @@
   import { API_BASE_URL } from "$lib/config";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
+  import * as Tooltip from "$lib/components/ui/tooltip";
 
   let organizations = $state<Organization[]>([]);
   let currentOrg = $state<Organization | null>(null);
@@ -313,14 +314,23 @@
               <h1 class="text-3xl font-bold">
                 Welcome back, {auth.user?.firstName}!
               </h1>
-              <Button
-                variant="outline"
-                size="icon"
-                onclick={() => driverObj.drive()}
-                aria-label="Learn about the Dashboard"
-              >
-                <GraduationCap class="h-4 w-4" />
-              </Button>
+              <Tooltip.Provider>
+                <Tooltip.Root>
+                  <Tooltip.Trigger>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onclick={() => driverObj.drive()}
+                      aria-label="Learn about the Dashboard"
+                    >
+                      <GraduationCap class="h-4 w-4" />
+                    </Button>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>
+                    <p>Tutorial</p>
+                  </Tooltip.Content>
+                </Tooltip.Root>
+              </Tooltip.Provider>
             </div>
             <p class="text-muted-foreground mt-1">
               Here's what's happening in your workspace.

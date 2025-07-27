@@ -74,7 +74,11 @@
           }
         }
         
-        internalSelectedIds = validatedSelection;
+        // Only update if the selection actually changed to prevent infinite loops
+        if (validatedSelection.size !== internalSelectedIds.size || 
+            ![...validatedSelection].every(id => internalSelectedIds.has(id))) {
+          internalSelectedIds = validatedSelection;
+        }
       }
     }
   });

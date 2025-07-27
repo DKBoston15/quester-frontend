@@ -320,15 +320,23 @@
             New Note
           </Button>
           <!-- Learn Button -->
-          <Button
-            variant="outline"
-            size="icon"
-            onclick={() => driverObj.drive()}
-            title="Learn about Notes features"
-          >
-            <GraduationCap class="h-4 w-4" />
-            <span class="sr-only">Learn about Notes features</span>
-          </Button>
+          <Tooltip.Provider>
+            <Tooltip.Root>
+              <Tooltip.Trigger>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onclick={() => driverObj.drive()}
+                >
+                  <GraduationCap class="h-4 w-4" />
+                  <span class="sr-only">Learn about Notes features</span>
+                </Button>
+              </Tooltip.Trigger>
+              <Tooltip.Content>
+                <p>Tutorial</p>
+              </Tooltip.Content>
+            </Tooltip.Root>
+          </Tooltip.Provider>
         </div>
       </div>
     </div>

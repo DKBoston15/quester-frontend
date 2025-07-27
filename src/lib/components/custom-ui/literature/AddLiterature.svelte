@@ -41,6 +41,7 @@
   type LiteratureEntry = {
     name: string;
     second_name: string;
+    chapterTitle?: string;
     authors: string[];
     editors: string[];
     publisher_name: string;
@@ -279,7 +280,8 @@
 
           const literatureData = {
             name: ref.name,
-            secondName: ref.second_name || "",
+            secondName: ref.type === "Book Chapter" ? "" : (ref.second_name || ""),
+            chapterTitle: ref.type === "Book Chapter" ? (ref.chapterTitle || "") : "",
             authors: JSON.stringify(authors),
             editors: JSON.stringify(editors),
             publisherName: ref.publisher_name || "",
@@ -734,10 +736,17 @@
                     Conference Name
                   {/if}
                 </Label.Root>
-                <Input
-                  bind:value={selectedReference.second_name}
-                  placeholder="Second Title"
-                />
+                {#if selectedReference.type?.value === "Book Chapter"}
+                  <Input
+                    bind:value={selectedReference.chapterTitle}
+                    placeholder="Chapter Title"
+                  />
+                {:else}
+                  <Input
+                    bind:value={selectedReference.second_name}
+                    placeholder="Second Title"
+                  />
+                {/if}
               </div>
             {/if}
 

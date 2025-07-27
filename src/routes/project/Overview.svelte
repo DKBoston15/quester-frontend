@@ -15,6 +15,7 @@
   import { customEventsStore } from "$lib/stores/custom-events-store.svelte";
   import CustomEventForm from "$lib/components/custom-ui/custom-events/CustomEventForm.svelte";
   import GrantDetails from "$lib/components/project/GrantDetails.svelte";
+  import * as Tooltip from "$lib/components/ui/tooltip";
 
   const driverObj = driver({
     showProgress: true,
@@ -119,10 +120,19 @@
           <Plus class="h-4 w-4 mr-2" />
           Add Event
         </Button>
-        <Button variant="outline" size="icon" onclick={() => driverObj.drive()}>
-          <GraduationCap class="h-4 w-4" />
-          <span class="sr-only">Learn about Project Overview</span>
-        </Button>
+        <Tooltip.Provider>
+          <Tooltip.Root>
+            <Tooltip.Trigger>
+              <Button variant="outline" size="icon" onclick={() => driverObj.drive()}>
+                <GraduationCap class="h-4 w-4" />
+                <span class="sr-only">Learn about Project Overview</span>
+              </Button>
+            </Tooltip.Trigger>
+            <Tooltip.Content>
+              <p>Tutorial</p>
+            </Tooltip.Content>
+          </Tooltip.Root>
+        </Tooltip.Provider>
       </div>
     </div>
     <p class="text-muted-foreground mt-2 mb-6 ml-1">

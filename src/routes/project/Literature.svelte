@@ -252,14 +252,23 @@
             <Plus class="h-4 w-4 mr-2" />
             Add Literature
           </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onclick={() => driverObj.drive()}
-          >
-            <GraduationCap class="h-4 w-4" />
-            <span class="sr-only">Learn about Literature Management</span>
-          </Button>
+          <Tooltip.Provider>
+            <Tooltip.Root>
+              <Tooltip.Trigger>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onclick={() => driverObj.drive()}
+                >
+                  <GraduationCap class="h-4 w-4" />
+                  <span class="sr-only">Learn about Literature Management</span>
+                </Button>
+              </Tooltip.Trigger>
+              <Tooltip.Content>
+                <p>Tutorial</p>
+              </Tooltip.Content>
+            </Tooltip.Root>
+          </Tooltip.Provider>
         </div>
       </div>
       <p class="text-muted-foreground mt-2">

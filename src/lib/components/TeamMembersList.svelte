@@ -4,11 +4,24 @@
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import * as Table from "$lib/components/ui/table";
-  import { Alert, AlertDescription, AlertTitle } from "$lib/components/ui/alert";
+  import {
+    Alert,
+    AlertDescription,
+    AlertTitle,
+  } from "$lib/components/ui/alert";
   import { Card, CardContent, CardHeader } from "$lib/components/ui/card";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import TeamSizeIndicator from "$lib/components/TeamSizeIndicator/TeamSizeIndicator.svelte";
-  import { UserCog, Search, UserMinus, Info, MoreHorizontal, ChevronDown, Building, Loader2 } from "lucide-svelte";
+  import {
+    UserCog,
+    Search,
+    UserMinus,
+    Info,
+    MoreHorizontal,
+    ChevronDown,
+    Building,
+    Loader2,
+  } from "lucide-svelte";
   import type { User } from "$lib/types/auth";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
   import { auth } from "$lib/stores/AuthStore.svelte";
@@ -78,22 +91,22 @@
   function handleSearchInput(event: Event) {
     const target = event.target as HTMLInputElement;
     const newSearchTerm = target.value;
-    
+
     searchTerm = newSearchTerm;
     isSearching = true;
-    
+
     // Clear previous timeout
     if (searchDebounceTimeout) {
       clearTimeout(searchDebounceTimeout);
     }
-    
+
     // Set new timeout
     searchDebounceTimeout = setTimeout(() => {
       debouncedSearchTerm = newSearchTerm;
       isSearching = false;
     }, 300);
   }
-  
+
   // Cleanup timeout on destroy
   onDestroy(() => {
     if (searchDebounceTimeout) {
@@ -123,7 +136,6 @@
       return fullName.includes(searchLower) || email.includes(searchLower);
     })
   );
-
 
   function getRoleName(user: TeamMember): string {
     // Prioritize the roleName from $extras provided by the backend
@@ -308,7 +320,9 @@
     isRemoving = null;
 
     if (success) {
-      toast.success(`${userToRemove.firstName} ${userToRemove.lastName} has been removed from the team`);
+      toast.success(
+        `${userToRemove.firstName} ${userToRemove.lastName} has been removed from the team`
+      );
     } else {
       toast.error("Failed to remove user: " + teamManagement.error);
     }
@@ -331,11 +345,12 @@
         oninput={handleSearchInput}
       />
       {#if isSearching}
-        <Loader2 class="absolute right-2 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />
+        <Loader2
+          class="absolute right-2 top-2.5 h-4 w-4 animate-spin text-muted-foreground"
+        />
       {/if}
     </div>
   </div>
-
 
   <!-- Members list -->
   <!-- Desktop view -->
@@ -352,10 +367,14 @@
       <Table.Body>
         {#if filteredUsers.length === 0}
           <Table.Row>
-            <Table.Cell colspan="4" class="p-0">
+            <Table.Cell colspan={4} class="p-0">
               <EmptyState
-                title={debouncedSearchTerm ? "No users matching your search" : "No team members yet"}
-                description={debouncedSearchTerm ? "Try adjusting your search terms" : "Team members will appear here once added"}
+                title={debouncedSearchTerm
+                  ? "No users matching your search"
+                  : "No team members yet"}
+                description={debouncedSearchTerm
+                  ? "Try adjusting your search terms"
+                  : "Team members will appear here once added"}
                 variant={debouncedSearchTerm ? "search-empty" : "data-empty"}
                 height="h-[400px]"
               />
@@ -366,7 +385,9 @@
             <Table.Row>
               <Table.Cell>
                 <div class="flex items-center gap-2">
-                  <div class="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
+                  <div
+                    class="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium"
+                  >
                     {user.firstName?.[0]}{user.lastName?.[0]}
                   </div>
                   <div class="flex items-center gap-2">
@@ -392,7 +413,8 @@
                     <Tooltip.Content>
                       <p class="text-xs max-w-xs">
                         {#if getRoleName(user) === "Owner"}
-                          Full control over this {props.resourceType} including team management and settings.
+                          Full control over this {props.resourceType} including team
+                          management and settings.
                         {:else if getRoleName(user) === "Admin"}
                           Can manage team members and most settings for this {props.resourceType}.
                         {:else if getRoleName(user) === "Member"}
@@ -416,7 +438,8 @@
                       </Tooltip.Trigger>
                       <Tooltip.Content>
                         <p class="text-xs max-w-xs">
-                          This user has full access to this project because they own the parent organization.
+                          This user has full access to this project because they
+                          own the parent organization.
                         </p>
                       </Tooltip.Content>
                     </Tooltip.Root>
@@ -433,7 +456,8 @@
                       </Tooltip.Trigger>
                       <Tooltip.Content>
                         <p class="text-xs max-w-xs">
-                          This user has admin access to this project through their organization role.
+                          This user has admin access to this project through
+                          their organization role.
                         </p>
                       </Tooltip.Content>
                     </Tooltip.Root>
@@ -460,7 +484,9 @@
                       class="h-8 px-2"
                     >
                       {#if isRemoving === user.id}
-                        <div class="h-4 w-4 border-2 border-t-transparent rounded-full animate-spin"></div>
+                        <div
+                          class="h-4 w-4 border-2 border-t-transparent rounded-full animate-spin"
+                        ></div>
                       {:else}
                         <UserMinus class="h-4 w-4" />
                       {/if}
@@ -479,8 +505,12 @@
   <div class="md:hidden space-y-4">
     {#if filteredUsers.length === 0}
       <EmptyState
-        title={debouncedSearchTerm ? "No users matching your search" : "No team members yet"}
-        description={debouncedSearchTerm ? "Try adjusting your search terms" : "Team members will appear here once added"}
+        title={debouncedSearchTerm
+          ? "No users matching your search"
+          : "No team members yet"}
+        description={debouncedSearchTerm
+          ? "Try adjusting your search terms"
+          : "Team members will appear here once added"}
         variant={debouncedSearchTerm ? "search-empty" : "data-empty"}
         height="h-[400px]"
       />
@@ -489,120 +519,128 @@
         <div in:fly={{ y: 20, duration: 300, delay: index * 50 }}>
           <Card>
             <CardHeader class="pb-3">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
-                {user.firstName?.[0]}{user.lastName?.[0]}
-              </div>
-              <div class="flex-1">
-                <div class="flex items-center gap-2">
-                  <h3 class="font-medium">
-                    {user.firstName} {user.lastName}
-                  </h3>
-                  {#if isCurrentUser(user)}
-                    <Badge variant="outline" class="text-xs">You</Badge>
-                  {/if}
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium"
+                >
+                  {user.firstName?.[0]}{user.lastName?.[0]}
                 </div>
-                <p class="text-sm text-muted-foreground">{user.email}</p>
-              </div>
-              {#if props.canChangeRoles && !isCurrentUser(user) && (!isOrganizationOwner(user) || (props.resourceType === "organization" && countOwners() > 1))}
-                <Button variant="ghost" size="sm" class="h-8 w-8 p-0">
-                  <MoreHorizontal class="h-4 w-4" />
-                </Button>
-              {/if}
-            </div>
-          </CardHeader>
-          <CardContent class="pt-0">
-            <div class="grid grid-cols-1 gap-4 text-sm">
-              <div class="flex items-center gap-2">
-                <span class="font-medium">Role:</span>
-                <div class="flex items-center gap-1">
-                  <Tooltip.Root>
-                    <Tooltip.Trigger>
-                      <Badge variant="secondary" class="font-medium">
-                        {getRoleName(user)}
-                      </Badge>
-                    </Tooltip.Trigger>
-                    <Tooltip.Content>
-                      <p class="text-xs max-w-xs">
-                        {#if getRoleName(user) === "Owner"}
-                          Full control over this {props.resourceType} including team management and settings.
-                        {:else if getRoleName(user) === "Admin"}
-                          Can manage team members and most settings for this {props.resourceType}.
-                        {:else if getRoleName(user) === "Member"}
-                          Can access and contribute to this {props.resourceType}.
-                        {:else}
-                          {getRoleName(user)} role in this {props.resourceType}.
-                        {/if}
-                      </p>
-                    </Tooltip.Content>
-                  </Tooltip.Root>
-                  {#if props.resourceType === "project" && getOrgPrivilegeLevel(user) === "Owner"}
-                    <Tooltip.Root>
-                      <Tooltip.Trigger>
-                        <Badge
-                          variant="outline"
-                          class="font-medium text-xs px-1.5 py-0.5 bg-primary/10 text-primary border-primary/20"
-                        >
-                          <Building class="h-3 w-3 mr-1" />
-                          Organization Owner
-                        </Badge>
-                      </Tooltip.Trigger>
-                      <Tooltip.Content>
-                        <p class="text-xs max-w-xs">
-                          This user has full access to this project because they own the parent organization.
-                        </p>
-                      </Tooltip.Content>
-                    </Tooltip.Root>
-                  {:else if props.resourceType === "project" && getOrgPrivilegeLevel(user) === "Admin"}
-                    <Tooltip.Root>
-                      <Tooltip.Trigger>
-                        <Badge
-                          variant="outline"
-                          class="font-medium text-xs px-1.5 py-0.5 bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800"
-                        >
-                          <Building class="h-3 w-3 mr-1" />
-                          Organization Admin
-                        </Badge>
-                      </Tooltip.Trigger>
-                      <Tooltip.Content>
-                        <p class="text-xs max-w-xs">
-                          This user has admin access to this project through their organization role.
-                        </p>
-                      </Tooltip.Content>
-                    </Tooltip.Root>
-                  {/if}
-                </div>
-              </div>
-              {#if props.canChangeRoles && !isCurrentUser(user) && (!isOrganizationOwner(user) || (props.resourceType === "organization" && countOwners() > 1))}
-                <div class="flex gap-2 pt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onclick={() => props.onUserSelect(user.id)}
-                    class="flex-1"
-                  >
-                    <UserCog class="h-4 w-4 mr-1" />
-                    Manage
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onclick={() => handleRemoveUser(user.id)}
-                    disabled={isRemoving === user.id}
-                    class="flex-1"
-                  >
-                    {#if isRemoving === user.id}
-                      <div class="h-4 w-4 border-2 border-t-transparent rounded-full animate-spin"></div>
-                    {:else}
-                      <UserMinus class="h-4 w-4 mr-1" />
-                      Remove
+                <div class="flex-1">
+                  <div class="flex items-center gap-2">
+                    <h3 class="font-medium">
+                      {user.firstName}
+                      {user.lastName}
+                    </h3>
+                    {#if isCurrentUser(user)}
+                      <Badge variant="outline" class="text-xs">You</Badge>
                     {/if}
-                  </Button>
+                  </div>
+                  <p class="text-sm text-muted-foreground">{user.email}</p>
                 </div>
-              {/if}
-            </div>
-          </CardContent>
-        </Card>
+                {#if props.canChangeRoles && !isCurrentUser(user) && (!isOrganizationOwner(user) || (props.resourceType === "organization" && countOwners() > 1))}
+                  <Button variant="ghost" size="sm" class="h-8 w-8 p-0">
+                    <MoreHorizontal class="h-4 w-4" />
+                  </Button>
+                {/if}
+              </div>
+            </CardHeader>
+            <CardContent class="pt-0">
+              <div class="grid grid-cols-1 gap-4 text-sm">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium">Role:</span>
+                  <div class="flex items-center gap-1">
+                    <Tooltip.Root>
+                      <Tooltip.Trigger>
+                        <Badge variant="secondary" class="font-medium">
+                          {getRoleName(user)}
+                        </Badge>
+                      </Tooltip.Trigger>
+                      <Tooltip.Content>
+                        <p class="text-xs max-w-xs">
+                          {#if getRoleName(user) === "Owner"}
+                            Full control over this {props.resourceType} including
+                            team management and settings.
+                          {:else if getRoleName(user) === "Admin"}
+                            Can manage team members and most settings for this {props.resourceType}.
+                          {:else if getRoleName(user) === "Member"}
+                            Can access and contribute to this {props.resourceType}.
+                          {:else}
+                            {getRoleName(user)} role in this {props.resourceType}.
+                          {/if}
+                        </p>
+                      </Tooltip.Content>
+                    </Tooltip.Root>
+                    {#if props.resourceType === "project" && getOrgPrivilegeLevel(user) === "Owner"}
+                      <Tooltip.Root>
+                        <Tooltip.Trigger>
+                          <Badge
+                            variant="outline"
+                            class="font-medium text-xs px-1.5 py-0.5 bg-primary/10 text-primary border-primary/20"
+                          >
+                            <Building class="h-3 w-3 mr-1" />
+                            Organization Owner
+                          </Badge>
+                        </Tooltip.Trigger>
+                        <Tooltip.Content>
+                          <p class="text-xs max-w-xs">
+                            This user has full access to this project because
+                            they own the parent organization.
+                          </p>
+                        </Tooltip.Content>
+                      </Tooltip.Root>
+                    {:else if props.resourceType === "project" && getOrgPrivilegeLevel(user) === "Admin"}
+                      <Tooltip.Root>
+                        <Tooltip.Trigger>
+                          <Badge
+                            variant="outline"
+                            class="font-medium text-xs px-1.5 py-0.5 bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800"
+                          >
+                            <Building class="h-3 w-3 mr-1" />
+                            Organization Admin
+                          </Badge>
+                        </Tooltip.Trigger>
+                        <Tooltip.Content>
+                          <p class="text-xs max-w-xs">
+                            This user has admin access to this project through
+                            their organization role.
+                          </p>
+                        </Tooltip.Content>
+                      </Tooltip.Root>
+                    {/if}
+                  </div>
+                </div>
+                {#if props.canChangeRoles && !isCurrentUser(user) && (!isOrganizationOwner(user) || (props.resourceType === "organization" && countOwners() > 1))}
+                  <div class="flex gap-2 pt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onclick={() => props.onUserSelect(user.id)}
+                      class="flex-1"
+                    >
+                      <UserCog class="h-4 w-4 mr-1" />
+                      Manage
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onclick={() => handleRemoveUser(user.id)}
+                      disabled={isRemoving === user.id}
+                      class="flex-1"
+                    >
+                      {#if isRemoving === user.id}
+                        <div
+                          class="h-4 w-4 border-2 border-t-transparent rounded-full animate-spin"
+                        ></div>
+                      {:else}
+                        <UserMinus class="h-4 w-4 mr-1" />
+                        Remove
+                      {/if}
+                    </Button>
+                  </div>
+                {/if}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       {/each}
     {/if}
@@ -635,10 +673,7 @@
         >
           Cancel
         </Button>
-        <Button
-          variant="destructive"
-          onclick={confirmRemoveUser}
-        >
+        <Button variant="destructive" onclick={confirmRemoveUser}>
           Remove
         </Button>
       </div>

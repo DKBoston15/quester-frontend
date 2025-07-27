@@ -1306,10 +1306,19 @@
         </Tooltip.Content>
       </Tooltip.Root>
     </div>
-    <Button variant="outline" size="icon" onclick={() => driverObj.drive()}>
-      <GraduationCap class="h-4 w-4" />
-      <span class="sr-only">Learn about Analytics</span>
-    </Button>
+    <Tooltip.Provider>
+      <Tooltip.Root>
+        <Tooltip.Trigger>
+          <Button variant="outline" size="icon" onclick={() => driverObj.drive()}>
+            <GraduationCap class="h-4 w-4" />
+            <span class="sr-only">Learn about Analytics</span>
+          </Button>
+        </Tooltip.Trigger>
+        <Tooltip.Content>
+          <p>Tutorial</p>
+        </Tooltip.Content>
+      </Tooltip.Root>
+    </Tooltip.Provider>
   </div>
 
   <Dialog.Root

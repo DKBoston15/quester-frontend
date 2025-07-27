@@ -18,6 +18,7 @@
     Users,
     Lightbulb,
     Gavel,
+    Briefcase,
     Star,
     Coffee,
     MoreHorizontal,
@@ -271,6 +272,7 @@
     meeting: Users,
     insight: Lightbulb,
     decision: Gavel,
+    administration: Briefcase,
     other: Star,
   };
 
@@ -361,6 +363,12 @@
       border: "border-l-purple-500 border-purple-200 dark:border-purple-800",
       icon: "bg-gradient-to-br from-purple-500 to-purple-600",
       text: "text-purple-900 dark:text-purple-100",
+    },
+    administration: {
+      bg: "bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-indigo-950/30 dark:to-blue-900/20",
+      border: "border-l-indigo-500 border-indigo-200 dark:border-indigo-800",
+      icon: "bg-gradient-to-br from-indigo-500 to-blue-600",
+      text: "text-indigo-900 dark:text-indigo-100",
     },
     other: {
       bg: "bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950/30 dark:to-gray-900/20",

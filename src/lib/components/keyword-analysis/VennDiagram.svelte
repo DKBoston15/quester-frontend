@@ -265,7 +265,7 @@
       .attr("stroke", colorScheme[idx2])
       .attr("stroke-width", 2);
 
-    // Get the total frequencies for each circle and the overlap
+    // Get the search result frequencies (consistent with frequency tables)
     const freq1 = getIndividualFrequency(kw1);
     const freq2 = getIndividualFrequency(kw2);
     const overlap = getPairFrequency(kw1, kw2);
@@ -306,26 +306,26 @@
         ); // Add click handler directly
     };
 
-    // Add labels - move individual frequencies outward by r/3
+    // Add labels - show actual search result counts (consistent with frequency tables)
     addLabel(-d / 2, -r - 20, kw1);
     addLabel(d / 2, -r - 20, kw2);
-    // Frequency labels
+    // Frequency labels - now showing total search counts instead of calculated exclusive regions
     addFreqLabel(
       -d / 2 - r / 3,
       0,
-      freq1 - overlap,
+      freq1,
       [kw1],
-      [kw2],
+      [],
       getKeywordFrequency(kw1).url
-    ); // Exclusive kw1
+    ); // Total kw1 search results
     addFreqLabel(
       d / 2 + r / 3,
       0,
-      freq2 - overlap,
+      freq2,
       [kw2],
-      [kw1],
+      [],
       getKeywordFrequency(kw2).url
-    ); // Exclusive kw2
+    ); // Total kw2 search results
     addFreqLabel(
       0,
       0,
@@ -333,7 +333,7 @@
       [kw1, kw2],
       [],
       getCooccurrenceData(kw1, kw2).url
-    ); // Overlap kw1 & kw2
+    ); // kw1 AND kw2 search results
   }
 
   function renderThreeSetVenn(
@@ -389,18 +389,20 @@
     // Calculate the triple overlap where all three circles intersect
     const tripleOverlap = getTripleFrequency(kw1, kw2, kw3);
 
-    // Calculate exclusive regions (A - B - C, B - A - C, C - A - B)
-    const exclusiveA =
-      freqs[0] - pairOverlaps[0] - pairOverlaps[2] + tripleOverlap;
-    const exclusiveB =
-      freqs[1] - pairOverlaps[0] - pairOverlaps[1] + tripleOverlap;
-    const exclusiveC =
-      freqs[2] - pairOverlaps[1] - pairOverlaps[2] + tripleOverlap;
-
-    // Calculate pairwise exclusive regions (A∩B - C, B∩C - A, A∩C - B)
-    const exclusiveAB = pairOverlaps[0] - tripleOverlap;
-    const exclusiveBC = pairOverlaps[1] - tripleOverlap;
-    const exclusiveAC = pairOverlaps[2] - tripleOverlap;
+    // CORRECTED: Use actual Google Scholar search counts (consistent with frequency tables)
+    // The Venn diagram regions now show the actual search result counts instead of 
+    // calculated exclusive regions, since Google Scholar data represents overlapping
+    // search results, not mutually exclusive document sets.
+    
+    // Show individual search counts in outer regions
+    const exclusiveA = freqs[0]; // "water" search results
+    const exclusiveB = freqs[1]; // "fire" search results  
+    const exclusiveC = freqs[2]; // "air" search results
+    
+    // Show pair search counts in overlap regions
+    const exclusiveAB = pairOverlaps[0]; // "water AND fire" search results
+    const exclusiveBC = pairOverlaps[1]; // "fire AND air" search results
+    const exclusiveAC = pairOverlaps[2]; // "water AND air" search results
 
     // Add keyword labels
     const addLabel = (x: number, y: number, text: string) => {
@@ -452,13 +454,13 @@
       }
     });
 
-    // Position labels for exclusive areas (regions with only one set)
+    // Position labels for individual keyword areas (show total search counts)
     addFreqLabel(
       positions[0].x,
       positions[0].y - r * 0.3,
       exclusiveA,
       [kw1],
-      [kw2, kw3],
+      [],
       getKeywordFrequency(kw1).url
     );
     addFreqLabel(
@@ -466,7 +468,7 @@
       positions[1].y,
       exclusiveB,
       [kw2],
-      [kw1, kw3],
+      [],
       getKeywordFrequency(kw2).url
     );
     addFreqLabel(
@@ -474,33 +476,33 @@
       positions[2].y,
       exclusiveC,
       [kw3],
-      [kw1, kw2],
+      [],
       getKeywordFrequency(kw3).url
     );
 
-    // Position labels for pairwise intersection areas
+    // Position labels for pairwise intersection areas (show AND search counts)
     addFreqLabel(
       (positions[0].x + positions[1].x) / 2 - r * 0.1,
       (positions[0].y + positions[1].y) / 2 - r * 0.1,
       exclusiveAB,
-      [kw1, kw2], // Include kw1 and kw2
-      [kw3], // Exclude kw3
+      [kw1, kw2],
+      [],
       getCooccurrenceData(kw1, kw2).url
     );
     addFreqLabel(
       (positions[1].x + positions[2].x) / 2,
       (positions[1].y + positions[2].y) / 2 + r * 0.15,
       exclusiveBC,
-      [kw2, kw3], // Include kw2 and kw3
-      [kw1], // Exclude kw1
+      [kw2, kw3],
+      [],
       getCooccurrenceData(kw2, kw3).url
     );
     addFreqLabel(
       (positions[0].x + positions[2].x) / 2 + r * 0.1,
       (positions[0].y + positions[2].y) / 2 - r * 0.1,
       exclusiveAC,
-      [kw1, kw3], // Include kw1 and kw3
-      [kw2], // Exclude kw2
+      [kw1, kw3],
+      [],
       getCooccurrenceData(kw1, kw3).url
     );
 
@@ -606,6 +608,9 @@
 
 <Card class="p-4">
   <h3 class="text-lg font-semibold mb-4">Keyword Overlap</h3>
+  <p class="text-sm text-muted-foreground mb-4">
+    Values show Google Scholar search result counts. Numbers represent total documents containing the keywords (individual) or keyword combinations (overlaps), not exclusive regions.
+  </p>
   <div class="flex flex-col gap-4">
     <div class="flex flex-wrap gap-2">
       {#each keywords as keyword}
