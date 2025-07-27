@@ -27,6 +27,7 @@
     publicationYear: string;
     title: string;
     secondName: string;
+    chapterTitle: string;
     journalName: string;
     volumeNumber: string;
     issueNumber?: string;
@@ -47,6 +48,7 @@
     publicationYear: "",
     title: "",
     secondName: "",
+    chapterTitle: "",
     journalName: "",
     volumeNumber: "",
     issueNumber: "",
@@ -82,8 +84,11 @@
       endDate: literature?.endDate ?? "",
       city: literature?.city ?? "",
       secondName: literature?.secondName ?? "",
+      chapterTitle: literature?.chapterTitle ?? "",
       url: literature?.link ?? "",
-      type: literature?.type ?? { label: "", value: "" },
+      type: typeof literature?.type === "string" 
+        ? { label: literature.type, value: literature.type }
+        : literature?.type ?? { label: "", value: "" },
     };
   });
 
@@ -92,11 +97,39 @@
       const parts = author.split(", ");
       const lastName = parts[0] || "";
       const firstName = parts[1] || "";
+      
+      if (!firstName || firstName.trim() === "") {
+        return lastName;
+      }
+      
       const formattedInitials = firstName
+        .trim()
         .split(" ")
+        .filter(name => name.length > 0)
         .map((initial) => `${initial.charAt(0)}.`)
         .join(" ");
       return `${lastName}, ${formattedInitials}`;
+    }
+    return "";
+  }
+
+  function formatEditorName(editor: string) {
+    if (editor) {
+      const parts = editor.split(", ");
+      const lastName = parts[0] || "";
+      const firstName = parts[1] || "";
+      
+      if (!firstName || firstName.trim() === "") {
+        return lastName;
+      }
+      
+      const formattedInitials = firstName
+        .trim()
+        .split(" ")
+        .filter(name => name.length > 0)
+        .map((initial) => `${initial.charAt(0)}.`)
+        .join(" ");
+      return `${formattedInitials} ${lastName}`;
     }
     return "";
   }
@@ -145,14 +178,30 @@
     let conferenceYear;
 
     if (citation.type.value === "Book Chapter") {
-      let formattedEditors = citation.editors.map(formatAuthorName).join(", ");
-      formattedEditors += citation.editors.length > 1 ? " (Eds.)," : " (Ed.),";
+      // For book chapters, citation.chapterTitle contains the chapter title and citation.title contains book title
+      formattedChapterTitle = `${citation.chapterTitle || ""}.`; // Chapter title comes from chapterTitle field
+      
+      let formattedEditors = "";
+      if (citation.editors && citation.editors.length > 0) {
+        if (citation.editors.length === 1) {
+          formattedEditors = `${formatEditorName(citation.editors[0])} (Ed.),`;
+        } else if (citation.editors.length === 2) {
+          formattedEditors = `${formatEditorName(citation.editors[0])} & ${formatEditorName(citation.editors[1])} (Eds.),`;
+        } else {
+          // For 3 or more editors
+          const formattedEditorsList = citation.editors.slice(0, -1).map(formatEditorName).join(", ");
+          const lastEditor = formatEditorName(citation.editors[citation.editors.length - 1]);
+          formattedEditors = `${formattedEditorsList}, & ${lastEditor} (Eds.),`;
+        }
+      }
 
-      let formattedBookTitle = `<i>${citation.secondName}</i>`;
+      let formattedBookTitle = `<i>${citation.title}</i>`; // Book title
       let pageRange =
         citation.startPage && citation.endPage
-          ? `(pp. ${citation.startPage}-${citation.endPage})`
-          : "";
+          ? `(pp. ${citation.startPage}–${citation.endPage})`
+          : citation.startPage
+            ? `(p. ${citation.startPage})`
+            : "";
       let publisher = citation.journalName;
 
       citationComponents.push(
@@ -350,7 +399,9 @@
   function formatChicagoCitation(citation: APAJournalCitation): string {
     function formatChicagoAuthor(author: string): string {
       const parts = author.split(", ");
-      return `${parts[0]}, ${parts[1]}`;
+      const lastName = parts[0] || "";
+      const firstName = (parts[1] || "").replace(/\.$/, ""); // Remove trailing period if present
+      return firstName ? `${lastName}, ${firstName}` : lastName;
     }
 
     function formatChicagoAuthors(authors: string[]): string {
@@ -622,8 +673,8 @@
     function formatASAAuthor(author: string): string {
       const parts = author.split(", ");
       const lastName = parts[0] || "";
-      const firstName = parts[1] || "";
-      return `${lastName}, ${firstName}`;
+      const firstName = (parts[1] || "").replace(/\.$/, ""); // Remove trailing period if present
+      return firstName ? `${lastName}, ${firstName}` : lastName;
     }
 
     function formatASAAuthors(authors: string[]): string {

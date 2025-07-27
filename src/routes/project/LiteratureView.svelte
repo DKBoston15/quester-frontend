@@ -186,30 +186,31 @@
           Back to Literature
         </Button>
         {#if literature}
-          <Button
-            id="lit-view-delete-button"
-            variant="destructive"
-            size="sm"
-            onclick={handleDelete}
-          >
-            <Trash2 class="h-4 w-4 mr-2" />
-            Delete Literature
-          </Button>
+          <div class="flex items-center gap-2">
+            <Button
+              id="lit-view-delete-button"
+              variant="destructive"
+              size="sm"
+              onclick={handleDelete}
+            >
+              <Trash2 class="h-4 w-4 mr-2" />
+              Delete Literature
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onclick={() => driverObj.drive()}
+              aria-label="Learn about Literature View"
+            >
+              <GraduationCap class="h-4 w-4" />
+            </Button>
+          </div>
         {/if}
       </div>
 
       {#if literature}
-        <div class="flex items-center justify-between" id="lit-view-header">
+        <div id="lit-view-header">
           <h1 class="text-3xl font-bold">{literature.name}</h1>
-          <!-- Add Learn Button -->
-          <Button
-            variant="outline"
-            size="icon"
-            onclick={() => driverObj.drive()}
-            aria-label="Learn about Literature View"
-          >
-            <GraduationCap class="h-4 w-4" />
-          </Button>
         </div>
         <p class="text-muted-foreground mt-2">
           {(() => {
