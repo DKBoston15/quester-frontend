@@ -16,10 +16,12 @@
   // Component registry for different announcement types
   import AnnouncementOne from './AnnouncementOne.svelte'
   import AnnouncementTwo from './AnnouncementTwo.svelte'
+  import AnnouncementLaunch from './AnnouncementLaunch.svelte'
 
   const announcementComponents = {
     'announcement-one': AnnouncementOne,
     'announcement-two': AnnouncementTwo,
+    'announcement-launch': AnnouncementLaunch,
   }
 
   // Reactive values from store
@@ -74,10 +76,19 @@
     const componentType = announcement.metadata?.componentType
     return announcementComponents[componentType] || null
   }
+
+  // Get modal size based on announcement type
+  function getModalSize(announcement: Announcement) {
+    const componentType = announcement.metadata?.componentType
+    if (componentType === 'announcement-launch') {
+      return 'max-w-4xl'
+    }
+    return 'max-w-2xl'
+  }
 </script>
 
 <Dialog open={isModalOpen} onOpenChange={handleOpenChange}>
-  <DialogContent class="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+  <DialogContent class="{currentAnnouncement ? getModalSize(currentAnnouncement) : 'max-w-2xl'} max-h-[85vh] overflow-hidden flex flex-col">
     {#if currentAnnouncement}
       <DialogHeader class="flex-shrink-0">
         <div class="flex items-center gap-3">
