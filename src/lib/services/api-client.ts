@@ -2,7 +2,7 @@
 // This service provides a fetch wrapper that automatically handles 401/403 responses
 // and triggers appropriate logout actions to prevent "half logout" states.
 
-import { API_BASE_URL } from '../config';
+import { API_BASE_URL } from "../config";
 
 // Global logout handler - will be set by the AuthStore
 let globalLogoutHandler: (() => void) | null = null;
@@ -16,14 +16,14 @@ export class APIError extends Error {
     public response?: Response
   ) {
     super(message);
-    this.name = 'APIError';
+    this.name = "APIError";
   }
 }
 
 export class AuthenticationError extends APIError {
   constructor(message: string, status: number, response?: Response) {
     super(message, status, undefined, response);
-    this.name = 'AuthenticationError';
+    this.name = "AuthenticationError";
   }
 }
 
@@ -67,7 +67,7 @@ export async function apiRequest<T = any>(
   } = config;
 
   // Ensure URL is absolute
-  const requestUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
+  const requestUrl = url.startsWith("http") ? url : `${API_BASE_URL}${url}`;
 
   // Create abort controller for timeout if no signal provided
   const controller = new AbortController();
@@ -80,9 +80,9 @@ export async function apiRequest<T = any>(
   const requestOptions: RequestInit = {
     ...options,
     signal: requestSignal,
-    credentials: 'include', // Always include cookies for session auth
+    credentials: "include", // Always include cookies for session auth
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...options.headers,
     },
   };
@@ -97,15 +97,21 @@ export async function apiRequest<T = any>(
       if (timeoutId) clearTimeout(timeoutId);
 
       // Handle authentication errors BEFORE other error handling
-      if (!skipAuthCheck && (response.status === 401 || response.status === 403)) {
-        console.warn(`Authentication error detected: ${response.status} on ${requestUrl}`);
-        
+      if (
+        !skipAuthCheck &&
+        (response.status === 401 || response.status === 403)
+      ) {
+        console.warn(
+          `Authentication error detected: ${response.status} on ${requestUrl}`
+        );
+
         // Trigger global logout immediately to prevent half-logout state
         if (globalLogoutHandler) {
-          console.log('Triggering global logout due to auth error');
           globalLogoutHandler();
         } else {
-          console.error('No global logout handler registered - this may cause half-logout state');
+          console.error(
+            "No global logout handler registered - this may cause half-logout state"
+          );
         }
 
         // Parse error details if available
@@ -150,7 +156,7 @@ export async function apiRequest<T = any>(
         return JSON.parse(responseText) as T;
       } catch (parseError) {
         throw new APIError(
-          'Invalid JSON response from server',
+          "Invalid JSON response from server",
           response.status,
           undefined,
           response
@@ -166,14 +172,14 @@ export async function apiRequest<T = any>(
           error.status === 401 ||
           error.status === 403 ||
           error.status === 404 ||
-          error.status >= 400 && error.status < 500
+          (error.status >= 400 && error.status < 500)
         ) {
           throw error;
         }
       }
 
       // Don't retry on abort
-      if (error instanceof Error && error.name === 'AbortError') {
+      if (error instanceof Error && error.name === "AbortError") {
         throw error;
       }
 
@@ -197,13 +203,13 @@ export async function apiRequest<T = any>(
  */
 export const api = {
   get: <T = any>(url: string, config?: APIRequestConfig) =>
-    apiRequest<T>(url, { method: 'GET' }, config),
+    apiRequest<T>(url, { method: "GET" }, config),
 
   post: <T = any>(url: string, data?: any, config?: APIRequestConfig) =>
     apiRequest<T>(
       url,
       {
-        method: 'POST',
+        method: "POST",
         body: data ? JSON.stringify(data) : undefined,
       },
       config
@@ -213,7 +219,7 @@ export const api = {
     apiRequest<T>(
       url,
       {
-        method: 'PUT',
+        method: "PUT",
         body: data ? JSON.stringify(data) : undefined,
       },
       config
@@ -223,14 +229,14 @@ export const api = {
     apiRequest<T>(
       url,
       {
-        method: 'PATCH',
+        method: "PATCH",
         body: data ? JSON.stringify(data) : undefined,
       },
       config
     ),
 
   delete: <T = any>(url: string, config?: APIRequestConfig) =>
-    apiRequest<T>(url, { method: 'DELETE' }, config),
+    apiRequest<T>(url, { method: "DELETE" }, config),
 };
 
 /**
@@ -250,5 +256,5 @@ export function getErrorMessage(error: any): string {
   if (error instanceof Error) {
     return error.message;
   }
-  return 'An unexpected error occurred';
+  return "An unexpected error occurred";
 }

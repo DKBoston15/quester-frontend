@@ -277,7 +277,6 @@
 
       if (lastViewDate === currentDate) {
         // Already viewed today, do nothing.
-        // console.log(`Project ${projectId} already viewed today by user ${userId}.`);
         return;
       }
 

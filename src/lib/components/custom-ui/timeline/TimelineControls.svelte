@@ -120,7 +120,6 @@
 
   // Get available custom event types
   let availableCustomEventTypes = $derived(() => {
-    console.log("Raw custom events for filter:", customEvents);
     const types = new Set<string>();
     customEvents.forEach((event: CustomTimelineEvent) => {
       if (event.eventType) {
@@ -134,7 +133,6 @@
         (e: CustomTimelineEvent) => e.eventType === type
       ).length,
     }));
-    console.log("Available custom event types for filter:", result);
     return result;
   });
 
@@ -322,7 +320,6 @@
 
   // Custom event handlers
   function handleAddCustomEvent(event?: MouseEvent) {
-
     // Prevent any parent events from interfering
     if (event) {
       event.preventDefault();

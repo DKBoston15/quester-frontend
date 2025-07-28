@@ -24,20 +24,22 @@
     if (!modelComponentRef) return;
 
     const isCtrl = event.ctrlKey || event.metaKey;
-    
-    if (isCtrl && event.key === 'z' && !event.shiftKey) {
+
+    if (isCtrl && event.key === "z" && !event.shiftKey) {
       event.preventDefault();
-      if (typeof modelComponentRef.performUndo === 'function') {
+      if (typeof modelComponentRef.performUndo === "function") {
         modelComponentRef.performUndo();
       }
-    } else if (isCtrl && (event.key === 'y' || (event.key === 'z' && event.shiftKey))) {
+    } else if (
+      isCtrl &&
+      (event.key === "y" || (event.key === "z" && event.shiftKey))
+    ) {
       event.preventDefault();
-      if (typeof modelComponentRef.performRedo === 'function') {
+      if (typeof modelComponentRef.performRedo === "function") {
         modelComponentRef.performRedo();
       }
     }
   }
-  
 
   // Check if user has access to model features
   async function checkModelAccessCapability() {
@@ -88,21 +90,18 @@
     showProgress: true,
     popoverClass: "quester-driver-theme",
     onHighlightStarted: (element, step, options) => {
-      console.log('Global onHighlightStarted:', step);
-      
       // Check if this is the toolbar step
-      if (step.element === '#flow-toolbar') {
-        console.log('Tutorial: Toolbar step detected in global handler');
-        
+      if (step.element === "#flow-toolbar") {
         setTimeout(() => {
-          console.log('Tutorial: Creating node via global handler');
           const tutorialMethods = (window as any).tutorialMethods;
-          
-          if (tutorialMethods && typeof tutorialMethods.addTutorialNode === 'function') {
-            const nodeId = tutorialMethods.addTutorialNode('ResizableNode');
+
+          if (
+            tutorialMethods &&
+            typeof tutorialMethods.addTutorialNode === "function"
+          ) {
+            const nodeId = tutorialMethods.addTutorialNode("ResizableNode");
             if (nodeId) {
               (window as any).tutorialNodeId = nodeId;
-              console.log('Tutorial: Created node with ID:', nodeId);
             }
           }
         }, 1000);
@@ -151,28 +150,24 @@
           align: "start",
         },
         onHighlightStarted: () => {
-          console.log('Tutorial: Toolbar step highlight started');
-          
           // Create node after a delay to show the toolbar first
           setTimeout(() => {
-            console.log('Tutorial: Creating node now');
-            console.log('Tutorial: Global tutorial methods:', (window as any).tutorialMethods);
-            
             const tutorialMethods = (window as any).tutorialMethods;
-            
-            if (tutorialMethods && typeof tutorialMethods.addTutorialNode === 'function') {
-              console.log('Tutorial: Calling global addTutorialNode');
-              const nodeId = tutorialMethods.addTutorialNode('ResizableNode');
-              
+
+            if (
+              tutorialMethods &&
+              typeof tutorialMethods.addTutorialNode === "function"
+            ) {
+              const nodeId = tutorialMethods.addTutorialNode("ResizableNode");
+
               if (nodeId) {
                 (window as any).tutorialNodeId = nodeId;
-                console.log('Tutorial: Created node with ID:', nodeId);
               }
             } else {
-              console.error('Tutorial: Global tutorial methods not available');
+              console.error("Tutorial: Global tutorial methods not available");
             }
           }, 1000);
-        }
+        },
       },
       {
         element: () => {
@@ -192,8 +187,12 @@
           setTimeout(() => {
             const nodeId = (window as any).tutorialNodeId;
             const tutorialMethods = (window as any).tutorialMethods;
-            
-            if (nodeId && tutorialMethods && typeof tutorialMethods.selectNode === 'function') {
+
+            if (
+              nodeId &&
+              tutorialMethods &&
+              typeof tutorialMethods.selectNode === "function"
+            ) {
               tutorialMethods.selectNode(nodeId);
             }
           }, 500);
@@ -210,7 +209,7 @@
         },
         onHighlightStarted: (_element, _step, options) => {
           // Check if toolbar is visible
-          const toolbar = document.querySelector('[data-node-toolbar]');
+          const toolbar = document.querySelector("[data-node-toolbar]");
           if (!toolbar || getComputedStyle(toolbar).display === "none") {
             // If not visible, skip this step
             options.driver.moveNext();
@@ -228,20 +227,23 @@
         },
         onHighlightStarted: async (_element, _step, _options) => {
           // Clear selection first
-          const pane = document.querySelector('.svelte-flow__pane');
+          const pane = document.querySelector(".svelte-flow__pane");
           if (pane) {
-            const clickEvent = new MouseEvent('click', {
+            const clickEvent = new MouseEvent("click", {
               bubbles: true,
               cancelable: true,
             });
             pane.dispatchEvent(clickEvent);
           }
-          
+
           // Create a second node
           setTimeout(() => {
             const tutorialMethods = (window as any).tutorialMethods;
-            if (tutorialMethods && typeof tutorialMethods.addTutorialNode === 'function') {
-              tutorialMethods.addTutorialNode('CircleNode');
+            if (
+              tutorialMethods &&
+              typeof tutorialMethods.addTutorialNode === "function"
+            ) {
+              tutorialMethods.addTutorialNode("CircleNode");
             }
           }, 500);
         },
@@ -259,8 +261,8 @@
           // Auto-connect the nodes after a delay
           setTimeout(() => {
             // Get the most recent nodes and create a connection between them
-            const modelViewEvent = new CustomEvent('autoConnectNodes', {
-              detail: { action: 'connect-latest-nodes' }
+            const modelViewEvent = new CustomEvent("autoConnectNodes", {
+              detail: { action: "connect-latest-nodes" },
             });
             document.dispatchEvent(modelViewEvent);
           }, 1000);
@@ -278,17 +280,18 @@
         onHighlightStarted: (_element, _step, _options) => {
           // Auto-select the edge after a delay to show the customization panel
           setTimeout(() => {
-            const edge = document.querySelector('.svelte-flow__edge');
+            const edge = document.querySelector(".svelte-flow__edge");
             if (edge) {
               // Simulate edge click
-              const clickEvent = new MouseEvent('click', {
+              const clickEvent = new MouseEvent("click", {
                 bubbles: true,
                 cancelable: true,
               });
               edge.dispatchEvent(clickEvent);
-              
+
               // Add highlight effect
-              (edge as HTMLElement).style.filter = "drop-shadow(0 0 8px rgba(79, 70, 229, 0.8))";
+              (edge as HTMLElement).style.filter =
+                "drop-shadow(0 0 8px rgba(79, 70, 229, 0.8))";
               setTimeout(() => {
                 (edge as HTMLElement).style.filter = "";
               }, 2000);
@@ -344,9 +347,9 @@
         onDeselected: () => {
           // Clear any edge selection when tour ends
           setTimeout(() => {
-            const pane = document.querySelector('.svelte-flow__pane');
+            const pane = document.querySelector(".svelte-flow__pane");
             if (pane) {
-              const clickEvent = new MouseEvent('click', {
+              const clickEvent = new MouseEvent("click", {
                 bubbles: true,
                 cancelable: true,
               });
@@ -368,27 +371,40 @@
       size="icon"
       onclick={() => {
         driverObj.drive();
-        
+
         // Create the tutorial nodes and edge after a delay
         setTimeout(() => {
           const tutorialMethods = (window as any).tutorialMethods;
-          
+
           if (tutorialMethods) {
             // Create first node (rectangle) at left position
-            const nodeId1 = tutorialMethods.addTutorialNodeAt('ResizableNode', 250, 200, 'Concept A');
-            
+            const nodeId1 = tutorialMethods.addTutorialNodeAt(
+              "ResizableNode",
+              250,
+              200,
+              "Concept A"
+            );
+
             // Create second node (circle) at right position
             setTimeout(() => {
-              const nodeId2 = tutorialMethods.addTutorialNodeAt('CircleNode', 450, 200, 'Concept B');
-              
+              const nodeId2 = tutorialMethods.addTutorialNodeAt(
+                "CircleNode",
+                450,
+                200,
+                "Concept B"
+              );
+
               if (nodeId1 && nodeId2) {
                 (window as any).tutorialNodeId = nodeId1;
                 (window as any).tutorialNodeId2 = nodeId2;
-                
+
                 // Create edge between the nodes
                 setTimeout(() => {
                   if (tutorialMethods.addTutorialEdge) {
-                    const edgeId = tutorialMethods.addTutorialEdge(nodeId1, nodeId2);
+                    const edgeId = tutorialMethods.addTutorialEdge(
+                      nodeId1,
+                      nodeId2
+                    );
                     (window as any).tutorialEdgeId = edgeId;
                   }
                 }, 500);
@@ -429,9 +445,9 @@
       </div>
     {:else if modelStore.currentModel}
       <div class="h-full" id="model-view-container">
-        <Model 
-          modelId={props.modelId} 
-          projectId={props.projectId} 
+        <Model
+          modelId={props.modelId}
+          projectId={props.projectId}
           bind:this={modelComponentRef}
         />
       </div>

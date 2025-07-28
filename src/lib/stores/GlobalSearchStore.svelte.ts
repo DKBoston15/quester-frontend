@@ -1,11 +1,21 @@
-import { debounce } from '$lib/utils/debounce';
-import { API_BASE_URL } from '$lib/config';
-import { projectStore } from '$lib/stores/ProjectStore.svelte';
-import { chatHistoryAPI, type ChatSession, type ChatHistoryAPIError } from '$lib/services/chat-history-api';
+import { debounce } from "$lib/utils/debounce";
+import { API_BASE_URL } from "$lib/config";
+import { projectStore } from "$lib/stores/ProjectStore.svelte";
+import {
+  chatHistoryAPI,
+  type ChatSession,
+  type ChatHistoryAPIError,
+} from "$lib/services/chat-history-api";
 
 export interface SearchResult {
   id: string;
-  type: 'literature' | 'note' | 'project' | 'outcome' | 'model' | 'keyword_analysis';
+  type:
+    | "literature"
+    | "note"
+    | "project"
+    | "outcome"
+    | "model"
+    | "keyword_analysis";
   title: string;
   snippet?: string;
   content?: any; // The actual content object from backend
@@ -28,7 +38,7 @@ export interface SearchResult {
 
 export interface ChatMessage {
   id: string;
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
   timestamp: Date;
   sources?: SearchResult[];
@@ -96,9 +106,9 @@ const searchCache = new SearchCache();
 
 // Helper functions for localStorage
 function getRecentSearches(): string[] {
-  if (typeof window === 'undefined') return [];
+  if (typeof window === "undefined") return [];
   try {
-    const stored = localStorage.getItem('globalSearch_recentSearches');
+    const stored = localStorage.getItem("globalSearch_recentSearches");
     return stored ? JSON.parse(stored) : [];
   } catch {
     return [];
@@ -106,38 +116,41 @@ function getRecentSearches(): string[] {
 }
 
 function saveRecentSearches(searches: string[]) {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   try {
-    localStorage.setItem('globalSearch_recentSearches', JSON.stringify(searches.slice(0, 10)));
+    localStorage.setItem(
+      "globalSearch_recentSearches",
+      JSON.stringify(searches.slice(0, 10))
+    );
   } catch (error) {
-    console.error('Failed to save recent searches:', error);
+    console.error("Failed to save recent searches:", error);
   }
 }
 
 // Helper functions for search scope localStorage
 function getSearchScope(): SearchScope {
-  if (typeof window === 'undefined') return 'current';
+  if (typeof window === "undefined") return "current";
   try {
-    const stored = localStorage.getItem('searchScope');
-    return stored === 'all' ? 'all' : 'current';
+    const stored = localStorage.getItem("searchScope");
+    return stored === "all" ? "all" : "current";
   } catch {
-    return 'current';
+    return "current";
   }
 }
 
 function saveSearchScope(scope: SearchScope) {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   try {
-    localStorage.setItem('searchScope', scope);
+    localStorage.setItem("searchScope", scope);
   } catch (error) {
-    console.error('Failed to save search scope:', error);
+    console.error("Failed to save search scope:", error);
   }
 }
 
 // Create the store state
-let query = $state('');
-let mode = $state<SearchMode>('search');
-let scope = $state<SearchScope>('current');
+let query = $state("");
+let mode = $state<SearchMode>("search");
+let scope = $state<SearchScope>("current");
 let isOpen = $state(false);
 let results = $state<SearchResult[]>([]);
 let chatMessages = $state<ChatMessage[]>([]);
@@ -147,9 +160,16 @@ let error = $state<string | null>(null);
 let selectedIndex = $state(0);
 let recentSearches = $state<string[]>([]);
 let activeFilters = $state<SearchFilters>({
-  content_types: ['literature', 'note', 'project', 'outcome', 'model', 'keyword_analysis'],
+  content_types: [
+    "literature",
+    "note",
+    "project",
+    "outcome",
+    "model",
+    "keyword_analysis",
+  ],
   projects: [],
-  section_types: []
+  section_types: [],
 });
 
 // Chat history state
@@ -166,20 +186,23 @@ let lastSaveTime = $state<Date | null>(null);
 const hasResults = $derived(results.length > 0);
 const hasActiveFilters = $derived(
   activeFilters.content_types.length < 6 ||
-  activeFilters.projects.length > 0 ||
-  activeFilters.section_types.length > 0 ||
-  activeFilters.date_range?.start ||
-  activeFilters.date_range?.end
+    activeFilters.projects.length > 0 ||
+    activeFilters.section_types.length > 0 ||
+    activeFilters.date_range?.start ||
+    activeFilters.date_range?.end
 );
 
 // Chat history derived states
 const hasCurrentSession = $derived(currentSession !== null);
 const hasUnsavedChanges = $derived(
-  currentSession && chatMessages.length > 0 && 
-  JSON.stringify(chatMessages) !== JSON.stringify(currentSession.messages)
+  currentSession &&
+    chatMessages.length > 0 &&
+    JSON.stringify(chatMessages) !== JSON.stringify(currentSession.messages)
 );
 const canSaveSession = $derived(chatMessages.length > 0 && !isSavingSession);
-const sessionTitle = $derived(currentSession?.title || generateSessionTitle(chatMessages));
+const sessionTitle = $derived(
+  currentSession?.title || generateSessionTitle(chatMessages)
+);
 
 // Initialize recent searches and scope
 function initializeRecentSearches() {
@@ -193,15 +216,17 @@ function getCurrentProjectId(): string | null {
   if (projectStore.currentProject?.id) {
     return projectStore.currentProject.id;
   }
-  
+
   // Try to extract from URL path like /project/:projectId
-  if (typeof window !== 'undefined') {
-    const pathMatch = window.location.pathname.match(/\/project\/([a-f0-9-]{36})/i);
+  if (typeof window !== "undefined") {
+    const pathMatch = window.location.pathname.match(
+      /\/project\/([a-f0-9-]{36})/i
+    );
     if (pathMatch) {
       return pathMatch[1];
     }
   }
-  
+
   return null;
 }
 
@@ -211,11 +236,13 @@ function generateSessionTitle(messages: ChatMessage[]): string {
     return "New Chat";
   }
 
-  const firstUserMessage = messages.find(m => m.role === 'user');
+  const firstUserMessage = messages.find((m) => m.role === "user");
   if (firstUserMessage) {
     // Take first 50 characters of the first user message
     const title = firstUserMessage.content.slice(0, 50);
-    return title.length < firstUserMessage.content.length ? title + "..." : title;
+    return title.length < firstUserMessage.content.length
+      ? title + "..."
+      : title;
   }
 
   return "New Chat";
@@ -224,12 +251,12 @@ function generateSessionTitle(messages: ChatMessage[]): string {
 // Auto-save functionality with debounced saving
 const debouncedAutoSave = debounce(async () => {
   if (!autoSaveEnabled || !canSaveSession || isSavingSession) return;
-  
+
   try {
     await saveCurrentSession();
   } catch (error) {
-    console.error('Auto-save failed:', error);
-    chatHistoryError = 'Failed to auto-save session';
+    console.error("Auto-save failed:", error);
+    chatHistoryError = "Failed to auto-save session";
   }
 }, 2000); // Save 2 seconds after last change
 
@@ -237,18 +264,18 @@ const debouncedAutoSave = debounce(async () => {
 async function loadChatHistory(): Promise<void> {
   isLoadingHistory = true;
   chatHistoryError = null;
-  
+
   try {
     const response = await chatHistoryAPI.getChatSessions({
       limit: 50,
-      sortBy: 'updatedAt',
-      sortOrder: 'desc'
+      sortBy: "updatedAt",
+      sortOrder: "desc",
     });
-    
+
     chatHistorySessions = response.sessions;
   } catch (error) {
-    console.error('Failed to load chat history:', error);
-    chatHistoryError = 'Failed to load chat history';
+    console.error("Failed to load chat history:", error);
+    chatHistoryError = "Failed to load chat history";
   } finally {
     isLoadingHistory = false;
   }
@@ -257,10 +284,10 @@ async function loadChatHistory(): Promise<void> {
 // Save current session
 async function saveCurrentSession(): Promise<void> {
   if (!canSaveSession) return;
-  
+
   isSavingSession = true;
   chatHistoryError = null;
-  
+
   try {
     const projectId = getCurrentProjectId();
     const sessionData = await chatHistoryAPI.saveChatSession(
@@ -270,36 +297,42 @@ async function saveCurrentSession(): Promise<void> {
       {
         lastActivity: new Date().toISOString(),
         messageCount: chatMessages.length,
-        projectName: projectStore.currentProject?.name
+        projectName: projectStore.currentProject?.name,
       }
     );
-    
+
     currentSession = sessionData;
     lastSaveTime = new Date();
-    
+
     // Update the session in the history list
     if (sessionData?.id) {
-      const existingIndex = chatHistorySessions.findIndex(s => s?.id === sessionData.id);
+      const existingIndex = chatHistorySessions.findIndex(
+        (s) => s?.id === sessionData.id
+      );
       if (existingIndex >= 0) {
         chatHistorySessions[existingIndex] = sessionData;
       } else {
         chatHistorySessions = [sessionData, ...chatHistorySessions];
       }
     }
-    
   } catch (error) {
-    console.error('Failed to save session:', error);
-    
+    console.error("Failed to save session:", error);
+
     // Handle different types of errors
     if (error instanceof Error) {
-      if (error.message.includes('401') || error.message.includes('Authentication')) {
-        console.warn('Chat session auto-save requires authentication. Sessions will not be saved.');
+      if (
+        error.message.includes("401") ||
+        error.message.includes("Authentication")
+      ) {
+        console.warn(
+          "Chat session auto-save requires authentication. Sessions will not be saved."
+        );
         chatHistoryError = null; // Don't show error for auth issues
       } else {
-        chatHistoryError = 'Failed to save session';
+        chatHistoryError = "Failed to save session";
       }
     } else {
-      chatHistoryError = 'Failed to save session';
+      chatHistoryError = "Failed to save session";
     }
   } finally {
     isSavingSession = false;
@@ -309,23 +342,27 @@ async function saveCurrentSession(): Promise<void> {
 // Load a specific session
 async function loadSession(sessionId: string): Promise<void> {
   chatHistoryError = null;
-  
+
   try {
     const session = await chatHistoryAPI.getChatSession(sessionId);
     currentSession = session;
     chatMessages = session.messages || [];
-    
+
     // Update the session in the history list to mark it as recently accessed
-    const existingIndex = chatHistorySessions.findIndex(s => s.id === sessionId);
+    const existingIndex = chatHistorySessions.findIndex(
+      (s) => s.id === sessionId
+    );
     if (existingIndex >= 0) {
-      const updatedSession = { ...chatHistorySessions[existingIndex], updatedAt: new Date().toISOString() };
+      const updatedSession = {
+        ...chatHistorySessions[existingIndex],
+        updatedAt: new Date().toISOString(),
+      };
       chatHistorySessions.splice(existingIndex, 1);
       chatHistorySessions.unshift(updatedSession);
     }
-    
   } catch (error) {
-    console.error('Failed to load session:', error);
-    chatHistoryError = 'Failed to load session';
+    console.error("Failed to load session:", error);
+    chatHistoryError = "Failed to load session";
   }
 }
 
@@ -334,7 +371,7 @@ async function createNewSession(): Promise<void> {
   chatMessages = [];
   currentSession = null;
   chatHistoryError = null;
-  
+
   // If there are any unsaved changes, they'll be lost
   // This is intentional for "New Chat" functionality
 }
@@ -343,46 +380,44 @@ async function createNewSession(): Promise<void> {
 async function deleteSession(sessionId: string): Promise<void> {
   try {
     await chatHistoryAPI.deleteChatSession(sessionId);
-    
+
     // Remove from local list
-    chatHistorySessions = chatHistorySessions.filter(s => s.id !== sessionId);
-    
+    chatHistorySessions = chatHistorySessions.filter((s) => s.id !== sessionId);
+
     // If this was the current session, clear it
     if (currentSession?.id === sessionId) {
       currentSession = null;
       chatMessages = [];
     }
-    
   } catch (error) {
-    console.error('Failed to delete session:', error);
-    chatHistoryError = 'Failed to delete session';
+    console.error("Failed to delete session:", error);
+    chatHistoryError = "Failed to delete session";
   }
 }
 
 // Toggle star status of a session
 async function toggleStarSession(sessionId: string): Promise<void> {
   try {
-    const session = chatHistorySessions.find(s => s.id === sessionId);
+    const session = chatHistorySessions.find((s) => s.id === sessionId);
     if (!session) return;
-    
+
     const newStarStatus = !session.metadata?.isStarred;
     await chatHistoryAPI.toggleStarSession(sessionId, newStarStatus);
-    
+
     // Update local state
-    const index = chatHistorySessions.findIndex(s => s.id === sessionId);
+    const index = chatHistorySessions.findIndex((s) => s.id === sessionId);
     if (index >= 0) {
       chatHistorySessions[index] = {
         ...chatHistorySessions[index],
         metadata: {
           ...chatHistorySessions[index].metadata,
-          isStarred: newStarStatus
-        }
+          isStarred: newStarStatus,
+        },
       };
     }
-    
   } catch (error) {
-    console.error('Failed to toggle star status:', error);
-    chatHistoryError = 'Failed to update session';
+    console.error("Failed to toggle star status:", error);
+    chatHistoryError = "Failed to update session";
   }
 }
 
@@ -392,21 +427,21 @@ async function searchChatHistory(searchQuery: string): Promise<void> {
     await loadChatHistory();
     return;
   }
-  
+
   isLoadingHistory = true;
   chatHistoryError = null;
-  
+
   try {
     const response = await chatHistoryAPI.searchChatSessions(searchQuery, {
       limit: 50,
-      sortBy: 'updatedAt',
-      sortOrder: 'desc'
+      sortBy: "updatedAt",
+      sortOrder: "desc",
     });
-    
+
     chatHistorySessions = response.sessions;
   } catch (error) {
-    console.error('Failed to search chat history:', error);
-    chatHistoryError = 'Failed to search chat history';
+    console.error("Failed to search chat history:", error);
+    chatHistoryError = "Failed to search chat history";
   } finally {
     isLoadingHistory = false;
   }
@@ -421,8 +456,8 @@ async function performSearch(searchQuery: string = query): Promise<void> {
 
   // Get current project ID - only required for current project scope
   const projectId = getCurrentProjectId();
-  if (scope === 'current' && !projectId) {
-    error = 'Please navigate to a project to search within current project';
+  if (scope === "current" && !projectId) {
+    error = "Please navigate to a project to search within current project";
     results = [];
     return;
   }
@@ -432,9 +467,11 @@ async function performSearch(searchQuery: string = query): Promise<void> {
   const dynamicLimit = Math.min(Math.max(queryWords * 2, 5), 15);
 
   // Check cache first
-  const cacheKey = `${searchQuery}:${projectId}:${dynamicLimit}:${scope}:${JSON.stringify(activeFilters)}`;
+  const cacheKey = `${searchQuery}:${projectId}:${dynamicLimit}:${scope}:${JSON.stringify(
+    activeFilters
+  )}`;
   const cached = searchCache.get(cacheKey);
-  
+
   if (cached) {
     results = cached.results;
     return;
@@ -445,14 +482,14 @@ async function performSearch(searchQuery: string = query): Promise<void> {
 
   try {
     const response = await fetch(`${API_BASE_URL}/search`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      credentials: 'include',
+      credentials: "include",
       body: JSON.stringify({
         query: searchQuery,
-        mode: 'search',
+        mode: "search",
         projectId: projectId || null, // Allow null for "All Projects" searches
         scope: scope,
         contentTypes: activeFilters.content_types,
@@ -461,8 +498,8 @@ async function performSearch(searchQuery: string = query): Promise<void> {
           types: activeFilters.section_types,
           // Map other filters as needed
         },
-        limit: dynamicLimit
-      })
+        limit: dynamicLimit,
+      }),
     });
 
     if (!response.ok) {
@@ -472,19 +509,16 @@ async function performSearch(searchQuery: string = query): Promise<void> {
     const data = await response.json();
     // Filter results by similarity threshold (only show results with >30% similarity)
     const allResults = data.results || [];
-    results = allResults.filter((result: SearchResult) => result.similarity > 0.3);
-    
-    // Optional: Log filtering info for debugging
-    if (allResults.length > results.length) {
-      console.log(`Filtered ${allResults.length - results.length} low-relevance results (similarity < 30%)`);
-    }
+    results = allResults.filter(
+      (result: SearchResult) => result.similarity > 0.3
+    );
 
     // Cache the results
     searchCache.set(cacheKey, {
       query: searchQuery,
       results: results,
       timestamp: Date.now(),
-      filters: { ...activeFilters }
+      filters: { ...activeFilters },
     });
 
     // Add to recent searches
@@ -492,10 +526,9 @@ async function performSearch(searchQuery: string = query): Promise<void> {
       recentSearches = [searchQuery, ...recentSearches.slice(0, 9)];
       saveRecentSearches(recentSearches);
     }
-
   } catch (err) {
-    console.error('Search error:', err);
-    error = err instanceof Error ? err.message : 'Search failed';
+    console.error("Search error:", err);
+    error = err instanceof Error ? err.message : "Search failed";
     results = [];
   } finally {
     isLoading = false;
@@ -511,16 +544,17 @@ async function sendChatMessage(message: string): Promise<void> {
 
   // Get current project ID - only required for current project scope
   const projectId = getCurrentProjectId();
-  if (scope === 'current' && !projectId) {
-    error = 'Please navigate to a project to use AI chat in current project mode';
+  if (scope === "current" && !projectId) {
+    error =
+      "Please navigate to a project to use AI chat in current project mode";
     return;
   }
 
   const userMessage: ChatMessage = {
     id: Date.now().toString(),
-    role: 'user',
+    role: "user",
     content: message,
-    timestamp: new Date()
+    timestamp: new Date(),
   };
 
   chatMessages = [...chatMessages, userMessage];
@@ -529,27 +563,29 @@ async function sendChatMessage(message: string): Promise<void> {
 
   try {
     const response = await fetch(`${API_BASE_URL}/search`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      credentials: 'include',
+      credentials: "include",
       body: JSON.stringify({
         query: message,
-        mode: 'chat',
+        mode: "chat",
         projectId: projectId || null, // Allow null for "All Projects" chats
         scope: scope,
-        provider: 'openai', // Default to OpenAI
+        provider: "openai", // Default to OpenAI
         context: {
           ...(results.length > 0 ? { searchResults: results } : {}),
-          ...(chatMessages.length > 0 ? { chatHistory: chatMessages.slice(-10) } : {}) // Include last 10 messages for context
-        }
-      })
+          ...(chatMessages.length > 0
+            ? { chatHistory: chatMessages.slice(-10) }
+            : {}), // Include last 10 messages for context
+        },
+      }),
     });
 
     if (!response.ok) {
       let errorMessage = `Chat failed: ${response.statusText}`;
-      
+
       // Try to get more specific error from response body
       try {
         const errorData = await response.json();
@@ -560,18 +596,18 @@ async function sendChatMessage(message: string): Promise<void> {
         }
       } catch (parseError) {
         // If we can't parse the error response, use the default message
-        console.warn('Could not parse error response:', parseError);
+        console.warn("Could not parse error response:", parseError);
       }
-      
+
       throw new Error(errorMessage);
     }
 
     const assistantMessage: ChatMessage = {
       id: (Date.now() + 1).toString(),
-      role: 'assistant',
-      content: '',
+      role: "assistant",
+      content: "",
       timestamp: new Date(),
-      streaming: true  // This shows "AI is thinking..." until content arrives
+      streaming: true, // This shows "AI is thinking..." until content arrives
     };
 
     chatMessages = [...chatMessages, assistantMessage];
@@ -586,25 +622,27 @@ async function sendChatMessage(message: string): Promise<void> {
         if (done) break;
 
         const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
+        const lines = chunk.split("\n");
 
         for (const line of lines) {
-          if (line.trim() === '') continue; // Skip empty lines
-          
-          if (line.startsWith('data: ')) {
+          if (line.trim() === "") continue; // Skip empty lines
+
+          if (line.startsWith("data: ")) {
             const sseData = line.slice(6).trim();
-            
+
             // Skip the [DONE] marker
-            if (sseData === '[DONE]') {
+            if (sseData === "[DONE]") {
               continue;
             }
-            
+
             try {
               const data = JSON.parse(sseData);
               if (data.content) {
                 assistantMessage.content += data.content;
                 // Find the message in the array and update it
-                const messageIndex = chatMessages.findIndex(m => m.id === assistantMessage.id);
+                const messageIndex = chatMessages.findIndex(
+                  (m) => m.id === assistantMessage.id
+                );
                 if (messageIndex >= 0) {
                   chatMessages[messageIndex] = { ...assistantMessage };
                   chatMessages = [...chatMessages];
@@ -613,20 +651,20 @@ async function sendChatMessage(message: string): Promise<void> {
               if (data.sources) {
                 assistantMessage.sources = data.sources;
               }
-              if (data.type === 'metadata') {
+              if (data.type === "metadata") {
                 if (data.sources) {
                   assistantMessage.sources = data.sources;
                 }
                 if (data.tools_used) {
-                  assistantMessage.metadata = { 
-                    ...assistantMessage.metadata, 
+                  assistantMessage.metadata = {
+                    ...assistantMessage.metadata,
                     tools_used: data.tools_used,
-                    project_context: data.project_context
+                    project_context: data.project_context,
                   };
                 }
               }
             } catch (e) {
-              console.error('Failed to parse SSE data:', e, 'Line:', sseData);
+              console.error("Failed to parse SSE data:", e, "Line:", sseData);
             }
           }
         }
@@ -634,29 +672,31 @@ async function sendChatMessage(message: string): Promise<void> {
     }
     // Mark streaming as complete and force final update
     assistantMessage.streaming = false;
-    const messageIndex = chatMessages.findIndex(m => m.id === assistantMessage.id);
+    const messageIndex = chatMessages.findIndex(
+      (m) => m.id === assistantMessage.id
+    );
     if (messageIndex >= 0) {
       chatMessages[messageIndex] = { ...assistantMessage };
       chatMessages = [...chatMessages];
     }
     isStreaming = false;
-    
+
     // Trigger auto-save after successful message exchange
     if (autoSaveEnabled) {
       debouncedAutoSave();
     }
-
   } catch (err) {
-    console.error('Chat error:', err);
-    error = err instanceof Error ? err.message : 'Chat failed';
-    
+    console.error("Chat error:", err);
+    error = err instanceof Error ? err.message : "Chat failed";
+
     // Remove the streaming message and add error
     chatMessages = chatMessages.slice(0, -1);
     const errorMessage: ChatMessage = {
       id: Date.now().toString(),
-      role: 'assistant',
-      content: 'I apologize, but I encountered an error processing your request. Please try again.',
-      timestamp: new Date()
+      role: "assistant",
+      content:
+        "I apologize, but I encountered an error processing your request. Please try again.",
+      timestamp: new Date(),
     };
     chatMessages = [...chatMessages, errorMessage];
   } finally {
@@ -667,34 +707,86 @@ async function sendChatMessage(message: string): Promise<void> {
 // Store interface
 export const globalSearchStore = {
   // Getters
-  get query() { return query; },
-  get mode() { return mode; },
-  get scope() { return scope; },
-  get isOpen() { return isOpen; },
-  get results() { return results; },
-  get chatMessages() { return chatMessages; },
-  get isLoading() { return isLoading; },
-  get isStreaming() { return isStreaming; },
-  get error() { return error; },
-  get selectedIndex() { return selectedIndex; },
-  get recentSearches() { return recentSearches; },
-  get activeFilters() { return activeFilters; },
-  get hasResults() { return hasResults; },
-  get hasActiveFilters() { return hasActiveFilters; },
+  get query() {
+    return query;
+  },
+  get mode() {
+    return mode;
+  },
+  get scope() {
+    return scope;
+  },
+  get isOpen() {
+    return isOpen;
+  },
+  get results() {
+    return results;
+  },
+  get chatMessages() {
+    return chatMessages;
+  },
+  get isLoading() {
+    return isLoading;
+  },
+  get isStreaming() {
+    return isStreaming;
+  },
+  get error() {
+    return error;
+  },
+  get selectedIndex() {
+    return selectedIndex;
+  },
+  get recentSearches() {
+    return recentSearches;
+  },
+  get activeFilters() {
+    return activeFilters;
+  },
+  get hasResults() {
+    return hasResults;
+  },
+  get hasActiveFilters() {
+    return hasActiveFilters;
+  },
 
   // Chat history getters
-  get currentSession() { return currentSession; },
-  get chatHistorySessions() { return chatHistorySessions; },
-  get isLoadingHistory() { return isLoadingHistory; },
-  get isSavingSession() { return isSavingSession; },
-  get showChatHistory() { return showChatHistory; },
-  get chatHistoryError() { return chatHistoryError; },
-  get autoSaveEnabled() { return autoSaveEnabled; },
-  get lastSaveTime() { return lastSaveTime; },
-  get hasCurrentSession() { return hasCurrentSession; },
-  get hasUnsavedChanges() { return hasUnsavedChanges; },
-  get canSaveSession() { return canSaveSession; },
-  get sessionTitle() { return sessionTitle; },
+  get currentSession() {
+    return currentSession;
+  },
+  get chatHistorySessions() {
+    return chatHistorySessions;
+  },
+  get isLoadingHistory() {
+    return isLoadingHistory;
+  },
+  get isSavingSession() {
+    return isSavingSession;
+  },
+  get showChatHistory() {
+    return showChatHistory;
+  },
+  get chatHistoryError() {
+    return chatHistoryError;
+  },
+  get autoSaveEnabled() {
+    return autoSaveEnabled;
+  },
+  get lastSaveTime() {
+    return lastSaveTime;
+  },
+  get hasCurrentSession() {
+    return hasCurrentSession;
+  },
+  get hasUnsavedChanges() {
+    return hasUnsavedChanges;
+  },
+  get canSaveSession() {
+    return canSaveSession;
+  },
+  get sessionTitle() {
+    return sessionTitle;
+  },
 
   // Actions
   open() {
@@ -731,7 +823,7 @@ export const globalSearchStore = {
 
   setQuery(newQuery: string) {
     query = newQuery;
-    if (mode === 'search' && newQuery.trim().length >= 2) {
+    if (mode === "search" && newQuery.trim().length >= 2) {
       debouncedSearch();
     } else if (newQuery.trim().length < 2) {
       results = [];
@@ -739,7 +831,7 @@ export const globalSearchStore = {
   },
 
   clearQuery() {
-    query = '';
+    query = "";
     results = [];
   },
 
@@ -756,9 +848,16 @@ export const globalSearchStore = {
 
   clearFilters() {
     activeFilters = {
-      content_types: ['literature', 'note', 'project', 'outcome', 'model', 'keyword_analysis'],
+      content_types: [
+        "literature",
+        "note",
+        "project",
+        "outcome",
+        "model",
+        "keyword_analysis",
+      ],
       projects: [],
-      section_types: []
+      section_types: [],
     };
     if (query.trim()) {
       debouncedSearch();
@@ -834,5 +933,5 @@ export const globalSearchStore = {
 
   clearChatHistoryError() {
     chatHistoryError = null;
-  }
+  },
 };

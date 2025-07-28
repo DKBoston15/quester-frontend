@@ -53,7 +53,7 @@
   );
 
   const SAVE_DEBOUNCE = 2000; // 2 seconds between saves
-  
+
   // Track auth errors to stop auto-save when session expires
   let authErrorOccurred = $state(false);
 
@@ -139,7 +139,9 @@
 
       try {
         // Use centralized API client with proper auth error handling
-        await api.put(`/note/${note.id}`, { literatureId: literatureId || null });
+        await api.put(`/note/${note.id}`, {
+          literatureId: literatureId || null,
+        });
 
         // Update the note object directly
         note.literatureId = literatureId;
@@ -254,10 +256,9 @@
   function scheduleSave() {
     // Don't schedule save if auth error occurred
     if (authErrorOccurred) {
-      console.log("Skipping save scheduling due to previous auth error");
       return;
     }
-    
+
     clearTimeout(saveTimeout);
 
     // If we recently saved, wait the full debounce period
@@ -303,7 +304,7 @@
         name: currentTitle,
         content: contentToSave,
       });
-      
+
       // Update our conflict detection timestamp
       if (updatedNote && updatedNote.updated_at) {
         lastKnownUpdatedAt = updatedNote.updated_at;
@@ -330,16 +331,18 @@
       return Promise.resolve(); // Return a resolved promise
     } catch (error) {
       console.error("Failed to save note:", error);
-      
+
       // Check if this is an authentication error
       if (isAuthError(error)) {
-        console.warn("Authentication error during save - stopping auto-save to prevent half-logout state");
+        console.warn(
+          "Authentication error during save - stopping auto-save to prevent half-logout state"
+        );
         authErrorOccurred = true;
         // Don't mark content as changed - let the user re-authenticate to save
         // The API client will trigger logout automatically
         return Promise.reject(error);
       }
-      
+
       if (!isUnmounting) {
         contentChanged = true; // Mark as still needing save, but only if not unmounting
       }
@@ -398,12 +401,13 @@
           authErrorOccurred = true;
         }
         // Revert local state on error
-        currentSectionType = typeof note.section_type === "object"
-          ? { ...note.section_type }
-          : {
-              value: note.section_type || "Other",
-              label: note.section_type || "Other",
-            };
+        currentSectionType =
+          typeof note.section_type === "object"
+            ? { ...note.section_type }
+            : {
+                value: note.section_type || "Other",
+                label: note.section_type || "Other",
+              };
       } finally {
         isSaving = false;
       }
@@ -492,7 +496,7 @@
               isUserEditingTitle = true;
               isTitleFocused = true;
               titleChanged = true;
-              
+
               // Auto-select text if it's "Untitled Note"
               if (title === "Untitled Note") {
                 const target = e.target as HTMLInputElement;
@@ -547,7 +551,10 @@
 
         {#if note && note.type === "LITERATURE"}
           <div class="flex items-center gap-2">
-            <label for="section-type-select" class="text-sm font-medium text-muted-foreground">
+            <label
+              for="section-type-select"
+              class="text-sm font-medium text-muted-foreground"
+            >
               Section:
             </label>
             <Select

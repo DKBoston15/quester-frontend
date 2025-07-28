@@ -66,11 +66,9 @@
 
     // Global logout handler for API client - called automatically on 401/403 errors
     handleGlobalLogout() {
-      console.log("Global logout triggered by API client due to authentication error");
-      
       // Clear user state immediately to prevent half-logout
       this.clearUser();
-      
+
       // Redirect to login page
       window.location.href = "/";
     },
@@ -78,7 +76,10 @@
     async fetchUserOrganizations() {
       try {
         // Use centralized API client with skip auth check to prevent loops
-        const { data } = await api.get(`/organizations/by-user?userId=${user?.id}`, { skipAuthCheck: true });
+        const { data } = await api.get(
+          `/organizations/by-user?userId=${user?.id}`,
+          { skipAuthCheck: true }
+        );
         return data as Organization[];
       } catch (error) {
         console.error("Failed to fetch organizations:", error);

@@ -283,26 +283,16 @@
       timelineFilters.customEventTypes &&
       timelineFilters.customEventTypes.length > 0
     ) {
-      console.log("Applying custom event type filter:", timelineFilters.customEventTypes);
-      console.log("Total events before custom filter:", filtered.length);
-      console.log("Custom events before filter:", filtered.filter(e => e.isCustom).map(e => ({ title: e.title, customEventType: e.customEventType })));
-      
-      filtered = filtered.filter(
-        (event) => {
-          const isNotCustom = !event.isCustom;
-          const isMatchingCustom = event.isCustom && event.customEventType && timelineFilters.customEventTypes!.includes(event.customEventType);
-          const shouldInclude = isNotCustom || isMatchingCustom;
-          
-          if (event.isCustom) {
-            console.log(`Custom event "${event.title}": customEventType="${event.customEventType}", shouldInclude=${shouldInclude}`);
-          }
-          
-          return shouldInclude;
-        }
-      );
-      
-      console.log("Total events after custom filter:", filtered.length);
-      console.log("Custom events after filter:", filtered.filter(e => e.isCustom).map(e => ({ title: e.title, customEventType: e.customEventType })));
+      filtered = filtered.filter((event) => {
+        const isNotCustom = !event.isCustom;
+        const isMatchingCustom =
+          event.isCustom &&
+          event.customEventType &&
+          timelineFilters.customEventTypes!.includes(event.customEventType);
+        const shouldInclude = isNotCustom || isMatchingCustom;
+
+        return shouldInclude;
+      });
     }
 
     // Filter by creators
@@ -1078,8 +1068,7 @@
     }
 
     const shareUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
-    navigator.clipboard.writeText(shareUrl).then(() => {
-    });
+    navigator.clipboard.writeText(shareUrl).then(() => {});
   }
 
   // Sort function for achievements
