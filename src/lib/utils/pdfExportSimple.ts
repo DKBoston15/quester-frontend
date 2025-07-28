@@ -248,8 +248,8 @@ export async function generatePDFSimple(options: PDFExportOptions): Promise<Blob
       // Add citation text with hanging indent and italic formatting
       const endY = addFormattedTextWithHangingIndent(pdf, processedText, margin, yPosition, availableWidth, hangingIndent, lineHeight);
       
-      // Update position with actual end position plus spacing
-      yPosition = endY + 5;
+      // Update position with actual end position plus double spacing
+      yPosition = endY + lineHeight * 2; // Double spacing between references
 
     } catch (error) {
       console.error(`Error formatting citation ${index + 1}:`, error);

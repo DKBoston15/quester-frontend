@@ -7,6 +7,8 @@
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { Badge } from "$lib/components/ui/badge";
+  import * as AlertDialog from "$lib/components/ui/alert-dialog";
+  import Loader2 from "lucide-svelte/icons/loader-2";
   import { API_BASE_URL } from "$lib/config";
   import MarkdownIt from "markdown-it";
   
@@ -27,6 +29,7 @@
   import TrendingUp from "lucide-svelte/icons/trending-up";
   import History from "lucide-svelte/icons/history";
   import RefreshCcw from "lucide-svelte/icons/refresh-ccw";
+  import Trash2 from "lucide-svelte/icons/trash-2";
 
   // Types
   interface Source {
@@ -70,6 +73,9 @@
   let showHistory = $state(false);
   let searchTerm = $state("");
   let filteredSessions = $state<ChatSession[]>([]);
+  let isDeleting = $state(false);
+  let showDeleteDialog = $state(false);
+  let sessionToDelete = $state<string | null>(null);
 
   // Research question suggestions
   const researchSuggestions = [
@@ -202,10 +208,57 @@
         (a: ChatSession, b: ChatSession) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
+      
     } catch (e) {
       console.error("Failed to load chat history:", e);
     } finally {
       isLoadingHistory = false;
+    }
+  }
+
+  // Delete session functions
+  function handleDeleteSession(sessionId: string, event: Event) {
+    event.stopPropagation();
+    sessionToDelete = sessionId;
+    showDeleteDialog = true;
+  }
+
+  async function confirmDeleteSession() {
+    if (!sessionToDelete) return;
+
+    try {
+      isDeleting = true;
+      const response = await fetch(
+        `${API_BASE_URL}/chat/sessions/${sessionToDelete}`,
+        {
+          method: 'DELETE',
+          credentials: 'include',
+        }
+      );
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete session');
+      }
+
+      // Remove from local state
+      recentSessions = recentSessions.filter(
+        session => session.chatSessionId !== sessionToDelete
+      );
+
+      // If we deleted the current session, clear the chat
+      if (currentChatSession === sessionToDelete) {
+        messages = [];
+        currentChatSession = undefined;
+      }
+
+      showDeleteDialog = false;
+      sessionToDelete = null;
+    } catch (error) {
+      console.error('Failed to delete session:', error);
+      alert('Failed to delete session: ' + (error as Error).message);
+    } finally {
+      isDeleting = false;
     }
   }
 
@@ -344,6 +397,20 @@
                     currentChatSession = parsed.chatSessionId;
                   }
                   receivedSessionId = true;
+                }
+                
+                // Attach sources to the last message (assistant message)
+                if (parsed.sources && parsed.sources.length > 0) {
+                  messages = messages.map((msg, i) => {
+                    if (i === messages.length - 1) {
+                      return {
+                        ...msg,
+                        sources: parsed.sources,
+                        metadata: { ...msg.metadata, sources: parsed.sources }
+                      };
+                    }
+                    return msg;
+                  });
                 }
               } else if (parsed.type === "content") {
                 streamingContent += parsed.content;
@@ -578,7 +645,7 @@
                       : ''}"
                     onclick={() => loadChatSession(session.chatSessionId)}
                   >
-                    <div class="flex items-start gap-3">
+                    <div class="flex items-start gap-3 group">
                       <div
                         class="p-1.5 bg-blue-100 dark:bg-blue-900/50 rounded-lg flex-shrink-0"
                       >
@@ -595,6 +662,18 @@
                         <div class="text-xs text-gray-500 mt-1">
                           {formatDate(session.createdAt)}
                         </div>
+                      </div>
+                      <div
+                        class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onclick={(e) => handleDeleteSession(session.chatSessionId, e)}
+                          class="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                        >
+                          <Trash2 class="size-3" />
+                        </Button>
                       </div>
                     </div>
                   </button>
@@ -653,7 +732,8 @@
                   {@const showTimestamp = shouldShowTimestamp(originalIndex)}
                   {@const isUser = message.role === "user"}
                   {@const isAssistant = message.role === "assistant"}
-                  {@const { content, sources } = isAssistant ? parseSourceCitations(message.content) : { content: message.content, sources: [] }}
+                  {@const sources = message.sources || message.metadata?.sources || []}
+                  {@const content = message.content}
                   
                   <div
                     class="message-container"
@@ -903,6 +983,32 @@
     </div>
   </div>
 </Card.Root>
+
+<!-- Delete Confirmation Dialog -->
+<AlertDialog.Root bind:open={showDeleteDialog}>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>Delete Chat Session</AlertDialog.Title>
+      <AlertDialog.Description>
+        Are you sure you want to delete this chat session? This action cannot be
+        undone.
+      </AlertDialog.Description>
+    </AlertDialog.Header>
+    <AlertDialog.Footer>
+      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+      <AlertDialog.Action
+        onclick={confirmDeleteSession}
+        disabled={isDeleting}
+        class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+      >
+        {#if isDeleting}
+          <Loader2 class="h-4 w-4 animate-spin mr-2" />
+        {/if}
+        Delete Session
+      </AlertDialog.Action>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>
 
 <style lang="postcss">
   /* Typing animation for dots */

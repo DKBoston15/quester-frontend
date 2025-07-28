@@ -473,7 +473,8 @@
               {@const showTimestamp = shouldShowTimestamp(i)}
               {@const isUser = message.role === "user"}
               {@const isAssistant = message.role === "assistant"}
-              {@const { content, sources } = isAssistant ? parseSourceCitations(message.content) : { content: message.content, sources: [] }}
+              {@const sources = message.sources || message.metadata?.sources || []}
+              {@const content = message.content}
               
               <div
                 class="message-container"
@@ -536,7 +537,7 @@
                       {/if}
 
                       <!-- Enhanced Source Citations & Context -->
-                      {#if sources.length > 0 || (message.sources && message.sources.length > 0) || message.metadata?.tools_used}
+                      {#if sources.length > 0 || message.metadata?.tools_used}
                         <div class="mt-3 pt-3 border-t border-border/50" transition:slide|local>
                           <!-- Tools Used -->
                           {#if message.metadata?.tools_used && message.metadata.tools_used.length > 0}
@@ -556,13 +557,13 @@
                           {/if}
 
                           <!-- Referenced sources -->
-                          {#if message.sources && message.sources.length > 0}
+                          {#if sources.length > 0}
                             <div class="mb-2">
                               <div class="text-xs text-muted-foreground mb-2 font-medium">
                                 Referenced sources:
                               </div>
                               <div class="space-y-2">
-                                {#each message.sources as source}
+                                {#each sources as source}
                                   {@const Icon = getResultIcon(source.type)}
                                   <div class="border rounded-md p-2 bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer group">
                                     <div class="flex items-start gap-2">
@@ -592,10 +593,10 @@
                           {/if}
 
                           <!-- Search Context Indicator -->
-                          {#if message.sources && message.sources.length > 0}
+                          {#if sources.length > 0}
                             <div class="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
                               <Search class="size-3" />
-                              <span>Used {message.sources.length} sources from your research</span>
+                              <span>Used {sources.length} sources from your research</span>
                             </div>
                           {/if}
 
