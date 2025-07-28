@@ -15,6 +15,7 @@
     literature: Literature[];
     citationStyle: CitationStyle;
     internalSelectedIds?: Set<string>;
+    selectionVersion?: number;
     onToggleReference?: (literature: Literature) => void;
   }
 
@@ -22,6 +23,7 @@
     literature,
     citationStyle,
     internalSelectedIds,
+    selectionVersion,
     onToggleReference,
   }: Props = $props();
 
@@ -129,9 +131,9 @@
           <div class="space-y-6">
             {#each formattedCitations as citationItem, index}
               {@const isSelected =
-                !internalSelectedIds ||
-                !citationItem.literature.id ||
-                internalSelectedIds.has(citationItem.literature.id)}
+                internalSelectedIds && citationItem.literature.id && (selectionVersion || selectionVersion === 0)
+                  ? internalSelectedIds.has(citationItem.literature.id)
+                  : false}
               <div
                 class="reference-item border-l-2 border-muted pl-4 py-2 flex items-center"
               >

@@ -10,7 +10,6 @@
     FileText,
     CheckSquare,
     Square,
-    RotateCcw,
   } from "lucide-svelte";
   import type { Literature } from "$lib/types/literature";
   import type { CitationStyle } from "$lib/utils/citationFormatters";
@@ -46,53 +45,31 @@
 
   // Internal selection state for the modal
   let internalSelectedIds = $state<Set<string>>(new Set());
+  let userHasManuallyChanged = $state(false);
+  let selectionVersion = $state(0); // Version counter to force reactivity
 
   // Initialize internal selection when modal opens (but preserve user changes)
   $effect(() => {
-    if (open && selectedLiterature) {
-      // Only reset if this is the first time opening the modal or if no internal state exists
-      if (internalSelectedIds.size === 0) {
-        internalSelectedIds = new Set(
-          selectedLiterature.map((item) => item.id).filter(Boolean)
-        );
-      } else {
-        // Validate that internal selection is still valid against current literature
-        const validIds = new Set(selectedLiterature.map((item) => item.id).filter(Boolean));
-        const validatedSelection = new Set<string>();
-        
-        // Only keep internal selections that are still valid
-        for (const id of internalSelectedIds) {
-          if (validIds.has(id)) {
-            validatedSelection.add(id);
-          }
-        }
-        
-        // Add any new literature items that weren't in the previous selection
-        for (const item of selectedLiterature) {
-          if (item.id && !internalSelectedIds.has(item.id)) {
-            validatedSelection.add(item.id);
-          }
-        }
-        
-        // Only update if the selection actually changed to prevent infinite loops
-        if (validatedSelection.size !== internalSelectedIds.size || 
-            ![...validatedSelection].every(id => internalSelectedIds.has(id))) {
-          internalSelectedIds = validatedSelection;
-        }
-      }
+    // ONLY initialize when modal first opens, never reset after that
+    if (open && selectedLiterature && internalSelectedIds.size === 0 && !userHasManuallyChanged) {
+      internalSelectedIds = new Set(
+        selectedLiterature.map((item) => item.id).filter(Boolean)
+      );
+      selectionVersion++;
     }
   });
 
   // Get currently selected literature based on internal state
-  const currentlySelected = $derived(() => {
-    return selectedLiterature.filter(
+  const currentlySelected = $derived(
+    selectedLiterature.filter(
       (item) => item.id && internalSelectedIds.has(item.id)
-    );
-  });
+    )
+  );
 
   function toggleReference(literature: Literature) {
     if (!literature.id) return;
 
+    userHasManuallyChanged = true;
     const newSelected = new Set(internalSelectedIds);
     if (newSelected.has(literature.id)) {
       newSelected.delete(literature.id);
@@ -100,31 +77,22 @@
       newSelected.add(literature.id);
     }
     internalSelectedIds = newSelected;
+    selectionVersion++; // Force reactivity
   }
 
   function selectAll() {
-    internalSelectedIds = new Set(
-      selectedLiterature.map((item) => item.id).filter(Boolean)
-    );
+    userHasManuallyChanged = true;
+    const allIds = selectedLiterature.map((item) => item.id).filter(Boolean);
+    internalSelectedIds = new Set(allIds);
+    selectionVersion++; // Force reactivity
   }
 
   function deselectAll() {
+    userHasManuallyChanged = true;
     internalSelectedIds = new Set();
+    selectionVersion++; // Force reactivity
   }
 
-  function invertSelection() {
-    const allIds = new Set(
-      selectedLiterature.map((item) => item.id).filter(Boolean)
-    );
-    const newSelected = new Set<string>();
-
-    for (const id of allIds) {
-      if (!internalSelectedIds.has(id)) {
-        newSelected.add(id);
-      }
-    }
-    internalSelectedIds = newSelected;
-  }
 
   let selectedStyle = $state<CitationStyle>("APA");
   let selectedFormat = $state<
@@ -172,7 +140,7 @@
   });
 
   async function handleExport() {
-    if (currentlySelected().length === 0) {
+    if (currentlySelected.length === 0) {
       toast.error("No references selected");
       return;
     }
@@ -181,7 +149,7 @@
 
     try {
       // Validate export data completeness
-      const selectedItems = currentlySelected();
+      const selectedItems = currentlySelected;
       
       if (selectedItems.length === 0) {
         toast.error('No references selected for export');
@@ -206,52 +174,52 @@
           break;
         case "pdf":
           await exportToPDFSimple({
-            literature: currentlySelected(),
+            literature: currentlySelected,
             citationStyle: selectedStyle,
             projectTitle: projectTitle || "Research Bibliography",
             authorName: userName,
           });
           toast.success(
-            `PDF exported successfully with ${currentlySelected().length} references`
+            `PDF exported successfully with ${currentlySelected.length} references`
           );
           open = false;
           break;
         case "docx":
           await exportToDOCX({
-            literature: currentlySelected(),
+            literature: currentlySelected,
             citationStyle: selectedStyle,
             projectTitle: projectTitle || "Research Bibliography",
             authorName: userName,
           });
           toast.success(
-            `DOCX exported successfully with ${currentlySelected().length} references`
+            `DOCX exported successfully with ${currentlySelected.length} references`
           );
           open = false;
           break;
         case "bibtex":
           await exportToBibTeX({
-            literature: currentlySelected(),
+            literature: currentlySelected,
           });
           toast.success(
-            `BibTeX exported successfully with ${currentlySelected().length} references`
+            `BibTeX exported successfully with ${currentlySelected.length} references`
           );
           open = false;
           break;
         case "ris":
           await exportToRIS({
-            literature: currentlySelected(),
+            literature: currentlySelected,
           });
           toast.success(
-            `RIS exported successfully with ${currentlySelected().length} references`
+            `RIS exported successfully with ${currentlySelected.length} references`
           );
           open = false;
           break;
         case "csv":
           await exportToCSV({
-            literature: currentlySelected(),
+            literature: currentlySelected,
           });
           toast.success(
-            `CSV exported successfully with ${currentlySelected().length} references`
+            `CSV exported successfully with ${currentlySelected.length} references`
           );
           open = false;
           break;
@@ -265,7 +233,7 @@
   }
 
   async function copyToClipboard() {
-    const currentLiterature = currentlySelected();
+    const currentLiterature = currentlySelected;
     if (currentLiterature.length === 0) {
       throw new Error("No references to copy");
     }
@@ -338,7 +306,7 @@
       <div class="flex items-center justify-between gap-4 px-6 pt-4">
         <div class="flex items-center gap-4">
           <Badge variant="secondary" class="px-3 py-1">
-            {currentlySelected().length} of {selectedLiterature.length} reference{selectedLiterature.length !==
+            {currentlySelected.length} of {selectedLiterature.length} reference{selectedLiterature.length !==
             1
               ? "s"
               : ""} selected
@@ -350,7 +318,7 @@
               variant="ghost"
               size="sm"
               onclick={selectAll}
-              disabled={currentlySelected().length ===
+              disabled={currentlySelected.length ===
                 selectedLiterature.length}
             >
               <CheckSquare class="h-4 w-4 mr-1" />
@@ -360,19 +328,10 @@
               variant="ghost"
               size="sm"
               onclick={deselectAll}
-              disabled={currentlySelected().length === 0}
+              disabled={currentlySelected.length === 0}
             >
               <Square class="h-4 w-4 mr-1" />
               None
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onclick={invertSelection}
-              disabled={selectedLiterature.length === 0}
-            >
-              <RotateCcw class="h-4 w-4 mr-1" />
-              Invert
             </Button>
           </div>
         </div>
@@ -419,6 +378,7 @@
           literature={selectedLiterature}
           citationStyle={selectedStyle}
           {internalSelectedIds}
+          {selectionVersion}
           onToggleReference={toggleReference}
         />
       </div>
@@ -428,7 +388,7 @@
       <Button variant="outline" onclick={() => (open = false)}>Cancel</Button>
       <Button
         onclick={handleExport}
-        disabled={isExporting || currentlySelected().length === 0}
+        disabled={isExporting || currentlySelected.length === 0}
       >
         {#if isExporting}
           <span class="animate-spin mr-2">⏳</span>
