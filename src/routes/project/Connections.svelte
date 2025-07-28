@@ -15,16 +15,11 @@
   import { GraduationCap } from "lucide-svelte";
 
   let value = $state("2D");
-  let showControls = false;
   let isLoading = $state(true);
   let hasAccess = $state(false);
 
   // Define the type for typeMap keys
   type TypeMapKey = keyof typeof typeMap;
-
-  function toggleControls() {
-    showControls = !showControls;
-  }
 
   // Check if user has access to graph visualization features
   async function checkGraphAccessCapability() {
@@ -227,13 +222,50 @@
             </Card.Root>
           </Popover.Content>
         </Popover.Root>
-        <Button
-          id="controls-toggle-button"
-          variant="outline"
-          onclick={toggleControls}
-          class="w-[7rem] border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-          >{showControls ? "Hide Controls" : "Show Controls"}</Button
-        >
+        <Popover.Root>
+          <Popover.Trigger>
+            <Button
+              id="controls-toggle-button"
+              variant="outline"
+              class="w-[7rem] border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+              >Controls</Button
+            >
+          </Popover.Trigger>
+          <Popover.Content
+            class="w-80 max-h-[400px] mt-2 p-0 overflow-hidden bg-transparent overflow-y-none border-none shadow-none"
+          >
+            <Card.Root>
+              <Card.Content>
+                <div
+                  class="font-semibold border-b p-3 dark:border-neutral-800 sticky top-0"
+                >
+                  Interaction Controls
+                </div>
+                <div class="p-3 space-y-3">
+                  {#if value === "2D"}
+                    <div class="space-y-2">
+                      <h4 class="text-sm font-medium">2D Graph Controls</h4>
+                      <ul class="text-xs space-y-1 text-muted-foreground">
+                        <li><strong>Left Click:</strong> Pan/Select/Drag nodes</li>
+                        <li><strong>Scroll Wheel:</strong> Zoom in/out</li>
+                        <li><strong>Left Click + Shift:</strong> Select multiple nodes</li>
+                      </ul>
+                    </div>
+                  {:else if value === "3D"}
+                    <div class="space-y-2">
+                      <h4 class="text-sm font-medium">3D Graph Controls</h4>
+                      <ul class="text-xs space-y-1 text-muted-foreground">
+                        <li><strong>Left Click:</strong> Rotate view</li>
+                        <li><strong>Scroll Wheel:</strong> Zoom in/out</li>
+                        <li><strong>Right Click:</strong> Pan view</li>
+                      </ul>
+                    </div>
+                  {/if}
+                </div>
+              </Card.Content>
+            </Card.Root>
+          </Popover.Content>
+        </Popover.Root>
         <Button
           variant="outline"
           size="icon"
@@ -250,23 +282,6 @@
         <ThreeD />
       {:else if value === "2D"}
         <TwoD />
-      {/if}
-      {#if showControls && value === "2D"}
-        <div
-          id="interaction-controls-2d"
-          class="absolute bottom-4 left-1/2 text-xs transform -translate-x-1/2 mb-4 p-2 bg-background/80 rounded border dark:border-dark-border"
-        >
-          Left Click: Pan/Select/Drag, Scroll Wheel: Zoom, Left Click + Shift:
-          Select Multiple Nodes
-        </div>
-      {/if}
-      {#if showControls && value === "3D"}
-        <div
-          id="interaction-controls-3d"
-          class="absolute bottom-4 left-1/2 text-xs transform -translate-x-1/2 mb-4 p-2 bg-background/80 rounded border dark:border-dark-border"
-        >
-          Left Click: Rotate, Scroll Wheel: Zoom, Right Click: Pan
-        </div>
       {/if}
     </div>
   </div>

@@ -31,6 +31,7 @@
     NotebookText,
     Boxes,
     Target,
+    Info,
   } from "lucide-svelte";
   import { Input } from "$lib/components/ui/input";
   import { Button } from "$lib/components/ui/button";
@@ -246,9 +247,6 @@
         .loadUserResources(true, true)
         .then(async () => {
           if (hasAccess) {
-            console.debug(
-              "[OrgAnalytics] Visibility reload – loading settings…"
-            );
             try {
               await teamManagement.loadSettings();
             } catch (settingsErr) {
@@ -275,7 +273,6 @@
         hasAccess = checkAdminAccess();
 
         if (hasAccess) {
-          console.debug("[OrgAnalytics] Access granted – loading settings…");
           try {
             await teamManagement.loadSettings();
           } catch (settingsErr) {
@@ -299,9 +296,6 @@
           .loadUserResources(true, true)
           .then(async () => {
             if (hasAccess) {
-              console.debug(
-                "[OrgAnalytics] Visibility reload – loading settings…"
-              );
               try {
                 await teamManagement.loadSettings();
               } catch (settingsErr) {
@@ -919,8 +913,20 @@
           class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
         >
           <div>
-            <h1 class="text-3xl font-bold mb-2">Organization Analytics</h1>
-            <p class="text-muted-foreground">
+            <div class="flex items-center gap-2">
+              <h1 class="text-3xl font-bold">Organization Analytics</h1>
+              <Tooltip.Root>
+                <Tooltip.Trigger>
+                  <Info class="h-5 w-5 text-muted-foreground" />
+                </Tooltip.Trigger>
+                <Tooltip.Content>
+                  <p class="text-sm max-w-xs">
+                    View comprehensive analytics about your organization's activity, including user engagement patterns, project content creation, and team productivity metrics across all your projects.
+                  </p>
+                </Tooltip.Content>
+              </Tooltip.Root>
+            </div>
+            <p class="text-muted-foreground mt-2">
               Activity overview across your projects and users.
             </p>
           </div>

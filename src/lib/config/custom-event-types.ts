@@ -7,6 +7,7 @@ import {
   Users,
   Lightbulb,
   Gavel,
+  Briefcase,
   Star,
   Calendar,
   Target,
@@ -125,6 +126,27 @@ export const eventTypeConfigs: Record<CustomEventType, EventTypeConfig> = {
     ],
   },
 
+  [CustomEventType.ADMINISTRATION]: {
+    type: CustomEventType.ADMINISTRATION,
+    label: "Administration",
+    description: "Administrative tasks, documentation, and project management activities",
+    icon: "Briefcase",
+    color: {
+      bg: "bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-indigo-950/30 dark:to-blue-900/20",
+      border: "border-l-indigo-500 border-indigo-200 dark:border-indigo-800",
+      icon: "bg-gradient-to-br from-indigo-500 to-blue-600",
+      text: "text-indigo-900 dark:text-indigo-100",
+      tag: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-200",
+    },
+    examples: [
+      "Budget review",
+      "Progress report",
+      "Compliance check",
+      "Documentation update",
+      "Administrative approval",
+    ],
+  },
+
   [CustomEventType.OTHER]: {
     type: CustomEventType.OTHER,
     label: "Other",
@@ -155,6 +177,7 @@ export const eventTypeIcons = {
   Users,
   Lightbulb,
   Gavel,
+  Briefcase,
   Star,
   Calendar,
   Target,
@@ -205,6 +228,7 @@ export const eventTypePriority: Record<CustomEventType, number> = {
   [CustomEventType.MEETING]: 3,
   [CustomEventType.DECISION]: 2,
   [CustomEventType.INSIGHT]: 2,
+  [CustomEventType.ADMINISTRATION]: 2,
   [CustomEventType.OTHER]: 1,
 };
 

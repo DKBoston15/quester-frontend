@@ -6,6 +6,7 @@ export enum CustomEventType {
   MEETING = "meeting",
   INSIGHT = "insight",
   DECISION = "decision",
+  ADMINISTRATION = "administration",
   OTHER = "other",
 }
 

@@ -87,24 +87,26 @@
             return;
           }
 
-          const response = await outcomeStore.updateOutcome(currentOutcome.id, {
+          const updatedOutcome = await outcomeStore.updateOutcome(currentOutcome.id, {
             content: currentContentString,
             name,
             type: currentOutcome.type,
           });
 
           // Ensure we maintain all fields when updating currentOutcome
-          currentOutcome = {
-            id: response.outcome.id,
-            name: response.outcome.name,
-            projectId: response.outcome.projectId,
-            type: response.outcome.type || currentOutcome.type,
-            content: response.outcome.content,
-            sectionType: response.outcome.sectionType,
-            createdAt: response.outcome.createdAt || currentOutcome.createdAt,
-            updatedAt: response.outcome.updatedAt || currentOutcome.updatedAt,
-            userId: response.outcome.userId || currentOutcome.userId,
-          };
+          if (updatedOutcome) {
+            currentOutcome = {
+              id: updatedOutcome.id,
+              name: updatedOutcome.name,
+              projectId: updatedOutcome.projectId,
+              type: updatedOutcome.type || currentOutcome.type,
+              content: updatedOutcome.content,
+              sectionType: updatedOutcome.sectionType,
+              createdAt: updatedOutcome.createdAt || currentOutcome.createdAt,
+              updatedAt: updatedOutcome.updatedAt || currentOutcome.updatedAt,
+              userId: updatedOutcome.userId || currentOutcome.userId,
+            };
+          }
           lastSavedContent = currentContentString;
         } catch (err) {
           console.error("Failed to auto-save outcome:", err);

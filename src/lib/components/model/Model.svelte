@@ -14,9 +14,11 @@
   import { onDestroy, onMount } from "svelte";
   import "@xyflow/svelte/dist/style.css";
   import { modelStore } from "$lib/stores/ModelStore.svelte";
+  import { undoRedoStore } from "$lib/stores/UndoRedoStore.svelte";
   import { edgeSettings } from "./edge-settings-store";
   import ResizableNode from "./ResizableNode.svelte";
   import CircleNode from "./CircleNode.svelte";
+  import EllipseNode from "./EllipseNode.svelte";
 
   import EdgeCustomizationPanel from "./EdgeCustomizationPanel.svelte";
 
@@ -34,6 +36,7 @@
   const nodeTypes: NodeTypes = {
     ResizableNode: ResizableNode as any,
     CircleNode: CircleNode as any,
+    EllipseNode: EllipseNode as any,
   } satisfies NodeTypes;
 
   const nodes = writable<Node[]>([]);
@@ -48,6 +51,106 @@
 
   // Get the model name reactively
   let modelName = $derived(modelStore.currentModel?.name);
+  
+  // Expose method for tutorial to add nodes
+  export function addTutorialNode(nodeType: string = 'ResizableNode') {
+    const position = {
+      x: 300,
+      y: 200,
+    };
+    
+    const newNode: Node = {
+      id: `tutorial-${nodeType}-${Date.now()}`,
+      type: nodeType,
+      position: position,
+      data: { label: "Tutorial Node" },
+      selected: false,
+    };
+    
+    nodes.update((currentNodes) => [...currentNodes, newNode]);
+    
+    return newNode.id;
+  }
+
+  // Undo/Redo functions
+  function performUndo() {
+    const previousState = undoRedoStore.undo();
+    if (previousState) {
+      nodes.set(previousState.nodes);
+      edges.set(previousState.edges);
+      undoRedoStore.completeHistoryChange();
+    }
+  }
+
+  function performRedo() {
+    const nextState = undoRedoStore.redo();
+    if (nextState) {
+      nodes.set(nextState.nodes);
+      edges.set(nextState.edges);
+      undoRedoStore.completeHistoryChange();
+    }
+  }
+  
+  // Expose method for tutorial to add nodes at specific position
+  export function addTutorialNodeAt(nodeType: string = 'ResizableNode', x: number, y: number, label?: string) {
+    const newNode: Node = {
+      id: `tutorial-${nodeType}-${Date.now()}`,
+      type: nodeType,
+      position: { x, y },
+      data: { label: label || "Tutorial Node" },
+      selected: false,
+    };
+    
+    nodes.update((currentNodes) => [...currentNodes, newNode]);
+    
+    return newNode.id;
+  }
+  
+  // Expose method to select a node
+  export function selectNode(nodeId: string) {
+    nodes.update((currentNodes) => 
+      currentNodes.map(node => ({
+        ...node,
+        selected: node.id === nodeId
+      }))
+    );
+  }
+  
+  // Expose undo/redo methods
+  export { performUndo, performRedo };
+
+  // Expose method to create an edge between two nodes
+  export function addTutorialEdge(sourceNodeId: string, targetNodeId: string) {
+    const newEdge: Edge = {
+      id: `tutorial-edge-${Date.now()}`,
+      source: sourceNodeId,
+      target: targetNodeId,
+      sourceHandle: null,
+      targetHandle: null,
+      data: { customized: false },
+      style: "",
+      markerEnd: undefined,
+      markerStart: undefined,
+    };
+    
+    edges.update((currentEdges) => [...currentEdges, newEdge]);
+    
+    return newEdge.id;
+  }
+  
+  // Register globally for tutorial access
+  onMount(() => {
+    (window as any).tutorialMethods = {
+      addTutorialNode,
+      addTutorialNodeAt,
+      selectNode,
+      addTutorialEdge
+    };
+    
+    return () => {
+      delete (window as any).tutorialMethods;
+    };
+  });
 
 
   // Function to duplicate a node
@@ -136,7 +239,7 @@
     nodes.update((currentNodes) => [...currentNodes, newNode]);
   }
 
-  // Listen for duplicate events
+  // Listen for duplicate, z-index, and auto-connect events
   onMount(() => {
     const handleDuplicate = (event: CustomEvent) => {
       // Extract the id from the event detail
@@ -161,12 +264,113 @@
       }
     };
 
+    const handleBringToFront = (event: CustomEvent) => {
+      const detail = event.detail;
+      const nodeId = detail?.id;
+
+      if (!nodeId) {
+        console.error("BringToFront event received without a valid node ID.");
+        return;
+      }
+
+      nodes.update((currentNodes) => {
+        // Find the node to bring to front
+        const nodeIndex = currentNodes.findIndex(node => node.id === nodeId);
+        if (nodeIndex === -1) return currentNodes;
+
+        // Remove the node from its current position
+        const nodeToMove = currentNodes[nodeIndex];
+        const remainingNodes = currentNodes.filter(node => node.id !== nodeId);
+        
+        // Add it to the end (top layer)
+        const newNodes = [...remainingNodes, nodeToMove];
+        
+        // Save state for undo/redo after a short delay
+        setTimeout(() => {
+          if (!undoRedoStore.isApplyingChange) {
+            undoRedoStore.saveState(newNodes, $edges);
+          }
+        }, 100);
+        
+        return newNodes;
+      });
+    };
+
+    const handleSendToBack = (event: CustomEvent) => {
+      const detail = event.detail;
+      const nodeId = detail?.id;
+
+      if (!nodeId) {
+        console.error("SendToBack event received without a valid node ID.");
+        return;
+      }
+
+      nodes.update((currentNodes) => {
+        // Find the node to send to back
+        const nodeIndex = currentNodes.findIndex(node => node.id === nodeId);
+        if (nodeIndex === -1) return currentNodes;
+
+        // Remove the node from its current position
+        const nodeToMove = currentNodes[nodeIndex];
+        const remainingNodes = currentNodes.filter(node => node.id !== nodeId);
+        
+        // Add it to the beginning (back layer)
+        const newNodes = [nodeToMove, ...remainingNodes];
+        
+        // Save state for undo/redo after a short delay
+        setTimeout(() => {
+          if (!undoRedoStore.isApplyingChange) {
+            undoRedoStore.saveState(newNodes, $edges);
+          }
+        }, 100);
+        
+        return newNodes;
+      });
+    };
+
+    const handleAutoConnect = (event: CustomEvent) => {
+      const detail = event.detail;
+      if (detail?.action === 'connect-latest-nodes') {
+        // Get the two most recent nodes
+        const currentNodes = $nodes;
+        if (currentNodes.length >= 2) {
+          const sourceNode = currentNodes[currentNodes.length - 2];
+          const targetNode = currentNodes[currentNodes.length - 1];
+          
+          // Create connection
+          const connection = {
+            source: sourceNode.id,
+            target: targetNode.id,
+            sourceHandle: null,
+            targetHandle: null,
+          };
+          
+          onConnect(connection);
+        }
+      }
+    };
+
     document.addEventListener("duplicate", handleDuplicate as EventListener);
+    document.addEventListener("bringToFront", handleBringToFront as EventListener);
+    document.addEventListener("sendToBack", handleSendToBack as EventListener);
+    document.addEventListener("autoConnectNodes", handleAutoConnect as EventListener);
 
     return () => {
       document.removeEventListener(
         "duplicate",
         handleDuplicate as EventListener
+      );
+      document.removeEventListener(
+        "bringToFront",
+        handleBringToFront as EventListener
+      );
+      document.removeEventListener(
+        "sendToBack", 
+        handleSendToBack as EventListener
+      );
+      document.removeEventListener(
+        "autoConnectNodes",
+        handleAutoConnect as EventListener
       );
     };
   });
@@ -202,16 +406,20 @@
           nodes.set(finalNodes);
           edges.set(finalEdges);
 
+          // Initialize undo/redo history
+          undoRedoStore.initialize(finalNodes, finalEdges);
+
           // Apply loaded edge settings
           const firstEdge = finalEdges[0];
-          if (firstEdge) {
+          if (firstEdge && firstEdge.style) {
+            const colorMatch = firstEdge.style.match(/stroke: (#[0-9a-fA-F]{6})/);
+            const widthMatch = firstEdge.style.match(/stroke-width: (\d+)px/);
+            
             edgeSettings.set({
-              type: firstEdge.type,
-              color: firstEdge.style.match(/stroke: (#[0-9a-fA-F]{6})/)[1],
-              width: parseInt(
-                firstEdge.style.match(/stroke-width: (\d+)px/)[1]
-              ),
-              animated: firstEdge.animated,
+              type: firstEdge.type || 'default',
+              color: colorMatch ? colorMatch[1] : '#000000',
+              width: widthMatch ? parseInt(widthMatch[1]) : 1,
+              animated: firstEdge.animated || false,
               markerStart: !!firstEdge.markerStart,
               markerEnd: !!firstEdge.markerEnd,
             });
@@ -231,6 +439,17 @@
   });
 
   let saveTimeout: number;
+  let historyTimeout: number;
+
+  const debouncedHistorySave = () => {
+    if (historyTimeout) clearTimeout(historyTimeout);
+    historyTimeout = setTimeout(() => {
+      if (!undoRedoStore.isApplyingChange) {
+        undoRedoStore.saveState($nodes, $edges);
+      }
+    }, 500) as unknown as number;
+  };
+
   const debouncedSave = () => {
     if (saveTimeout) clearTimeout(saveTimeout);
     saveTimeout = setTimeout(async () => {
@@ -260,24 +479,27 @@
     }, 1000) as unknown as number;
   };
 
-  // Subscribe to nodes changes for saving
+  // Subscribe to nodes changes for saving and history
   $effect(() => {
     const currentNodes = $nodes;
     if (initialLoadComplete && Array.isArray(currentNodes)) {
       debouncedSave();
+      debouncedHistorySave();
     }
   });
 
-  // Subscribe to edges changes for saving
+  // Subscribe to edges changes for saving and history
   $effect(() => {
     const currentEdges = $edges;
     if (initialLoadComplete && Array.isArray(currentEdges)) {
       debouncedSave();
+      debouncedHistorySave();
     }
   });
 
   onDestroy(() => {
     if (saveTimeout) clearTimeout(saveTimeout);
+    if (historyTimeout) clearTimeout(historyTimeout);
   });
 
 
@@ -360,8 +582,26 @@
     );
   };
 
-  // Create a reactive statement to log edge settings changes
+  // Create a reactive statement to update edge settings
+  let lastEdgeSettings = $state($edgeSettings);
   $effect(() => {
+    const currentSettings = $edgeSettings;
+    
+    // Only update if settings actually changed to prevent infinite loops
+    if (
+      !initialLoadComplete ||
+      (lastEdgeSettings.type === currentSettings.type &&
+        lastEdgeSettings.color === currentSettings.color &&
+        lastEdgeSettings.width === currentSettings.width &&
+        lastEdgeSettings.animated === currentSettings.animated &&
+        lastEdgeSettings.markerEnd === currentSettings.markerEnd &&
+        lastEdgeSettings.markerStart === currentSettings.markerStart)
+    ) {
+      return;
+    }
+
+    lastEdgeSettings = { ...currentSettings };
+
     // Update only non-customized edges when settings change
     edges.update((currentEdges) =>
       currentEdges.map((edge) => {
@@ -370,14 +610,14 @@
         }
         return {
           ...edge,
-          type: $edgeSettings.type,
-          animated: $edgeSettings.animated,
-          style: `stroke: ${$edgeSettings.color}; stroke-width: ${$edgeSettings.width}px;`,
-          markerEnd: $edgeSettings.markerEnd
-            ? { type: MarkerType.ArrowClosed, color: $edgeSettings.color }
+          type: currentSettings.type,
+          animated: currentSettings.animated,
+          style: `stroke: ${currentSettings.color}; stroke-width: ${currentSettings.width}px;`,
+          markerEnd: currentSettings.markerEnd
+            ? { type: MarkerType.ArrowClosed, color: currentSettings.color }
             : undefined,
-          markerStart: $edgeSettings.markerStart
-            ? { type: MarkerType.ArrowClosed, color: $edgeSettings.color }
+          markerStart: currentSettings.markerStart
+            ? { type: MarkerType.ArrowClosed, color: currentSettings.color }
             : undefined,
         };
       })

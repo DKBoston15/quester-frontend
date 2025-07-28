@@ -1,0 +1,108 @@
+# Task Management Configuration and AI Rules
+
+project_name: "Quester Frontend"
+task_id_counter: 36  # Increment as tasks are created
+
+# Valid Values
+statuses: ["todo", "in-progress", "completed"]
+priorities: ["high", "medium", "low"]
+categories: ["bug", "feature", "refactor", "performance", "ui-ux", "security", "documentation"]
+t_shirt_sizes: ["XS", "S", "M", "L", "XL", "XXL"]
+
+# File Format Rules
+file_naming:
+  pattern: "{id:03d}-{name}.md"
+  name_format: "lowercase-hyphenated"
+  
+# AI Agent Rules
+ai_rules:
+  process_flow:
+    - "When user provides task list, create individual .md files in backlog/ directory structure"
+    - "Use proper file naming pattern: {id:03d}-{name}.md"
+    - "Place new tasks in backlog/todo/ directory"
+    - "Tasks can be simple initially, detailed investigation comes later"
+    - "Always increment task_id_counter for each new task created"
+    - "Add t-shirt size estimation to each task (XS, S, M, L, XL, XXL)"
+    - "Include size in metadata section of task files"
+    
+  investigation_workflow:
+    - "When investigating tasks, update the task .md files with findings"
+    - "Use Task agents to perform detailed code investigation"
+    - "Update Affected Files section with specific file paths and line numbers"
+    - "Update Technical Context with detailed technical findings"
+    - "Update Code References with specific code locations"
+    - "Replace generic subtasks with specific implementation steps"
+    - "After investigation, update task status to reflect current knowledge"
+    
+  research:
+    - "Always identify affected files with full paths from project root"
+    - "Include relevant code snippets with file path and line numbers"
+    - "Document technical dependencies and architectural context"
+    - "Never suggest implementation solutions in research phase"
+    - "Check for related existing tasks before creating new ones"
+    
+  task_creation:
+    - "Increment task_id_counter for each new task"
+    - "Verify dependencies exist before referencing"
+    - "Keep subtasks focused and measurable"
+    - "Use descriptive file names that summarize the task"
+    
+  file_management:
+    - "Move files between directories when status changes"
+    - "Preserve task ID in filename when moving"
+    - "Update metadata section when status changes"
+    - "Keep completed tasks for reference"
+
+  dependency_analysis:
+    - "Check component imports and exports"
+    - "Identify shared stores and services"
+    - "Note API endpoint relationships"
+    - "Track UI component hierarchies"
+    - "Document data flow dependencies"
+
+# Project-Specific Context
+tech_stack:
+  frontend: "Svelte 5"
+  state: "Svelte stores with runes API"
+  styling: "Tailwind CSS"
+  components: "shadcn-svelte"
+  
+key_directories:
+  components: "src/lib/components/"
+  stores: "src/lib/stores/"
+  services: "src/lib/services/"
+  routes: "src/routes/"
+  types: "src/lib/types/"
+
+# Task Template
+task_template: |
+  # Task Title
+
+  ## Metadata
+  - **ID**: {id}
+  - **Status**: {status}
+  - **Priority**: {priority}
+  - **Category**: {category}
+  - **Size**: {size}
+  - **Created**: {created}
+  - **Updated**: {updated}
+  - **Dependencies**: {dependencies}
+
+  ## Problem Statement
+  {problem_statement}
+
+  ## Research Notes
+  ### Affected Files
+  {affected_files}
+
+  ### Technical Context
+  {technical_context}
+
+  ### Code References
+  {code_references}
+
+  ## Subtasks
+  {subtasks}
+
+  ## Related Tasks
+  {related_tasks}

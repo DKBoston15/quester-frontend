@@ -6,6 +6,8 @@
   import { navigate, Link } from "svelte-routing";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import * as Tooltip from "$lib/components/ui/tooltip/index.js";
+  import { Button } from "$lib/components/ui/button";
+  import { globalSearchStore } from "$lib/stores/GlobalSearchStore.svelte";
   import {
     LogOut,
     Users,
@@ -13,6 +15,7 @@
     Home,
     Library,
     Pencil,
+    MessageCircle,
     Microscope,
     BarChartHorizontal,
     Workflow,
@@ -21,6 +24,8 @@
     ChartNetwork,
     TextSearch,
     Lock,
+    Search,
+    Command as CommandIcon,
   } from "lucide-svelte";
   import { API_BASE_URL } from "$lib/config";
   import { DateTime } from "luxon"; // Import DateTime
@@ -272,7 +277,6 @@
 
       if (lastViewDate === currentDate) {
         // Already viewed today, do nothing.
-        // console.log(`Project ${projectId} already viewed today by user ${userId}.`);
         return;
       }
 
@@ -293,9 +297,6 @@
       if (response.ok) {
         // Successfully recorded on backend, update localStorage
         localStorage.setItem(storageKey, currentDate);
-        console.log(
-          `Recorded project view for ${projectId} by user ${userId} on ${currentDate}.`
-        );
       } else {
         // Handle potential errors like 401 Unauthorized, 404 Not Found, 500 Server Error
         console.error(
@@ -349,11 +350,11 @@
         icon: Pencil,
         link: `/project/${projectId}/notes`,
       },
-      // {
-      //   title: "Research Assistant",
-      //   icon: MessageCircle,
-      //   link: `/project/${projectId}/chat`,
-      // },
+      {
+        title: "Research Assistant",
+        icon: MessageCircle,
+        link: `/project/${projectId}/chat`,
+      },
       {
         title: "Insights",
         icon: TextSearch,
@@ -467,6 +468,33 @@
     </Sidebar.Header>
 
     <Sidebar.Content>
+      <!-- Search Button -->
+      <Sidebar.Group>
+        <Sidebar.GroupContent>
+          <Sidebar.Menu>
+            <Sidebar.MenuItem>
+              <Button
+                variant="outline"
+                size="sm"
+                class="w-full justify-start gap-2 group-data-[collapsible=icon]:justify-center"
+                onclick={() => globalSearchStore.open()}
+              >
+                <Search class="h-4 w-4 flex-shrink-0" />
+                <span class="group-data-[collapsible=icon]:hidden">Search</span>
+                <kbd
+                  class="pointer-events-none ml-auto inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground group-data-[collapsible=icon]:hidden"
+                >
+                  <CommandIcon class="size-3" />
+                  K
+                </kbd>
+              </Button>
+            </Sidebar.MenuItem>
+          </Sidebar.Menu>
+        </Sidebar.GroupContent>
+      </Sidebar.Group>
+
+      <Sidebar.Separator />
+
       <!-- Primary Navigation -->
       <Sidebar.Group>
         <Sidebar.GroupContent>

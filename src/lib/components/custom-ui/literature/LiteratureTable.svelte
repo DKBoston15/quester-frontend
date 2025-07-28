@@ -28,6 +28,7 @@
   const dispatch = createEventDispatcher<{
     literatureSelect: Literature;
     gridReady: { api: GridApi<Literature> };
+    selectionChanged: { selectedItems: Literature[] };
   }>();
 
   let gridDiv: HTMLElement;
@@ -84,6 +85,18 @@
   }
 
   const columnDefs: ColDef<Literature>[] = [
+    {
+      field: "selection",
+      headerName: "",
+      width: 50,
+      checkboxSelection: true,
+      headerCheckboxSelection: true,
+      resizable: false,
+      sortable: false,
+      filter: false,
+      suppressMenu: true,
+      lockPosition: "left",
+    },
     {
       field: "name",
       headerName: "Title",
@@ -231,10 +244,16 @@
       menuTabs: ["filterMenuTab"],
     },
     animateRows: true,
-    rowSelection: "single",
+    rowSelection: "multiple",
     onRowClicked: (event) => {
-      if (event.data) {
+      if (event.data && !event.event?.target?.closest('.ag-checkbox-input-wrapper')) {
         dispatch("literatureSelect", event.data);
+      }
+    },
+    onSelectionChanged: () => {
+      if (gridApi) {
+        const selectedRows = gridApi.getSelectedRows();
+        dispatch("selectionChanged", { selectedItems: selectedRows });
       }
     },
     onGridReady: (params: { api: GridApi<Literature> }) => {
@@ -469,4 +488,5 @@
     background-repeat: no-repeat;
     background-size: contain;
   }
+
 </style>

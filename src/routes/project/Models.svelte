@@ -7,6 +7,7 @@
   import * as Card from "$lib/components/ui/card";
   import { Root, Content, Title, Description } from "$lib/components/ui/dialog";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
+  import EmptyState from "$lib/components/ui/empty-state/EmptyState.svelte";
   import {
     Plus,
     Trash2,
@@ -367,19 +368,12 @@
               <p class="text-lg text-destructive">{modelStore.error}</p>
             </div>
           {:else if !modelStore.models.length}
-            <div
-              class="flex flex-col justify-center items-center h-[400px] gap-4"
-            >
-              <p class="text-lg text-muted-foreground">No models created yet</p>
-              <Button
-                variant="outline"
-                onclick={() => (showCreateDialog = true)}
-                class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] transition-all"
-              >
-                <Plus class="h-4 w-4 mr-2" />
-                Create your first model
-              </Button>
-            </div>
+            <EmptyState
+              title="No models created yet"
+              variant="data-empty"
+              ctaText="Create your first model"
+              ctaAction={() => (showCreateDialog = true)}
+            />
           {:else}
             <div
               class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"

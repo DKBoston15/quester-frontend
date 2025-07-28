@@ -9,6 +9,7 @@
   import { Button } from "$lib/components/ui/button";
   import { Tabs, TabsList, TabsTrigger } from "$lib/components/ui/tabs";
   import { Layout, Maximize2, Minimize2, Plus, Info } from "lucide-svelte";
+  import { EmptyState } from "$lib/components/ui/empty-state";
   import { auth } from "$lib/stores/AuthStore.svelte";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { driver } from "driver.js";
@@ -319,15 +320,23 @@
             New Note
           </Button>
           <!-- Learn Button -->
-          <Button
-            variant="outline"
-            size="icon"
-            onclick={() => driverObj.drive()}
-            title="Learn about Notes features"
-          >
-            <GraduationCap class="h-4 w-4" />
-            <span class="sr-only">Learn about Notes features</span>
-          </Button>
+          <Tooltip.Provider>
+            <Tooltip.Root>
+              <Tooltip.Trigger>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onclick={() => driverObj.drive()}
+                >
+                  <GraduationCap class="h-4 w-4" />
+                  <span class="sr-only">Learn about Notes features</span>
+                </Button>
+              </Tooltip.Trigger>
+              <Tooltip.Content>
+                <p>Tutorial</p>
+              </Tooltip.Content>
+            </Tooltip.Root>
+          </Tooltip.Provider>
         </div>
       </div>
     </div>
@@ -368,21 +377,14 @@
                 <NoteEditor note={activeNote} onDelete={handleNoteDelete} />
               {/each}
             {:else}
-              <div class="h-full flex items-center justify-center">
-                <div class="text-center">
-                  <h3 class="text-lg font-medium mb-2">No Note Selected</h3>
-                  <p class="text-muted-foreground mb-4">
-                    Select a note from the sidebar or create a new one
-                  </p>
-                  <Button
-                    onclick={createNote}
-                    disabled={!projectStore.currentProject}
-                  >
-                    <Plus class="h-4 w-4 mr-2" />
-                    Create New Note
-                  </Button>
-                </div>
-              </div>
+              <EmptyState
+                title="No Note Selected"
+                description="Select a note from the sidebar or create a new one"
+                variant="data-empty"
+                ctaText="Create New Note"
+                ctaAction={createNote}
+                ctaDisabled={!projectStore.currentProject}
+              />
             {/if}
           </div>
 
@@ -397,21 +399,14 @@
                 }}
               />
             {:else}
-              <div class="h-full flex items-center justify-center">
-                <div class="text-center">
-                  <h3 class="text-lg font-medium mb-2">No Note Selected</h3>
-                  <p class="text-muted-foreground mb-4">
-                    Select a note from the sidebar or create a new one
-                  </p>
-                  <Button
-                    onclick={createNote}
-                    disabled={!projectStore.currentProject}
-                  >
-                    <Plus class="h-4 w-4 mr-2" />
-                    Create New Note
-                  </Button>
-                </div>
-              </div>
+              <EmptyState
+                title="No Note Selected"
+                description="Select a note from the sidebar or create a new one"
+                variant="data-empty"
+                ctaText="Create New Note"
+                ctaAction={createNote}
+                ctaDisabled={!projectStore.currentProject}
+              />
             {/if}
           </div>
         {:else}
@@ -422,21 +417,14 @@
                 <NoteEditor note={activeNote} onDelete={handleNoteDelete} />
               {/each}
             {:else}
-              <div class="h-full flex items-center justify-center">
-                <div class="text-center">
-                  <h3 class="text-lg font-medium mb-2">No Note Selected</h3>
-                  <p class="text-muted-foreground mb-4">
-                    Select a note from the sidebar or create a new one
-                  </p>
-                  <Button
-                    onclick={createNote}
-                    disabled={!projectStore.currentProject}
-                  >
-                    <Plus class="h-4 w-4 mr-2" />
-                    Create New Note
-                  </Button>
-                </div>
-              </div>
+              <EmptyState
+                title="No Note Selected"
+                description="Select a note from the sidebar or create a new one"
+                variant="data-empty"
+                ctaText="Create New Note"
+                ctaAction={createNote}
+                ctaDisabled={!projectStore.currentProject}
+              />
             {/if}
           </div>
         {/if}

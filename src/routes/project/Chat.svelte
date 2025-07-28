@@ -1,36 +1,49 @@
 <script lang="ts">
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { onMount, tick } from "svelte";
   import { slide, fade } from "svelte/transition";
   import { flip } from "svelte/animate";
   import { quintOut } from "svelte/easing";
+  import { projectStore } from "$lib/stores/ProjectStore.svelte";
   import * as Card from "$lib/components/ui/card";
-  import {
-    MessageSquare,
-    History,
-    RefreshCcw,
-    Bot,
-    BookOpen,
-    ChevronRight,
-    Search,
-    Folder,
-  } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button";
+  import { Badge } from "$lib/components/ui/badge";
   import { API_BASE_URL } from "$lib/config";
+  import MarkdownIt from "markdown-it";
+  
+  // Icons
+  import Send from "lucide-svelte/icons/send";
+  import Loader from "lucide-svelte/icons/loader";
+  import Sparkles from "lucide-svelte/icons/sparkles";
+  import User from "lucide-svelte/icons/user";
+  import Bot from "lucide-svelte/icons/bot";
+  import Clock from "lucide-svelte/icons/clock";
+  import ExternalLink from "lucide-svelte/icons/external-link";
+  import FileText from "lucide-svelte/icons/file-text";
+  import BookOpen from "lucide-svelte/icons/book-open";
+  import Folder from "lucide-svelte/icons/folder";
+  import Target from "lucide-svelte/icons/target";
+  import Lightbulb from "lucide-svelte/icons/lightbulb";
+  import Search from "lucide-svelte/icons/search";
+  import TrendingUp from "lucide-svelte/icons/trending-up";
+  import History from "lucide-svelte/icons/history";
+  import RefreshCcw from "lucide-svelte/icons/refresh-ccw";
 
+  // Types
   interface Source {
     type: string;
     id: string;
     title: string;
     similarity: number;
+    snippet?: string;
   }
 
   interface Message {
     id?: string;
     role: "user" | "assistant" | "system" | "tool";
     content: string;
-    // sources?: Source[];
+    sources?: Source[];
     timestamp: Date;
-    isStreaming?: boolean;
+    streaming?: boolean;
     metadata?: any;
   }
 
@@ -42,10 +55,12 @@
 
   // State
   let messages = $state<Message[]>([]);
-  let inputMessage = $state("");
+  let chatInput = $state("");
   let isLoading = $state(false);
+  let isStreaming = $state(false);
   let error = $state<string | null>(null);
-  let chatContainer: HTMLDivElement;
+  let chatContainer: HTMLDivElement | null = null;
+  let chatInputRef: HTMLTextAreaElement | null = null;
   let isTyping = $state(false);
   let typingTimeout: NodeJS.Timeout;
   let streamingContent = $state("");
@@ -56,25 +71,60 @@
   let searchTerm = $state("");
   let filteredSessions = $state<ChatSession[]>([]);
 
-  // Load recent chat sessions on mount
-  $effect(() => {
-    if (projectStore.currentProject?.id) {
-      loadRecentSessions();
+  // Research question suggestions
+  const researchSuggestions = [
+    {
+      icon: Search,
+      title: "Summarize my recent research findings",
+      description: "Get an overview of your latest research progress"
+    },
+    {
+      icon: TrendingUp,
+      title: "What are the key themes in my literature?",
+      description: "Identify patterns and trends across your sources"
+    },
+    {
+      icon: Lightbulb,
+      title: "Help me find research gaps",
+      description: "Discover unexplored areas in your field"
+    },
+    {
+      icon: Target,
+      title: "What are my next research steps?",
+      description: "Get recommendations for continuing your work"
+    }
+  ];
+
+  // Initialize markdown renderer
+  const md = new MarkdownIt({
+    html: true,
+    linkify: true,
+    typographer: true,
+    breaks: true,
+    highlight: function (str, lang) {
+      // Basic code highlighting - you can enhance this later
+      return `<pre class="language-${lang}"><code>${md.utils.escapeHtml(str)}</code></pre>`;
     }
   });
 
-  // Scroll to bottom when new messages arrive
+  // Render markdown content for AI messages
+  function renderMarkdown(content: string): string {
+    return md.render(content);
+  }
+
+  // Auto-scroll to bottom when new messages arrive
   $effect(() => {
-    if (messages.length > 0) {
-      setTimeout(() => {
+    if (messages.length > 0 && chatContainer) {
+      tick().then(() => {
         chatContainer?.scrollTo({
           top: chatContainer.scrollHeight,
           behavior: "smooth",
         });
-      }, 100);
+      });
     }
   });
 
+  // Filter sessions based on search term
   $effect(() => {
     filteredSessions = !searchTerm.trim()
       ? recentSessions
@@ -84,6 +134,20 @@
               ?.toLowerCase()
               .includes(searchTerm.toLowerCase()) ?? false
         );
+  });
+
+  // Load recent chat sessions on mount
+  $effect(() => {
+    if (projectStore.currentProject?.id) {
+      loadRecentSessions();
+    }
+  });
+
+  // Focus input when component mounts
+  onMount(() => {
+    if (chatInputRef) {
+      chatInputRef.focus();
+    }
   });
 
   async function loadRecentSessions() {
@@ -117,7 +181,6 @@
               const messageData = await messageResponse.json();
               return {
                 ...session,
-                // Filter out tool messages from history
                 messages: messageData.messages.filter(
                   (msg: Message) =>
                     msg.role === "user" || msg.role === "assistant"
@@ -183,24 +246,7 @@
     error = null;
   }
 
-  function formatTime(date: Date): string {
-    return new Intl.DateTimeFormat("en", {
-      hour: "numeric",
-      minute: "numeric",
-      hour12: true,
-    }).format(date);
-  }
-
-  function formatDate(dateStr: string): string {
-    return new Intl.DateTimeFormat("en", {
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-      hour12: true,
-    }).format(new Date(dateStr));
-  }
-
+  // Handle typing indicator
   function handleInput() {
     clearTimeout(typingTimeout);
     isTyping = true;
@@ -209,21 +255,27 @@
     }, 1000);
   }
 
-  // Send message and get response
-  async function sendMessage(e: Event) {
-    e.preventDefault(); // Prevent form submission from refreshing the page
-    if (!inputMessage.trim() || !projectStore.currentProject?.id) return;
+  // Handle chat input keydown
+  function handleKeydown(event: KeyboardEvent) {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      handleSubmit();
+    }
+  }
+
+  // Handle message submission
+  async function handleSubmit() {
+    if (!chatInput.trim() || !projectStore.currentProject?.id) return;
 
     isLoading = true;
+    isStreaming = true;
     error = null;
     isTyping = false;
     streamingContent = "";
 
     const sessionToUse = currentChatSession;
-
-    // Store the message we're about to send
-    const userMessage = inputMessage;
-    inputMessage = ""; // Clear input
+    const userMessage = chatInput;
+    chatInput = "";
 
     try {
       // Add user message immediately to local state
@@ -261,7 +313,7 @@
           role: "assistant",
           content: "",
           timestamp: new Date(),
-          isStreaming: true,
+          streaming: true,
         },
       ];
 
@@ -296,22 +348,9 @@
               } else if (parsed.type === "content") {
                 streamingContent += parsed.content;
 
-                // Update the last message with the new content and sources
+                // Update the last message with the new content
                 messages = messages.map((msg, i) => {
                   if (i === messages.length - 1) {
-                    // Try to parse any tool response data from the message
-                    let toolResults: any[] = [];
-                    if (msg.metadata?.tool_call_id) {
-                      try {
-                        const content = JSON.parse(msg.content);
-                        if (content.results && Array.isArray(content.results)) {
-                          toolResults = content.results;
-                        }
-                      } catch (e) {
-                        console.log("Not a tool response JSON");
-                      }
-                    }
-
                     return {
                       ...msg,
                       content: streamingContent,
@@ -327,9 +366,9 @@
         }
       }
 
-      // After streaming is complete, add the sources and remove streaming state
+      // After streaming is complete, remove streaming state
       messages = messages.map((msg, i) =>
-        i === messages.length - 1 ? { ...msg, isStreaming: false } : msg
+        i === messages.length - 1 ? { ...msg, streaming: false } : msg
       );
 
       // Refresh recent sessions after completion
@@ -339,8 +378,33 @@
       console.error("Chat error:", e);
     } finally {
       isLoading = false;
+      isStreaming = false;
       streamingContent = "";
+      
+      // Refocus input after submission
+      if (chatInputRef) {
+        chatInputRef.focus();
+      }
     }
+  }
+
+  // Handle suggestion selection
+  function selectSuggestion(suggestion: string) {
+    chatInput = suggestion;
+    if (chatInputRef) {
+      chatInputRef.focus();
+    }
+  }
+
+
+  function formatDate(dateStr: string): string {
+    return new Intl.DateTimeFormat("en", {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
+    }).format(new Date(dateStr));
   }
 
   function shouldShowTimestamp(index: number): boolean {
@@ -355,29 +419,97 @@
       5 * 60 * 1000
     );
   }
+
+  // Format timestamp for display
+  function formatTimestamp(timestamp: Date | string): string {
+    const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    
+    return date.toLocaleDateString();
+  }
+
+  // Get icon for result type
+  function getResultIcon(type: string) {
+    switch (type) {
+      case "note":
+        return FileText;
+      case "literature":
+        return BookOpen;
+      case "project":
+        return Folder;
+      case "outcome":
+        return Target;
+      default:
+        return FileText;
+    }
+  }
+
+  // Transform tool names to friendly display names
+  function getFriendlyToolName(toolName: string): string {
+    const toolNames: Record<string, string> = {
+      'get_literature_count': 'Literature Counter',
+      'get_relevant_content': 'Content Search',
+      'semantic_search': 'Semantic Search',
+      'analyze_literature_gaps': 'Gap Analysis',
+      'suggest_research_directions': 'Research Suggestions',
+      'summarize_search_results': 'Search Summarizer',
+      'compare_methodologies': 'Methodology Comparison'
+    };
+    return toolNames[toolName] || toolName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  }
+
+  // Parse source citations from AI responses
+  function parseSourceCitations(content: string): { content: string; sources: Array<{ id: string; title: string; type: string }> } {
+    const sourcePattern = /\[Source: ([^\]]+)\]/g;
+    const sources: Array<{ id: string; title: string; type: string }> = [];
+    let match;
+
+    while ((match = sourcePattern.exec(content)) !== null) {
+      const sourceInfo = match[1].split(' - ');
+      if (sourceInfo.length >= 2) {
+        sources.push({
+          id: sourceInfo[0],
+          title: sourceInfo[1],
+          type: sourceInfo[2] || 'unknown'
+        });
+      }
+    }
+
+    // Remove source citations from content for display
+    const cleanContent = content.replace(sourcePattern, '').trim();
+    
+    return { content: cleanContent, sources };
+  }
 </script>
 
-<Card.Root class="flex flex-col h-full border-2  dark:border-dark-border">
-  <Card.Header
-    class="px-6 py-4 flex w-full justify-between border-b-2  dark:border-dark-border bg-background"
-  >
+<Card.Root class="flex flex-col h-full border-2 dark:border-dark-border">
+  <Card.Header class="px-6 py-4 flex w-full justify-between border-b-2 dark:border-dark-border bg-background">
     <div class="flex justify-between items-center gap-3">
       <div class="flex items-center gap-3">
-        <div class="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
-          <Bot class="h-6 w-6 text-blue-600 dark:text-blue-400" />
+        <div class="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
+          <Bot class="h-6 w-6 text-white" />
         </div>
         <div class="flex items-center gap-2">
-          <span class="font-bold">Dr. Quester</span>
+          <span class="font-bold">AI Research Assistant</span>
           <span class="text-sm text-muted-foreground hidden sm:inline">
-            · Your Research Assistant
+            · Chat with your research data
           </span>
         </div>
       </div>
-      <div>
+      <div class="flex items-center gap-2">
         <Button
           variant="outline"
           onclick={() => (showHistory = !showHistory)}
-          class="border-2  dark:border-dark-border shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[1px_1px_0px_0px_rgba(44,46,51,0.1)] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all {showHistory
+          class="border-2 dark:border-dark-border shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[1px_1px_0px_0px_rgba(44,46,51,0.1)] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all {showHistory
             ? 'bg-secondary'
             : ''}"
         >
@@ -387,7 +519,7 @@
         <Button
           variant="outline"
           onclick={startNewChat}
-          class="border-2  dark:border-dark-border shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[1px_1px_0px_0px_rgba(44,46,51,0.1)] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all"
+          class="border-2 dark:border-dark-border shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[1px_1px_0px_0px_rgba(44,46,51,0.1)] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all"
         >
           <RefreshCcw class="h-4 w-4 mr-2" />
           <span class="hidden sm:inline">New Chat</span>
@@ -397,226 +529,429 @@
   </Card.Header>
 
   <div class="flex-1 overflow-hidden relative">
-    <div class="flex-1 h-full">
-      <div
-        bind:this={chatContainer}
-        class="chat-container h-full overflow-y-auto space-y-4 scroll-smooth px-4 pt-6 pb-4 relative"
-      >
-        {#if messages.length === 0}
-          <div class="text-center text-gray-500 mt-8" transition:fade>
-            <div class="flex flex-col items-center gap-4">
-              <div class="p-3 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
-                <Bot class="h-8 w-8 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div class="max-w-sm">
-                <h3 class="font-semibold mb-2">Welcome to Dr. Quester!</h3>
-                <p class="text-sm">
-                  Start a conversation by asking a question about your project.
-                  I'm here to help with your research.
-                </p>
+    <div class="flex h-full">
+      <!-- Chat History Sidebar -->
+      {#if showHistory}
+        <div class="w-80 border-r bg-background flex-shrink-0 p-4 overflow-y-auto" transition:slide={{ axis: 'x' }}>
+          <div class="space-y-4">
+            <div class="flex flex-col gap-2">
+              <h3 class="font-semibold text-lg flex items-center gap-2">
+                <Folder class="h-5 w-5" />
+                Chat History
+              </h3>
+              <div class="relative">
+                <Search
+                  class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+                />
+                <input
+                  type="text"
+                  placeholder="Search conversations..."
+                  bind:value={searchTerm}
+                  class="w-full pl-9 p-2 text-sm rounded-lg border-2 dark:border-dark-border bg-background focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:focus:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] transition-all duration-200"
+                />
               </div>
             </div>
-          </div>
-        {/if}
 
-        {#each messages.filter((msg) => msg.role === "user" || msg.role === "assistant") as message, i (i)}
-          {@const showTimestamp = shouldShowTimestamp(i)}
-          <div
-            class="message-enter message-enter-active"
-            animate:flip={{ duration: 300, easing: quintOut }}
-            transition:slide|local={{ duration: 200 }}
-          >
-            {#if showTimestamp}
-              <div
-                class="text-center text-xs text-gray-500 mb-2"
-                transition:fade
-              >
-                {formatTime(message.timestamp)}
+            {#if isLoadingHistory}
+              <div class="flex justify-center py-4">
+                <div
+                  class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"
+                ></div>
+              </div>
+            {:else if filteredSessions.length === 0}
+              <div class="text-center py-8">
+                <p class="text-sm text-muted-foreground">
+                  {searchTerm ? "No matching conversations" : "No previous conversations"}
+                </p>
+                <p class="text-xs text-muted-foreground mt-1">
+                  {searchTerm ? "Try adjusting your search terms" : "Start a new conversation to begin"}
+                </p>
+              </div>
+            {:else}
+              <div class="space-y-2">
+                {#each filteredSessions as session}
+                  <button
+                    transition:fade={{ duration: 200 }}
+                    class="w-full p-3 text-left rounded-lg border-2 dark:border-dark-border hover:bg-white dark:hover:bg-gray-800 transition-all duration-200 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] {currentChatSession ===
+                    session.chatSessionId
+                      ? 'bg-white dark:bg-gray-800 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]'
+                      : ''}"
+                    onclick={() => loadChatSession(session.chatSessionId)}
+                  >
+                    <div class="flex items-start gap-3">
+                      <div
+                        class="p-1.5 bg-blue-100 dark:bg-blue-900/50 rounded-lg flex-shrink-0"
+                      >
+                        <Bot class="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="text-sm font-medium truncate">
+                          {session.messages?.[0]?.content?.slice(0, 50) ||
+                            "Chat Session"}
+                          {(session.messages?.[0]?.content?.length ?? 0) > 50
+                            ? "..."
+                            : ""}
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">
+                          {formatDate(session.createdAt)}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                {/each}
+              </div>
+            {/if}
+          </div>
+        </div>
+      {/if}
+
+      <!-- Main Chat Area -->
+      <div class="flex-1 flex flex-col min-w-0">
+        <div class="flex-1 overflow-y-auto">
+          <div bind:this={chatContainer} class="p-4 pt-12 space-y-4">
+            {#if messages.length === 0}
+              <!-- Empty State with Suggestions -->
+              <div class="text-center py-4">
+                <div class="mb-6">
+                  <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mb-4">
+                    <Sparkles class="size-8 text-white" />
+                  </div>
+                  <h3 class="font-semibold text-lg mb-2">AI Research Assistant</h3>
+                  <p class="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
+                    Ask questions about your research, get insights from your literature, or explore patterns in your data. I'm here to help accelerate your research process.
+                  </p>
+                </div>
+
+                <!-- Research Question Suggestions -->
+                <div class="grid gap-3 max-w-2xl mx-auto">
+                  {#each researchSuggestions as suggestion}
+                    {@const Icon = suggestion.icon}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      class="text-left justify-start p-4 h-auto hover:bg-muted/50 group"
+                      onclick={() => selectSuggestion(suggestion.title)}
+                    >
+                      <div class="flex items-start gap-3 w-full">
+                        <div class="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                          <Icon class="size-4 text-primary" />
+                        </div>
+                        <div class="flex-1 text-left">
+                          <div class="font-medium text-sm">{suggestion.title}</div>
+                          <div class="text-xs text-muted-foreground mt-1">{suggestion.description}</div>
+                        </div>
+                      </div>
+                    </Button>
+                  {/each}
+                </div>
+              </div>
+            {:else}
+              <!-- Chat Messages -->
+              <div class="space-y-4">
+                {#each messages.filter((msg) => msg.role === "user" || msg.role === "assistant") as message, i (message.id || i)}
+                  {@const originalIndex = messages.findIndex(m => m === message)}
+                  {@const showTimestamp = shouldShowTimestamp(originalIndex)}
+                  {@const isUser = message.role === "user"}
+                  {@const isAssistant = message.role === "assistant"}
+                  {@const { content, sources } = isAssistant ? parseSourceCitations(message.content) : { content: message.content, sources: [] }}
+                  
+                  <div
+                    class="message-container"
+                    animate:flip={{ duration: 300, easing: quintOut }}
+                    transition:slide|local={{ duration: 200 }}
+                  >
+                    {#if showTimestamp}
+                      <div class="flex items-center justify-center my-4" transition:fade>
+                        <div class="flex items-center gap-2 px-3 py-1 bg-muted rounded-full text-xs text-muted-foreground">
+                          <Clock class="size-3" />
+                          {formatTimestamp(message.timestamp)}
+                        </div>
+                      </div>
+                    {/if}
+
+                    <div class="flex gap-3 {isUser ? 'flex-row-reverse' : 'flex-row'}">
+                      <!-- Avatar -->
+                      <div class="flex-shrink-0">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center {
+                          isUser 
+                            ? 'bg-primary text-primary-foreground' 
+                            : 'bg-gradient-to-br from-blue-500 to-purple-600 text-white'
+                        }">
+                          {#if isUser}
+                            <User class="size-4" />
+                          {:else}
+                            <Bot class="size-4" />
+                          {/if}
+                        </div>
+                      </div>
+
+                      <!-- Message Content -->
+                      <div class="flex-1 max-w-[85%] {isUser ? 'text-right' : 'text-left'}">
+                        <div class="inline-block rounded-2xl px-4 py-3 {
+                          isUser 
+                            ? 'bg-primary text-primary-foreground' 
+                            : 'bg-muted border border-border'
+                        } relative group">
+                          <!-- Message Content -->
+                          {#if isAssistant}
+                            <div class="prose-chat text-sm leading-relaxed">
+                              {@html renderMarkdown(content || message.content)}
+                            </div>
+                          {:else}
+                            <div class="whitespace-pre-wrap text-sm leading-relaxed">
+                              {content || message.content}
+                            </div>
+                          {/if}
+
+                          <!-- Streaming Indicator -->
+                          {#if message.streaming}
+                            <div class="flex items-center gap-1 mt-2 text-xs opacity-70" transition:fade>
+                              <div class="flex gap-1">
+                                <div class="w-1 h-1 bg-current rounded-full animate-pulse typing-dot"></div>
+                                <div class="w-1 h-1 bg-current rounded-full animate-pulse typing-dot" style="animation-delay: 0.2s;"></div>
+                                <div class="w-1 h-1 bg-current rounded-full animate-pulse typing-dot" style="animation-delay: 0.4s;"></div>
+                              </div>
+                              <span class="ml-2">AI is thinking...</span>
+                            </div>
+                          {/if}
+
+                          <!-- Enhanced Source Citations & Context -->
+                          {#if sources.length > 0 || (message.sources && message.sources.length > 0) || message.metadata?.tools_used}
+                            <div class="mt-3 pt-3 border-t border-border/50" transition:slide|local>
+                              <!-- Tools Used -->
+                              {#if message.metadata?.tools_used && message.metadata.tools_used.length > 0}
+                                <div class="mb-3">
+                                  <div class="text-xs text-muted-foreground mb-2 font-medium flex items-center gap-1">
+                                    <Sparkles class="size-3" />
+                                    AI Analysis Tools Used:
+                                  </div>
+                                  <div class="flex flex-wrap gap-2">
+                                    {#each message.metadata.tools_used as tool}
+                                      <Badge variant="secondary" class="text-xs">
+                                        {getFriendlyToolName(tool)}
+                                      </Badge>
+                                    {/each}
+                                  </div>
+                                </div>
+                              {/if}
+
+                              <!-- Referenced sources -->
+                              {#if message.sources && message.sources.length > 0}
+                                <div class="mb-2">
+                                  <div class="text-xs text-muted-foreground mb-2 font-medium">
+                                    Referenced sources:
+                                  </div>
+                                  <div class="space-y-2">
+                                    {#each message.sources as source}
+                                      {@const Icon = getResultIcon(source.type)}
+                                      <div class="border rounded-md p-2 bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer group">
+                                        <div class="flex items-start gap-2">
+                                          <Icon class="size-3 mt-0.5 text-muted-foreground" />
+                                          <div class="flex-1 min-w-0">
+                                            <div class="text-xs font-medium truncate">{source.title}</div>
+                                            {#if source.snippet}
+                                              <div class="text-xs text-muted-foreground mt-1 line-clamp-2">{source.snippet}</div>
+                                            {/if}
+                                            <div class="flex items-center gap-2 mt-1">
+                                              <Badge variant="outline" class="text-xs capitalize">
+                                                {source.type}
+                                              </Badge>
+                                              {#if source.similarity}
+                                                <span class="text-xs text-muted-foreground">
+                                                  {Math.round(source.similarity * 100)}% relevance
+                                                </span>
+                                              {/if}
+                                            </div>
+                                          </div>
+                                          <ExternalLink class="size-3 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground" />
+                                        </div>
+                                      </div>
+                                    {/each}
+                                  </div>
+                                </div>
+                              {/if}
+
+                              <!-- Search Context Indicator -->
+                              {#if message.sources && message.sources.length > 0}
+                                <div class="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                                  <Search class="size-3" />
+                                  <span>Used {message.sources.length} sources from your research</span>
+                                </div>
+                              {/if}
+
+                              <!-- Project Context Indicator -->
+                              {#if message.metadata?.project_context}
+                                <div class="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                                  <Folder class="size-3" />
+                                  <span>Using current project context</span>
+                                </div>
+                              {/if}
+                            </div>
+                          {/if}
+                        </div>
+
+                        <!-- Message Timestamp -->
+                        <div class="text-xs text-muted-foreground mt-1 {isUser ? 'text-right' : 'text-left'}">
+                          {formatTimestamp(message.timestamp)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                {/each}
               </div>
             {/if}
 
-            <div
-              class="flex flex-col {message.role === 'user'
-                ? 'items-end'
-                : 'items-start'}"
-            >
+            {#if isLoading}
+              <div class="flex items-center gap-2 text-gray-500" transition:fade>
+                <div
+                  class="flex items-center gap-2 border-2 dark:border-dark-border px-4 py-2 rounded-lg transition-all duration-200 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
+                >
+                  <div
+                    class="w-2 h-2 bg-current rounded-full loading-spinner"
+                  ></div>
+                  <div
+                    class="w-2 h-2 bg-current rounded-full loading-spinner"
+                  ></div>
+                  <div
+                    class="w-2 h-2 bg-current rounded-full loading-spinner"
+                  ></div>
+                </div>
+              </div>
+            {/if}
+
+            {#if error}
               <div
-                class="group max-w-[80%] rounded-lg p-4 border-2 {message.role ===
-                'user'
-                  ? 'border-blue-500 bg-blue-500 text-white'
-                  : ' dark:border-dark-border bg-background'} transition-all duration-200 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)]"
+                class="text-red-500 text-center p-4 rounded-lg border-2 border-red-500 bg-red-50 dark:bg-red-900/20"
+                transition:slide|local
               >
-                <div class="relative">
-                  <p class="whitespace-pre-wrap min-h-[1.5em]">
-                    {message.content}
-                  </p>
-                  {#if message.isStreaming}
-                    <div
-                      class="absolute -right-2 bottom-0 flex gap-1 items-center"
-                    >
-                      <div
-                        class="w-1 h-1 bg-current rounded-full typing-indicator"
-                      ></div>
-                      <div
-                        class="w-1 h-1 bg-current rounded-full typing-indicator"
-                      ></div>
-                      <div
-                        class="w-1 h-1 bg-current rounded-full typing-indicator"
-                      ></div>
+                {error}
+              </div>
+            {/if}
+          </div>
+        </div>
+
+        <!-- Input Area -->
+        <Card.Footer class="p-0 border-t border-border bg-card">
+          <div class="p-4 w-full">
+            <div class="relative">
+              <!-- Typing Indicator -->
+              {#if isTyping}
+                <div 
+                  class="absolute -top-8 left-0 text-xs text-muted-foreground"
+                  transition:fade={{ duration: 200 }}
+                >
+                  You are typing...
+                </div>
+              {/if}
+
+              <!-- Input Container -->
+              <div class="flex gap-3 items-center">
+                <!-- Text Area -->
+                <div class="flex-1 relative">
+                  <textarea
+                    bind:this={chatInputRef}
+                    bind:value={chatInput}
+                    onkeydown={handleKeydown}
+                    oninput={handleInput}
+                    placeholder="Ask questions about your research, get insights, or explore your data..."
+                    disabled={isLoading || isStreaming}
+                    rows="1"
+                    class="w-full resize-none rounded-lg border-2 dark:border-dark-border bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:focus:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] max-h-32 overflow-y-auto transition-all duration-200"
+                    style="field-sizing: content;"
+                  ></textarea>
+                  
+                  <!-- Character count for long messages -->
+                  {#if chatInput.length > 200}
+                    <div class="absolute -top-6 right-0 text-xs text-muted-foreground">
+                      {chatInput.length}/1000
                     </div>
                   {/if}
+                </div>
+
+                <!-- Send Button -->
+                <button
+                  onclick={handleSubmit}
+                  disabled={!chatInput.trim() || isLoading || isStreaming}
+                  class="flex items-center justify-center px-4 py-3 h-[44px] min-w-[44px] border-2 dark:border-dark-border bg-blue-500 text-white rounded-lg hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-none transition-all duration-200"
+                  aria-label="Send message"
+                >
+                  {#if isLoading || isStreaming}
+                    <Loader class="size-4 animate-spin" />
+                  {:else}
+                    <Send class="size-4" />
+                  {/if}
+                </button>
+              </div>
+
+              <!-- Input Help Text -->
+              <div class="flex items-center justify-between mt-2 text-xs text-muted-foreground">
+                <div class="flex items-center gap-4">
+                  <kbd class="inline-flex items-center gap-1 rounded border bg-muted px-1.5 py-0.5 font-mono">
+                    Enter
+                  </kbd>
+                  <span>to send</span>
+                  <kbd class="inline-flex items-center gap-1 rounded border bg-muted px-1.5 py-0.5 font-mono">
+                    Shift + Enter
+                  </kbd>
+                  <span>for new line</span>
                 </div>
               </div>
             </div>
           </div>
-        {/each}
-
-        {#if isLoading}
-          <div class="flex items-center gap-2 text-gray-500" transition:fade>
-            <div
-              class="flex items-center gap-2 border-2 dark:border-dark-border px-4 py-2 rounded-lg transition-all duration-200 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
-            >
-              <div
-                class="w-2 h-2 bg-current rounded-full loading-spinner"
-              ></div>
-              <div
-                class="w-2 h-2 bg-current rounded-full loading-spinner"
-              ></div>
-              <div
-                class="w-2 h-2 bg-current rounded-full loading-spinner"
-              ></div>
-            </div>
-          </div>
-        {/if}
-
-        {#if error}
-          <div
-            class="text-red-500 text-center p-4 rounded-lg border-2 border-red-500 bg-red-50 dark:bg-red-900/20"
-            transition:slide|local
-          >
-            {error}
-          </div>
-        {/if}
+        </Card.Footer>
       </div>
     </div>
-
-    {#if showHistory}
-      <div
-        class="absolute top-0 right-0 h-full w-80 p-4 border-l border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 overflow-y-auto z-10 shadow-[-4px_0_16px_rgba(0,0,0,0.1)] dark:shadow-[-4px_0_16px_rgba(0,0,0,0.2)]"
-        transition:slide|local={{ duration: 200 }}
-      >
-        <div class="space-y-4">
-          <div class="flex flex-col gap-2">
-            <h3 class="font-semibold text-lg flex items-center gap-2">
-              <Folder class="h-5 w-5" />
-              Chat History
-            </h3>
-            <div class="relative">
-              <Search
-                class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
-              />
-              <input
-                type="text"
-                placeholder="Search conversations..."
-                bind:value={searchTerm}
-                class="w-full pl-9 p-2 text-sm rounded-lg border-2 dark:border-dark-border bg-background focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:focus:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] transition-all duration-200"
-              />
-            </div>
-          </div>
-
-          {#if isLoadingHistory}
-            <div class="flex justify-center py-4">
-              <div
-                class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"
-              ></div>
-            </div>
-          {:else if filteredSessions.length === 0}
-            <div class="text-center text-gray-500 py-4">
-              {searchTerm
-                ? "No matching conversations"
-                : "No previous conversations"}
-            </div>
-          {:else}
-            <div class="space-y-2">
-              {#each filteredSessions as session}
-                <button
-                  transition:fade={{ duration: 200 }}
-                  class="w-full p-3 text-left rounded-lg border-2 dark:border-dark-border hover:bg-white dark:hover:bg-gray-800 transition-all duration-200 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] {currentChatSession ===
-                  session.chatSessionId
-                    ? 'bg-white dark:bg-gray-800 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]'
-                    : ''}"
-                  onclick={() => loadChatSession(session.chatSessionId)}
-                >
-                  <div class="flex items-start gap-3">
-                    <div
-                      class="p-1.5 bg-blue-100 dark:bg-blue-900/50 rounded-lg flex-shrink-0"
-                    >
-                      <MessageSquare
-                        class="h-4 w-4 text-blue-600 dark:text-blue-400"
-                      />
-                    </div>
-                    <div class="flex-1 min-w-0">
-                      <div class="text-sm font-medium truncate">
-                        {session.messages?.[0]?.content?.slice(0, 50) ||
-                          "Chat Session"}
-                        {(session.messages?.[0]?.content?.length ?? 0) > 50
-                          ? "..."
-                          : ""}
-                      </div>
-                      <div class="text-xs text-gray-500 mt-1">
-                        {formatDate(session.createdAt)}
-                      </div>
-                    </div>
-                    <ChevronRight class="h-4 w-4 text-gray-500 flex-shrink-0" />
-                  </div>
-                </button>
-              {/each}
-            </div>
-          {/if}
-        </div>
-      </div>
-    {/if}
   </div>
-
-  <Card.Footer class="p-0 border-t border-border bg-card">
-    <form
-      class="flex gap-2 p-4 w-full"
-      onsubmit={(e) => {
-        e.preventDefault();
-        sendMessage(e);
-      }}
-    >
-      <div class="flex-1 relative">
-        <input
-          type="text"
-          bind:value={inputMessage}
-          oninput={handleInput}
-          placeholder="Ask a question about your project..."
-          class="w-full p-2 pr-16 rounded-lg border-2 dark:border-dark-border bg-background focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:focus:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all duration-200"
-          disabled={isLoading}
-        />
-        {#if isTyping}
-          <div
-            class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500"
-            transition:fade
-          >
-            typing...
-          </div>
-        {/if}
-      </div>
-      <button
-        type="submit"
-        disabled={isLoading || !inputMessage.trim()}
-        class="px-4 py-2 border-2 dark:border-dark-border bg-blue-500 text-white rounded-lg hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-none transition-all duration-200"
-      >
-        Send
-      </button>
-    </form>
-  </Card.Footer>
 </Card.Root>
 
 <style lang="postcss">
-  /* Custom scrollbar */
+  /* Typing animation for dots */
+  @keyframes typingDot {
+    0%, 60%, 100% {
+      opacity: 0.3;
+      transform: scale(0.8);
+    }
+    30% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .typing-dot {
+    animation: typingDot 1.4s infinite ease-in-out;
+  }
+
+  .typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+
+  /* Message container animations */
+  .message-container {
+    opacity: 0;
+    animation: messageSlideIn 0.3s ease-out forwards;
+  }
+
+  @keyframes messageSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Auto-resize textarea */
+  textarea {
+    field-sizing: content;
+  }
+
+  /* Custom scrollbar for chat container */
   .overflow-y-auto {
     scrollbar-width: thin;
     scrollbar-color: theme(colors.gray.400) transparent;
@@ -659,62 +994,6 @@
     transform: translate(-2px, -2px);
   }
 
-  /* Message animations */
-  .message-enter {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  .message-enter-active {
-    opacity: 1;
-    transform: translateY(0);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* Sources drawer animations */
-  :global(.sources-drawer-enter) {
-    transform: translateX(100%);
-  }
-
-  :global(.sources-drawer-enter-active) {
-    transform: translateX(0);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  :global(.sources-drawer-exit) {
-    transform: translateX(0);
-  }
-
-  :global(.sources-drawer-exit-active) {
-    transform: translateX(100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* Typing indicator animation */
-  @keyframes blink {
-    0%,
-    100% {
-      opacity: 0.2;
-      transform: scale(0.8);
-    }
-    50% {
-      opacity: 0.8;
-      transform: scale(1);
-    }
-  }
-
-  .typing-indicator {
-    animation: blink 1s infinite;
-  }
-
-  .typing-indicator:nth-child(2) {
-    animation-delay: 0.2s;
-  }
-
-  .typing-indicator:nth-child(3) {
-    animation-delay: 0.4s;
-  }
-
   /* Loading spinner animation */
   @keyframes spin {
     to {
@@ -724,5 +1003,18 @@
 
   .loading-spinner {
     animation: spin 1s linear infinite;
+  }
+
+  /* Focus styles for accessibility */
+  textarea:focus,
+  button:focus {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /* Message bubble hover effects */
+  .message-container:hover .group {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 </style>

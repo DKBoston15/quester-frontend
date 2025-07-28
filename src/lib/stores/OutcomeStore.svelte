@@ -1334,7 +1334,7 @@
 
       try {
         // If a template is specified, find and apply it
-        if (templateName) {
+        if (templateName && templateName !== "") {
           const templateNameStr = Array.isArray(templateName)
             ? templateName[0]
             : templateName;
@@ -1348,8 +1348,9 @@
         } else if (data.type === "LINK") {
           // For LINK type, ensure content is passed through
           data.content = data.content || "";
-        } else if (data.type) {
-          // If no template name but type is specified, use the first template of that type
+        } else if (data.type && templateName === undefined) {
+          // Only apply default template if no template parameter was passed (undefined)
+          // If templateName is "" (empty string), user explicitly chose no template
           const defaultTemplate = outcomeTemplates.find(
             (t) => t.type === data.type
           );

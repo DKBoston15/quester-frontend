@@ -1,5 +1,6 @@
 <script lang="ts" module>
   import { API_BASE_URL } from "$lib/config";
+  import { setGlobalLogoutHandler, api } from "../services/api-client";
   import type { Organization, User } from "../types/auth";
 
   let user: User | null = $state(null);
@@ -63,19 +64,23 @@
       isLoading = false;
     },
 
+    // Global logout handler for API client - called automatically on 401/403 errors
+    handleGlobalLogout() {
+      // Clear user state immediately to prevent half-logout
+      this.clearUser();
+
+      // Redirect to login page
+      window.location.href = "/";
+    },
+
     async fetchUserOrganizations() {
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/organizations/by-user?userId=${user?.id}`,
-          {
-            credentials: "include",
-          }
+        // Use centralized API client with skip auth check to prevent loops
+        const { data } = await api.get(
+          `/organizations/by-user?userId=${user?.id}`,
+          { skipAuthCheck: true }
         );
-        if (response.ok) {
-          const { data } = await response.json();
-          return data as Organization[]; // Add type assertion here
-        }
-        return null;
+        return data as Organization[];
       } catch (error) {
         console.error("Failed to fetch organizations:", error);
         return null;
@@ -84,29 +89,23 @@
 
     async verifySession() {
       try {
-        const response = await fetch(`${API_BASE_URL}/auth/verify`, {
-          credentials: "include",
-        });
-        if (response.ok) {
-          const data = await response.json();
-          if (data?.user) {
-            // First set the user
-            user = data.user;
+        // Use centralized API client with skip auth check to prevent loops
+        const data = await api.get(`/auth/verify`, { skipAuthCheck: true });
+        if (data?.user) {
+          // First set the user
+          user = data.user;
 
-            // Then load organizations
-            const orgs = await this.fetchUserOrganizations();
-            if (orgs && orgs.length > 0) {
-              // Load the last selected org from localStorage if available
-              const lastOrgId = localStorage.getItem("lastSelectedOrgId");
-              const lastOrg = orgs.find(
-                (org: Organization) => org.id === lastOrgId
-              );
-              await this.setCurrentOrganization(lastOrg || orgs[0]);
-            } else {
-              await this.setCurrentOrganization(null);
-            }
+          // Then load organizations
+          const orgs = await this.fetchUserOrganizations();
+          if (orgs && orgs.length > 0) {
+            // Load the last selected org from localStorage if available
+            const lastOrgId = localStorage.getItem("lastSelectedOrgId");
+            const lastOrg = orgs.find(
+              (org: Organization) => org.id === lastOrgId
+            );
+            await this.setCurrentOrganization(lastOrg || orgs[0]);
           } else {
-            this.clearUser();
+            await this.setCurrentOrganization(null);
           }
         } else {
           this.clearUser();
@@ -123,32 +122,14 @@
       window.location.href = `${API_BASE_URL}/auth/redirect`;
     },
 
-    // ===== START: Replace existing logout() function =====
-    // Inside AuthStore.svelte auth = { ... }
     async logout() {
       try {
-        const response = await fetch(`${API_BASE_URL}/auth/logout`, {
-          method: "POST",
-          credentials: "include", // Crucial for sending cookies locally too
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        });
-
-        // Try to read response body regardless of status for debugging
-        let responseBody = null;
-        try {
-          responseBody = await response.json();
-        } catch (e) {
-          console.log(
-            "LOCAL LOGOUT: Could not parse response body as JSON or no body."
-          );
-        }
+        // Use centralized API client with skip auth check since we're logging out
+        await api.post(`/auth/logout`, {}, { skipAuthCheck: true });
       } catch (error) {
-        console.error("LOCAL LOGOUT: Network error during fetch:", error);
+        console.error("LOCAL LOGOUT: Network error during logout:", error);
       } finally {
-        this.clearUser(); // Should see "Local auth state cleared." log from this function
+        this.clearUser(); // Clear auth state regardless of API call result
         window.location.href = "/";
       }
     },
@@ -157,20 +138,8 @@
 
     async updateUser(userData: Partial<User>) {
       try {
-        const response = await fetch(`${API_BASE_URL}/users/${user?.id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify(userData),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to update user");
-        }
-
-        const updatedUser = await response.json();
+        // Use centralized API client which handles auth errors automatically
+        const updatedUser = await api.put(`/users/${user?.id}`, userData);
         await this.setUser({ ...user!, ...updatedUser });
         return { success: true, user: updatedUser };
       } catch (error) {
@@ -179,4 +148,8 @@
       }
     },
   };
+
+  // Register the global logout handler with the API client
+  // This ensures all API calls will trigger logout on 401/403 errors
+  setGlobalLogoutHandler(() => auth.handleGlobalLogout());
 </script>

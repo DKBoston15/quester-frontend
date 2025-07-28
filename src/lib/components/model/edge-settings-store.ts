@@ -15,7 +15,7 @@ export interface EdgeSettings {
 const defaultSettings: EdgeSettings = {
   type: "bezier",
   color: "#374151",
-  width: 2,
+  width: 3,
   animated: false,
   markerStart: false,
   markerEnd: true,

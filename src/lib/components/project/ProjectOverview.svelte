@@ -17,7 +17,6 @@
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
   import { toast } from "svelte-sonner";
   import { API_BASE_URL } from "$lib/config";
-  import GrantDetails from "./GrantDetails.svelte";
 
   const projectStatusOptions = [
     { value: "Planning", label: "Planning" },
@@ -359,7 +358,4 @@
       </CardFooter>
     {/if}
   </Card>
-
-  <!-- Grant Details Section -->
-  <GrantDetails />
 </div>

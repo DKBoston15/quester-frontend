@@ -63,20 +63,35 @@
   };
 
   const downloadImage = async () => {
-    const imageWidth = 1024;
-    const imageHeight = 768;
     const nodesBounds = getNodesBounds($nodes);
+    
+    // Add padding around the content (20% on each side)
+    const padding = 100;
+    const contentWidth = nodesBounds.width + padding * 2;
+    const contentHeight = nodesBounds.height + padding * 2;
+    
+    // Ensure minimum dimensions for very small models
+    const minWidth = 400;
+    const minHeight = 300;
+    const imageWidth = Math.max(contentWidth, minWidth);
+    const imageHeight = Math.max(contentHeight, minHeight);
+    
+    // Calculate viewport to fit all content with padding
     const viewport = getViewportForBounds(
-      nodesBounds,
+      {
+        x: nodesBounds.x - padding,
+        y: nodesBounds.y - padding,
+        width: contentWidth,
+        height: contentHeight,
+      },
       imageWidth,
       imageHeight,
-      0.5,
-      2.0,
-      0.2
+      0.1, // Lower min zoom to accommodate larger models
+      3.0, // Higher max zoom for better quality
+      0.05 // Smaller padding since we already added manual padding
     );
-    const viewportDomNode = document.querySelector<HTMLElement>(
-      ".svelte-flow__viewport"
-    );
+    
+    const viewportDomNode = document.querySelector<HTMLElement>(".svelte-flow__viewport");
 
     if (viewport && viewportDomNode) {
       try {
@@ -89,10 +104,22 @@
             height: `${imageHeight}px`,
             transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
           },
+          pixelRatio: 2, // Higher resolution for better quality
+          // Filter out UI elements that shouldn't be in export
+          filter: (node: Element) => {
+            if (node.id === 'flow-toolbar' || 
+                node.classList?.contains('svelte-flow__controls') ||
+                node.classList?.contains('svelte-flow__minimap') ||
+                node.id === 'edge-customization-panel') {
+              return false;
+            }
+            return true;
+          },
         });
 
+        const fileName = modelName ? `${modelName.replace(/[^a-zA-Z0-9]/g, '-')}-model.png` : "flow-diagram.png";
         const link = document.createElement("a");
-        link.download = "flow-diagram.png";
+        link.download = fileName;
         link.href = dataUrl;
         link.click();
       } catch (error) {
@@ -103,6 +130,7 @@
 </script>
 
 <div
+  id="flow-toolbar"
   class="inline-block p-3 backdrop-blur-md bg-white/80 dark:bg-slate-800/90 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 transition-all absolute top-4 left-4 z-10"
 >
   <div class="flex flex-col gap-4">
@@ -130,8 +158,9 @@
       <span class="text-xs font-medium text-gray-700 dark:text-gray-300"
         >Add Nodes</span
       >
-      <div class="flex gap-2">
+      <div class="flex gap-2 flex-wrap">
         <button
+          id="add-rectangle-node"
           onclick={() => addNode("ResizableNode")}
           class="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-md bg-white dark:bg-slate-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors"
         >
@@ -139,11 +168,20 @@
           Rectangle
         </button>
         <button
+          id="add-circle-node"
           onclick={() => addNode("CircleNode")}
           class="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-md bg-white dark:bg-slate-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors"
         >
           <span class="w-4 h-4 border-2 border-current rounded-full"></span>
           Circle
+        </button>
+        <button
+          id="add-ellipse-node"
+          onclick={() => addNode("EllipseNode")}
+          class="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-md bg-white dark:bg-slate-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors"
+        >
+          <span class="w-5 h-3 border-2 border-current rounded-full"></span>
+          Ellipse
         </button>
       </div>
     </div>

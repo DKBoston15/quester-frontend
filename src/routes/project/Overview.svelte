@@ -11,7 +11,11 @@
   import { Button } from "$lib/components/ui/button";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
-  import { GraduationCap } from "lucide-svelte";
+  import { GraduationCap, Plus } from "lucide-svelte";
+  import { customEventsStore } from "$lib/stores/custom-events-store.svelte";
+  import CustomEventForm from "$lib/components/custom-ui/custom-events/CustomEventForm.svelte";
+  import GrantDetails from "$lib/components/project/GrantDetails.svelte";
+  import * as Tooltip from "$lib/components/ui/tooltip";
 
   const driverObj = driver({
     showProgress: true,
@@ -107,10 +111,29 @@
       <h1 class="text-3xl font-bold ml-1" id="project-overview">
         Project Overview
       </h1>
-      <Button variant="outline" size="icon" onclick={() => driverObj.drive()}>
-        <GraduationCap class="h-4 w-4" />
-        <span class="sr-only">Learn about Project Overview</span>
-      </Button>
+      <div class="flex gap-2">
+        <Button
+          variant="outline"
+          onclick={() => customEventsStore.openCreateForm()}
+          class="h-10 px-3"
+        >
+          <Plus class="h-4 w-4 mr-2" />
+          Add Event
+        </Button>
+        <Tooltip.Provider>
+          <Tooltip.Root>
+            <Tooltip.Trigger>
+              <Button variant="outline" size="icon" onclick={() => driverObj.drive()}>
+                <GraduationCap class="h-4 w-4" />
+                <span class="sr-only">Learn about Project Overview</span>
+              </Button>
+            </Tooltip.Trigger>
+            <Tooltip.Content>
+              <p>Tutorial</p>
+            </Tooltip.Content>
+          </Tooltip.Root>
+        </Tooltip.Provider>
+      </div>
     </div>
     <p class="text-muted-foreground mt-2 mb-6 ml-1">
       Get a high-level view of your project's status and key components.
@@ -141,8 +164,9 @@
         <div class="w-full min-w-0" id="research-designs-card">
           <ResearchDesigns />
         </div>
-        <div class="w-full min-w-0" id="research-products-card">
-          <ResearchProducts />
+
+        <div class="w-full min-w-0" id="grant-details-card">
+          <GrantDetails />
         </div>
       </div>
 
@@ -154,7 +178,13 @@
         <div class="w-full min-w-0" id="next-best-actions-card">
           <NextBestActions />
         </div>
+        <div class="w-full min-w-0" id="research-products-card">
+          <ResearchProducts />
+        </div>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Event Form Modal -->
+<CustomEventForm />

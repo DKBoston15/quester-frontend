@@ -4,14 +4,16 @@
   import * as Accordion from "$lib/components/ui/accordion";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { grantStore } from "$lib/stores/GrantStore.svelte";
   import { AlertCircle, CheckCircle2, Sparkles } from "lucide-svelte";
+  import EmptyState from "$lib/components/ui/empty-state/EmptyState.svelte";
   import { navigate } from "svelte-routing";
   import { slide } from "svelte/transition";
   import { quintOut } from "svelte/easing";
   import type { Project } from "$lib/types/auth";
 
   type InsightRule = {
-    field: keyof Project;
+    field: keyof Project | string;
     severity: "error" | "warning";
     message: string;
     description: string;
@@ -37,32 +39,39 @@
     {
       field: "purpose",
       severity: "error",
-      message: "Missing Project Description",
+      message: "Missing Purpose Statement",
       description:
-        "Define your project's purpose and scope to help guide your research and keep your team aligned.",
+        "Create a purpose statement to help guide your research and keep your team aligned.",
       // action: {
       //   label: "Add Description",
       //   route: "project_settings",
       // },
     },
     {
-      field: "financialInstitution",
+      field: "grants",
       severity: "warning",
-      message: "Financial Institution Not Set",
+      message: "Missing Grant Information",
       description:
-        "Specify the financial institution supporting this research.",
+        "Add grant information to track funding sources and compliance requirements.",
+      checkFn: (project) => grantStore.grants.length === 0,
       // action: {
-      //   label: "Add Institution",
+      //   label: "Add Grant Info",
       //   route: "project_settings",
       // },
     },
     {
-      field: "financialSupport",
+      field: "researchDesign",
       severity: "warning",
-      message: "Financial Support Amount Missing",
-      description: "Record the financial support amount for budget tracking.",
+      message: "Missing Project Designs",
+      description:
+        "Add design concepts and visual representations to communicate your project effectively.",
+      checkFn: (project) =>
+        !project.researchDesign?.trim() &&
+        !project.samplingDesign?.trim() &&
+        !project.measurementDesign?.trim() &&
+        !project.analyticDesign?.trim(),
       // action: {
-      //   label: "Add Support Amount",
+      //   label: "Add Designs",
       //   route: "project_settings",
       // },
     },
@@ -101,7 +110,7 @@
       if (rule.checkFn) {
         return rule.checkFn(project);
       }
-      const fieldValue = project[rule.field];
+      const fieldValue = project[rule.field as keyof Project];
       return (
         !fieldValue ||
         (typeof fieldValue === "string" && fieldValue.trim() === "")
@@ -118,7 +127,7 @@
       if (rule.checkFn) {
         return !rule.checkFn(project);
       }
-      const fieldValue = project[rule.field];
+      const fieldValue = project[rule.field as keyof Project];
       return (
         fieldValue &&
         (typeof fieldValue !== "string" || fieldValue.trim() !== "")
@@ -131,6 +140,13 @@
     if (!projectStore.currentProject?.id) return;
     navigate(`/project/${projectStore.currentProject.id}/${route}`);
   }
+
+  $effect(() => {
+    // Load grants when project changes
+    if (projectStore.currentProject?.id) {
+      grantStore.loadGrants(projectStore.currentProject.id);
+    }
+  });
 
   $effect(() => {
     insights = checkInsights(projectStore.currentProject, insightRules);
@@ -322,15 +338,14 @@
               {/if}
             </div>
           {:else}
-            <div
-              class="text-center py-6"
-              transition:slide={{ duration: 300, easing: quintOut }}
-            >
-              <CheckCircle2 class="h-12 w-12 text-green-500 mx-auto mb-4" />
-              <p class=" text-lg">All project setup tasks completed!</p>
-              <p class="text-sm text-muted-foreground mt-2">
-                Your project is well-configured and ready for research.
-              </p>
+            <div transition:slide={{ duration: 300, easing: quintOut }}>
+              <EmptyState
+                title="All project setup tasks completed!"
+                description="Your project is well-configured and ready for research."
+                variant="completion"
+                icon={CheckCircle2}
+                height="h-auto"
+              />
             </div>
           {/if}
         </Card.Content>

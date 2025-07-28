@@ -15,6 +15,9 @@
     Info,
     UserCog,
     GraduationCap,
+    Mail,
+    X,
+    Building,
   } from "lucide-svelte";
   import {
     Card,
@@ -28,23 +31,31 @@
     AlertTitle,
     AlertDescription,
   } from "$lib/components/ui/alert";
+  import { Progress } from "$lib/components/ui/progress";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import AppSidebar from "$lib/components/AppSidebar.svelte";
   import type { User } from "$lib/types/auth";
   import { Badge } from "$lib/components/ui/badge";
+  import * as Tooltip from "$lib/components/ui/tooltip";
   import ResourceSelector from "$lib/components/ResourceSelector.svelte";
   import ResourceUserManager from "$lib/components/ResourceUserManager.svelte";
   import TeamMembersList from "$lib/components/TeamMembersList.svelte";
   import InvitationManager from "$lib/components/InvitationManager.svelte";
   import RoleManager from "$lib/components/RoleManager.svelte";
+  import TeamSizeIndicator from "$lib/components/TeamSizeIndicator/TeamSizeIndicator.svelte";
   import { API_BASE_URL } from "$lib/config";
   import { driver, type DriveStep } from "driver.js";
   import "driver.js/dist/driver.css";
+  import { toast } from "svelte-sonner";
+  import { slideTransition, fadeTransition, scaleTransition } from "$lib/utils/animations";
+  import { fly, fade, scale } from "svelte/transition";
 
   // Reactive state
   let activeTab = $state("members");
   let showRoleManager = $state(false);
   let selectedUserId = $state<string | null>(null);
+  let showInviteModal = $state(false);
+  let invitationManagerRef = $state<any>(null);
   let resourceName = $derived(getResourceName());
   let resourceIcon = $derived(getResourceIcon());
   let isLoading = $state(true);
@@ -66,13 +77,20 @@
   });
   let checkingSubscription = $state(false);
 
-  // Driver.js instance
+  // Driver.js instance and tour state
   let driveSteps: DriveStep[] = $state([]);
+  let showTourPrompt = $state(false);
+  let tourCompleted = $state(false);
 
   const driverObj = driver({
     showProgress: true,
+    showButtons: ['next', 'previous', 'close'],
     popoverClass: "quester-driver-theme",
     steps: driveSteps,
+    onDestroyed: () => {
+      tourCompleted = true;
+      toast.success("Tour completed! You're ready to manage your teams.");
+    },
   });
 
   // Load data on mount
@@ -101,123 +119,107 @@
         );
       }
 
-      // Update driver steps dynamically based on conditional rendering
-      await Promise.resolve();
-
-      // Build steps array dynamically
-      const steps: DriveStep[] = [
-        {
-          element: "#team-management-header",
-          popover: {
-            title: "Welcome to Team Management",
-            description:
-              "This is where you manage access and roles for your organizations, departments, and projects. Let's explore!",
-            side: "bottom",
-            align: "start",
-          },
-        },
-        {
-          element: "#resource-selector-card",
-          popover: {
-            title: "Select Your Team Context",
-            description:
-              "Use this dropdown to choose which Organization, Department, or Project team you want to manage. Your selection here updates the members and options below.",
-            side: "bottom",
-            align: "start",
-          },
-        },
-        {
-          element: "#team-tabs",
-          popover: {
-            title: "Manage Your Team",
-            description:
-              "Use these tabs to navigate between viewing members, adding users (for Departments/Projects), and managing invitations (for Organizations).",
-            side: "bottom",
-            align: "start",
-          },
-        },
-        {
-          element: "#team-members-tab-trigger",
-          popover: {
-            title: "View Team Members",
-            description:
-              "See who is currently part of this team. You can view their roles and, if you have permission, manage roles or remove members.",
-            side: "bottom",
-            align: "start",
-          },
-        },
-      ];
-
-      if (canShowAddUsersTab()) {
-        steps.push({
-          element: "#add-users-tab-trigger",
-          popover: {
-            title: "Add Existing Users",
-            description:
-              "For Departments and Projects, you can add users who are already part of the parent Organization directly to this team.",
-            side: "bottom",
-            align: "start",
-          },
-        });
+      // Check if user should see tour prompt (first time or no resource selected)
+      const hasSeenTour = localStorage.getItem('teamManagement-tour-completed');
+      if (!hasSeenTour && !teamManagement.selectedResourceId) {
+        showTourPrompt = true;
       }
 
-      if (showInvitationsTab) {
-        steps.push({
-          element: "#invitations-tab-trigger",
-          popover: {
-            title: "Manage Invitations",
-            description:
-              "For Organizations, invite new users via email and manage pending invitations here. Note: Invitations might be limited by your subscription plan.",
-            side: "bottom",
-            align: "start",
-          },
-        });
-      }
-
-      steps.push({
-        element: "#refresh-button",
-        popover: {
-          title: "Refresh Data",
-          description:
-            "Click here anytime to load the latest team information.",
-          side: "left",
-          align: "start",
-        },
-      });
-
-      if (canJoinResource()) {
-        steps.push({
-          element: "#join-button",
-          popover: {
-            title: "Join This Team",
-            description:
-              "If you have organization privileges (like Admin/Owner) but aren't a member of this specific Department or Project, you can add yourself here.",
-            side: "left",
-            align: "start",
-          },
-        });
-      }
-
-      steps.push({
-        element: ".container",
-        popover: {
-          title: "Ready to Collaborate?",
-          description:
-            "Use these tools to build and manage your research teams effectively. Select a resource to begin!",
-          side: "top",
-          align: "center",
-        },
-      });
-
-      // Update the state variable and the driver instance
-      driveSteps = steps;
-      driverObj.setSteps(driveSteps);
+      // Build simplified tour steps
+      buildTourSteps();
     } catch (error) {
       console.error("Error initializing team management:", error);
     } finally {
       isLoading = false;
     }
   });
+
+  // Rebuild tour when resource selection changes (with guard to prevent infinite loops)
+  let lastResourceId = $state<string | null>(null);
+  $effect(() => {
+    const currentResourceId = teamManagement.selectedResourceId;
+    if (currentResourceId && !isLoading && currentResourceId !== lastResourceId) {
+      lastResourceId = currentResourceId;
+      buildTourSteps();
+    }
+  });
+
+  // Build contextual tour steps based on current state
+  function buildTourSteps() {
+    const steps: DriveStep[] = [];
+
+    // Always start with the resource navigation
+    steps.push({
+      element: ".w-80.border-r",
+      popover: {
+        title: "Choose Your Team",
+        description: "Select an organization, department, or project from the sidebar to start managing its team members.",
+        side: "right",
+        align: "start",
+      },
+    });
+
+    // If a resource is selected, show relevant next steps
+    if (teamManagement.selectedResourceId) {
+      steps.push({
+        element: "[data-tour='team-members']",
+        popover: {
+          title: "Your Team Members",
+          description: "Here you can see all team members, their roles, and manage their access permissions.",
+          side: "top",
+          align: "start",
+        },
+      });
+
+      // Context-specific steps
+      if (showInvitationsTab) {
+        steps.push({
+          element: "[data-tour='invitations']",
+          popover: {
+            title: "Invite New Members",
+            description: "Send email invitations to add new people to your organization.",
+            side: "top",
+            align: "start",
+          },
+        });
+      }
+
+      if (canShowAddUsersTab()) {
+        steps.push({
+          element: "[data-tour='add-users']",
+          popover: {
+            title: "Add Existing Users",
+            description: "Add people who are already in your organization to this specific project or department.",
+            side: "top",
+            align: "start",
+          },
+        });
+      }
+    }
+
+    driveSteps = steps;
+    driverObj.setSteps(driveSteps);
+  }
+
+  // Start tour function
+  function startTour() {
+    showTourPrompt = false;
+    buildTourSteps();
+    driverObj.drive();
+  }
+
+  // Dismiss tour function
+  function dismissTour() {
+    showTourPrompt = false;
+    localStorage.setItem('teamManagement-tour-completed', 'true');
+    toast.info("You can always restart the tour from the help menu");
+  }
+
+  // Public function to restart tour
+  function restartTour() {
+    buildTourSteps();
+    driverObj.drive();
+  }
 
   // Add function to check subscription limits
   async function checkSubscriptionLimits() {
@@ -429,13 +431,16 @@
       if (success) {
         // Refresh the data to show the updated team
         refreshData();
+        toast.success(`Successfully joined ${teamManagement.selectedResourceType}`);
       } else {
-        selfAssignError =
-          teamManagement.error || "Failed to join. Please try again.";
+        const errorMessage = teamManagement.error || "Failed to join. Please try again.";
+        toast.error(errorMessage);
+        selfAssignError = errorMessage;
       }
     } catch (err) {
-      selfAssignError =
-        err instanceof Error ? err.message : "An unexpected error occurred";
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
+      toast.error(errorMessage);
+      selfAssignError = errorMessage;
     } finally {
       isSelfAssigning = false;
     }
@@ -583,111 +588,164 @@
     <main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-background">
       {#if isLoading}
         <div class="flex items-center justify-center h-full">
-          <div
-            class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"
-          ></div>
-          <p class="ml-4 text-muted-foreground">Loading team management...</p>
+          <div class="text-center space-y-4">
+            <div
+              class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"
+            ></div>
+            <div class="space-y-2">
+              <p class="text-lg font-medium">Setting up Team Management</p>
+              <p class="text-sm text-muted-foreground">Loading your resources and permissions...</p>
+            </div>
+          </div>
         </div>
       {:else}
-        <div class="container mx-auto py-6 px-4">
-          <!-- Header with Resource Selector -->
-          <div class="mb-8">
-            <div
-              class="flex justify-between items-center"
-              id="team-management-header"
-            >
-              <div class="flex items-center gap-2">
-                <h1 class="text-3xl font-bold">Team Management</h1>
-                {#if teamManagement.isLoading}
-                  <RefreshCw class="h-5 w-5 animate-spin" />
-                {/if}
+        <div class="flex h-full">
+          <!-- Left Sidebar - Resource Navigator -->
+          <div class="w-80 border-r bg-card p-6 overflow-y-auto custom-scrollbar">
+            <div class="mb-6">
+              <div class="flex items-center gap-2 mb-2">
+                <h2 class="text-xl font-semibold">Team Management</h2>
+                <Tooltip.Root>
+                  <Tooltip.Trigger>
+                    <Info class="h-4 w-4 text-muted-foreground" />
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>
+                    <p class="text-sm max-w-xs">
+                      Select a resource to manage its team members, roles, and permissions.
+                    </p>
+                  </Tooltip.Content>
+                </Tooltip.Root>
               </div>
-
-              <div class="flex items-center gap-2">
-                <!-- Driver Tour Button -->
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onclick={() => driverObj.drive()}
-                >
-                  <GraduationCap class="h-4 w-4" />
-                  <span class="sr-only">Learn about Team Management</span>
-                </Button>
-
-                {#if canJoinResource()}
-                  <Button
-                    id="join-button"
-                    variant="outline"
-                    onclick={handleSelfAssign}
-                    disabled={isSelfAssigning}
-                  >
-                    {#if isSelfAssigning}
-                      <div
-                        class="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-current"
-                      ></div>
-                      Joining...
-                    {:else}
-                      <UserPlus class="h-4 w-4 mr-2" />
-                      Join {teamManagement.selectedResourceType === "project"
-                        ? "Project"
-                        : "Department"}
-                    {/if}
-                  </Button>
-                {/if}
-                <Button
-                  id="refresh-button"
-                  variant="outline"
-                  onclick={refreshData}
-                >
-                  <RefreshCw class="h-4 w-4 mr-2" />
-                  Refresh
-                </Button>
-              </div>
+              <p class="text-sm text-muted-foreground">
+                Select a resource to manage its team
+              </p>
             </div>
-            <p class="text-muted-foreground">
-              Manage team members, roles, and permissions for your organization.
-            </p>
-          </div>
 
-          <!-- Resource Selector -->
-          {#if !teamManagement.isLoading && teamManagement.userResources}
-            <Card class="mb-6" id="resource-selector-card">
-              <CardHeader>
-                <CardTitle class="flex items-center gap-2">
-                  <svelte:component this={resourceIcon} class="h-5 w-5" />
-                  {resourceName}
-                </CardTitle>
-                {#if hasElevatedPermissions}
-                  <div class="flex items-center mt-1 mb-1">
-                    <Badge
-                      variant="outline"
-                      class="bg-primary/10 text-primary border-primary/25"
-                    >
-                      <Info class="h-3 w-3 mr-1" />
-                      Access via Organization Privileges
-                    </Badge>
-                    <span class="text-xs text-muted-foreground ml-2">
-                      You can manage this project due to your organization role
-                    </span>
+            <!-- Resource Navigation Tree -->
+            <div class="space-y-2">
+              {#if teamManagement.userResources}
+                <!-- Organizations -->
+                {#if teamManagement.userResources.organizations && teamManagement.userResources.organizations.length > 0}
+                  <div class="space-y-1">
+                    <h3 class="text-sm font-medium text-muted-foreground px-2 py-1">Organizations</h3>
+                    {#each teamManagement.userResources.organizations as org}
+                      <button
+                        class="w-full text-left px-2 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-all duration-200 hover:translate-x-1 {teamManagement.selectedResourceType === 'organization' && teamManagement.selectedResourceId === org.id ? 'bg-accent text-accent-foreground scale-105' : ''}"
+                        onclick={() => teamManagement.setSelectedResource('organization', org.id)}
+                      >
+                        <div class="flex items-center gap-2">
+                          <Building class="h-4 w-4" />
+                          <span class="font-medium">{org.name}</span>
+                        </div>
+                      </button>
+                    {/each}
                   </div>
                 {/if}
-                <CardDescription>
+
+                <!-- Departments -->
+                {#if teamManagement.userResources.departments && teamManagement.userResources.departments.length > 0}
+                  <div class="space-y-1">
+                    <h3 class="text-sm font-medium text-muted-foreground px-2 py-1">Departments</h3>
+                    {#each teamManagement.userResources.departments as dept}
+                      <button
+                        class="w-full text-left px-2 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-all duration-200 hover:translate-x-1 {teamManagement.selectedResourceType === 'department' && teamManagement.selectedResourceId === dept.id ? 'bg-accent text-accent-foreground scale-105' : ''}"
+                        onclick={() => teamManagement.setSelectedResource('department', dept.id)}
+                      >
+                        <div class="flex items-center gap-2">
+                          <FolderKanban class="h-4 w-4" />
+                          <span class="font-medium">{dept.name}</span>
+                        </div>
+                      </button>
+                    {/each}
+                  </div>
+                {/if}
+
+                <!-- Projects -->
+                {#if teamManagement.userResources.projects && teamManagement.userResources.projects.length > 0}
+                  <div class="space-y-1">
+                    <h3 class="text-sm font-medium text-muted-foreground px-2 py-1">Projects</h3>
+                    {#each teamManagement.userResources.projects as project}
+                      <button
+                        class="w-full text-left px-2 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-all duration-200 hover:translate-x-1 {teamManagement.selectedResourceType === 'project' && teamManagement.selectedResourceId === project.id ? 'bg-accent text-accent-foreground scale-105' : ''}"
+                        onclick={() => teamManagement.setSelectedResource('project', project.id)}
+                      >
+                        <div class="flex items-center gap-2">
+                          <FileText class="h-4 w-4" />
+                          <span class="font-medium">{project.name}</span>
+                        </div>
+                      </button>
+                    {/each}
+                  </div>
+                {/if}
+              {/if}
+            </div>
+          </div>
+
+          <!-- Right Content Area -->
+          <div class="flex-1 p-6 overflow-y-auto">
+            {#if !teamManagement.selectedResourceId}
+              <!-- Empty State -->
+              <div class="flex items-center justify-center h-full">
+                <div class="text-center" in:fly={{ y: 20, duration: 400, delay: 100 }}>
+                  <Users class="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 class="text-lg font-medium mb-2">Select a Resource</h3>
+                  <p class="text-muted-foreground max-w-md">
+                    Choose an organization, department, or project from the sidebar to manage its team members and permissions.
+                  </p>
+                </div>
+              </div>
+            {:else}
+              <!-- Resource Header -->
+              <div class="mb-6" in:fly={{ y: -20, duration: 300 }}>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <svelte:component this={resourceIcon} class="h-6 w-6" />
+                    <h1 class="text-2xl font-bold">{resourceName}</h1>
+                    {#if hasElevatedPermissions}
+                      <Badge variant="outline" class="bg-primary/10 text-primary border-primary/25">
+                        <Info class="h-3 w-3 mr-1" />
+                        Organization Access
+                      </Badge>
+                    {/if}
+                  </div>
+                  <div class="flex items-center gap-2">
+                    {#if canJoinResource()}
+                      <Button
+                        variant="outline"
+                        onclick={handleSelfAssign}
+                        disabled={isSelfAssigning}
+                      >
+                        {#if isSelfAssigning}
+                          <div class="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-current"></div>
+                          Joining...
+                        {:else}
+                          <UserPlus class="h-4 w-4 mr-2" />
+                          Join {teamManagement.selectedResourceType === "project" ? "Project" : "Department"}
+                        {/if}
+                      </Button>
+                    {/if}
+                    <Button variant="outline" onclick={refreshData}>
+                      <RefreshCw class="h-4 w-4 mr-2" />
+                      Refresh
+                    </Button>
+                    <Button variant="outline" onclick={restartTour}>
+                      <GraduationCap class="h-4 w-4 mr-2" />
+                      Tour
+                    </Button>
+                  </div>
+                </div>
+                <p class="text-muted-foreground mt-1">
                   Manage team members and their roles for this {teamManagement.selectedResourceType}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResourceSelector
-                  resources={teamManagement.userResources}
-                  selectedType={teamManagement.selectedResourceType}
-                  selectedId={teamManagement.selectedResourceId}
-                  onSelect={(
-                    type: "organization" | "department" | "project",
-                    id: string
-                  ) => teamManagement.setSelectedResource(type, id)}
-                />
-              </CardContent>
-            </Card>
-          {/if}
+                </p>
+              </div>
+              <!-- Error Display -->
+              {#if teamManagement.error && teamManagement.error !== teamManagement.settingsError}
+                <Alert variant="destructive" class="mb-6">
+                  <Info class="h-4 w-4" />
+                  <AlertTitle>Error</AlertTitle>
+                  <AlertDescription>{teamManagement.error}</AlertDescription>
+                </Alert>
+              {/if}
 
           <!-- Error Display - Only show errors that aren't settings-related -->
           {#if teamManagement.error && teamManagement.error !== teamManagement.settingsError}
@@ -700,96 +758,35 @@
 
           <!-- Main Content -->
           {#if !teamManagement.isLoading && (teamManagement.organizationStructure || teamManagement.departmentStructure || teamManagement.projectTeam)}
-            <Card>
-              <CardHeader class="pb-0">
-                <Tabs value={activeTab} class="w-full" id="team-tabs">
-                  <TabsList
-                    class="grid w-full grid-cols-{1 +
-                      (canShowAddUsersTab() ? 1 : 0) +
-                      (showInvitationsTab ? 1 : 0)}"
-                  >
-                    <TabsTrigger
-                      value="members"
-                      onclick={() => (activeTab = "members")}
-                      id="team-members-tab-trigger"
-                    >
-                      <Users class="h-4 w-4 mr-2" />
-                      Team Members
-                    </TabsTrigger>
-
-                    {#if canShowAddUsersTab()}
-                      <TabsTrigger
-                        value="add-users"
-                        onclick={() => (activeTab = "add-users")}
-                        id="add-users-tab-trigger"
-                      >
-                        <UserCog class="h-4 w-4 mr-2" />
-                        Add Users
-                      </TabsTrigger>
-                    {/if}
-
-                    {#if showInvitationsTab}
-                      <TabsTrigger
-                        value="invitations"
-                        onclick={() => (activeTab = "invitations")}
-                        id="invitations-tab-trigger"
-                      >
-                        <UserPlus class="h-4 w-4 mr-2" />
-                        Invitations
-                      </TabsTrigger>
-                    {/if}
-                  </TabsList>
-                </Tabs>
-              </CardHeader>
-
-              <CardContent>
-                <!-- Team Members Tab -->
-                {#if activeTab === "members"}
-                  <div class="py-4" id="team-members-tab-content">
-                    {#if canJoinResource()}
-                      <div
-                        class="mb-6 p-4 border-2 border-dashed rounded-lg bg-card/50"
-                      >
-                        <div
-                          class="flex flex-col sm:flex-row justify-between items-center gap-4"
-                        >
-                          <div>
-                            <h3 class="text-lg font-medium mb-1">
-                              You're not a member of this {teamManagement.selectedResourceType}
-                            </h3>
-                            <p class="text-muted-foreground">
-                              You can see this {teamManagement.selectedResourceType}
-                              because of your organization admin privileges. Join
-                              to collaborate with other members.
-                            </p>
-                            {#if selfAssignError}
-                              <p class="text-red-500 mt-2 text-sm">
-                                {selfAssignError}
-                              </p>
-                            {/if}
-                          </div>
-                          <Button
-                            onclick={handleSelfAssign}
-                            class="whitespace-nowrap"
-                            disabled={isSelfAssigning}
-                            id="join-team-button-alt"
-                          >
-                            {#if isSelfAssigning}
-                              <div
-                                class="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-current"
-                              ></div>
-                              Joining...
-                            {:else}
-                              <UserPlus class="h-4 w-4 mr-2" />
-                              Join {teamManagement.selectedResourceType ===
-                              "project"
-                                ? "Project"
-                                : "Department"}
-                            {/if}
-                          </Button>
-                        </div>
+                <!-- Team Members Section -->
+                <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
+                  <Card class="mb-6 hover-lift" data-tour="team-members">
+                    <CardHeader>
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <Users class="h-5 w-5" />
+                        <CardTitle>Team Members ({getUsersForCurrentResource().length})</CardTitle>
+                      </div>
+                      {#if !showInvitationsTab && (teamManagement.permissions.canInviteUsers || isOrganizationOwner() || teamManagement.settings?.allowMemberInvitations)}
+                        <Button onclick={() => (showInviteModal = true)}>
+                          <UserPlus class="h-4 w-4 mr-2" />
+                          Invite Team
+                        </Button>
+                      {/if}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {#if subscriptionLimits && subscriptionLimits.maxUsers > 0}
+                      <div class="mb-4 p-3 bg-muted rounded-lg">
+                        <TeamSizeIndicator 
+                          currentCount={getUsersForCurrentResource().length}
+                          maxUsers={subscriptionLimits.maxUsers}
+                          subscriptionPlan={subscriptionLimits.subscriptionPlan}
+                          showAlerts={false}
+                        />
                       </div>
                     {/if}
+                    
                     <TeamMembersList
                       users={getUsersForCurrentResource()}
                       resourceType={teamManagement.selectedResourceType}
@@ -797,130 +794,141 @@
                       onUserSelect={handleUserSelect}
                       {subscriptionLimits}
                     />
-                  </div>
-                {/if}
+                  </CardContent>
+                </Card>
+                </div>
 
-                <!-- Add Users Tab - NEW -->
-                {#if activeTab === "add-users" && canShowAddUsersTab()}
-                  <div class="py-4" id="add-users-tab-content">
-                    <ResourceUserManager
-                      resourceType={teamManagement.selectedResourceType ===
-                      "department"
-                        ? "department"
-                        : "project"}
-                      resourceId={teamManagement.selectedResourceId || ""}
-                      {organizationId}
-                      onUserAdded={refreshData}
-                    />
-                  </div>
-                {/if}
-
-                <!-- Invitations Tab -->
-                {#if activeTab === "invitations" && showInvitationsTab}
-                  <div class="py-4" id="invitations-tab-content">
-                    {#if teamManagement.settings?.invitations?.disabled}
-                      <div class="text-center py-8 text-muted-foreground">
-                        <p>
-                          Invitations are currently disabled for this {teamManagement.selectedResourceType}
-                        </p>
+                <!-- Invitations Section -->
+                {#if showInvitationsTab}
+                  <div in:fly={{ y: 20, duration: 400, delay: 200 }}>
+                    <Card class="mb-6 hover-lift" id="invitation-section" data-tour="invitations">
+                      <CardHeader>
+                      <div class="flex items-center gap-2">
+                        <Mail class="h-5 w-5" />
+                        <CardTitle>Team Invitations</CardTitle>
                       </div>
-                    {:else if teamManagement.permissions.canInviteUsers || isOrganizationOwner() || teamManagement.settings?.allowMemberInvitations}
-                      {#if !subscriptionLimits.canInviteUsers}
-                        <div
-                          class="p-4 mb-6 border-2 border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-900/20 rounded-md"
-                        >
-                          <div class="flex items-start gap-3">
-                            <Info
-                              class="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5"
-                            />
-                            <div>
-                              <h3
-                                class="font-medium text-amber-800 dark:text-amber-300"
-                              >
-                                Subscription Required
-                              </h3>
-                              <p
-                                class="text-amber-700 dark:text-amber-400 mt-1"
-                              >
-                                Your current plan ({subscriptionLimits.subscriptionPlan})
-                                does not include the ability to invite team
-                                members. Upgrade to {subscriptionLimits.subscriptionPlan ===
-                                "Research Explorer"
-                                  ? "Quester Pro or Quester Team"
-                                  : "Quester Team"} to invite collaborators.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      {:else if subscriptionLimits.currentUserCount >= subscriptionLimits.maxUsers && subscriptionLimits.maxUsers > 0}
-                        <div
-                          class="p-4 mb-6 border-2 border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-900/20 rounded-md"
-                        >
-                          <div class="flex items-start gap-3">
-                            <Info
-                              class="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5"
-                            />
-                            <div>
-                              <h3
-                                class="font-medium text-amber-800 dark:text-amber-300"
-                              >
-                                User Limit Reached
-                              </h3>
-                              <p
-                                class="text-amber-700 dark:text-amber-400 mt-1"
-                              >
-                                You've reached the maximum of {subscriptionLimits.maxUsers}
-                                users for your {subscriptionLimits.subscriptionPlan}
-                                plan.
-                                {#if subscriptionLimits.subscriptionPlan === "Enterprise"}
-                                  Please contact support to adjust your seat
-                                  count.
-                                {:else if subscriptionLimits.subscriptionPlan === "Quester Pro"}
-                                  Upgrade to Quester Team to add more team
-                                  members.
-                                {:else if subscriptionLimits.subscriptionPlan === "Quester Team"}
-                                  Please contact support to discuss custom team
-                                  sizes.
-                                {:else}
-                                  Upgrade your plan to invite users.
-                                {/if}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      {/if}
+                      <CardDescription>
+                        Send invitations to add new team members to this organization
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
                       <InvitationManager
                         resourceType={teamManagement.selectedResourceType}
                         resourceId={teamManagement.selectedResourceId}
                         onInviteSent={refreshData}
                         {subscriptionLimits}
                       />
-                    {:else}
-                      <div class="text-center py-8 text-muted-foreground">
-                        <p>
-                          You don't have permission to manage invitations for
-                          this {teamManagement.selectedResourceType}
-                        </p>
-                      </div>
-                    {/if}
+                    </CardContent>
+                  </Card>
                   </div>
                 {/if}
-              </CardContent>
-            </Card>
-          {/if}
 
-          <!-- Role Manager Modal -->
-          {#if showRoleManager && selectedUserId}
-            <RoleManager
-              userId={selectedUserId}
-              resourceType={teamManagement.selectedResourceType}
-              resourceId={teamManagement.selectedResourceId || ""}
-              onClose={closeRoleManager}
-              onRoleUpdated={refreshData}
-            />
-          {/if}
+                <!-- Add Users Section (for departments/projects) -->
+                {#if canShowAddUsersTab()}
+                  <div in:fly={{ y: 20, duration: 400, delay: 300 }}>
+                    <Card class="hover-lift" id="add-users-section" data-tour="add-users">
+                      <CardHeader>
+                      <div class="flex items-center gap-2">
+                        <UserCog class="h-5 w-5" />
+                        <CardTitle>Add Existing Users</CardTitle>
+                      </div>
+                      <CardDescription>
+                        Add users who are already members of the parent organization
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResourceUserManager
+                        resourceType={teamManagement.selectedResourceType === "department" ? "department" : "project"}
+                        resourceId={teamManagement.selectedResourceId || ""}
+                        {organizationId}
+                        onUserAdded={refreshData}
+                      />
+                    </CardContent>
+                  </Card>
+                  </div>
+                {/if}
+              {/if}
+
+              <!-- Role Manager Modal -->
+              {#if showRoleManager && selectedUserId}
+                <RoleManager
+                  userId={selectedUserId}
+                  resourceType={teamManagement.selectedResourceType}
+                  resourceId={teamManagement.selectedResourceId || ""}
+                  onClose={closeRoleManager}
+                  onRoleUpdated={refreshData}
+                />
+              {/if}
+
+              <!-- Invite Modal for Departments/Projects -->
+              {#if showInviteModal && !showInvitationsTab}
+                <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                  <div class="bg-background border rounded-lg p-6 max-w-md w-full mx-4">
+                    <div class="flex items-center justify-between mb-4">
+                      <h2 class="text-lg font-semibold">Invite Team Members</h2>
+                      <Button variant="ghost" size="sm" onclick={() => (showInviteModal = false)}>
+                        <X class="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <p class="text-sm text-muted-foreground mb-4">
+                      For {teamManagement.selectedResourceType}s, you can add existing organization members or use the main organization invitation feature.
+                    </p>
+                    <div class="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        onclick={() => {
+                          showInviteModal = false;
+                          // Scroll to add users section if it exists
+                          const addUsersSection = document.getElementById('add-users-section');
+                          if (addUsersSection) {
+                            addUsersSection.scrollIntoView({ behavior: 'smooth' });
+                          }
+                        }}
+                      >
+                        Add Existing Users
+                      </Button>
+                      <Button onclick={() => (showInviteModal = false)}>Close</Button>
+                    </div>
+                  </div>
+                </div>
+              {/if}
+            {/if}
+          </div>
         </div>
       {/if}
     </main>
   </div>
 </Sidebar.Provider>
+
+<!-- Tour Prompt Modal -->
+{#if showTourPrompt}
+  <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" in:fade={{ duration: 200 }}>
+    <div in:scale={{ duration: 300, delay: 100 }}>
+      <Card class="max-w-md mx-4">
+        <CardHeader>
+        <div class="flex items-center gap-2">
+          <GraduationCap class="h-5 w-5 text-primary" />
+          <CardTitle>Welcome to Team Management!</CardTitle>
+        </div>
+        <CardDescription>
+          Would you like a quick tour to learn how to manage your teams effectively?
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div class="flex gap-2">
+          <Button onclick={startTour} class="flex-1">
+            <GraduationCap class="h-4 w-4 mr-2" />
+            Start Tour
+          </Button>
+          <Button variant="outline" onclick={dismissTour} class="flex-1">
+            Skip for now
+          </Button>
+        </div>
+        <p class="text-xs text-muted-foreground mt-2">
+          You can restart the tour anytime using the "Tour" button in the header.
+        </p>
+      </CardContent>
+    </Card>
+    </div>
+  </div>
+{/if}

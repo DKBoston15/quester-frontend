@@ -2,6 +2,7 @@
   import type { Note } from "$lib/types";
   import { auth } from "$lib/stores/AuthStore.svelte";
   import { API_BASE_URL } from "$lib/config";
+  import { api, isAuthError } from "../services/api-client";
 
   type FilterType = "literature" | "research" | "all" | "unlinked" | "recent";
   type FilterState = {
@@ -408,20 +409,12 @@
       error = null;
 
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/note/project/${projectId}${
+        // Use centralized API client which handles auth errors automatically
+        const fetchedData = await api.get(
+          `/note/project/${projectId}${
             literatureId ? `?literatureId=${literatureId}` : ""
-          }`,
-          {
-            credentials: "include",
-          }
+          }`
         );
-
-        if (!response.ok) {
-          throw new Error(`Failed to load notes (${response.status})`);
-        }
-
-        const fetchedData = await response.json();
 
         let processedNotes: Note[] = [];
 
@@ -486,18 +479,8 @@
           literatureId: data.literatureId,
         } as any; // Type assertion to avoid linter errors
 
-        const response = await fetch(`${API_BASE_URL}/note`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify(payload),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to create note (${response.status})`);
-        }
-
-        const newNote = await response.json();
+        // Use centralized API client which handles auth errors automatically
+        const newNote = await api.post(`/note`, payload);
 
         // Create a new object with the correct structure before processing
         const noteWithCorrectTypes = {
@@ -579,22 +562,8 @@
 
         // Skip the API call for UI-only updates
         if (!uiOnlyUpdate) {
-          const response = await fetch(`${API_BASE_URL}/note/${id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify(payload),
-          });
-
-          if (!response.ok) {
-            const errorText = await response.text();
-            console.error("Server error response:", errorText);
-            throw new Error(
-              `Failed to update note (${response.status}): ${errorText}`
-            );
-          }
-
-          const updatedNote = await response.json();
+          // Use centralized API client which handles auth errors automatically
+          const updatedNote = await api.put(`/note/${id}`, payload);
 
           const processedUpdatedNote = processNoteData(
             updatedNote.note || updatedNote
@@ -664,14 +633,8 @@
       error = null;
 
       try {
-        const response = await fetch(`${API_BASE_URL}/note/${id}`, {
-          method: "DELETE",
-          credentials: "include",
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to delete note (${response.status})`);
-        }
+        // Use centralized API client which handles auth errors automatically
+        await api.delete(`/note/${id}`);
 
         notes = notes.filter((note) => note.id !== id);
         activeNoteId = activeNoteId === id ? null : activeNoteId;

@@ -99,12 +99,58 @@
           class:
             "m-auto p-2 px-6 focus:outline-none flex-1 prose text-foreground min-w-full max-h-full overflow-auto dark:prose-invert *:my-2",
         },
+        handleKeyDown: (view, event) => {
+          // Handle Tab key specifically to prevent browser focus change
+          if (event.key === 'Tab') {
+            const { state } = view;
+            const { selection } = state;
+            const fromPos = selection.$from;
+
+            // Check if we're in a list item
+            let depth = fromPos.depth;
+            let listItem = null;
+            let parentList = null;
+            
+            for (let i = depth; i > 0; i--) {
+              const node = fromPos.node(i);
+              if (node.type.name === 'listItem' && !listItem) {
+                listItem = node;
+              }
+              if ((node.type.name === 'orderedList' || node.type.name === 'bulletList') && !parentList) {
+                parentList = node;
+                break;
+              }
+            }
+            
+            if (listItem && parentList) {
+              // Prevent the default tab behavior
+              event.preventDefault();
+              event.stopPropagation();
+              
+              if (event.shiftKey) {
+                // Shift+Tab: outdent
+                editor?.commands.liftListItem('listItem');
+              } else {
+                // Tab: indent
+                editor?.commands.sinkListItem('listItem');
+              }
+              return true;
+            }
+            
+            // Even if not in a list, prevent tab from leaving the editor
+            event.preventDefault();
+            event.stopPropagation();
+            return true;
+          }
+          
+          return false;
+        },
       },
       extensions: [
         StarterKit.configure({
           orderedList: {
             HTMLAttributes: {
-              class: "list-decimal",
+              class: "hierarchical-ordered-list",
             },
           },
           bulletList: {

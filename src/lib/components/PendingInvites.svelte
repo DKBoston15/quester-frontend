@@ -11,6 +11,7 @@
   import { Button } from "$lib/components/ui/button";
   import { auth } from "../stores/AuthStore.svelte";
   import { Separator } from "$lib/components/ui/separator";
+  import { EmptyState } from "$lib/components/ui/empty-state";
   import { API_BASE_URL } from "$lib/config";
 
   type Invitation = {
@@ -106,9 +107,11 @@
       {:else if error}
         <div class="text-destructive py-4">{error}</div>
       {:else if invitations.length === 0}
-        <div class="text-center py-4 text-muted-foreground">
-          No pending invitations
-        </div>
+        <EmptyState
+          title="No pending invitations"
+          variant="data-empty"
+          height="h-[200px]"
+        />
       {:else}
         <div class="space-y-6">
           {#each invitations as invitation (invitation.id)}

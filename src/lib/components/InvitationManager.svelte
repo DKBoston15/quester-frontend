@@ -4,9 +4,13 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { Badge } from "$lib/components/ui/badge";
+  import * as Table from "$lib/components/ui/table";
   import { Mail, Send, X, Info } from "lucide-svelte";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
   import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
+  import TeamSizeIndicator from "$lib/components/TeamSizeIndicator/TeamSizeIndicator.svelte";
+  import { toast } from "svelte-sonner";
 
   const props = $props<{
     resourceType: "organization" | "department" | "project";
@@ -26,65 +30,68 @@
   let isLoading = $state(false);
   let error = $state<string | null>(null);
   let success = $state<string | null>(null);
+  
+  // Use derived for validation instead of effects to prevent loops
+  const emailError = $derived(() => {
+    if (!email || email.length === 0) return null;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email) ? null : "Please enter a valid email address";
+  });
+
+  const roleError = $derived(() => {
+    if (selectedRoleId === "" && availableRoles().length > 0) {
+      return "Please select a role";
+    }
+    return null;
+  });
 
   // API response state
   let pendingInvitations = $state<any[]>([]);
   let invitationsLoading = $state(false);
   let invitationsError = $state<string | null>(null);
 
-  // Change from $derived to $state for subscription limit calculations
-  let remainingInvitations = $state<number>(Infinity);
-  let canSendInvitations = $state(true);
-
-  // Calculate remaining invitations and permission when relevant data changes
-  $effect(() => {
-    // Calculate remaining invitations
+  // Use $derived for computed values to avoid race conditions
+  const remainingInvitations = $derived(() => {
     if (!props.subscriptionLimits || props.subscriptionLimits.maxUsers === 0) {
-      remainingInvitations = Infinity;
-    } else {
-      const pendingCount = pendingInvitations.length;
-      remainingInvitations = Math.max(
-        0,
-        props.subscriptionLimits.maxUsers -
-          props.subscriptionLimits.currentUserCount -
-          pendingCount
-      );
+      return Infinity;
     }
+    const pendingCount = pendingInvitations.length;
+    return Math.max(
+      0,
+      props.subscriptionLimits.maxUsers -
+        props.subscriptionLimits.currentUserCount -
+        pendingCount
+    );
+  });
 
-    // Calculate if invitations can be sent
+  const canSendInvitations = $derived(() => {
     if (!props.subscriptionLimits) {
-      canSendInvitations = true;
-    } else {
-      // Check if user has invitation capability from subscription
-      if (!props.subscriptionLimits.canInviteUsers) {
-        canSendInvitations = false;
-      } else {
-        // Check if user hasn't reached their limit
-        if (props.subscriptionLimits.maxUsers > 0) {
-          canSendInvitations = remainingInvitations > 0;
-        } else {
-          canSendInvitations = true;
-        }
-      }
+      return true;
     }
+    
+    // Check if user has invitation capability from subscription
+    if (!props.subscriptionLimits.canInviteUsers) {
+      return false;
+    }
+    
+    // Check if user hasn't reached their limit
+    if (props.subscriptionLimits.maxUsers > 0) {
+      return remainingInvitations > 0;
+    }
+    
+    return true;
   });
 
   type Role = { id: string; name: string };
-  let availableRoles = $state<Role[]>([]);
-
-  // When props change, update the available roles
-  $effect(() => {
-    updateAvailableRoles();
-  });
-
-  // Function to extract available roles from the current team management data
-  function updateAvailableRoles() {
+  
+  // Use $derived for available roles to prevent infinite loops
+  const availableRoles = $derived(() => {
     if (
       props.resourceType === "organization" &&
       teamManagement.organizationStructure
     ) {
       if (teamManagement.organizationStructure.availableRoles) {
-        availableRoles = teamManagement.organizationStructure.availableRoles;
+        return teamManagement.organizationStructure.availableRoles;
       } else if (teamManagement.organizationStructure.users) {
         // Extract unique roles from user data if available roles not present
         const uniqueRoles = new Map<string, Role>();
@@ -93,14 +100,14 @@
             uniqueRoles.set(user.role.id, user.role);
           }
         });
-        availableRoles = Array.from(uniqueRoles.values());
+        return Array.from(uniqueRoles.values());
       }
     } else if (
       props.resourceType === "department" &&
       teamManagement.departmentStructure
     ) {
       if (teamManagement.departmentStructure.availableRoles) {
-        availableRoles = teamManagement.departmentStructure.availableRoles;
+        return teamManagement.departmentStructure.availableRoles;
       } else if (teamManagement.departmentStructure.users) {
         const uniqueRoles = new Map<string, Role>();
         teamManagement.departmentStructure.users.forEach((user: any) => {
@@ -108,11 +115,11 @@
             uniqueRoles.set(user.role.id, user.role);
           }
         });
-        availableRoles = Array.from(uniqueRoles.values());
+        return Array.from(uniqueRoles.values());
       }
     } else if (props.resourceType === "project" && teamManagement.projectTeam) {
       if (teamManagement.projectTeam.availableRoles) {
-        availableRoles = teamManagement.projectTeam.availableRoles;
+        return teamManagement.projectTeam.availableRoles;
       } else if (teamManagement.projectTeam.users) {
         const uniqueRoles = new Map<string, Role>();
         teamManagement.projectTeam.users.forEach((user: any) => {
@@ -120,30 +127,54 @@
             uniqueRoles.set(user.role.id, user.role);
           }
         });
-        availableRoles = Array.from(uniqueRoles.values());
+        return Array.from(uniqueRoles.values());
       }
     }
+    
+    return [];
+  });
 
-    // Select default role if we have roles
-    if (availableRoles.length > 0 && !selectedRoleId) {
+  // Auto-select default role when available roles change (with guard to prevent loops)
+  let hasAutoSelectedRole = $state(false);
+  $effect(() => {
+    const roles = availableRoles(); // Call the derived function
+    // Only auto-select once and when we have roles but no selection
+    if (roles.length > 0 && !selectedRoleId && !hasAutoSelectedRole) {
       // Try to find a "Member" role as default
-      const memberRole = availableRoles.find(
+      const memberRole = roles.find(
         (r) => r.name.toLowerCase() === "member"
       );
-      selectedRoleId = memberRole ? memberRole.id : availableRoles[0].id;
+      selectedRoleId = memberRole ? memberRole.id : roles[0].id;
+      hasAutoSelectedRole = true;
     }
-  }
+    
+    // Reset the guard when roles change completely
+    if (roles.length === 0 && hasAutoSelectedRole) {
+      hasAutoSelectedRole = false;
+    }
+  });
 
   async function sendInvitation() {
+    // Clear previous states
+    error = null;
+    success = null;
+
+    // Validate form
     if (!email || !selectedRoleId || !props.resourceId) {
-      error = "Please fill in all required fields";
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    if (emailError() || roleError()) {
+      toast.error("Please fix the validation errors before submitting");
       return;
     }
 
     if (!canSendInvitations) {
-      error = props.subscriptionLimits?.maxUsers
+      const message = props.subscriptionLimits?.maxUsers
         ? `You've reached the maximum number of users (${props.subscriptionLimits.maxUsers}) for your subscription plan.`
         : "Your subscription doesn't allow sending invitations.";
+      toast.error(message);
       return;
     }
 
@@ -173,20 +204,13 @@
           break;
       }
 
-      const response = await fetch(`${API_BASE_URL}/invitations`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
+      // Use centralized API client
+      const response = await api.post(`/invitations`, payload);
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || "Failed to send invitation");
-      }
+      // Response from api client is already parsed JSON
 
       // On success
-      success = `Invitation sent to ${email}`;
+      toast.success(`Invitation sent to ${email}`);
       email = "";
       selectedRoleId = "";
       props.onInviteSent();
@@ -194,7 +218,8 @@
       // Refresh the invitations list
       await loadPendingInvitations();
     } catch (err) {
-      error = err instanceof Error ? err.message : "Failed to send invitation";
+      const message = err instanceof Error ? err.message : "Failed to send invitation";
+      toast.error(message);
     } finally {
       isLoading = false;
     }
@@ -207,19 +232,10 @@
     invitationsError = null;
 
     try {
-      // Use the generic invitations endpoint with query params to filter
-      // Since the backend doesn't have a specific route for filtering by resource
-      let endpoint = `${API_BASE_URL}/invitations?${props.resourceType}Id=${props.resourceId}`;
-
-      const response = await fetch(endpoint, {
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to load invitations (${response.status})`);
-      }
-
-      const data = await response.json();
+      // Use centralized API client with query params
+      const endpoint = `/invitations?${props.resourceType}Id=${props.resourceId}`;
+      const data = await api.get(endpoint);
+      
       // Filter for pending invitations only - exclude both acceptedAt and status "accepted"
       pendingInvitations = data.filter(
         (inv: any) =>
@@ -240,18 +256,8 @@
 
   async function revokeInvitation(invitationId: string) {
     try {
-      // Backend uses POST to revoke, not DELETE
-      const response = await fetch(
-        `${API_BASE_URL}/invitations/${invitationId}/revoke`,
-        {
-          method: "POST",
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to revoke invitation");
-      }
+      // Use centralized API client for revoke
+      await api.post(`/invitations/${invitationId}/revoke`);
 
       // Filter out the revoked invitation from local state
       pendingInvitations = pendingInvitations.filter(
@@ -259,19 +265,19 @@
       );
 
       // Show success message
-      success = "Invitation revoked successfully";
-      setTimeout(() => {
-        success = null;
-      }, 3000);
+      toast.success("Invitation revoked successfully");
     } catch (err) {
-      error =
-        err instanceof Error ? err.message : "Failed to revoke invitation";
+      const message = err instanceof Error ? err.message : "Failed to revoke invitation";
+      toast.error(message);
     }
   }
 
   // Load pending invitations when component mounts or resourceId changes
+  // Use a guard to prevent infinite loops
+  let lastLoadedResourceId = $state<string | null>(null);
   $effect(() => {
-    if (props.resourceId) {
+    if (props.resourceId && props.resourceId !== lastLoadedResourceId) {
+      lastLoadedResourceId = props.resourceId;
       loadPendingInvitations();
     }
   });
@@ -283,46 +289,13 @@
     <h3 class="text-lg font-medium mb-4">Send New Invitation</h3>
 
     {#if props.subscriptionLimits && props.subscriptionLimits.maxUsers > 0}
-      <!-- Apply styling from TeamMembersList -->
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <h4 class="text-sm font-medium">Available Invitations</h4>
-          <p class="text-sm text-muted-foreground">
-            {props.subscriptionLimits.currentUserCount +
-              pendingInvitations.length} of {props.subscriptionLimits.maxUsers} seats
-            used
-          </p>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <div class="w-32 bg-muted rounded-full h-2">
-            <div
-              class="h-2 rounded-full {remainingInvitations === 0
-                ? 'bg-red-500'
-                : remainingInvitations <= 1
-                  ? 'text-amber-500'
-                  : 'bg-green-500'}"
-              style="width: {Math.min(
-                100,
-                ((props.subscriptionLimits.currentUserCount +
-                  pendingInvitations.length) /
-                  props.subscriptionLimits.maxUsers) *
-                  100
-              )}%"
-            ></div>
-          </div>
-
-          <span
-            class="text-xs font-medium {remainingInvitations === 0
-              ? 'text-red-500'
-              : remainingInvitations <= 1
-                ? 'text-amber-500'
-                : 'text-green-500'}"
-          >
-            {remainingInvitations}
-            {remainingInvitations === 1 ? "seat" : "seats"} remaining
-          </span>
-        </div>
+      <div class="mb-4">
+        <TeamSizeIndicator 
+          currentCount={props.subscriptionLimits.currentUserCount + pendingInvitations.length}
+          maxUsers={props.subscriptionLimits.maxUsers}
+          subscriptionPlan={props.subscriptionLimits.subscriptionPlan}
+          showAlerts={false}
+        />
       </div>
     {/if}
 
@@ -341,10 +314,13 @@
             type="email"
             placeholder="user@example.com"
             bind:value={email}
-            class="border-2  dark:border-dark-border"
+            class="border-2 dark:border-dark-border {emailError() ? 'border-destructive' : ''}"
             required
             disabled={!canSendInvitations}
           />
+          {#if emailError()}
+            <p class="text-sm text-destructive">{emailError()}</p>
+          {/if}
         </div>
 
         <div class="space-y-2">
@@ -352,15 +328,18 @@
           <select
             id="role"
             bind:value={selectedRoleId}
-            class="w-full rounded-md border-2 dark:border-dark-border bg-card dark:bg-dark-card p-2"
+            class="w-full rounded-md border-2 dark:border-dark-border bg-card dark:bg-dark-card p-2 {roleError() ? 'border-destructive' : ''}"
             required
             disabled={!canSendInvitations}
           >
             <option value="" disabled>Select role...</option>
-            {#each availableRoles as role}
+            {#each availableRoles() as role}
               <option value={role.id}>{role.name}</option>
             {/each}
           </select>
+          {#if roleError()}
+            <p class="text-sm text-destructive">{roleError()}</p>
+          {/if}
         </div>
 
         <div class="space-y-2 flex items-end">
@@ -405,12 +384,6 @@
         </div>
       {/if}
 
-      {#if error}
-        <div class="text-red-500 text-sm">{error}</div>
-      {/if}
-      {#if success}
-        <div class="text-green-500 text-sm">{success}</div>
-      {/if}
     </form>
   </div>
 
@@ -419,10 +392,15 @@
     <h3 class="text-lg font-medium mb-4">Pending Invitations</h3>
     {#if invitationsLoading}
       <div class="text-center p-6 border-2 dark:border-dark-border rounded-md">
-        <div
-          class="animate-spin inline-block h-6 w-6 border-2 border-primary border-t-transparent rounded-full"
-        ></div>
-        <p class="mt-2 text-muted-foreground">Loading invitations...</p>
+        <div class="space-y-3">
+          <div
+            class="animate-spin inline-block h-6 w-6 border-2 border-primary border-t-transparent rounded-full"
+          ></div>
+          <div class="space-y-1">
+            <p class="font-medium">Loading Pending Invitations</p>
+            <p class="text-sm text-muted-foreground">Fetching invitation status from server...</p>
+          </div>
+        </div>
       </div>
     {:else if invitationsError}
       <div
@@ -440,59 +418,57 @@
         No pending invitations
       </div>
     {:else}
-      <div class="border-2 dark:border-dark-border rounded-md overflow-hidden">
-        <table class="w-full">
-          <thead class="bg-accent text-accent-foreground">
-            <tr>
-              <th class="text-left p-3">Email</th>
-              <th class="text-left p-3">Role</th>
-              <th class="text-left p-3">Sent</th>
-              <th class="text-right p-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each pendingInvitations as invitation (invitation.id)}
-              <tr class="border-t dark:border-dark-border hover:bg-accent/20">
-                <td class="p-3">
-                  <div class="flex items-center gap-2">
-                    <Mail class="h-4 w-4 text-muted-foreground" />
-                    {invitation.email}
-                  </div>
-                </td>
-                <td class="p-3">
-                  <Badge variant="secondary">
-                    {(props.resourceType === "organization"
-                      ? invitation.accessMapping?.organization?.roleName
-                      : props.resourceType === "department"
-                        ? invitation.accessMapping?.departments?.find(
-                            (d: any) => d.id === props.resourceId
+      <Table.Root>
+        <Table.Header>
+          <Table.Row>
+            <Table.Head>Email</Table.Head>
+            <Table.Head>Role</Table.Head>
+            <Table.Head>Sent</Table.Head>
+            <Table.Head class="text-right">Actions</Table.Head>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {#each pendingInvitations as invitation (invitation.id)}
+            <Table.Row>
+              <Table.Cell>
+                <div class="flex items-center gap-2">
+                  <Mail class="h-4 w-4 text-muted-foreground" />
+                  {invitation.email}
+                </div>
+              </Table.Cell>
+              <Table.Cell>
+                <Badge variant="secondary">
+                  {(props.resourceType === "organization"
+                    ? invitation.accessMapping?.organization?.roleName
+                    : props.resourceType === "department"
+                      ? invitation.accessMapping?.departments?.find(
+                          (d: any) => d.id === props.resourceId
+                        )?.roleName
+                      : props.resourceType === "project"
+                        ? invitation.accessMapping?.projects?.find(
+                            (p: any) => p.id === props.resourceId
                           )?.roleName
-                        : props.resourceType === "project"
-                          ? invitation.accessMapping?.projects?.find(
-                              (p: any) => p.id === props.resourceId
-                            )?.roleName
-                          : undefined) || "Member"}
-                  </Badge>
-                </td>
-                <td class="p-3 text-muted-foreground">
-                  {new Date(invitation.createdAt).toLocaleDateString()}
-                </td>
-                <td class="p-3 text-right">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onclick={() => revokeInvitation(invitation.id)}
-                    class="h-8 px-2 text-red-500 hover:text-red-700 hover:bg-red-100"
-                  >
-                    <X class="h-4 w-4" />
-                    <span class="sr-only">Revoke invitation</span>
-                  </Button>
-                </td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
+                        : undefined) || "Member"}
+                </Badge>
+              </Table.Cell>
+              <Table.Cell class="text-muted-foreground">
+                {new Date(invitation.createdAt).toLocaleDateString()}
+              </Table.Cell>
+              <Table.Cell class="text-right">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onclick={() => revokeInvitation(invitation.id)}
+                  class="h-8 px-2 text-destructive hover:text-destructive-foreground hover:bg-destructive"
+                >
+                  <X class="h-4 w-4" />
+                  <span class="sr-only">Revoke invitation</span>
+                </Button>
+              </Table.Cell>
+            </Table.Row>
+          {/each}
+        </Table.Body>
+      </Table.Root>
     {/if}
   </div>
 </div>

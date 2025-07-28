@@ -15,6 +15,7 @@
     Users,
     Lightbulb,
     Gavel,
+    Briefcase,
     Star,
     Target,
     Coffee,
@@ -50,6 +51,7 @@
     Users,
     Lightbulb,
     Gavel,
+    Briefcase,
     Star,
     Calendar,
     Target,
@@ -68,21 +70,13 @@
   let formState = $derived(customEventsStore.formState);
   let currentProject = $derived(projectStore.currentProject);
 
-  // Debugging effect to track form state changes
+  // Track form state changes
   $effect(() => {
-    console.log(
-      "[CustomEventForm] formState.isOpen changed to:",
-      formState.isOpen
-    );
-    console.log(
-      "[CustomEventForm] Dialog should be:",
-      formState.isOpen ? "OPEN" : "CLOSED"
-    );
+    // Form state tracking for internal logic
   });
 
   // SIMPLIFIED: Direct close handler without complex logic
   function handleClose() {
-    console.log("[CustomEventForm] handleClose called");
     if (!formState.loading) {
       customEventsStore.closeForm();
       dispatch("close");
@@ -315,14 +309,8 @@
 <Dialog.Root
   open={formState.isOpen}
   onOpenChange={(open) => {
-    console.log("[CustomEventForm] Dialog onOpenChange called with:", open);
-    console.log(
-      "[CustomEventForm] Current formState.isOpen:",
-      formState.isOpen
-    );
     // Only handle closing, not opening
     if (!open && formState.isOpen) {
-      console.log("[CustomEventForm] Dialog closed by internal mechanism");
       handleClose();
     }
   }}

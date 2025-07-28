@@ -17,6 +17,7 @@
   } from "$lib/components/ui/select";
   import LiteratureSelector from "$lib/components/custom-ui/literature/LiteratureSelector.svelte";
   import { API_BASE_URL } from "$lib/config";
+  import { isAuthError, api } from "$lib/services/api-client";
 
   // Props
   const { note, onDelete } = $props<{
@@ -35,9 +36,11 @@
   let lastSaveTime = Date.now();
   let currentNoteId = note.id;
   let originalTitle = $state(note.name);
+  let lastKnownUpdatedAt = $state(note.updated_at);
   let titleChanged = $state(false);
   let isTitleFocused = $state(false);
   let isUserEditingTitle = $state(false);
+  let titleInputRef: HTMLInputElement;
 
   // Track section type locally to avoid remounting
   let currentSectionType = $state(
@@ -50,6 +53,9 @@
   );
 
   const SAVE_DEBOUNCE = 2000; // 2 seconds between saves
+
+  // Track auth errors to stop auto-save when session expires
+  let authErrorOccurred = $state(false);
 
   // Add section type options
   const sectionTypeOptions = [
@@ -76,7 +82,7 @@
   });
 
   // Direct function to save title
-  function saveTitle() {
+  async function saveTitle() {
     // If the title is still the default and hasn't been changed, don't save
     if (title === "Untitled Note" && originalTitle === "Untitled Note") {
       return;
@@ -85,75 +91,44 @@
     if (!isUnmounting && note) {
       isSaving = true;
 
-      // Store the current title in case it changes during the save operation
-      const titleToSave = title;
+      try {
+        // Store the current title in case it changes during the save operation
+        const titleToSave = title;
 
-      // Make a direct API call to update just the title
-      fetch(`${API_BASE_URL}/note/${note.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ name: titleToSave }),
-      })
-        .then((response) => {
-          if (!response.ok) {
-            console.error("Failed to update title");
-            return;
+        // Use centralized API client with proper auth error handling
+        await api.put(`/note/${note.id}`, { name: titleToSave });
+
+        // Update the note object directly to prevent future effect runs from resetting
+        note.name = titleToSave;
+
+        // Update the note in the store's notes array
+        const storeNotes = notesStore.notes;
+        for (let i = 0; i < storeNotes.length; i++) {
+          if (storeNotes[i].id === note.id) {
+            storeNotes[i].name = titleToSave;
+            storeNotes[i].updated_at = new Date().toISOString();
+            break;
           }
+        }
 
-          // Update the note object directly to prevent future effect runs from resetting
-          note.name = titleToSave;
+        // Update original title to match current title
+        originalTitle = titleToSave;
+        titleChanged = false; // Reset the title changed flag
 
-          // Update the note in the store's notes array
-          const storeNotes = notesStore.notes;
-          for (let i = 0; i < storeNotes.length; i++) {
-            if (storeNotes[i].id === note.id) {
-              storeNotes[i].name = titleToSave;
-              storeNotes[i].updated_at = new Date().toISOString();
-              break;
-            }
-          }
-
-          // Update original title to match current title
-          originalTitle = titleToSave;
-          titleChanged = false; // Reset the title changed flag
-
-          // Try to update the note title in the NoteList directly
-          setTimeout(() => {
-            try {
-              // Find the note item in the DOM
-              const noteElements = document.querySelectorAll(
-                `[data-note-id="${note.id}"]`
-              );
-              if (noteElements.length > 0) {
-                // Update the title in each found element
-                noteElements.forEach((noteEl) => {
-                  // Find the title heading
-                  const titleEl = noteEl.querySelector(
-                    ".font-medium.leading-none"
-                  );
-                  if (titleEl) {
-                    titleEl.textContent = titleToSave || "Untitled Note";
-                  }
-                });
-              }
-            } catch (e) {
-              console.warn("Error updating note title in DOM:", e);
-            }
-          }, 50);
-
-          // Also try the search query approach as a fallback
-          const currentQuery = notesStore.searchQuery;
-          if (currentQuery) {
-            notesStore.setSearchQuery(currentQuery);
-          }
-        })
-        .catch((error) => {
-          console.error("Error updating title:", error);
-        })
-        .finally(() => {
-          isSaving = false;
-        });
+        // Trigger reactivity update through search query refresh
+        const currentQuery = notesStore.searchQuery;
+        if (currentQuery) {
+          notesStore.setSearchQuery(currentQuery);
+        }
+      } catch (error) {
+        console.error("Error updating title:", error);
+        // Auth errors are handled automatically by the API client
+        if (isAuthError(error)) {
+          authErrorOccurred = true;
+        }
+      } finally {
+        isSaving = false;
+      }
     }
   }
 
@@ -163,19 +138,10 @@
       isSaving = true;
 
       try {
-        // Make a direct API call to update the literature connection
-        const response = await fetch(`${API_BASE_URL}/note/${note.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ literatureId: literatureId || null }),
+        // Use centralized API client with proper auth error handling
+        await api.put(`/note/${note.id}`, {
+          literatureId: literatureId || null,
         });
-
-        if (!response.ok) {
-          throw new Error(
-            `Failed to update literature connection (${response.status})`
-          );
-        }
 
         // Update the note object directly
         note.literatureId = literatureId;
@@ -190,53 +156,17 @@
           }
         }
 
-        // Try to update the literature badge in the NoteList
-        setTimeout(() => {
-          try {
-            // Find the note item in the DOM
-            const noteElements = document.querySelectorAll(
-              `[data-note-id="${note.id}"]`
-            );
-
-            if (noteElements.length > 0) {
-              noteElements.forEach((noteEl) => {
-                // Find the badges container
-                const badgesContainer = noteEl.querySelector(
-                  ".flex.items-center.gap-2.mt-2"
-                );
-
-                if (badgesContainer) {
-                  // Check if literature badge exists
-                  const existingLitBadge =
-                    noteEl.querySelector(".badge-literature");
-
-                  if (literatureId && !existingLitBadge) {
-                    // Add literature badge if it doesn't exist
-                    const newBadge = document.createElement("div");
-                    newBadge.className =
-                      "badge-literature text-xs flex items-center gap-1 border rounded-full px-2 py-1";
-                    newBadge.innerHTML =
-                      '<svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></svg> Literature';
-                    badgesContainer.appendChild(newBadge);
-                  } else if (!literatureId && existingLitBadge) {
-                    // Remove literature badge if it exists
-                    existingLitBadge.remove();
-                  }
-                }
-              });
-            }
-          } catch (e) {
-            console.warn("Error updating literature badge in DOM:", e);
-          }
-        }, 50);
-
-        // Refresh the notes list via search query as a fallback
+        // Refresh the notes list via search query to trigger reactivity
         const currentQuery = notesStore.searchQuery;
         if (currentQuery) {
           notesStore.setSearchQuery(currentQuery);
         }
       } catch (error) {
         console.error("Error updating literature connection:", error);
+        // Auth errors are handled automatically by the API client
+        if (isAuthError(error)) {
+          authErrorOccurred = true;
+        }
       } finally {
         isSaving = false;
       }
@@ -324,6 +254,11 @@
 
   // Auto-save functionality
   function scheduleSave() {
+    // Don't schedule save if auth error occurred
+    if (authErrorOccurred) {
+      return;
+    }
+
     clearTimeout(saveTimeout);
 
     // If we recently saved, wait the full debounce period
@@ -356,11 +291,24 @@
     try {
       const contentToSave = JSON.stringify(content);
 
+      // Update the lastKnownUpdatedAt when saving
+      try {
+        const currentServerNote = await api.get(`/note/${note.id}`);
+        lastKnownUpdatedAt = currentServerNote.updated_at;
+      } catch (error) {
+        // Silently continue if we can't get current state
+      }
+
       // Use the store's update method to ensure the note list updates
-      await notesStore.updateNote(note.id, {
+      const updatedNote = await notesStore.updateNote(note.id, {
         name: currentTitle,
         content: contentToSave,
       });
+
+      // Update our conflict detection timestamp
+      if (updatedNote && updatedNote.updated_at) {
+        lastKnownUpdatedAt = updatedNote.updated_at;
+      }
 
       // Update the note in the store's notes array to ensure NoteList updates
       const storeNotes = notesStore.notes;
@@ -374,56 +322,7 @@
         }
       }
 
-      // Try to update the note preview in the NoteList directly
-      // This is a more direct approach that should work even if the store reactivity fails
-      setTimeout(() => {
-        try {
-          // Find the note item in the DOM
-          const noteElements = document.querySelectorAll(
-            `[data-note-id="${note.id}"]`
-          );
-          if (noteElements.length > 0) {
-            // Update the preview text in each found element
-            noteElements.forEach((noteEl) => {
-              // Find the preview paragraph
-              const previewEl = noteEl.querySelector(
-                ".text-sm.text-muted-foreground.line-clamp-2"
-              );
-              if (previewEl) {
-                // Extract a preview from the content
-                let previewText = "";
-                try {
-                  const parsedContent = JSON.parse(contentToSave);
-                  if (parsedContent.type === "doc" && parsedContent.content) {
-                    for (const node of parsedContent.content) {
-                      if (node.content) {
-                        for (const contentNode of node.content) {
-                          if (contentNode.type === "text" && contentNode.text) {
-                            previewText += contentNode.text + " ";
-                          }
-                        }
-                      }
-                    }
-                    // Limit preview length
-                    previewText = previewText.trim().substring(0, 100);
-                    if (previewText.length === 100) previewText += "...";
-                  }
-                } catch (e) {
-                  console.warn("Error parsing content for preview:", e);
-                }
-
-                if (previewText) {
-                  previewEl.textContent = previewText;
-                }
-              }
-            });
-          }
-        } catch (e) {
-          console.warn("Error updating note preview in DOM:", e);
-        }
-      }, 50);
-
-      // Also try the search query approach as a fallback
+      // Trigger reactivity update through search query refresh
       const currentQuery = notesStore.searchQuery;
       if (currentQuery) {
         notesStore.setSearchQuery(currentQuery);
@@ -432,6 +331,18 @@
       return Promise.resolve(); // Return a resolved promise
     } catch (error) {
       console.error("Failed to save note:", error);
+
+      // Check if this is an authentication error
+      if (isAuthError(error)) {
+        console.warn(
+          "Authentication error during save - stopping auto-save to prevent half-logout state"
+        );
+        authErrorOccurred = true;
+        // Don't mark content as changed - let the user re-authenticate to save
+        // The API client will trigger logout automatically
+        return Promise.reject(error);
+      }
+
       if (!isUnmounting) {
         contentChanged = true; // Mark as still needing save, but only if not unmounting
       }
@@ -440,8 +351,10 @@
       isSaving = false;
 
       // Check if content changed during save operation
+      // Don't schedule another save if auth error occurred to prevent infinite failed requests
       if (
         !isUnmounting &&
+        !authErrorOccurred &&
         (currentTitle !== title ||
           currentContentStr !== JSON.stringify(content))
       ) {
@@ -452,7 +365,7 @@
   }
 
   // Add function to handle section type change
-  function handleSectionTypeChange(value: string) {
+  async function handleSectionTypeChange(value: string) {
     const selectedType = sectionTypeOptions.find(
       (option) => option.value === value
     );
@@ -460,43 +373,44 @@
     if (selectedType) {
       // Update our local state first
       currentSectionType = selectedType;
+      isSaving = true;
 
-      // Make a direct API call to update the section type without going through the store's update mechanism
-      // This avoids the remounting issue while ensuring the data is saved to the database
-      fetch(`${API_BASE_URL}/note/${note.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ sectionType: selectedType.value }),
-      })
-        .then(async (response) => {
-          if (!response.ok) {
-            console.error("Failed to update section type");
-          } else {
-            // Update the note in the store's notes array
-            // This is a hack but it's the only way to update the UI without remounting
-            const storeNotes = notesStore.notes;
-            for (let i = 0; i < storeNotes.length; i++) {
-              if (storeNotes[i].id === note.id) {
-                setTimeout(() => {
-                  const badgeElements = document.querySelectorAll(
-                    `[data-note-id="${note.id}"] .badge-section-type`
-                  );
-                  if (badgeElements.length > 0) {
-                    badgeElements.forEach((badge) => {
-                      badge.textContent = selectedType.label;
-                    });
-                  }
-                }, 100);
+      try {
+        // Use centralized API client with proper auth error handling
+        await api.put(`/note/${note.id}`, { sectionType: selectedType.value });
 
-                break;
-              }
-            }
+        // Update the note in the store's notes array
+        const storeNotes = notesStore.notes;
+        for (let i = 0; i < storeNotes.length; i++) {
+          if (storeNotes[i].id === note.id) {
+            storeNotes[i].section_type = selectedType.value;
+            storeNotes[i].updated_at = new Date().toISOString();
+            break;
           }
-        })
-        .catch((error) => {
-          console.error("Error updating section type:", error);
-        });
+        }
+
+        // Trigger reactivity update through search query refresh
+        const currentQuery = notesStore.searchQuery;
+        if (currentQuery) {
+          notesStore.setSearchQuery(currentQuery);
+        }
+      } catch (error) {
+        console.error("Error updating section type:", error);
+        // Auth errors are handled automatically by the API client
+        if (isAuthError(error)) {
+          authErrorOccurred = true;
+        }
+        // Revert local state on error
+        currentSectionType =
+          typeof note.section_type === "object"
+            ? { ...note.section_type }
+            : {
+                value: note.section_type || "Other",
+                label: note.section_type || "Other",
+              };
+      } finally {
+        isSaving = false;
+      }
     }
   }
 
@@ -572,15 +486,22 @@
       <div class="flex-1 mr-4 flex items-center">
         <div class="relative flex-1">
           <Input
+            bind:this={titleInputRef}
             type="text"
             placeholder="Untitled Note"
-            class="text-lg font-medium bg-transparent border-none shadow-none h-auto px-0 focus-visible:ring-0"
+            class="text-lg font-medium border border-input rounded-md bg-background px-3 py-2 h-auto focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 hover:bg-muted/50 focus:bg-muted/30 transition-colors"
             bind:value={title}
-            onfocus={() => {
+            onfocus={(e) => {
               // When the input is focused, mark as editing and ensure save button is visible
               isUserEditingTitle = true;
               isTitleFocused = true;
               titleChanged = true;
+
+              // Auto-select text if it's "Untitled Note"
+              if (title === "Untitled Note") {
+                const target = e.target as HTMLInputElement;
+                setTimeout(() => target.select(), 0);
+              }
             }}
             onblur={() => {
               // When input loses focus, save if changed
@@ -612,7 +533,7 @@
             onclick={saveTitle}
             title="Save title"
           >
-            <Save class="h-3 w-3" />
+            <Save class="h-4 w-4" />
           </Button>
         {/if}
       </div>
@@ -629,20 +550,28 @@
         {/if}
 
         {#if note && note.type === "LITERATURE"}
-          <Select
-            type="single"
-            value={currentSectionType.value}
-            onValueChange={handleSectionTypeChange}
-          >
-            <SelectTrigger class="h-8 w-[180px]">
-              <span>{currentSectionType.label}</span>
-            </SelectTrigger>
-            <SelectContent>
-              {#each sectionTypeOptions as option}
-                <SelectItem value={option.value}>{option.label}</SelectItem>
-              {/each}
-            </SelectContent>
-          </Select>
+          <div class="flex items-center gap-2">
+            <label
+              for="section-type-select"
+              class="text-sm font-medium text-muted-foreground"
+            >
+              Section:
+            </label>
+            <Select
+              type="single"
+              value={currentSectionType.value}
+              onValueChange={handleSectionTypeChange}
+            >
+              <SelectTrigger id="section-type-select" class="h-8 w-[180px]">
+                <span>{currentSectionType.label}</span>
+              </SelectTrigger>
+              <SelectContent>
+                {#each sectionTypeOptions as option}
+                  <SelectItem value={option.value}>{option.label}</SelectItem>
+                {/each}
+              </SelectContent>
+            </Select>
+          </div>
         {/if}
 
         <Button

@@ -13,6 +13,7 @@
   import { InfoIcon, DownloadIcon, ClipboardCopyIcon } from "lucide-svelte";
   import VennDiagram from "./VennDiagram.svelte";
   import FrequencyChart from "./FrequencyChart.svelte";
+  import { EmptyState } from "$lib/components/ui/empty-state";
   import { toast } from "svelte-sonner";
 
   const { analysis } = $props<{ analysis: KeywordAnalysis }>();
@@ -590,9 +591,14 @@
                   {/each}
                   {#if calculateTripleStats().length === 0}
                     <tr>
-                      <td class="p-2 border text-center italic" colspan="4"
-                        >No triple combinations found or data unavailable.</td
-                      >
+                      <td class="p-2 border text-center" colspan="4">
+                        <EmptyState
+                          title="No triple combinations found"
+                          description="Data unavailable for three-way keyword analysis."
+                          variant="data-empty"
+                          height="h-[100px]"
+                        />
+                      </td>
                     </tr>
                   {/if}
                 </tbody>

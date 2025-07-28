@@ -20,6 +20,7 @@
     Filter,
     ChevronRight,
   } from "lucide-svelte";
+  import EmptyState from "$lib/components/ui/empty-state/EmptyState.svelte";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
   import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
   import type { Literature } from "$lib/types/literature";
@@ -292,15 +293,13 @@
             <p class="break-words">{error}</p>
           </div>
         {:else if nextActions.length === 0}
-          <div
-            class="text-center py-8"
-            transition:slide={{ duration: 300, easing: quintOut }}
-          >
-            <CheckCircle2 class="h-12 w-12 text-green-500 mx-auto mb-4" />
-            <p class="text-lg">All caught up!</p>
-            <p class="text-sm text-muted-foreground mt-2 break-words">
-              No literature needs attention right now.
-            </p>
+          <div transition:slide={{ duration: 300, easing: quintOut }}>
+            <EmptyState
+              title="No Literature Needs Attention"
+              description="No literature needs attention right now."
+              variant="data-empty"
+              height="h-auto"
+            />
           </div>
         {:else}
           <div class="space-y-4">
@@ -368,14 +367,13 @@
 
       <Tabs.Content value="recent">
         {#if recentLiterature.length === 0}
-          <div
-            class="text-center py-8"
-            transition:slide={{ duration: 300, easing: quintOut }}
-          >
-            <p class="text-lg">No Recent Updates</p>
-            <p class="text-sm text-muted-foreground mt-2 break-words">
-              No literature has been updated recently.
-            </p>
+          <div transition:slide={{ duration: 300, easing: quintOut }}>
+            <EmptyState
+              title="No Recent Updates"
+              description="No literature has been updated recently."
+              variant="data-empty"
+              height="h-auto"
+            />
           </div>
         {:else}
           <div class="space-y-4">

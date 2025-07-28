@@ -283,12 +283,16 @@
       timelineFilters.customEventTypes &&
       timelineFilters.customEventTypes.length > 0
     ) {
-      filtered = filtered.filter(
-        (event) =>
-          !event.isCustom ||
-          (event.customEventType &&
-            timelineFilters.customEventTypes!.includes(event.customEventType))
-      );
+      filtered = filtered.filter((event) => {
+        const isNotCustom = !event.isCustom;
+        const isMatchingCustom =
+          event.isCustom &&
+          event.customEventType &&
+          timelineFilters.customEventTypes!.includes(event.customEventType);
+        const shouldInclude = isNotCustom || isMatchingCustom;
+
+        return shouldInclude;
+      });
     }
 
     // Filter by creators
@@ -825,7 +829,21 @@
   }
 
   function handleFiltersChange(newFilters: FilterOptions) {
-    timelineFilters = newFilters;
+    // Update each property individually to maintain reactivity
+    timelineFilters.types = newFilters.types;
+    timelineFilters.searchQuery = newFilters.searchQuery;
+    if (newFilters.customEventTypes !== undefined) {
+      timelineFilters.customEventTypes = newFilters.customEventTypes;
+    }
+    if (newFilters.createdBy !== undefined) {
+      timelineFilters.createdBy = newFilters.createdBy;
+    }
+    if (newFilters.tags !== undefined) {
+      timelineFilters.tags = newFilters.tags;
+    }
+    if (newFilters.dateRange !== undefined) {
+      timelineFilters.dateRange = newFilters.dateRange;
+    }
   }
 
   function handleTimelineGroupingModeChange(mode: "days" | "weeks" | "months") {
@@ -1038,7 +1056,6 @@
 
   function exportAsPDF(events: TimelineEvent[]) {
     // This would require a PDF library like jsPDF
-    console.log("PDF export not yet implemented");
   }
 
   function generateShareLink(filters: FilterOptions) {
@@ -1051,9 +1068,7 @@
     }
 
     const shareUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
-    navigator.clipboard.writeText(shareUrl).then(() => {
-      console.log("Share link copied to clipboard");
-    });
+    navigator.clipboard.writeText(shareUrl).then(() => {});
   }
 
   // Sort function for achievements

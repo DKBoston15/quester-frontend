@@ -84,8 +84,25 @@
   }
 
   function handleDuplicate() {
-    console.log(`ResizableNode (${id}): Dispatching duplicate request.`);
     const event = new CustomEvent("duplicate", {
+      detail: { id },
+      bubbles: true,
+      composed: true,
+    });
+    document.dispatchEvent(event);
+  }
+
+  function bringToFront() {
+    const event = new CustomEvent("bringToFront", {
+      detail: { id },
+      bubbles: true,
+      composed: true,
+    });
+    document.dispatchEvent(event);
+  }
+
+  function sendToBack() {
+    const event = new CustomEvent("sendToBack", {
       detail: { id },
       bubbles: true,
       composed: true,
@@ -96,6 +113,7 @@
 
 <NodeToolbar isVisible={selected} position={Position.Top}>
   <div
+    data-node-toolbar
     class="inline-block p-3 backdrop-blur-md bg-white/80 dark:bg-slate-800/90 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 transition-all"
   >
     <!-- Tabs -->
@@ -129,6 +147,20 @@
         onclick={handleDuplicate}
       >
         Duplicate
+      </button>
+      <button
+        class="px-2 py-1 text-xs font-medium rounded text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+        onclick={bringToFront}
+        title="Bring to Front"
+      >
+        ↑ Front
+      </button>
+      <button
+        class="px-2 py-1 text-xs font-medium rounded text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+        onclick={sendToBack}
+        title="Send to Back"
+      >
+        ↓ Back
       </button>
     </div>
 

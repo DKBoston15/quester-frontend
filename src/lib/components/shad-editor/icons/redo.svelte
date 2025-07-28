@@ -16,10 +16,6 @@
   $effect(() => {
     function updateDisabledState() {
       const canRedo = editor?.can().chain().focus().redo().run();
-      console.log(
-        "Redo button: updateDisabledState called. Can redo:",
-        canRedo
-      );
       isDisabled = !canRedo;
     }
 

@@ -23,6 +23,7 @@ interface ItsFunction {
 
 const posIts = its.pos as ItsFunction;
 const lemmaIts = its.lemma as ItsFunction;
+const normalIts = its.normal as ItsFunction;
 
 export class AnalysisData {
   nounsWordCounts: Record<string, number> = {};
@@ -40,6 +41,7 @@ export class AnalysisData {
   measurementDesigns: Record<string, number> = {};
   keywords: Record<string, number> = {};
   literatureTypes: Record<string, number> = {};
+  noteTypes: Record<string, number> = {};
   yearTypeMatrix: Record<string, Record<string, number>> = {};
 
   updateWordCount(
@@ -130,12 +132,78 @@ export class AnalysisData {
 
     return { years, types, datasets };
   }
+
+  getFrequencyDistribution(): { names: string[]; counts: number[] } {
+    const yearEntries = Object.entries(this.years);
+    if (yearEntries.length === 0) {
+      return { names: [], counts: [] };
+    }
+
+    const years = yearEntries.map(([year]) => parseInt(year)).filter(year => !isNaN(year));
+    if (years.length === 0) {
+      return { names: [], counts: [] };
+    }
+
+    const minYear = Math.min(...years);
+    const maxYear = Math.max(...years);
+    const yearRange = maxYear - minYear;
+
+    let binSize: number;
+    let binLabel: string;
+
+    if (yearRange <= 10) {
+      binSize = 2;
+      binLabel = "2-year";
+    } else if (yearRange <= 20) {
+      binSize = 3;
+      binLabel = "3-year";
+    } else if (yearRange <= 50) {
+      binSize = 5;
+      binLabel = "5-year";
+    } else {
+      binSize = 10;
+      binLabel = "decade";
+    }
+
+    const bins: Record<string, number> = {};
+    
+    yearEntries.forEach(([year, count]) => {
+      const yearNum = parseInt(year);
+      if (isNaN(yearNum)) return;
+      
+      const binStart = Math.floor((yearNum - minYear) / binSize) * binSize + minYear;
+      const binEnd = binStart + binSize - 1;
+      const binKey = binSize === 10 ? 
+        `${Math.floor(binStart / 10) * 10}s` : 
+        `${binStart}-${binEnd}`;
+      
+      bins[binKey] = (bins[binKey] || 0) + count;
+    });
+
+    const sortedBins = Object.entries(bins).sort((a, b) => {
+      if (binSize === 10) {
+        const aDecade = parseInt(a[0].replace('s', ''));
+        const bDecade = parseInt(b[0].replace('s', ''));
+        return aDecade - bDecade;
+      } else {
+        const aStart = parseInt(a[0].split('-')[0]);
+        const bStart = parseInt(b[0].split('-')[0]);
+        return aStart - bStart;
+      }
+    });
+
+    return {
+      names: sortedBins.map(([binKey]) => binKey),
+      counts: sortedBins.map(([, count]) => count),
+    };
+  }
 }
 
 async function processTextWithNLP(
   text: string,
   analysisData: AnalysisData,
-  countType: "wordCounts" | "literatureWordCounts"
+  countType: "wordCounts" | "literatureWordCounts",
+  useLemmatization: boolean = true
 ) {
   // Clean and normalize the text
   const cleanText = text
@@ -199,18 +267,17 @@ async function processTextWithNLP(
   ];
 
   // Get all tokens and their parts of speech for debugging
-  const allTokens = doc.tokens().out();
-  const allPos = doc.tokens().out(posIts);
+  // const allTokens = doc.tokens().out();
+  // const allPos = doc.tokens().out(posIts);
 
   // Extract parts of speech with pattern matching
   const nouns = doc
     .tokens()
     .filter((t) => {
       const pos = t.out(posIts);
-      const word = t.out();
       return pos === "NOUN" || pos === "PROPN";
     })
-    .out(lemmaIts);
+    .out(useLemmatization ? lemmaIts : normalIts);
 
   // Combine POS tagging with pattern matching for verbs
   const verbs = doc
@@ -220,7 +287,7 @@ async function processTextWithNLP(
       const word = t.out();
       return pos === "VERB" || verbPatterns.includes(word);
     })
-    .out(lemmaIts);
+    .out(useLemmatization ? lemmaIts : normalIts);
 
   // Combine POS tagging with pattern matching for adjectives
   const adjectives = doc
@@ -230,7 +297,7 @@ async function processTextWithNLP(
       const word = t.out();
       return pos === "ADJ" || adjPatterns.includes(word);
     })
-    .out(lemmaIts);
+    .out(useLemmatization ? lemmaIts : normalIts);
 
   // Additional processing for hyphenated words
   const words = cleanText.split(" ");
@@ -257,7 +324,7 @@ async function processTextWithNLP(
   }
 }
 
-function extractTextFromTipTap(content: any): string {
+export function extractTextFromTipTap(content: any): string {
   try {
     if (!content) {
       return "";
@@ -337,7 +404,7 @@ export async function analyzeLiterature(
       analysisData.countOccurrences(keywordsArray, analysisData.keywords);
     }
     if (lit.name && typeof lit.name === "string" && lit.name.trim()) {
-      processTextWithNLP(lit.name.trim(), analysisData, "literatureWordCounts");
+      processTextWithNLP(lit.name.trim(), analysisData, "literatureWordCounts", false);
     }
     if (lit.authors) {
       let authorsArray: string[];
@@ -397,17 +464,31 @@ export async function analyzeLiterature(
   });
 
   // Process notes
-  notes.forEach((note, index) => {
+  notes.forEach((note, _index) => {
+    // Count note section types
+    if (note.section_type) {
+      let sectionTypeValue: string;
+      if (typeof note.section_type === "object" && note.section_type !== null) {
+        sectionTypeValue = note.section_type.label || note.section_type.value || "Other";
+      } else if (typeof note.section_type === "string") {
+        sectionTypeValue = note.section_type;
+      } else {
+        sectionTypeValue = "Other";
+      }
+      analysisData.countOccurrences([sectionTypeValue], analysisData.noteTypes);
+    }
+
     if (note.content) {
       const plainText = extractTextFromTipTap(note.content);
 
       if (plainText.trim()) {
-        processTextWithNLP(plainText.trim(), analysisData, "wordCounts");
+        processTextWithNLP(plainText.trim(), analysisData, "wordCounts", false);
       }
     }
   });
 
   const publicationYearsSorted = analysisData.sortYearsChronologically();
+  const frequencyDistribution = analysisData.getFrequencyDistribution();
 
   return {
     totalLiteratureCount: literature.length,
@@ -416,8 +497,14 @@ export async function analyzeLiterature(
     topAuthors: analysisData.sortAndFilter(analysisData.authors),
     topPublishers: analysisData.sortAndFilter(analysisData.publishers),
     publicationYears: publicationYearsSorted,
+    publicationYearFrequency: frequencyDistribution,
     literatureTypes: analysisData.sortAndFilter(
       analysisData.literatureTypes,
+      1,
+      false
+    ),
+    noteTypes: analysisData.sortAndFilter(
+      analysisData.noteTypes,
       1,
       false
     ),

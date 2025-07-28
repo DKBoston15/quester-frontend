@@ -62,9 +62,6 @@
 
   // Create the chart when the component is mounted
   onMount(() => {
-    console.log(
-      `[CHART ${projectName}] Component mounted, range: ${dateRange}`
-    );
 
     // Destroy any previous chart instance if it exists
     if (chartInstance) {
@@ -77,20 +74,11 @@
 
     // Immediately check for data and initialize the chart
     if (chartCanvas) {
-      console.log(
-        `[CHART ${projectName}] Canvas available at mount, initializing chart immediately`
-      );
       initializeChart();
     } else {
-      console.log(
-        `[CHART ${projectName}] Canvas not available at mount, waiting for it to be ready`
-      );
       // Only use a timeout if canvas isn't available yet
       setTimeout(() => {
         if (chartCanvas) {
-          console.log(
-            `[CHART ${projectName}] Canvas now available after timeout`
-          );
           initializeChart();
         } else {
           console.error(
@@ -144,13 +132,9 @@
 
   // Prepare chart data from dailyActivityCounts, filtered by dateRange
   function prepareChartData(): { labels: string[]; datasets: any[] } | null {
-    console.log(
-      `[CHART ${projectName}] Preparing chart data for range: ${dateRange}`
-    );
 
     const countsData = { ...dailyActivityCounts } as DailyActivityCounts;
     if (!countsData || Object.keys(countsData).length === 0) {
-      console.log(`[CHART ${projectName}] No data to prepare`);
       return null;
     }
 
@@ -196,15 +180,8 @@
           break;
       }
 
-      console.log(
-        `[CHART ${projectName}] Filtered dates for range ${dateRange}:`,
-        filteredDates
-      );
 
       if (filteredDates.length === 0) {
-        console.log(
-          `[CHART ${projectName}] No dates available in the selected range`
-        );
         return null;
       }
 
@@ -242,16 +219,9 @@
         return count;
       });
 
-      console.log(
-        `[CHART ${projectName}] hasAnyActivity in range:`,
-        hasAnyActivity
-      );
 
       // If no activity data is found in the filtered range, return null
       if (!hasAnyActivity) {
-        console.log(
-          `[CHART ${projectName}] No activity found in the selected range`
-        );
         return null;
       }
 
@@ -281,9 +251,6 @@
   // Initialize the chart with the current data
   function initializeChart() {
     try {
-      console.log(
-        `[CHART ${projectName}] Initializing chart, range=${dateRange}`
-      );
 
       // Clear any previous error
       chartError = null;
@@ -304,9 +271,6 @@
 
       // Determine if there's data *after* filtering
       hasData = !!chartData;
-      console.log(
-        `[CHART ${projectName}] Data check after filtering (range: ${dateRange}): hasData=${hasData}`
-      );
 
       // If we don't have data after filtering, create an empty chart
       if (!chartData) {
@@ -325,14 +289,6 @@
       }
       // --- END: Conditional Bar Thickness ---
 
-      // Log actual data being used
-      console.log(`[CHART ${projectName}] Creating chart with filtered data:`, {
-        labels: chartData.labels,
-        datasets: chartData.datasets.map((d) => ({
-          label: d.label,
-          maxThickness: (d as any).maxBarThickness,
-        })), // Log thickness
-      });
 
       // Create new chart instance
       const ctx = chartCanvas.getContext("2d");
@@ -388,7 +344,6 @@
         },
       });
 
-      console.log(`[CHART ${projectName}] Chart created successfully`);
     } catch (error: unknown) {
       console.error(`[CHART ${projectName}] Error initializing chart:`, error);
       chartError = `Error: ${error instanceof Error ? error.message : String(error)}`;
@@ -399,7 +354,6 @@
 
   // Create an empty chart with "No Data" message
   function createEmptyChart() {
-    console.log(`[CHART ${projectName}] Creating empty placeholder chart`);
 
     // Destroy any existing chart instance
     if (chartInstance) {
@@ -467,7 +421,6 @@
       },
     });
 
-    console.log(`[CHART ${projectName}] Empty placeholder chart created`);
   }
 
   // Clean up chart instance when component is destroyed
@@ -483,27 +436,14 @@
     const currentData = dailyActivityCounts;
     const currentRange = dateRange;
 
-    console.log(
-      `[CHART ${projectName}] Effect triggered, data/range changed. Range: ${currentRange}`
-    );
-    console.log(
-      `[CHART ${projectName}] Keys in effect:`,
-      Object.keys(currentData).length
-    );
 
     // Re-initialize the chart which will now use the new range
     if (chartCanvas) {
       if (chartInstance) {
-        console.log(
-          `[CHART ${projectName}] Destroying existing chart instance due to prop change`
-        );
         chartInstance.destroy();
         chartInstance = null;
       }
 
-      console.log(
-        `[CHART ${projectName}] Initializing/reinitializing chart due to prop change`
-      );
       initializeChart();
     }
   });
