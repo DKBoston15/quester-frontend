@@ -540,12 +540,30 @@ async function sendChatMessage(message: string): Promise<void> {
         projectId: projectId || null, // Allow null for "All Projects" chats
         scope: scope,
         provider: 'openai', // Default to OpenAI
-        context: results.length > 0 ? { searchResults: results } : undefined
+        context: {
+          ...(results.length > 0 ? { searchResults: results } : {}),
+          ...(chatMessages.length > 0 ? { chatHistory: chatMessages.slice(-10) } : {}) // Include last 10 messages for context
+        }
       })
     });
 
     if (!response.ok) {
-      throw new Error(`Chat failed: ${response.statusText}`);
+      let errorMessage = `Chat failed: ${response.statusText}`;
+      
+      // Try to get more specific error from response body
+      try {
+        const errorData = await response.json();
+        if (errorData.error) {
+          errorMessage = errorData.error;
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      } catch (parseError) {
+        // If we can't parse the error response, use the default message
+        console.warn('Could not parse error response:', parseError);
+      }
+      
+      throw new Error(errorMessage);
     }
 
     const assistantMessage: ChatMessage = {

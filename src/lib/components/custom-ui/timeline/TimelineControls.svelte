@@ -120,19 +120,22 @@
 
   // Get available custom event types
   let availableCustomEventTypes = $derived(() => {
+    console.log("Raw custom events for filter:", customEvents);
     const types = new Set<string>();
     customEvents.forEach((event: CustomTimelineEvent) => {
       if (event.eventType) {
         types.add(event.eventType);
       }
     });
-    return Array.from(types).map((type) => ({
+    const result = Array.from(types).map((type) => ({
       id: type,
       label: type.charAt(0).toUpperCase() + type.slice(1),
       count: customEvents.filter(
         (e: CustomTimelineEvent) => e.eventType === type
       ).length,
     }));
+    console.log("Available custom event types for filter:", result);
+    return result;
   });
 
   // Get available creators

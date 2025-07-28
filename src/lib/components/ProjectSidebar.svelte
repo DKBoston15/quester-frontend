@@ -477,12 +477,14 @@
               <Button
                 variant="outline"
                 size="sm"
-                class="w-full justify-start gap-2"
+                class="w-full justify-start gap-2 group-data-[collapsible=icon]:justify-center"
                 onclick={() => globalSearchStore.open()}
               >
-                <Search class="size-4" />
+                <Search class="h-4 w-4 flex-shrink-0" />
                 <span class="group-data-[collapsible=icon]:hidden">Search</span>
-                <kbd class="pointer-events-none ml-auto inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground group-data-[collapsible=icon]:hidden">
+                <kbd
+                  class="pointer-events-none ml-auto inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground group-data-[collapsible=icon]:hidden"
+                >
                   <CommandIcon class="size-3" />
                   K
                 </kbd>
@@ -491,7 +493,7 @@
           </Sidebar.Menu>
         </Sidebar.GroupContent>
       </Sidebar.Group>
-      
+
       <Sidebar.Separator />
 
       <!-- Primary Navigation -->

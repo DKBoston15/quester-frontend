@@ -133,6 +133,19 @@
     }
   });
 
+  function addParticleEffects(node) {
+    // Add directional particles on the links connected to the selected node
+    if (Graph) {
+      Graph.linkDirectionalParticles((link) => {
+        if (link.source === node || link.target === node) {
+          return 4; // Number of particles
+        }
+        return 0;
+      });
+      Graph.linkDirectionalParticleSpeed(0.005); // Speed of particles
+    }
+  }
+
   function handleNodeClick(node, event) {
     selectedNode = node;
     Graph.nodeColor(Graph.nodeColor());

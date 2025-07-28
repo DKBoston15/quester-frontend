@@ -37,7 +37,6 @@
   let currentNoteId = note.id;
   let originalTitle = $state(note.name);
   let lastKnownUpdatedAt = $state(note.updated_at);
-  let saveConflictDetected = $state(false);
   let titleChanged = $state(false);
   let isTitleFocused = $state(false);
   let isUserEditingTitle = $state(false);
@@ -285,23 +284,18 @@
     // Only reset contentChanged if we're actually going to save
     if (!isUnmounting) {
       contentChanged = false;
-      saveConflictDetected = false;
     }
 
     isSaving = true;
     try {
       const contentToSave = JSON.stringify(content);
 
-      // Check for conflicts by comparing last known updated_at with current server state
+      // Update the lastKnownUpdatedAt when saving
       try {
         const currentServerNote = await api.get(`/note/${note.id}`);
-        if (currentServerNote.updated_at !== lastKnownUpdatedAt) {
-          saveConflictDetected = true;
-          console.warn('Note conflict detected - note was updated by another source');
-          // Still proceed with save but log the conflict
-        }
-      } catch (conflictError) {
-        console.warn('Could not check for conflicts:', conflictError);
+        lastKnownUpdatedAt = currentServerNote.updated_at;
+      } catch (error) {
+        // Silently continue if we can't get current state
       }
 
       // Use the store's update method to ensure the note list updates
@@ -478,16 +472,6 @@
       <Save class="h-3 w-3 animate-spin" />
       Saving...
     </div>
-  {:else if saveConflictDetected}
-    <div
-      class="absolute top-4 right-4 z-10 px-3 py-1 rounded-full bg-yellow-50 dark:bg-yellow-900/20 backdrop-blur border border-yellow-200 dark:border-yellow-800 shadow-sm flex items-center gap-2 text-sm text-yellow-700 dark:text-yellow-300"
-      transition:fade={{ duration: 200 }}
-    >
-      <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
-      </svg>
-      Conflict detected
-    </div>
   {/if}
 
   <!-- Editor Header -->
@@ -545,7 +529,7 @@
             onclick={saveTitle}
             title="Save title"
           >
-            <Save class="h-3 w-3" />
+            <Save class="h-4 w-4" />
           </Button>
         {/if}
       </div>

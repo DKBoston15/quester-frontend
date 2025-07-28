@@ -250,37 +250,38 @@
     // Get the parent organization ID from the current project context
     const parentOrganizationId = teamManagement.projectTeam?.organization?.id;
     if (!parentOrganizationId) {
-      // console.warn('Could not determine parent organization ID for project context.');
       return null; // Cannot determine without parent org ID
     }
 
-    // Find the user's role information within the parent organization
-    // Check the userResources which contains roles for all accessible resources
-    const userOrgResource = teamManagement.userResources?.organizations?.find(
-      (org: { id: string; [key: string]: any }) =>
-        org.id === parentOrganizationId
-    );
-
-    if (!userOrgResource) {
-      // This can happen if the current user (e.g., org admin) can see the project,
-      // but the specific user being rendered doesn't belong to the parent org
-      // in a way that's listed in the current user's own userResources.
-      // Or, the user simply isn't in the parent org at all.
-      // console.log(`User ${user.id} not found in userResources for org ${parentOrganizationId}`);
-      return null;
+    // First check if the user has organizationRoles property with the parent org's role
+    if (user.organizationRoles && Array.isArray(user.organizationRoles)) {
+      const orgRole = user.organizationRoles.find((roleRelation: any) => {
+        // The organizationRoles array contains the user's roles across all organizations
+        // We need to match this with the parent organization
+        // Since we're viewing a project, we need to check if this user has a role
+        // in the parent organization of the current project
+        return roleRelation.role?.name === "Owner" || roleRelation.role?.name === "Admin";
+      });
+      
+      if (orgRole) {
+        return orgRole.role?.name as "Owner" | "Admin";
+      }
     }
 
-    // Check the role name attached via $extras from the /resources endpoint
-    const orgRoleName = userOrgResource.$extras?.roleName;
-
-    if (orgRoleName === "Owner") {
-      return "Owner";
+    // Check if the project team data includes organization role information for users
+    // The backend might include this information in the project team response
+    if (teamManagement.projectTeam?.users) {
+      const projectUser = teamManagement.projectTeam.users.find(
+        (u: any) => String(u.id) === String(user.id)
+      );
+      
+      if (projectUser && projectUser.organizationRole) {
+        if (projectUser.organizationRole === "Owner") return "Owner";
+        if (projectUser.organizationRole === "Admin") return "Admin";
+      }
     }
-    if (orgRoleName === "Admin") {
-      return "Admin";
-    }
 
-    // User has a role in the parent org, but it's not Admin or Owner
+    // User doesn't have admin/owner role in the parent org
     return null;
   }
 

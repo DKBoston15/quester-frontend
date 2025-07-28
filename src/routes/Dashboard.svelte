@@ -56,16 +56,6 @@
         },
       },
       {
-        element: "#subscription-card",
-        popover: {
-          title: "Subscription Management",
-          description:
-            "If you're the owner, manage your plan details here. Access to advanced features and team collaboration depends on your subscription.",
-          side: "top",
-          align: "start",
-        },
-      },
-      {
         element: "#organization-structure-card",
         popover: {
           title: "Organization Structure",

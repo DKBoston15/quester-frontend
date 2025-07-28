@@ -283,12 +283,26 @@
       timelineFilters.customEventTypes &&
       timelineFilters.customEventTypes.length > 0
     ) {
+      console.log("Applying custom event type filter:", timelineFilters.customEventTypes);
+      console.log("Total events before custom filter:", filtered.length);
+      console.log("Custom events before filter:", filtered.filter(e => e.isCustom).map(e => ({ title: e.title, customEventType: e.customEventType })));
+      
       filtered = filtered.filter(
-        (event) =>
-          !event.isCustom ||
-          (event.customEventType &&
-            timelineFilters.customEventTypes!.includes(event.customEventType))
+        (event) => {
+          const isNotCustom = !event.isCustom;
+          const isMatchingCustom = event.isCustom && event.customEventType && timelineFilters.customEventTypes!.includes(event.customEventType);
+          const shouldInclude = isNotCustom || isMatchingCustom;
+          
+          if (event.isCustom) {
+            console.log(`Custom event "${event.title}": customEventType="${event.customEventType}", shouldInclude=${shouldInclude}`);
+          }
+          
+          return shouldInclude;
+        }
       );
+      
+      console.log("Total events after custom filter:", filtered.length);
+      console.log("Custom events after filter:", filtered.filter(e => e.isCustom).map(e => ({ title: e.title, customEventType: e.customEventType })));
     }
 
     // Filter by creators
@@ -825,7 +839,21 @@
   }
 
   function handleFiltersChange(newFilters: FilterOptions) {
-    timelineFilters = newFilters;
+    // Update each property individually to maintain reactivity
+    timelineFilters.types = newFilters.types;
+    timelineFilters.searchQuery = newFilters.searchQuery;
+    if (newFilters.customEventTypes !== undefined) {
+      timelineFilters.customEventTypes = newFilters.customEventTypes;
+    }
+    if (newFilters.createdBy !== undefined) {
+      timelineFilters.createdBy = newFilters.createdBy;
+    }
+    if (newFilters.tags !== undefined) {
+      timelineFilters.tags = newFilters.tags;
+    }
+    if (newFilters.dateRange !== undefined) {
+      timelineFilters.dateRange = newFilters.dateRange;
+    }
   }
 
   function handleTimelineGroupingModeChange(mode: "days" | "weeks" | "months") {

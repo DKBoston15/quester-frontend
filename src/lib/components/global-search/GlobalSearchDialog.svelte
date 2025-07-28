@@ -351,7 +351,7 @@
                               {result.type}
                             </Badge>
                             {#if searchScope === 'all' && result.projectInfo}
-                              <Badge variant="secondary" class="text-xs bg-blue-100 text-blue-800 hover:bg-blue-200">
+                              <Badge variant="secondary" class="text-xs bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/30">
                                 {result.projectInfo.name}
                               </Badge>
                             {/if}
