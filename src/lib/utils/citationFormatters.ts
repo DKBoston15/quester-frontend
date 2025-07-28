@@ -62,11 +62,18 @@ function formatAuthorName(author: string): string {
     const parts = author.split(", ");
     const lastName = parts[0] || "";
     const firstName = parts[1] || "";
-    const formattedInitials = firstName
-      .split(" ")
-      .map((initial) => `${initial.charAt(0)}.`)
-      .join(" ");
-    return `${lastName}, ${formattedInitials}`;
+    
+    if (firstName && firstName.trim()) {
+      const formattedInitials = firstName
+        .split(" ")
+        .filter(initial => initial.trim()) // Filter out empty strings
+        .map((initial) => `${initial.charAt(0)}.`)
+        .join(" ");
+      return `${lastName}, ${formattedInitials}`;
+    } else {
+      // If no first name, return just the last name
+      return lastName;
+    }
   }
   return "";
 }
