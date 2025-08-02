@@ -21,6 +21,7 @@
   import { GlobalSearchDialog } from "$lib/components/global-search";
   import AnnouncementModal from "$lib/components/announcements/AnnouncementModal.svelte";
   import { announcementStore } from "$lib/stores/AnnouncementStore.svelte";
+  import { initializeFullStory } from "$lib/services/fullstory";
 
   const props = $props<{ url: string }>();
 
@@ -28,6 +29,9 @@
   let isCheckingAuth = $state(true);
 
   onMount(async () => {
+    // Initialize FullStory
+    initializeFullStory();
+    
     // Safety timeout - force loading to false after 10 seconds
     const safetyTimeout = setTimeout(() => {
       isCheckingAuth = false;
