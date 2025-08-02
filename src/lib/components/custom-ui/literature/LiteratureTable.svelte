@@ -20,6 +20,7 @@
     Archive,
     AlertCircle,
   } from "lucide-svelte";
+  import { API_BASE_URL } from '$lib/config';
 
   // Register required modules
   ModuleRegistry.registerModules([ClientSideRowModelModule]);
@@ -223,6 +224,59 @@
       },
       suppressMenu: true,
     },
+    {
+      field: "sourceFileId",
+      headerName: "File",
+      width: 100,
+      sortable: false,
+      filter: false,
+      suppressMenu: true,
+      cellRenderer: (params: ICellRendererParams<Literature>) => {
+        if (!params.value) {
+          return '';
+        }
+        
+        const container = document.createElement('div');
+        container.className = 'flex items-center justify-center gap-1';
+        
+        // Preview button
+        const previewButton = document.createElement('button');
+        previewButton.className = 'p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors';
+        previewButton.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        `;
+        previewButton.title = 'Preview document';
+        
+        previewButton.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          await previewDocument(params.value, params.data?.name || 'document');
+        });
+        
+        // Download button
+        const downloadButton = document.createElement('button');
+        downloadButton.className = 'p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors';
+        downloadButton.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7,10 12,15 17,10"/>
+            <line x1="12" x2="12" y1="15" y2="3"/>
+          </svg>
+        `;
+        downloadButton.title = 'Download document';
+        
+        downloadButton.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          await downloadDocument(params.value, params.data?.name || 'document');
+        });
+        
+        container.appendChild(previewButton);
+        container.appendChild(downloadButton);
+        return container;
+      },
+    },
   ];
 
   const gridOptions: GridOptions<Literature> = {
@@ -267,6 +321,73 @@
     suppressDragLeaveHidesColumns: true,
     domLayout: "normal",
   };
+
+  async function previewDocument(fileId: string, filename: string) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/documents/${fileId}/download?preview=true`, {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get preview URL');
+      }
+
+      const data = await response.json();
+      
+      // Fetch the PDF through CORS-enabled request, then create blob URL
+      const pdfResponse = await fetch(data.downloadUrl, {
+        method: 'GET',
+        mode: 'cors', // Explicitly enable CORS
+      });
+      
+      if (!pdfResponse.ok) {
+        throw new Error('Failed to fetch PDF');
+      }
+      
+      const pdfBlob = await pdfResponse.blob();
+      // Create blob with correct MIME type for PDF
+      const typedBlob = new Blob([pdfBlob], { type: 'application/pdf' });
+      const blobUrl = URL.createObjectURL(typedBlob);
+      
+      // Open blob URL (no CORS issues)
+      const newWindow = window.open(blobUrl, '_blank');
+      
+      // Clean up blob URL after a delay
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+      
+    } catch (err) {
+      console.error('Preview error:', err);
+      // Fallback to download
+      await downloadDocument(fileId, filename);
+    }
+  }
+
+  async function downloadDocument(fileId: string, filename: string) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/documents/${fileId}/download`, {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get download URL');
+      }
+
+      const data = await response.json();
+      
+      // Create a download link
+      const link = document.createElement('a');
+      link.href = data.downloadUrl;
+      link.download = filename;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+    } catch (err) {
+      console.error('Download error:', err);
+      // Could show a toast error here
+    }
+  }
 
   onMount(() => {
     createGrid(gridDiv, gridOptions);

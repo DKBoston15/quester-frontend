@@ -8,7 +8,7 @@
   import { Button } from "$lib/components/ui/button";
   import * as Card from "$lib/components/ui/card";
   import * as Tooltip from "$lib/components/ui/tooltip";
-  import { Plus, GraduationCap, Info, Download } from "lucide-svelte";
+  import { Plus, GraduationCap, Info, Download, Upload } from "lucide-svelte";
   import { EmptyState } from "$lib/components/ui/empty-state";
   import type { Literature } from "$lib/types/literature";
   import type { GridApi } from "@ag-grid-community/core";
@@ -16,6 +16,8 @@
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
   import ExportReferences from "$lib/components/custom-ui/literature/export/ExportReferences.svelte";
+  import DocumentUpload from "$lib/components/custom-ui/literature/DocumentUpload.svelte";
+  import ProcessingStatus from "$lib/components/custom-ui/literature/ProcessingStatus.svelte";
 
   let searchQuery = $state("");
   let gridApi = $state<GridApi<Literature>>();
@@ -23,6 +25,8 @@
   let selectedLiterature = $state<Literature | null>(null);
   let selectedLiteratureItems = $state<Literature[]>([]);
   let isExportDialogOpen = $state(false);
+  let isDocumentUploadOpen = $state(false);
+  let activeProcessingJobs = $state<string[]>([]);
 
   const driverObj = driver({
     showProgress: true,
@@ -210,6 +214,43 @@
     }
     isExportDialogOpen = true;
   }
+
+  function handleDocumentUpload() {
+    isDocumentUploadOpen = true;
+  }
+
+  function handleDocumentsProcessed(event: CustomEvent<{ jobId: string; files: any[] }>) {
+    console.log('Documents processed:', event.detail);
+    
+    // Remove job from active list
+    activeProcessingJobs = activeProcessingJobs.filter(id => id !== event.detail.jobId);
+    
+    // Refresh literature list
+    literatureStore.loadLiterature(projectStore.currentProject?.id);
+    
+    // Could show a success toast here
+  }
+
+  function handleDocumentUploadStart(event: CustomEvent<{ jobId: string }>) {
+    console.log('Document upload started:', event.detail);
+    
+    // Add job to active processing list
+    if (!activeProcessingJobs.includes(event.detail.jobId)) {
+      activeProcessingJobs = [...activeProcessingJobs, event.detail.jobId];
+    }
+  }
+
+  function handleProcessingComplete(event: CustomEvent<{ jobId: string; status: string }>) {
+    console.log('Processing complete:', event.detail);
+    
+    // Remove from active jobs
+    activeProcessingJobs = activeProcessingJobs.filter(id => id !== event.detail.jobId);
+    
+    // Refresh literature if successful
+    if (event.detail.status === 'completed') {
+      literatureStore.loadLiterature(projectStore.currentProject?.id);
+    }
+  }
 </script>
 
 <div class="flex-1 w-full">
@@ -243,6 +284,14 @@
                 {selectedLiteratureItems.length}
               </span>
             {/if}
+          </Button>
+          <Button
+            onclick={handleDocumentUpload}
+            variant="outline"
+            class="border-2 dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
+          >
+            <Upload class="h-4 w-4 mr-2" />
+            Upload Documents
           </Button>
           <Button
             onclick={handleAddLiterature}
@@ -346,6 +395,29 @@
   userName={projectStore.currentUser?.name || projectStore.currentUser?.email}
   onOpenChange={(open: boolean) => (isExportDialogOpen = open)}
 />
+
+<!-- Document Upload Modal -->
+<DocumentUpload
+  projectId={projectStore.currentProject?.id || ''}
+  isOpen={isDocumentUploadOpen}
+  onOpenChange={(open: boolean) => (isDocumentUploadOpen = open)}
+  on:documents-processed={handleDocumentsProcessed}
+  on:upload-started={handleDocumentUploadStart}
+/>
+
+<!-- Processing Status Cards -->
+{#if activeProcessingJobs.length > 0}
+  <div class="fixed bottom-4 right-4 space-y-2 z-50 max-w-md">
+    {#each activeProcessingJobs as jobId (jobId)}
+      <ProcessingStatus
+        {jobId}
+        autoRefresh={true}
+        showDetails={false}
+        on:processing-complete={handleProcessingComplete}
+      />
+    {/each}
+  </div>
+{/if}
 
 <style>
   :global(.ag-theme-alpine) {

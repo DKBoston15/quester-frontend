@@ -9,9 +9,10 @@
   import LiteratureDesigns from "$lib/components/custom-ui/literature/literatureItem/LiteratureDesigns.svelte";
   import Keywords from "$lib/components/custom-ui/literature/literatureItem/Keywords.svelte";
   import LiteratureInsights from "$lib/components/custom-ui/literature/literatureItem/LiteratureInsights.svelte";
-  import { ArrowLeft, Trash2 } from "lucide-svelte";
+  import { ArrowLeft, Trash2, Eye, Download } from "lucide-svelte";
   import { navigate } from "svelte-routing";
   import type { Literature } from "$lib/types/literature";
+  import { API_BASE_URL } from '$lib/config';
   import Reference from "$lib/components/custom-ui/literature/literatureItem/Reference.svelte";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
@@ -70,6 +71,74 @@
     }
   }
 
+  async function previewDocument() {
+    if (!literature?.sourceFileId) return;
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/documents/${literature.sourceFileId}/download?preview=true`, {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get preview URL');
+      }
+
+      const data = await response.json();
+      
+      // Fetch the PDF through CORS-enabled request, then create blob URL
+      const pdfResponse = await fetch(data.downloadUrl, {
+        method: 'GET',
+        mode: 'cors',
+      });
+      
+      if (!pdfResponse.ok) {
+        throw new Error('Failed to fetch PDF');
+      }
+      
+      const pdfBlob = await pdfResponse.blob();
+      // Create blob with correct MIME type for PDF
+      const typedBlob = new Blob([pdfBlob], { type: 'application/pdf' });
+      const blobUrl = URL.createObjectURL(typedBlob);
+      
+      // Open blob URL (no CORS issues)
+      window.open(blobUrl, '_blank');
+      
+      // Clean up blob URL after a delay
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+      
+    } catch (err) {
+      console.error('Preview error:', err);
+    }
+  }
+
+  async function downloadDocument() {
+    if (!literature?.sourceFileId) return;
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/documents/${literature.sourceFileId}/download`, {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get download URL');
+      }
+
+      const data = await response.json();
+      
+      // Create a download link
+      const link = document.createElement('a');
+      link.href = data.downloadUrl;
+      link.download = data.filename;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+    } catch (err) {
+      console.error('Download error:', err);
+    }
+  }
+
   const driverObj = driver({
     showProgress: true,
     popoverClass: "quester-driver-theme",
@@ -91,6 +160,24 @@
           description: "Return to the main literature list for this project.",
           side: "right",
           align: "start",
+        },
+      },
+      {
+        element: "#lit-view-preview-button",
+        popover: {
+          title: "View Document",
+          description: "Open the original document file in your browser for reading and review.",
+          side: "bottom",
+          align: "center",
+        },
+      },
+      {
+        element: "#lit-view-download-button",
+        popover: {
+          title: "Download Document",
+          description: "Download the original document file to your computer.",
+          side: "bottom",
+          align: "center",
         },
       },
       {
@@ -187,6 +274,26 @@
         </Button>
         {#if literature}
           <div class="flex items-center gap-2">
+            {#if literature.sourceFileId}
+              <Button
+                variant="outline"
+                size="sm"
+                onclick={previewDocument}
+                id="lit-view-preview-button"
+              >
+                <Eye class="h-4 w-4 mr-2" />
+                View Document
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onclick={downloadDocument}
+                id="lit-view-download-button"
+              >
+                <Download class="h-4 w-4 mr-2" />
+                Download
+              </Button>
+            {/if}
             <Button
               id="lit-view-delete-button"
               variant="destructive"
