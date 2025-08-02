@@ -20,6 +20,9 @@ importers:
       '@ag-grid-community/styles':
         specifier: ^33.0.3
         version: 33.0.3
+      '@fullstory/browser':
+        specifier: ^2.0.6
+        version: 2.0.6
       '@melt-ui/svelte':
         specifier: ^0.86.3
         version: 0.86.6(svelte@5.33.18)
@@ -462,6 +465,12 @@ packages:
 
   '@floating-ui/utils@0.2.9':
     resolution: {integrity: sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==}
+
+  '@fullstory/browser@2.0.6':
+    resolution: {integrity: sha512-5cbZldOkb+KhgAFRQ5iMEoJR+TgKhCBRFiZN3PMHr+++EmHqprtNMyEAGppe02GUkASV4+7s4txghq6nkrRj8Q==}
+
+  '@fullstory/snippet@2.0.5':
+    resolution: {integrity: sha512-33GJ/QhzZNk4q2B6LhU6Siha68NalrkPxdOaqrVZbUp0UyNYf3qHmU3ATTe51Vk/aM2J34ylrItJ7u94PQ16sA==}
 
   '@internationalized/date@3.8.2':
     resolution: {integrity: sha512-/wENk7CbvLbkUvX1tu0mwq49CVkkWpkXubGel6birjRPyo6uQ4nQpnq5xZu823zRCwwn82zgHrvgF1vZyvmVgA==}
@@ -2494,6 +2503,12 @@ snapshots:
       '@floating-ui/utils': 0.2.9
 
   '@floating-ui/utils@0.2.9': {}
+
+  '@fullstory/browser@2.0.6':
+    dependencies:
+      '@fullstory/snippet': 2.0.5
+
+  '@fullstory/snippet@2.0.5': {}
 
   '@internationalized/date@3.8.2':
     dependencies:
