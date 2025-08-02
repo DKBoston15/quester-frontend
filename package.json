@@ -74,6 +74,7 @@
     "@ag-grid-community/client-side-row-model": "^32.3.3",
     "@ag-grid-community/core": "^32.3.3",
     "@ag-grid-community/styles": "^33.0.3",
+    "@fullstory/browser": "^2.0.6",
     "@melt-ui/svelte": "^0.86.3",
     "@stripe/stripe-js": "^5.6.0",
     "@types/chart.js": "^2.9.41",
