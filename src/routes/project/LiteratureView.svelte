@@ -198,11 +198,11 @@
             </Button>
             <Button
               variant="outline"
-              size="icon"
               onclick={() => driverObj.drive()}
               aria-label="Learn about Literature View"
             >
-              <GraduationCap class="h-4 w-4" />
+              <GraduationCap class="h-4 w-4 mr-2" />
+              Tour
             </Button>
           </div>
         {/if}

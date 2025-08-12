@@ -207,14 +207,15 @@
         </Tooltip.Trigger>
         <Tooltip.Content>
           <p class="text-sm max-w-xs">
-            Configure your project settings, manage custom designs, and handle data export or deletion options for your research project.
+            Configure your project settings, manage custom designs, and handle
+            data export or deletion options for your research project.
           </p>
         </Tooltip.Content>
       </Tooltip.Root>
     </div>
-    <Button variant="outline" size="icon" onclick={() => driverObj.drive()}>
-      <GraduationCap class="h-4 w-4" />
-      <span class="sr-only">Learn about Settings</span>
+    <Button variant="outline" onclick={() => driverObj.drive()}>
+      <GraduationCap class="h-4 w-4 mr-2" />
+      Tour
     </Button>
   </div>
 

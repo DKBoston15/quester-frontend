@@ -246,9 +246,13 @@
                     <div class="space-y-2">
                       <h4 class="text-sm font-medium">2D Graph Controls</h4>
                       <ul class="text-xs space-y-1 text-muted-foreground">
-                        <li><strong>Left Click:</strong> Pan/Select/Drag nodes</li>
+                        <li>
+                          <strong>Left Click:</strong> Pan/Select/Drag nodes
+                        </li>
                         <li><strong>Scroll Wheel:</strong> Zoom in/out</li>
-                        <li><strong>Left Click + Shift:</strong> Select multiple nodes</li>
+                        <li>
+                          <strong>Left Click + Shift:</strong> Select multiple nodes
+                        </li>
                       </ul>
                     </div>
                   {:else if value === "3D"}
@@ -268,12 +272,11 @@
         </Popover.Root>
         <Button
           variant="outline"
-          size="icon"
           onclick={() => driverObj.drive()}
           class="border-2 dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
         >
-          <GraduationCap class="h-4 w-4" />
-          <span class="sr-only">Start Tour</span>
+          <GraduationCap class="h-4 w-4 mr-2" />
+          Tour
         </Button>
       </div>
     </div>

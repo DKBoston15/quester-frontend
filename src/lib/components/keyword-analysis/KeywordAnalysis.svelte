@@ -367,9 +367,9 @@
         >
           {showNewAnalysis ? "Cancel" : "New Analysis"}
         </Button>
-        <Button variant="outline" size="icon" onclick={startTour}>
-          <GraduationCap class="h-4 w-4" />
-          <span class="sr-only">Learn about Keyword Analysis</span>
+        <Button variant="outline" onclick={startTour}>
+          <GraduationCap class="h-4 w-4 mr-2" />
+          Tour
         </Button>
       </div>
     {/if}

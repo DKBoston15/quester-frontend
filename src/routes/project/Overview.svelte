@@ -123,9 +123,9 @@
         <Tooltip.Provider>
           <Tooltip.Root>
             <Tooltip.Trigger>
-              <Button variant="outline" size="icon" onclick={() => driverObj.drive()}>
-                <GraduationCap class="h-4 w-4" />
-                <span class="sr-only">Learn about Project Overview</span>
+              <Button variant="outline" onclick={() => driverObj.drive()}>
+                <GraduationCap class="h-4 w-4 mr-2" />
+                Tour
               </Button>
             </Tooltip.Trigger>
             <Tooltip.Content>

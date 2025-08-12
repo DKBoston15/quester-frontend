@@ -171,9 +171,12 @@
       },
       {
         element: () => {
-          // Use the node ID we stored from the previous step
           const nodeId = (window as any).tutorialNodeId;
-          return nodeId ? `[data-id="${nodeId}"]` : ".svelte-flow__node";
+          const selector = nodeId
+            ? `[data-id="${nodeId}"]`
+            : ".svelte-flow__node";
+          const el = document.querySelector(selector);
+          return (el as Element) ?? document.body;
         },
         popover: {
           title: "Your First Node!",
@@ -183,7 +186,6 @@
           align: "center",
         },
         onHighlightStarted: async (_element, _step, _options) => {
-          // Select the node to show the NodeToolbar
           setTimeout(() => {
             const nodeId = (window as any).tutorialNodeId;
             const tutorialMethods = (window as any).tutorialMethods;
@@ -368,7 +370,6 @@
   <div class="absolute top-2 right-2 z-50">
     <Button
       variant="outline"
-      size="icon"
       onclick={() => {
         driverObj.drive();
 
@@ -415,8 +416,8 @@
       }}
       class="border-2 dark:border-dark-border"
     >
-      <GraduationCap class="h-4 w-4" />
-      <span class="sr-only">Interactive Model Building Tutorial</span>
+      <GraduationCap class="h-4 w-4 mr-2" />
+      Tour
     </Button>
   </div>
   {#if isLoadingCapability}

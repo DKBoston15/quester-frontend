@@ -309,11 +309,11 @@
                   <Tooltip.Trigger>
                     <Button
                       variant="outline"
-                      size="icon"
                       onclick={() => driverObj.drive()}
                       aria-label="Learn about the Dashboard"
                     >
-                      <GraduationCap class="h-4 w-4" />
+                      <GraduationCap class="h-4 w-4 mr-2" />
+                      Tour
                     </Button>
                   </Tooltip.Trigger>
                   <Tooltip.Content>
@@ -380,9 +380,7 @@
           <!-- Main Actions Grid -->
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Right Column -->
-            <div class="space-y-6">
-              
-            </div>
+            <div class="space-y-6"></div>
           </div>
           <!-- Workspace Overview -->
           {#if currentOrg}
