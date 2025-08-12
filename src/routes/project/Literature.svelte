@@ -191,7 +191,9 @@
     gridApi = event.detail.api;
   }
 
-  function handleSelectionChanged(event: CustomEvent<{ selectedItems: Literature[] }>) {
+  function handleSelectionChanged(
+    event: CustomEvent<{ selectedItems: Literature[] }>
+  ) {
     selectedLiteratureItems = event.detail.selectedItems;
   }
 
@@ -224,7 +226,9 @@
             </Tooltip.Trigger>
             <Tooltip.Content>
               <p class="text-sm max-w-xs">
-                Manage and organize your project literature. Add sources, track reading status, and build your research library all in one place.
+                Manage and organize your project literature. Add sources, track
+                reading status, and build your research library all in one
+                place.
               </p>
             </Tooltip.Content>
           </Tooltip.Root>
@@ -239,7 +243,9 @@
             <Download class="h-4 w-4 mr-2" />
             Export References
             {#if selectedLiteratureItems.length > 0}
-              <span class="ml-1 px-1.5 py-0.5 text-xs bg-primary text-primary-foreground rounded-full">
+              <span
+                class="ml-1 px-1.5 py-0.5 text-xs bg-primary text-primary-foreground rounded-full"
+              >
                 {selectedLiteratureItems.length}
               </span>
             {/if}
@@ -255,13 +261,9 @@
           <Tooltip.Provider>
             <Tooltip.Root>
               <Tooltip.Trigger>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onclick={() => driverObj.drive()}
-                >
-                  <GraduationCap class="h-4 w-4" />
-                  <span class="sr-only">Learn about Literature Management</span>
+                <Button variant="outline" onclick={() => driverObj.drive()}>
+                  <GraduationCap class="h-4 w-4 mr-2" />
+                  Tour
                 </Button>
               </Tooltip.Trigger>
               <Tooltip.Content>

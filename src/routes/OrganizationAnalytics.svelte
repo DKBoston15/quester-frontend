@@ -921,7 +921,10 @@
                 </Tooltip.Trigger>
                 <Tooltip.Content>
                   <p class="text-sm max-w-xs">
-                    View comprehensive analytics about your organization's activity, including user engagement patterns, project content creation, and team productivity metrics across all your projects.
+                    View comprehensive analytics about your organization's
+                    activity, including user engagement patterns, project
+                    content creation, and team productivity metrics across all
+                    your projects.
                   </p>
                 </Tooltip.Content>
               </Tooltip.Root>
@@ -934,11 +937,11 @@
           <!-- Add Learn Button Here -->
           <Button
             variant="outline"
-            size="icon"
             onclick={() => driverObj.drive()}
             aria-label="Learn about Organization Analytics"
           >
-            <GraduationCap class="h-4 w-4" />
+            <GraduationCap class="h-4 w-4 mr-2" />
+            Tour
           </Button>
         </div>
 

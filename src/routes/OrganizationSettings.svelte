@@ -181,7 +181,9 @@
                     </Tooltip.Trigger>
                     <Tooltip.Content>
                       <p class="text-sm max-w-xs">
-                        Configure and manage settings for your organization, including team permissions, invitation controls, and project creation policies.
+                        Configure and manage settings for your organization,
+                        including team permissions, invitation controls, and
+                        project creation policies.
                       </p>
                     </Tooltip.Content>
                   </Tooltip.Root>
@@ -203,11 +205,11 @@
                 <!-- Add Learn Button -->
                 <Button
                   variant="outline"
-                  size="icon"
                   onclick={() => driverObj.drive()}
                   aria-label="Learn about Organization Settings"
                 >
-                  <GraduationCap class="h-4 w-4" />
+                  <GraduationCap class="h-4 w-4 mr-2" />
+                  Tour
                 </Button>
               </div>
             </div>

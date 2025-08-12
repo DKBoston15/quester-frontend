@@ -400,12 +400,11 @@
           <Button
             id="learn-outcomes-button"
             variant="outline"
-            size="icon"
             onclick={() => driverObj.drive()}
             class="border-2 dark:border-dark-border"
           >
-            <GraduationCap class="h-4 w-4" />
-            <span class="sr-only">Learn about Outcomes Management</span>
+            <GraduationCap class="h-4 w-4 mr-2" />
+            Tour
           </Button>
         </div>
       </div>

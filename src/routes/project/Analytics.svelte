@@ -599,7 +599,10 @@
   });
 
   // Auto-generate insights if conditions are met
-  async function tryAutoGenerateInsights(projectId: string, analyticsData: any) {
+  async function tryAutoGenerateInsights(
+    projectId: string,
+    analyticsData: any
+  ) {
     try {
       // Check if we can generate insights (daily limit not reached)
       if (!insightsStore.canGenerateInsights(projectId)) {
@@ -608,12 +611,11 @@
 
       // Check if there are existing insights for this project
       const existingInsights = insightsStore.getInsights(projectId);
-      
+
       // Check if we have significant data to warrant insights generation
-      const hasSignificantData = (
+      const hasSignificantData =
         (analyticsData.totalLiteratureCount || 0) >= 5 || // At least 5 pieces of literature
-        (analyticsData.totalNotesCount || 0) >= 3        // Or at least 3 notes
-      );
+        (analyticsData.totalNotesCount || 0) >= 3; // Or at least 3 notes
 
       if (!hasSignificantData) {
         return;
@@ -630,14 +632,14 @@
       if (lastUpdate) {
         const timeSinceLastUpdate = Date.now() - lastUpdate.getTime();
         const hoursOld = timeSinceLastUpdate / (1000 * 60 * 60);
-        
+
         // Auto-regenerate if insights are more than 24 hours old and we have new data
         if (hoursOld > 24) {
           await insightsStore.generateInsights(projectId, false, analyticsData);
         }
       }
     } catch (error) {
-      console.error('Error in auto-generation:', error);
+      console.error("Error in auto-generation:", error);
     }
   }
 
@@ -663,7 +665,7 @@
       );
 
       data = { summary: analysisData };
-      
+
       // Auto-generate insights if there's significant new data and we can generate
       await tryAutoGenerateInsights(projectId, analysisData);
     } catch (error) {
@@ -1309,9 +1311,9 @@
     <Tooltip.Provider>
       <Tooltip.Root>
         <Tooltip.Trigger>
-          <Button variant="outline" size="icon" onclick={() => driverObj.drive()}>
-            <GraduationCap class="h-4 w-4" />
-            <span class="sr-only">Learn about Analytics</span>
+          <Button variant="outline" onclick={() => driverObj.drive()}>
+            <GraduationCap class="h-4 w-4 mr-2" />
+            Tour
           </Button>
         </Tooltip.Trigger>
         <Tooltip.Content>
@@ -1329,22 +1331,30 @@
       <div class="fullscreen-canvas-container">
         {#if activeChart && (activeChart.title === "Distribution of Publication Years" || activeChart.title === "Publication Year Frequency Distribution")}
           <div class="fullscreen-controls">
-            <div class="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2">
-              <span class="text-sm font-medium {yearChartMode === 'individual' ? 'text-foreground' : 'text-muted-foreground'}">
+            <div
+              class="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2"
+            >
+              <span
+                class="text-sm font-medium {yearChartMode === 'individual'
+                  ? 'text-foreground'
+                  : 'text-muted-foreground'}"
+              >
                 Individual
               </span>
-              <Switch 
+              <Switch
                 bind:pressed={switchPressed}
                 onPressedChange={(pressed: boolean) => {
                   yearChartMode = pressed ? "frequency" : "individual";
                   // Update the active chart title
                   if (activeChart) {
-                    activeChart.title = yearChartMode === "individual"
-                      ? "Distribution of Publication Years"
-                      : "Publication Year Frequency Distribution";
-                    activeChart.color = yearChartMode === "individual"
-                      ? "rgb(255, 206, 86)"
-                      : "rgb(147, 197, 253)";
+                    activeChart.title =
+                      yearChartMode === "individual"
+                        ? "Distribution of Publication Years"
+                        : "Publication Year Frequency Distribution";
+                    activeChart.color =
+                      yearChartMode === "individual"
+                        ? "rgb(255, 206, 86)"
+                        : "rgb(147, 197, 253)";
                   }
                   // Recreate the fullscreen chart with new mode
                   if (fullscreenChart) {
@@ -1353,7 +1363,9 @@
                   }
                   // Immediately recreate the chart
                   setTimeout(() => {
-                    const fullscreenCanvas = document.getElementById("fullscreen-canvas") as HTMLCanvasElement;
+                    const fullscreenCanvas = document.getElementById(
+                      "fullscreen-canvas"
+                    ) as HTMLCanvasElement;
                     if (fullscreenCanvas) {
                       createFullscreenChart(fullscreenCanvas.parentElement!);
                     }
@@ -1361,7 +1373,11 @@
                 }}
                 aria-label="Toggle between individual years and time periods"
               />
-              <span class="text-sm font-medium {yearChartMode === 'frequency' ? 'text-foreground' : 'text-muted-foreground'}">
+              <span
+                class="text-sm font-medium {yearChartMode === 'frequency'
+                  ? 'text-foreground'
+                  : 'text-muted-foreground'}"
+              >
                 Time Periods
               </span>
             </div>
@@ -1484,18 +1500,28 @@
           </div>
           <div class="chart-card">
             <div class="chart-controls">
-              <div class="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2">
-                <span class="text-sm font-medium {yearChartMode === 'individual' ? 'text-foreground' : 'text-muted-foreground'}">
+              <div
+                class="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2"
+              >
+                <span
+                  class="text-sm font-medium {yearChartMode === 'individual'
+                    ? 'text-foreground'
+                    : 'text-muted-foreground'}"
+                >
                   Individual
                 </span>
-                <Switch 
+                <Switch
                   bind:pressed={switchPressed}
                   onPressedChange={(pressed: boolean) => {
                     yearChartMode = pressed ? "frequency" : "individual";
                   }}
                   aria-label="Toggle between individual years and time periods"
                 />
-                <span class="text-sm font-medium {yearChartMode === 'frequency' ? 'text-foreground' : 'text-muted-foreground'}">
+                <span
+                  class="text-sm font-medium {yearChartMode === 'frequency'
+                    ? 'text-foreground'
+                    : 'text-muted-foreground'}"
+                >
                   Time Periods
                 </span>
               </div>
@@ -2047,7 +2073,6 @@
     max-width: calc(100% - 2rem);
   }
 
-
   .fullscreen-button {
     position: absolute;
     top: 1rem;
@@ -2103,5 +2128,4 @@
     max-height: 90vh;
     margin: 2.5vh auto;
   }
-
 </style>

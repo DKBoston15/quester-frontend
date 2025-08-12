@@ -343,11 +343,11 @@
             <!-- Add Learn Button -->
             <Button
               variant="outline"
-              size="icon"
               onclick={() => driverObj.drive()}
               aria-label="Learn about Settings"
             >
-              <GraduationCap class="h-4 w-4" />
+              <GraduationCap class="h-4 w-4 mr-2" />
+              Tour
             </Button>
           </div>
           <p class="text-muted-foreground">
@@ -576,11 +576,14 @@
                             <CardTitle>Subscription</CardTitle>
                           </div>
                           <CardDescription>
-                            Current Plan: {auth.currentOrganization.subscription?.plan?.name || "No plan"}
+                            Current Plan: {auth.currentOrganization.subscription
+                              ?.plan?.name || "No plan"}
                           </CardDescription>
                         </CardHeader>
                         <CardContent>
-                          <ManageSubscription organizationId={auth.currentOrganization.id} />
+                          <ManageSubscription
+                            organizationId={auth.currentOrganization.id}
+                          />
                         </CardContent>
                       </Card>
                     {:else}
@@ -596,7 +599,8 @@
                         </CardHeader>
                         <CardContent>
                           <Button
-                            onclick={() => window.location.href = "/onboarding"}
+                            onclick={() =>
+                              (window.location.href = "/onboarding")}
                             class="w-full"
                           >
                             View Plans
