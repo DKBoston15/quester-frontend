@@ -589,6 +589,20 @@
                     />
                   </div>
 
+                  {#if type.value === "Conference Presentation"}
+                    <!-- Conference Name for Conference Presentation -->
+                    <div class="space-y-2">
+                      <Label.Root for="conference-name"
+                        >Conference Name</Label.Root
+                      >
+                      <Input
+                        id="conference-name"
+                        bind:value={second_name}
+                        placeholder="Enter conference name"
+                      />
+                    </div>
+                  {/if}
+
                   {#if type.value === "Book Chapter"}
                     <!-- Chapter Title for Book Chapter -->
                     <div class="space-y-2">
@@ -646,17 +660,24 @@
                         placeholder="Publisher name"
                       />
                     </div>
-                    <div class="space-y-2">
-                      <Label.Root>Year</Label.Root>
-                      <Input
-                        bind:value={publish_year}
-                        placeholder="Publication year"
-                      />
-                    </div>
+                    {#if type.value !== "Conference Presentation"}
+                      <div class="space-y-2">
+                        <Label.Root>Year</Label.Root>
+                        <Input
+                          bind:value={publish_year}
+                          placeholder="Publication year"
+                        />
+                      </div>
+                    {:else}
+                      <div class="space-y-2">
+                        <Label.Root>City</Label.Root>
+                        <Input bind:value={city} placeholder="City" />
+                      </div>
+                    {/if}
                   </div>
 
                   <!-- Additional Fields based on type -->
-                  {#if type.value === "Journal Article"}
+                  {#if type.value !== "Book" && type.value !== "Book Chapter" && type.value !== "Conference Presentation"}
                     <div class="grid grid-cols-2 gap-4">
                       <div class="space-y-2">
                         <Label.Root>Volume</Label.Root>
@@ -668,6 +689,39 @@
                       <div class="space-y-2">
                         <Label.Root>Issue</Label.Root>
                         <Input bind:value={issue} placeholder="Issue number" />
+                      </div>
+                    </div>
+                  {/if}
+
+                  {#if type.value === "Conference Presentation"}
+                    <div class="grid grid-cols-2 gap-4">
+                      <div class="space-y-2">
+                        <Label.Root>Start Date</Label.Root>
+                        <Input
+                          type="date"
+                          value={start_date
+                            ? new Date(start_date).toISOString().slice(0, 10)
+                            : ""}
+                          onchange={(e) => {
+                            const v = (e.currentTarget as HTMLInputElement)
+                              .value;
+                            start_date = v ? new Date(v) : undefined;
+                          }}
+                        />
+                      </div>
+                      <div class="space-y-2">
+                        <Label.Root>End Date</Label.Root>
+                        <Input
+                          type="date"
+                          value={end_date
+                            ? new Date(end_date).toISOString().slice(0, 10)
+                            : ""}
+                          onchange={(e) => {
+                            const v = (e.currentTarget as HTMLInputElement)
+                              .value;
+                            end_date = v ? new Date(v) : undefined;
+                          }}
+                        />
                       </div>
                     </div>
                   {/if}
@@ -865,25 +919,6 @@
                   <Input
                     bind:value={selectedReference.issue}
                     placeholder="Issue number"
-                  />
-                </div>
-              </div>
-            {/if}
-
-            {#if selectedReference.type?.value !== "Book" && selectedReference.type?.value !== "Conference Presentation"}
-              <div class="grid grid-cols-2 gap-4">
-                <div class="space-y-2">
-                  <Label.Root>Start Page</Label.Root>
-                  <Input
-                    bind:value={selectedReference.start_page}
-                    placeholder="Start page"
-                  />
-                </div>
-                <div class="space-y-2">
-                  <Label.Root>End Page</Label.Root>
-                  <Input
-                    bind:value={selectedReference.end_page}
-                    placeholder="End page"
                   />
                 </div>
               </div>
