@@ -1,49 +1,60 @@
 <script lang="ts">
-  import type { Announcement } from '$lib/stores/AnnouncementStore.svelte'
-  import { Button } from '$lib/components/ui/button'
-  import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card'
-  import { Badge } from '$lib/components/ui/badge'
-  import { 
-    Sparkles, 
-    Gift, 
-    Users, 
-    Search, 
-    Brain, 
-    Download, 
-    Shapes, 
-    GraduationCap 
-  } from 'lucide-svelte'
+  import type { Announcement } from "$lib/stores/AnnouncementStore.svelte";
+  import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+  } from "$lib/components/ui/card";
+  import { Badge } from "$lib/components/ui/badge";
+  import {
+    Sparkles,
+    Gift,
+    Users,
+    Search,
+    Brain,
+    Download,
+    Shapes,
+    GraduationCap,
+  } from "lucide-svelte";
 
   interface Props {
-    announcement: Announcement
-    onAction?: (action: string, metadata?: any) => void
+    announcement: Announcement;
+    onAction?: (action: string, metadata?: any) => void;
   }
 
-  let { announcement }: Props = $props()
+  let { announcement }: Props = $props();
 </script>
 
 <!-- Major Platform Update Template -->
 <div class="space-y-6">
   <!-- Hero Section -->
-  <div class="relative overflow-hidden rounded-lg bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 p-6">
+  <div
+    class="relative overflow-hidden rounded-lg bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 p-6"
+  >
     <div class="absolute top-0 right-0 -mt-4 -mr-4">
-      <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full opacity-20">
+      <div
+        class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full opacity-20"
+      >
         <Sparkles class="w-8 h-8" />
       </div>
     </div>
-    
+
     <div class="relative">
       <div class="flex items-center gap-2 mb-3">
         <Gift class="w-5 h-5 text-blue-600" />
-        <Badge variant="secondary" class="bg-blue-100 text-blue-800 hover:bg-blue-100">
+        <Badge
+          variant="secondary"
+          class="bg-blue-100 text-blue-800 hover:bg-blue-100"
+        >
           Major Update
         </Badge>
       </div>
-      
+
       <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-        {announcement.metadata?.featureTitle || 'Quester 2.5 Platform Update'}
+        {announcement.metadata?.featureTitle || "Quester 2.5 Platform Update"}
       </h3>
-      
+
       <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
         {announcement.content}
       </p>
@@ -59,12 +70,15 @@
           <div class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
             <Users class="w-5 h-5 text-blue-600 dark:text-blue-400" />
           </div>
-          <CardTitle class="text-base font-semibold">Team Management Redesign</CardTitle>
+          <CardTitle class="text-base font-semibold"
+            >Team Management Redesign</CardTitle
+          >
         </div>
       </CardHeader>
       <CardContent class="pt-0">
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-          Complete overhaul of team navigation with a new sidebar interface replacing the old dropdown system.
+          Complete overhaul of team navigation with a new sidebar interface
+          replacing the old dropdown system.
         </p>
         <ul class="text-xs text-gray-500 dark:text-gray-500 space-y-1">
           <li>• Persistent sidebar navigation</li>
@@ -81,12 +95,15 @@
           <div class="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
             <Search class="w-5 h-5 text-purple-600 dark:text-purple-400" />
           </div>
-          <CardTitle class="text-base font-semibold">Global Search & AI Chat</CardTitle>
+          <CardTitle class="text-base font-semibold"
+            >Global Search & AI Chat</CardTitle
+          >
         </div>
       </CardHeader>
       <CardContent class="pt-0">
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-          Powerful search across all your projects with integrated AI assistance for research questions.
+          Powerful search across all your projects with integrated AI assistance
+          for research questions.
         </p>
         <ul class="text-xs text-gray-500 dark:text-gray-500 space-y-1">
           <li>• Cross-project search</li>
@@ -108,7 +125,8 @@
       </CardHeader>
       <CardContent class="pt-0">
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-          AI-driven analysis that automatically identifies patterns and insights from your research data.
+          AI-driven analysis that automatically identifies patterns and insights
+          from your research data.
         </p>
         <ul class="text-xs text-gray-500 dark:text-gray-500 space-y-1">
           <li>• Automated pattern detection</li>
@@ -125,12 +143,15 @@
           <div class="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
             <Download class="w-5 h-5 text-orange-600 dark:text-orange-400" />
           </div>
-          <CardTitle class="text-base font-semibold">Reference Export Suite</CardTitle>
+          <CardTitle class="text-base font-semibold"
+            >Reference Export Suite</CardTitle
+          >
         </div>
       </CardHeader>
       <CardContent class="pt-0">
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-          Export your references in multiple academic formats for seamless integration with your workflow.
+          Export your references in multiple academic formats for seamless
+          integration with your workflow.
         </p>
         <ul class="text-xs text-gray-500 dark:text-gray-500 space-y-1">
           <li>• Multiple citation formats</li>
@@ -147,12 +168,15 @@
           <div class="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
             <Shapes class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
           </div>
-          <CardTitle class="text-base font-semibold">Model Building Enhancements</CardTitle>
+          <CardTitle class="text-base font-semibold"
+            >Model Building Enhancements</CardTitle
+          >
         </div>
       </CardHeader>
       <CardContent class="pt-0">
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-          Advanced visual modeling tools with enhanced node types, edge customization, and workflow improvements.
+          Advanced visual modeling tools with enhanced node types, edge
+          customization, and workflow improvements.
         </p>
         <ul class="text-xs text-gray-500 dark:text-gray-500 space-y-1">
           <li>• New node types and shapes</li>
@@ -169,12 +193,15 @@
           <div class="p-2 bg-rose-100 dark:bg-rose-900/30 rounded-lg">
             <GraduationCap class="w-5 h-5 text-rose-600 dark:text-rose-400" />
           </div>
-          <CardTitle class="text-base font-semibold">Interactive Tutorials</CardTitle>
+          <CardTitle class="text-base font-semibold"
+            >Interactive Tutorials</CardTitle
+          >
         </div>
       </CardHeader>
       <CardContent class="pt-0">
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-          Comprehensive guided tours that demonstrate features with automatic examples and hands-on learning.
+          Comprehensive guided tours that demonstrate features with automatic
+          examples and hands-on learning.
         </p>
         <ul class="text-xs text-gray-500 dark:text-gray-500 space-y-1">
           <li>• Step-by-step guidance</li>
@@ -187,7 +214,9 @@
 
   <!-- Additional Information -->
   {#if announcement.metadata?.additionalInfo}
-    <Card class="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-900/50 dark:to-blue-900/20">
+    <Card
+      class="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-900/50 dark:to-blue-900/20"
+    >
       <CardContent class="p-6">
         <div class="flex items-start gap-4">
           <div class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
@@ -198,14 +227,15 @@
               Enhanced Research Experience
             </h4>
             <p class="text-sm text-gray-600 dark:text-gray-400">
-              These updates work together to create a more intuitive, powerful, and AI-enhanced research platform that adapts to your workflow and helps you discover insights faster than ever before.
+              These updates work together to create a more intuitive, powerful,
+              and AI-enhanced research platform that adapts to your workflow and
+              helps you discover insights faster than ever before.
             </p>
           </div>
         </div>
       </CardContent>
     </Card>
   {/if}
-
 
   <!-- Footer Note -->
   {#if announcement.metadata?.footerNote}

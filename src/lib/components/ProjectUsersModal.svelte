@@ -1,4 +1,3 @@
-<!-- src/lib/components/ProjectUsersModal.svelte -->
 <script lang="ts">
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import { Button } from "$lib/components/ui/button";
@@ -11,7 +10,6 @@
     TableHeader,
     TableRow,
   } from "$lib/components/ui/table";
-  import { Badge } from "$lib/components/ui/badge";
 
   // Define the structure for the user prop
   interface ModalProjectUser {

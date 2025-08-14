@@ -1,4 +1,3 @@
-<!-- src/routes/project/LiteratureView.svelte -->
 <script lang="ts">
   import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";

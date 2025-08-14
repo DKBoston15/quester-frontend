@@ -1,4 +1,3 @@
-<!-- src/lib/components/custom-ui/literature/literatureItem/LiteratureInsights.svelte -->
 <script lang="ts">
   import * as Card from "$lib/components/ui/card";
   import * as Progress from "$lib/components/ui/progress";

@@ -1,4 +1,3 @@
-<!-- AnalysisResults.svelte -->
 <script lang="ts">
   import type { KeywordAnalysis } from "$lib/types/index";
   import { Card } from "$lib/components/ui/card";

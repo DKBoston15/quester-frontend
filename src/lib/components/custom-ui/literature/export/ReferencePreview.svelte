@@ -1,4 +1,3 @@
-<!-- src/lib/components/custom-ui/literature/export/ReferencePreview.svelte -->
 <script lang="ts">
   import type { Literature } from "$lib/types/literature";
   import type { CitationStyle } from "$lib/utils/citationFormatters";
@@ -131,7 +130,9 @@
           <div class="space-y-6">
             {#each formattedCitations as citationItem, index}
               {@const isSelected =
-                internalSelectedIds && citationItem.literature.id && (selectionVersion || selectionVersion === 0)
+                internalSelectedIds &&
+                citationItem.literature.id &&
+                (selectionVersion || selectionVersion === 0)
                   ? internalSelectedIds.has(citationItem.literature.id)
                   : false}
               <div

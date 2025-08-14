@@ -1,4 +1,3 @@
-<!-- src/routes/components/ResourceSelector.svelte -->
 <script lang="ts">
   import type { Organization, Department, Project } from "$lib/types/auth";
   import { tick } from "svelte";
@@ -33,10 +32,14 @@
   // Helper function to get icon for resource type
   function getResourceIcon(type: ResourceType) {
     switch (type) {
-      case "organization": return Building;
-      case "department": return FolderKanban;
-      case "project": return Folder;
-      default: return Building;
+      case "organization":
+        return Building;
+      case "department":
+        return FolderKanban;
+      case "project":
+        return Folder;
+      default:
+        return Building;
     }
   }
 
@@ -44,11 +47,18 @@
   function getHierarchyBreadcrumb(item: any, type: ResourceType): string {
     // For now, return basic info - could be enhanced with parent relationships
     switch (type) {
-      case "organization": return "Organization";
-      case "department": return item.organizationName ? `${item.organizationName} › Department` : "Department";
-      case "project": return item.organizationName && item.departmentName ? 
-        `${item.organizationName} › ${item.departmentName} › Project` : "Project";
-      default: return "Resource";
+      case "organization":
+        return "Organization";
+      case "department":
+        return item.organizationName
+          ? `${item.organizationName} › Department`
+          : "Department";
+      case "project":
+        return item.organizationName && item.departmentName
+          ? `${item.organizationName} › ${item.departmentName} › Project`
+          : "Project";
+      default:
+        return "Resource";
     }
   }
 
@@ -109,7 +119,14 @@
     const all = computeAllResources(props.resources); // Call helper function
     const groups: Record<
       string,
-      { value: string; label: string; type: ResourceType; id: string; hierarchy: string; icon: any }[]
+      {
+        value: string;
+        label: string;
+        type: ResourceType;
+        id: string;
+        hierarchy: string;
+        icon: any;
+      }[]
     > = {};
     for (const item of all) {
       // Iterate over the computed array
@@ -160,9 +177,12 @@
     const externalValue = props.selectedId
       ? `${props.selectedType}:${props.selectedId}`
       : null;
-    
+
     // Only update if external value changed and it's different from our internal state
-    if (externalValue !== lastSyncedPropsValue && externalValue !== selectedValue) {
+    if (
+      externalValue !== lastSyncedPropsValue &&
+      externalValue !== selectedValue
+    ) {
       lastSyncedPropsValue = externalValue;
       selectedValue = externalValue;
     }
@@ -200,14 +220,21 @@
         >
           <div class="flex items-center gap-2 flex-1">
             {#if selectedResource()}
-              <svelte:component this={selectedIcon()} class="h-4 w-4 text-muted-foreground" />
+              <svelte:component
+                this={selectedIcon()}
+                class="h-4 w-4 text-muted-foreground"
+              />
               <div class="flex flex-col items-start">
                 <span class="font-medium">{selectedLabel()}</span>
-                <span class="text-xs text-muted-foreground">{selectedHierarchy()}</span>
+                <span class="text-xs text-muted-foreground"
+                  >{selectedHierarchy()}</span
+                >
               </div>
             {:else}
               <Building class="h-4 w-4 text-muted-foreground" />
-              <span class="text-muted-foreground">Select organization, department, or project...</span>
+              <span class="text-muted-foreground"
+                >Select organization, department, or project...</span
+              >
             {/if}
           </div>
           <ChevronsUpDown class="ml-auto size-4 shrink-0 opacity-50" />
@@ -220,13 +247,17 @@
       sideOffset={4}
     >
       <Command.Root filter={filterResources}>
-        <Command.Input placeholder="Search organizations, departments, or projects..." />
+        <Command.Input
+          placeholder="Search organizations, departments, or projects..."
+        />
         <Command.List class="max-h-[300px] overflow-auto">
           <Command.Empty>
             <div class="flex flex-col items-center gap-2 py-6">
               <Building class="h-8 w-8 text-muted-foreground" />
               <p class="text-sm text-muted-foreground">No resources found</p>
-              <p class="text-xs text-muted-foreground">Try adjusting your search terms</p>
+              <p class="text-xs text-muted-foreground">
+                Try adjusting your search terms
+              </p>
             </div>
           </Command.Empty>
           {#each groupedResources() as [groupName, items]}
@@ -248,10 +279,15 @@
                       selectedValue !== item.value && "text-transparent"
                     )}
                   />
-                  <svelte:component this={item.icon} class="h-4 w-4 text-muted-foreground" />
+                  <svelte:component
+                    this={item.icon}
+                    class="h-4 w-4 text-muted-foreground"
+                  />
                   <div class="flex flex-col flex-1">
                     <span class="font-medium">{item.label}</span>
-                    <span class="text-xs text-muted-foreground">{item.hierarchy}</span>
+                    <span class="text-xs text-muted-foreground"
+                      >{item.hierarchy}</span
+                    >
                   </div>
                 </Command.Item>
               {/each}

@@ -1,4 +1,3 @@
-<!-- src/routes/OrganizationSettings.svelte -->
 <script lang="ts">
   import { onMount } from "svelte";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";

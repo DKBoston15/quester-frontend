@@ -1,4 +1,3 @@
-<!-- src/routes/project/Notes.svelte -->
 <script lang="ts">
   import { onMount } from "svelte";
   import { notesStore } from "$lib/stores/NotesStore.svelte";

@@ -1,11 +1,10 @@
-<!-- src/routes/components/RoleManager.svelte -->
 <script lang="ts">
   import { onMount } from "svelte";
   import { Button } from "$lib/components/ui/button";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
   import { auth } from "$lib/stores/AuthStore.svelte";
   import { UserCog, X, Info } from "lucide-svelte";
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
 
   const props = $props<{
     userId: string;
@@ -46,20 +45,11 @@
   // Try to fetch the roles directly from the backend
   async function fetchRolesFromBackend() {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/roles?scope=${props.resourceType}`,
-        {
-          credentials: "include",
-        }
-      );
+      const data = await api.get(`/roles?scope=${props.resourceType}`);
 
-      if (response.ok) {
-        const data = await response.json();
-
-        if (data && Array.isArray(data) && data.length > 0) {
-          availableRoles = data;
-          return true;
-        }
+      if (data && Array.isArray(data) && data.length > 0) {
+        availableRoles = data;
+        return true;
       }
     } catch (error) {
       console.error("Error fetching roles from backend:", error);

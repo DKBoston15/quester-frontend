@@ -146,12 +146,13 @@
 {/if}
 
 <!-- Announcement History Modal -->
-<AnnouncementHistory bind:open={showHistoryModal} />
+<AnnouncementHistory bind:open={showHistoryModal} onOpenChange={(open) => showHistoryModal = open} />
 
 <style>
   .line-clamp-1 {
     display: -webkit-box;
     -webkit-line-clamp: 1;
+    line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }

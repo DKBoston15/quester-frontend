@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
   import { CreditCard } from "lucide-svelte";
 
   const props = $props<{
@@ -15,19 +15,11 @@
     try {
       isLoading = true;
       error = null;
-      const response = await fetch(
-        `${API_BASE_URL}/stripe/create-portal-session`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ organizationId: props.organizationId }),
-        }
+      const { portalUrl } = await api.post(
+        `/stripe/create-portal-session`,
+        { organizationId: props.organizationId }
       );
 
-      if (!response.ok) throw new Error("Failed to create portal session");
-
-      const { portalUrl } = await response.json();
       window.location.href = portalUrl;
     } catch (err) {
       error =

@@ -1,6 +1,5 @@
-<!-- src/lib/stores/ProjectStore.svelte -->
 <script lang="ts" module>
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "../services/api-client";
   import type { Project } from "../types/auth";
 
   let currentProject = $state<Project | null>(null);
@@ -38,33 +37,21 @@
       error = null;
 
       try {
-        const [projectResponse, designsResponse] = await Promise.all([
-          fetch(`${API_BASE_URL}/projects/${projectId}`, {
-            credentials: "include",
-          }),
-          fetch(`${API_BASE_URL}/design/project/${projectId}`, {
-            credentials: "include",
-          }),
+        const [projectData, designsData] = await Promise.all([
+          api.get<Project>(`/projects/${projectId}`),
+          api.get(`/design/project/${projectId}`).catch(() => null),
         ]);
 
-        if (!projectResponse.ok) {
-          throw new Error(`Project not found (${projectResponse.status})`);
-        }
-
-        const projectData = await projectResponse.json();
         currentProject = projectData;
 
-        if (designsResponse.ok) {
-          const designsData = await designsResponse.json();
-          if (designsData.length > 0 && designsData[0].designs) {
-            const designOptions = designsData[0].designs;
-            designs = {
-              research: designOptions.research || [],
-              sampling: designOptions.sampling || [],
-              measurement: designOptions.measurement || [],
-              analytic: designOptions.analytic || [],
-            };
-          }
+        if (designsData && designsData.length > 0 && designsData[0].designs) {
+          const designOptions = designsData[0].designs;
+          designs = {
+            research: designOptions.research || [],
+            sampling: designOptions.sampling || [],
+            measurement: designOptions.measurement || [],
+            analytic: designOptions.analytic || [],
+          };
         }
       } catch (err) {
         console.error("Error loading project:", err);
@@ -77,20 +64,10 @@
 
     async updateProject(projectId: string, updateData: Partial<Project>) {
       try {
-        const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify(updateData),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to update project (${response.status})`);
-        }
-
-        const updatedProject = await response.json();
+        const updatedProject = await api.put<Project>(
+          `/projects/${projectId}`,
+          updateData
+        );
         currentProject = updatedProject;
         return updatedProject;
       } catch (err) {
@@ -101,28 +78,13 @@
 
     async updateDesigns(projectId: string, designData: any) {
       try {
-        const method = designs ? "PUT" : "POST";
-        const endpoint = designs
-          ? `${API_BASE_URL}/design/project/${projectId}`
-          : `${API_BASE_URL}/design`;
-
-        const response = await fetch(endpoint, {
-          method,
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            projectId,
-            designs: designData,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to update designs (${response.status})`);
-        }
-
-        const result = await response.json();
+        const isUpdate =
+          designs &&
+          Object.keys(designs).some((key) => designs[key].length > 0);
+        const endpoint = isUpdate ? `/design/project/${projectId}` : `/design`;
+        const result = isUpdate
+          ? await api.put(endpoint, { projectId, designs: designData })
+          : await api.post(endpoint, { projectId, designs: designData });
         designs = result.design.designs;
         return result;
       } catch (err) {

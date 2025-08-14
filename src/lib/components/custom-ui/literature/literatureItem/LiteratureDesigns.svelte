@@ -1,4 +1,3 @@
-<!-- src/lib/components/custom-ui/literature/literatureItem/LiteratureDesigns.svelte -->
 <script lang="ts">
   import {
     Card,

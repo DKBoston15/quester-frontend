@@ -14,12 +14,12 @@ export function sortLiterature(
   if (!literature || !Array.isArray(literature)) {
     return [];
   }
-  
+
   const { sortBy = "author", sortOrder = "asc" } = options;
-  
+
   const sorted = [...literature].sort((a, b) => {
     let compareValue = 0;
-    
+
     switch (sortBy) {
       case "author": {
         const aAuthors = literatureToCitation(a).authors;
@@ -42,22 +42,28 @@ export function sortLiterature(
         break;
       }
     }
-    
+
     return sortOrder === "asc" ? compareValue : -compareValue;
   });
-  
+
   return sorted;
 }
 
-export function groupLiteratureByType(literature: Literature[]): Map<string, Literature[]> {
+export function groupLiteratureByType(
+  literature: Literature[]
+): Map<string, Literature[]> {
   const grouped = new Map<string, Literature[]>();
-  
+
   literature.forEach((item) => {
     // Handle type field - it might be a string or an object with { label, value }
     let typeValue = "Other";
     if (typeof item.type === "string") {
       typeValue = item.type || "Other";
-    } else if (item.type && typeof item.type === "object" && "value" in item.type) {
+    } else if (
+      item.type &&
+      typeof item.type === "object" &&
+      "value" in item.type
+    ) {
       typeValue = (item.type as any).value || "Other";
     }
 
@@ -66,7 +72,7 @@ export function groupLiteratureByType(literature: Literature[]): Map<string, Lit
     }
     grouped.get(typeValue)!.push(item);
   });
-  
+
   return grouped;
 }
 
@@ -77,17 +83,17 @@ export function compileBibliography(
   if (!literature || !Array.isArray(literature)) {
     return [];
   }
-  
+
   let compiled = [...literature];
-  
+
   // Sort the literature
   compiled = sortLiterature(compiled, options);
-  
+
   // If grouping by type is requested, we'll return a flat array but sorted within groups
   if (options.groupByType) {
     const grouped = groupLiteratureByType(compiled);
     compiled = [];
-    
+
     // Define a preferred order for types
     const typeOrder = [
       "Book",
@@ -99,16 +105,16 @@ export function compileBibliography(
       "Literature Review",
       "Magazine Article",
       "Gray Literature",
-      "Other"
+      "Other",
     ];
-    
+
     // Add items in preferred type order
     typeOrder.forEach((type) => {
       if (grouped.has(type)) {
         compiled.push(...grouped.get(type)!);
       }
     });
-    
+
     // Add any remaining types not in the preferred order
     grouped.forEach((items, type) => {
       if (!typeOrder.includes(type)) {
@@ -116,7 +122,7 @@ export function compileBibliography(
       }
     });
   }
-  
+
   return compiled;
 }
 
@@ -127,14 +133,4 @@ export function estimatePageCount(
 ): number {
   const totalLines = literatureCount * averageLinesPerReference;
   return Math.ceil(totalLines / linesPerPage);
-}
-
-export function filterLiteratureBySelection(
-  literature: Literature[],
-  selectedIds: Set<string>
-): Literature[] {
-  if (!literature || !Array.isArray(literature)) {
-    return [];
-  }
-  return literature.filter((item) => item && item.id && selectedIds.has(item.id));
 }

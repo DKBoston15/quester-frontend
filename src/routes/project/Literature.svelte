@@ -1,8 +1,8 @@
-<!-- src/routes/project/Literature.svelte -->
 <script lang="ts">
   import { onDestroy } from "svelte";
   import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { auth } from "$lib/stores/AuthStore.svelte";
   import LiteratureTable from "$lib/components/custom-ui/literature/LiteratureTable.svelte";
   import AddLiterature from "$lib/components/custom-ui/literature/AddLiterature.svelte";
   import { Button } from "$lib/components/ui/button";
@@ -20,7 +20,6 @@
   let searchQuery = $state("");
   let gridApi = $state<GridApi<Literature>>();
   let isAddLiteratureOpen = $state(false);
-  let selectedLiterature = $state<Literature | null>(null);
   let selectedLiteratureItems = $state<Literature[]>([]);
   let isExportDialogOpen = $state(false);
 
@@ -179,7 +178,6 @@
   }
 
   function handleLiteratureSelect(event: CustomEvent<Literature>) {
-    selectedLiterature = event.detail;
     const literatureId = event.detail.id;
     const projectId = projectStore.currentProject?.id;
     if (projectId && literatureId) {
@@ -204,7 +202,7 @@
         gridApi.selectAll();
         // Wait a moment for selection to update
         setTimeout(() => {
-          selectedLiteratureItems = gridApi.getSelectedRows();
+          selectedLiteratureItems = gridApi?.getSelectedRows() ?? [];
           isExportDialogOpen = true;
         }, 100);
         return;
@@ -345,7 +343,7 @@
   bind:open={isExportDialogOpen}
   selectedLiterature={selectedLiteratureItems}
   projectTitle={projectStore.currentProject?.name}
-  userName={projectStore.currentUser?.name || projectStore.currentUser?.email}
+  userName={auth.user ? `${auth.user.firstName} ${auth.user.lastName}`.trim() || auth.user.email : undefined}
   onOpenChange={(open: boolean) => (isExportDialogOpen = open)}
 />
 

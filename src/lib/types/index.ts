@@ -1,4 +1,3 @@
-// Analytics module types
 export interface Analytics {
   track: (
     event: string,

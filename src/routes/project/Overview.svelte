@@ -1,4 +1,3 @@
-<!-- src/routes/project/Dashboard.svelte -->
 <script lang="ts">
   import ProjectInsights from "$lib/components/ProjectInsights.svelte";
   import ResearchProducts from "$lib/components/ResearchProducts.svelte";

@@ -129,7 +129,8 @@ export const eventTypeConfigs: Record<CustomEventType, EventTypeConfig> = {
   [CustomEventType.ADMINISTRATION]: {
     type: CustomEventType.ADMINISTRATION,
     label: "Administration",
-    description: "Administrative tasks, documentation, and project management activities",
+    description:
+      "Administrative tasks, documentation, and project management activities",
     icon: "Briefcase",
     color: {
       bg: "bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-indigo-950/30 dark:to-blue-900/20",
@@ -194,15 +195,6 @@ export function getEventTypeConfig(
   return eventTypeConfigs[eventType];
 }
 
-export function getEventTypeIcon(eventType: CustomEventType) {
-  const config = getEventTypeConfig(eventType);
-  return eventTypeIcons[config.icon as keyof typeof eventTypeIcons];
-}
-
-export function getEventTypeColors(eventType: CustomEventType) {
-  return getEventTypeConfig(eventType).color;
-}
-
 export function getAllEventTypes(): EventTypeConfig[] {
   return Object.values(eventTypeConfigs);
 }
@@ -216,11 +208,6 @@ export function getEventTypeOptions() {
   }));
 }
 
-// Validation helper
-export function isValidEventType(type: string): type is CustomEventType {
-  return Object.values(CustomEventType).includes(type as CustomEventType);
-}
-
 // Event type priority for sorting (higher priority = more important)
 export const eventTypePriority: Record<CustomEventType, number> = {
   [CustomEventType.DEADLINE]: 5,
@@ -232,13 +219,6 @@ export const eventTypePriority: Record<CustomEventType, number> = {
   [CustomEventType.OTHER]: 1,
 };
 
-export function compareEventsByType(
-  a: CustomEventType,
-  b: CustomEventType
-): number {
-  return eventTypePriority[b] - eventTypePriority[a];
-}
-
 // Default event type for new events
 export const DEFAULT_EVENT_TYPE = CustomEventType.OTHER;
 
@@ -248,32 +228,4 @@ export interface EventTypeStats {
   count: number;
   percentage: number;
   config: EventTypeConfig;
-}
-
-export function calculateEventTypeStats(
-  events: { eventType: CustomEventType }[]
-): EventTypeStats[] {
-  const total = events.length;
-  const typeCounts = new Map<CustomEventType, number>();
-
-  // Initialize counts
-  Object.values(CustomEventType).forEach((type) => {
-    typeCounts.set(type, 0);
-  });
-
-  // Count events by type
-  events.forEach((event) => {
-    const current = typeCounts.get(event.eventType) || 0;
-    typeCounts.set(event.eventType, current + 1);
-  });
-
-  // Convert to stats array
-  return Array.from(typeCounts.entries())
-    .map(([type, count]) => ({
-      type,
-      count,
-      percentage: total > 0 ? (count / total) * 100 : 0,
-      config: getEventTypeConfig(type),
-    }))
-    .sort((a, b) => b.count - a.count);
 }

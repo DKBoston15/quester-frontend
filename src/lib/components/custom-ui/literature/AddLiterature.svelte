@@ -1,4 +1,3 @@
-<!-- src/lib/components/custom-ui/literature/AddLiterature.svelte -->
 <script lang="ts">
   import * as Dialog from "$lib/components/ui/dialog";
   import { Button, buttonVariants } from "$lib/components/ui/button";
@@ -19,10 +18,8 @@
     AlertCircle,
     BookOpen,
     Plus,
-    X,
   } from "lucide-svelte";
-  import { API_BASE_URL } from "$lib/config";
-  // Note: driver.js CSS is imported at the page level only
+  import { api } from "$lib/services/api-client";
 
   const dispatch = createEventDispatcher();
 
@@ -224,19 +221,10 @@
         return;
       }
 
-      const response = await fetch(`${API_BASE_URL}/ai/extract-references`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          referenceText: pasteText,
-          projectId: urlProjectId,
-        }),
+      const data = await api.post(`/ai/extract-references`, {
+        referenceText: pasteText,
+        projectId: urlProjectId,
       });
-
-      if (!response.ok) throw new Error("Failed to process references");
-
-      const data = await response.json();
 
       // Map the references and add status
       extractedReferences = data.map((ref: any) => ({
@@ -306,19 +294,7 @@
             userId: auth.user?.id,
           };
 
-          const response = await fetch(`${API_BASE_URL}/literature`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify(literatureData),
-          });
-
-          if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || "Failed to save literature");
-          }
-
-          return response.json();
+          return await api.post(`/literature`, literatureData);
         })
       );
 

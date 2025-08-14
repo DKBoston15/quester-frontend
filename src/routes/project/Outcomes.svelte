@@ -1,4 +1,3 @@
-<!-- src/routes/project/Outcomes.svelte -->
 <script lang="ts">
   import { onDestroy } from "svelte";
   import { outcomeStore } from "$lib/stores/OutcomeStore.svelte";

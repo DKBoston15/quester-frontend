@@ -1,4 +1,3 @@
-<!-- src/routes/components/UserRoleForm.svelte -->
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";

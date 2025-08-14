@@ -1,11 +1,7 @@
-<!-- src/lib/components/ProjectActivityChart.svelte -->
 <script lang="ts">
-  import type { ChartConfiguration, ChartData } from "chart.js";
   import { onDestroy, onMount } from "svelte";
   import Chart from "chart.js/auto";
-  // Runes like $props are globally available in Svelte 5
 
-  // Define the expected structure
   interface ActivityCount {
     literature: number;
     notes: number;
@@ -17,7 +13,6 @@
     [date: string]: ActivityCount;
   }
 
-  // Props for the component
   let {
     dailyActivityCounts = {},
     projectName = "Project Activity",
@@ -34,24 +29,6 @@
   let chartError: string | null = null;
   let hasData: boolean = false;
 
-  // Chart colors
-  const colors = {
-    literature: "rgba(255, 99, 132, 1)",
-    notes: "rgba(54, 162, 235, 1)",
-    models: "rgba(255, 206, 86, 1)",
-    outcomes: "rgba(75, 192, 192, 1)",
-  };
-
-  // Helper function to safely clone reactive objects
-  function safeClone(obj: any) {
-    try {
-      return JSON.parse(JSON.stringify(obj));
-    } catch (e) {
-      console.error("Failed to clone object:", e);
-      return obj;
-    }
-  }
-
   // Gets text color based on light/dark theme
   function getTextColor(): string {
     if (typeof document === "undefined") return "#000000"; // Default for SSR
@@ -62,7 +39,6 @@
 
   // Create the chart when the component is mounted
   onMount(() => {
-
     // Destroy any previous chart instance if it exists
     if (chartInstance) {
       chartInstance.destroy();
@@ -96,43 +72,8 @@
     };
   });
 
-  function updateChartTheme() {
-    if (!chartInstance) return;
-
-    const textColor = getTextColor();
-    const gridColor = "rgba(128, 128, 128, 0.1)";
-
-    // Update chart colors for theme
-    Chart.defaults.color = textColor;
-
-    if (chartInstance.options.plugins?.title) {
-      chartInstance.options.plugins.title.color = textColor;
-    }
-
-    if (chartInstance.options.plugins?.legend?.labels) {
-      chartInstance.options.plugins.legend.labels.color = textColor;
-    }
-
-    const scales = chartInstance.options.scales || {};
-
-    if (scales.x) {
-      const xScale = scales.x as any;
-      if (xScale.ticks) xScale.ticks.color = textColor;
-      if (xScale.grid) xScale.grid.color = gridColor;
-    }
-
-    if (scales.y) {
-      const yScale = scales.y as any;
-      if (yScale.ticks) yScale.ticks.color = textColor;
-      if (yScale.grid) yScale.grid.color = gridColor;
-    }
-
-    chartInstance.update("none");
-  }
-
   // Prepare chart data from dailyActivityCounts, filtered by dateRange
   function prepareChartData(): { labels: string[]; datasets: any[] } | null {
-
     const countsData = { ...dailyActivityCounts } as DailyActivityCounts;
     if (!countsData || Object.keys(countsData).length === 0) {
       return null;
@@ -180,7 +121,6 @@
           break;
       }
 
-
       if (filteredDates.length === 0) {
         return null;
       }
@@ -219,7 +159,6 @@
         return count;
       });
 
-
       // If no activity data is found in the filtered range, return null
       if (!hasAnyActivity) {
         return null;
@@ -251,7 +190,6 @@
   // Initialize the chart with the current data
   function initializeChart() {
     try {
-
       // Clear any previous error
       chartError = null;
 
@@ -288,7 +226,6 @@
         });
       }
       // --- END: Conditional Bar Thickness ---
-
 
       // Create new chart instance
       const ctx = chartCanvas.getContext("2d");
@@ -343,7 +280,6 @@
           },
         },
       });
-
     } catch (error: unknown) {
       console.error(`[CHART ${projectName}] Error initializing chart:`, error);
       chartError = `Error: ${error instanceof Error ? error.message : String(error)}`;
@@ -354,7 +290,6 @@
 
   // Create an empty chart with "No Data" message
   function createEmptyChart() {
-
     // Destroy any existing chart instance
     if (chartInstance) {
       chartInstance.destroy();
@@ -420,7 +355,6 @@
         },
       },
     });
-
   }
 
   // Clean up chart instance when component is destroyed
@@ -435,7 +369,6 @@
     // Rerun logic when either prop changes
     const currentData = dailyActivityCounts;
     const currentRange = dateRange;
-
 
     // Re-initialize the chart which will now use the new range
     if (chartCanvas) {

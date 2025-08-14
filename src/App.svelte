@@ -1,4 +1,3 @@
-<!-- src/App.svelte -->
 <script lang="ts">
   import "./app.css";
   import { Router, Route } from "svelte-routing";
@@ -17,7 +16,7 @@
   import { Toaster } from "$lib/components/ui/sonner";
   import TeamManagement from "./routes/TeamManagement.svelte";
   import Settings from "./routes/Settings.svelte";
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
   import { GlobalSearchDialog } from "$lib/components/global-search";
   import AnnouncementModal from "$lib/components/announcements/AnnouncementModal.svelte";
   import { announcementStore } from "$lib/stores/AnnouncementStore.svelte";
@@ -31,7 +30,7 @@
   onMount(async () => {
     // Initialize FullStory
     initializeFullStory();
-    
+
     // Safety timeout - force loading to false after 10 seconds
     const safetyTimeout = setTimeout(() => {
       isCheckingAuth = false;
@@ -76,29 +75,43 @@
   });
 
   function login() {
-    window.location.href = `${API_BASE_URL}/auth/redirect`;
+    // Keep the redirect as is since it's a browser redirect, not an API call
+    window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/redirect`;
   }
 
   async function checkPendingInvites() {
     if (!auth.user?.email) return false;
     const userEmail = auth.user.email; // Store email for filtering
-    const response = await fetch(
-      `${API_BASE_URL}/invitations/pending?email=${encodeURIComponent(userEmail)}`, // Keep sending email param
-      { credentials: "include" }
-    );
-    if (!response.ok) return false;
-    const invitations = await response.json();
 
-    // Filter invitations to only include those for the current user's email
-    const userPendingInvites = invitations.filter(
-      (invite: { email: string }) => invite.email === userEmail
-    );
+    try {
+      const invitations = await api.get(
+        `/invitations/pending?email=${encodeURIComponent(userEmail)}`
+      );
 
-    // Return true only if there are pending invites specifically for this user
-    return userPendingInvites.length > 0;
+      // Filter invitations to only include those for the current user's email
+      const userPendingInvites = invitations.filter(
+        (invite: { email: string }) => invite.email === userEmail
+      );
+
+      // Return true only if there are pending invites specifically for this user
+      return userPendingInvites.length > 0;
+    } catch (error) {
+      console.error("Error checking pending invites:", error);
+      return false;
+    }
   }
 
   const currentOrgName = $derived(auth.currentOrganization?.name || "");
+  
+  // Organization owner role ID
+  const ORGANIZATION_OWNER_ROLE_ID = "e820de49-d7bd-42d7-8b05-49279cee686f";
+  
+  // Check if user is organization owner
+  const isOrganizationOwner = $derived(
+    auth.currentOrganization?.organizationRoles?.some(
+      (role) => role.roleId === ORGANIZATION_OWNER_ROLE_ID
+    ) || false
+  );
 
   // Initialize announcements when user is authenticated
   $effect(() => {
@@ -150,7 +163,7 @@
       {:else}
         <!-- Global Search Dialog - Available across all authenticated routes -->
         <GlobalSearchDialog />
-        
+
         <!-- Announcement Modal - Available across all authenticated routes -->
         <AnnouncementModal />
         <ProtectedLayout>
@@ -281,6 +294,7 @@
                 mode="organization"
                 workspaceName={currentOrgName}
                 onBack={() => navigate("/dashboard")}
+                isOwner={isOrganizationOwner}
               />
             {/if}
           </Route>

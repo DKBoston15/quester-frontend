@@ -1,6 +1,5 @@
-<!-- src/lib/stores/GrantStore.svelte -->
 <script lang="ts" module>
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
   import type { Grant } from "../types/auth";
 
   let grants = $state<Grant[]>([]);
@@ -32,18 +31,7 @@
       error = null;
 
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/projects/${projectId}/grants`,
-          {
-            credentials: "include",
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`Failed to load grants (${response.status})`);
-        }
-
-        const grantsData = await response.json();
+        const grantsData = await api.get(`/projects/${projectId}/grants`);
         grants = grantsData;
       } catch (err) {
         console.error("Error loading grants:", err);
@@ -64,15 +52,7 @@
       error = null;
 
       try {
-        const response = await fetch(`${API_BASE_URL}/grants/${grantId}`, {
-          credentials: "include",
-        });
-
-        if (!response.ok) {
-          throw new Error(`Grant not found (${response.status})`);
-        }
-
-        const grantData = await response.json();
+        const grantData = await api.get(`/grants/${grantId}`);
         currentGrant = grantData;
         return grantData;
       } catch (err) {
@@ -94,23 +74,10 @@
       error = null;
 
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/projects/${projectId}/grants`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify(grantData),
-          }
+        const newGrant = await api.post(
+          `/projects/${projectId}/grants`,
+          grantData
         );
-
-        if (!response.ok) {
-          throw new Error(`Failed to create grant (${response.status})`);
-        }
-
-        const newGrant = await response.json();
         grants = [...grants, newGrant];
         return newGrant;
       } catch (err) {
@@ -131,20 +98,7 @@
       error = null;
 
       try {
-        const response = await fetch(`${API_BASE_URL}/grants/${grantId}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify(updateData),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to update grant (${response.status})`);
-        }
-
-        const updatedGrant = await response.json();
+        const updatedGrant = await api.put(`/grants/${grantId}`, updateData);
 
         // Update in grants array
         grants = grants.map((grant) =>
@@ -175,14 +129,7 @@
       error = null;
 
       try {
-        const response = await fetch(`${API_BASE_URL}/grants/${grantId}`, {
-          method: "DELETE",
-          credentials: "include",
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to delete grant (${response.status})`);
-        }
+        await api.delete(`/grants/${grantId}`);
 
         // Remove from grants array
         grants = grants.filter((grant) => grant.id !== grantId);

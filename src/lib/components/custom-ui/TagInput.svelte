@@ -1,4 +1,3 @@
-<!-- src/lib/components/custom-ui/TagInput.svelte -->
 <script lang="ts">
   import { Badge } from "$lib/components/ui/badge";
   import { Input } from "$lib/components/ui/input";

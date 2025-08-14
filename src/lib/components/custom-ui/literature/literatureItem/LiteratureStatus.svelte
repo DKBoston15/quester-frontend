@@ -1,4 +1,3 @@
-<!-- src/lib/components/custom-ui/literature/literatureItem/LiteratureStatus.svelte -->
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
   import { Label } from "$lib/components/ui/label";

@@ -1,9 +1,7 @@
-<!-- src/lib/components/project/GrantForm.svelte -->
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
-  import { Textarea } from "$lib/components/ui/textarea";
   import * as Select from "$lib/components/ui/select";
   import * as Card from "$lib/components/ui/card";
   import { Loader2Icon, XIcon, PlusIcon, MinusIcon } from "lucide-svelte";

@@ -1,4 +1,3 @@
-<!-- src/lib/components/project/ProjectKeywords.svelte -->
 <script lang="ts">
   import TagInput from "../custom-ui/TagInput.svelte";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";

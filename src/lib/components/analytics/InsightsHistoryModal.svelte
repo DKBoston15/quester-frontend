@@ -3,7 +3,6 @@
   import * as Dialog from "$lib/components/ui/dialog";
   import { Badge } from "$lib/components/ui/badge";
   import { ScrollArea } from "$lib/components/ui/scroll-area";
-  import InsightCard from "./InsightCard.svelte";
   import { insightsStore } from "$lib/stores/InsightsStore.svelte";
   import {
     Calendar,
@@ -13,7 +12,6 @@
     Brain,
     AlertTriangle,
   } from "lucide-svelte";
-  import { onMount } from "svelte";
 
   interface Props {
     projectId: string;
@@ -62,7 +60,17 @@
   }
 
   // Map insight types to visual properties (matching InsightCard component)
-  const insightConfig = {
+  const insightConfig: Record<
+    string,
+    {
+      icon: typeof Brain;
+      label: string;
+      color: string;
+      bgColor: string;
+      textColor: string;
+      borderColor: string;
+    }
+  > = {
     research_focus: {
       icon: TrendingUp,
       label: "Research Focus",
@@ -92,7 +100,7 @@
   function getInsightConfig(type: string) {
     return (
       insightConfig[type] || {
-        icon: Brain, // Use Brain icon as default
+        icon: Brain,
         label: "Insight",
         color: "bg-gray-500",
         bgColor: "bg-gray-50 dark:bg-gray-950/20",
@@ -175,7 +183,7 @@
                       <div
                         class={`p-1.5 rounded-lg ${config.color} text-white`}
                       >
-                        <svelte:component this={config.icon} class="h-3 w-3" />
+                        <config.icon class="h-3 w-3" />
                       </div>
                       <div>
                         <Badge

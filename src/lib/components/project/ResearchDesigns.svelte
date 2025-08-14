@@ -1,4 +1,3 @@
-<!-- src/lib/components/project/ResearchDesigns.svelte -->
 <script lang="ts">
   import {
     Card,

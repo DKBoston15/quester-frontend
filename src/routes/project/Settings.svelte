@@ -1,4 +1,3 @@
-<!-- src/routes/project/Settings.svelte -->
 <script lang="ts">
   import {
     Card,
@@ -12,7 +11,7 @@
   import DesignManager from "$lib/components/custom-ui/project/DesignManager.svelte";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
   import { toast } from "svelte-sonner";
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
   import { GraduationCap, Info } from "lucide-svelte";
@@ -77,9 +76,8 @@
 
     isExporting = true;
     try {
-      const exportUrl = `${API_BASE_URL}/projects/${projectStore.currentProject.id}/export`;
-      // Trigger download by navigating
-      window.location.href = exportUrl;
+      // Trigger download by navigating to the export URL
+      window.location.href = `/api/projects/${projectStore.currentProject.id}/export`;
 
       // Optionally show a success toast, though the browser handles the download itself
       // toast.success("Project export started...");
@@ -104,17 +102,7 @@
     isDeleting = true;
     try {
       // Call the API to delete the project
-      const response = await fetch(
-        `${API_BASE_URL}/projects/${projectStore.currentProject.id}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to delete project (${response.status})`);
-      }
+      await api.delete(`/projects/${projectStore.currentProject.id}`);
 
       toast.success("Project deleted successfully");
       // Navigate to dashboard with lowercase path

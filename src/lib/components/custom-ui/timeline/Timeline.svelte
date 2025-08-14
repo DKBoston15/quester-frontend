@@ -1,4 +1,3 @@
-<!-- Timeline.svelte -->
 <script lang="ts">
   import {
     Calendar,
@@ -20,9 +19,7 @@
     Gavel,
     Briefcase,
     Star,
-    Coffee,
     MoreHorizontal,
-    Plus,
   } from "lucide-svelte";
   import { fade, slide, scale } from "svelte/transition";
   import { quintOut, elasticOut } from "svelte/easing";
@@ -32,8 +29,6 @@
   import CustomEventForm from "../custom-events/CustomEventForm.svelte";
   import {
     convertTimelineEventToCustomEvent,
-    isCustomEvent,
-    type EnhancedTimelineEvent,
     type CustomEventType,
   } from "$lib/types/custom-events";
   import { getEventTypeConfig } from "$lib/config/custom-event-types";

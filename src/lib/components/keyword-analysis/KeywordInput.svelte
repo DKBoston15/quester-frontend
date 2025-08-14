@@ -1,4 +1,3 @@
-<!-- KeywordInput.svelte -->
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
   import { Button } from "$lib/components/ui/button";

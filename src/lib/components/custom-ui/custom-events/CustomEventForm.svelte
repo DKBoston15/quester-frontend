@@ -1,4 +1,3 @@
-<!-- Custom Event Form Modal -->
 <script lang="ts">
   import { createEventDispatcher, onMount, onDestroy } from "svelte";
   import { fade } from "svelte/transition";

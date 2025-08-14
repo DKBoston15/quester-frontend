@@ -1,4 +1,3 @@
-<!-- KeywordAnalysis.svelte -->
 <script lang="ts">
   import { fade, slide } from "svelte/transition";
   import KeywordInput from "./KeywordInput.svelte";
@@ -8,9 +7,9 @@
   import { EmptyState } from "$lib/components/ui/empty-state";
   import type { KeywordAnalysis } from "$lib/types/index";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
   import { driver } from "driver.js";
-  import type { DriveStep, Side } from "driver.js";
+  import type { DriveStep } from "driver.js";
   import "driver.js/dist/driver.css";
   import { GraduationCap } from "lucide-svelte";
 
@@ -199,14 +198,9 @@
     loading = true;
     error = null;
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/keyword_analysis/project/${projectStore.currentProject!.id}`,
-        { credentials: "include" }
+      const data = await api.get(
+        `/keyword_analysis/project/${projectStore.currentProject!.id}`
       );
-      if (!response.ok) {
-        throw new Error("Failed to fetch analyses");
-      }
-      const data = await response.json();
 
       analyses = data.map((analysis: KeywordAnalysis) => {
         const processed = {
@@ -252,21 +246,10 @@
     loading = true;
     error = null;
     try {
-      const response = await fetch(`${API_BASE_URL}/keyword_analysis`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          keywords,
-          projectId: projectStore.currentProject.id,
-        }),
+      const data = await api.post(`/keyword_analysis`, {
+        keywords,
+        projectId: projectStore.currentProject.id,
       });
-      if (!response.ok) {
-        throw new Error("Failed to create analysis");
-      }
-      const data = await response.json();
       const newAnalysis = {
         ...data.keyword_analysis,
         keywords:
@@ -300,13 +283,7 @@
 
   async function handleDelete(id: string) {
     try {
-      const response = await fetch(`${API_BASE_URL}/keyword_analysis/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (!response.ok) {
-        throw new Error("Failed to delete analysis");
-      }
+      await api.delete(`/keyword_analysis/${id}`);
       analyses = analyses.filter((a) => a.id !== id);
       if (currentAnalysis?.id === id) {
         currentAnalysis = analyses[0] || null;
