@@ -1,4 +1,3 @@
-<!-- src/lib/components/TreeNodeItem.svelte -->
 <script lang="ts">
   import {
     ChevronRight,
@@ -22,7 +21,7 @@
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
   import * as Tooltip from "$lib/components/ui/tooltip/index.js";
   import { navigate } from "svelte-routing";
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
 
   // Props
@@ -144,7 +143,11 @@
 
   // Handle keyboard events for department toggle
   function handleKeydown(e: KeyboardEvent) {
-    if ((e.key === 'Enter' || e.key === ' ') && isDepartment(props.item) && !isRenaming) {
+    if (
+      (e.key === "Enter" || e.key === " ") &&
+      isDepartment(props.item) &&
+      !isRenaming
+    ) {
       e.preventDefault();
       e.stopPropagation();
       isExpanded = !isExpanded;
@@ -265,13 +268,15 @@
   function startRename(e: MouseEvent) {
     if (!isDepartment(props.item)) return;
     e.stopPropagation();
-    
+
     newName = props.item.name;
     isRenaming = true;
-    
+
     // Focus the input after a short delay to ensure it's rendered
     setTimeout(() => {
-      const input = document.querySelector('input[placeholder="Department name"]') as HTMLInputElement;
+      const input = document.querySelector(
+        'input[placeholder="Department name"]'
+      ) as HTMLInputElement;
       if (input) {
         input.focus();
         input.select();
@@ -287,7 +292,11 @@
 
   // Save the new department name
   async function saveRename() {
-    if (!isDepartment(props.item) || !newName.trim() || newName.trim() === props.item.name) {
+    if (
+      !isDepartment(props.item) ||
+      !newName.trim() ||
+      newName.trim() === props.item.name
+    ) {
       cancelRename();
       return;
     }
@@ -295,27 +304,10 @@
     isRenameLoading = true;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/departments/${props.item.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          name: newName.trim(),
-          organizationId: props.item.organizationId,
-        }),
+      await api.put(`/departments/${props.item.id}`, {
+        name: newName.trim(),
+        organizationId: props.item.organizationId,
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        dialogErrorTitle = "Rename Failed";
-        dialogErrorMessage =
-          errorData.message || "Could not rename department. Please try again.";
-        showErrorDialog = true;
-        return;
-      }
 
       // Update was successful, refresh data
       await teamManagement.loadUserResources();
@@ -353,7 +345,10 @@
     const deptResource = teamManagement.userResources.departments?.find(
       (d: any) => d.id === department.id
     );
-    if (deptResource?.$extras?.roleName === "Owner" || deptResource?.$extras?.roleName === "Admin") {
+    if (
+      deptResource?.$extras?.roleName === "Owner" ||
+      deptResource?.$extras?.roleName === "Admin"
+    ) {
       return true;
     }
 
@@ -378,24 +373,9 @@
     e.stopPropagation();
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/team-management/project/${project.id}/join-with-department`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        }
+      await api.post(
+        `/team-management/project/${project.id}/join-with-department`
       );
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        dialogErrorTitle = "Join Failed";
-        dialogErrorMessage =
-          errorData.message ||
-          "Could not join the project. Please try again or contact support.";
-        showErrorDialog = true;
-        throw new Error(errorData.message || "Failed to join project");
-      }
 
       await teamManagement.loadUserResources();
     } catch (error) {
@@ -446,7 +426,7 @@
     </div>
 
     <FolderKanban class="h-4 w-4 text-amber-500" />
-    
+
     {#if isRenaming}
       <!-- Rename input mode -->
       <div class="flex items-center gap-2 flex-1">
@@ -465,7 +445,9 @@
           disabled={isRenameLoading || !newName.trim()}
         >
           {#if isRenameLoading}
-            <div class="w-3 h-3 border border-t-transparent rounded-full animate-spin"></div>
+            <div
+              class="w-3 h-3 border border-t-transparent rounded-full animate-spin"
+            ></div>
           {:else}
             <Check class="h-3 w-3" />
           {/if}
@@ -508,86 +490,88 @@
       <!-- Add dropdown menu for department actions -->
       {#if !isRenaming}
         <DropdownMenu.Root>
-          <DropdownMenu.Trigger onclick={(e: MouseEvent) => e.stopPropagation()}>
+          <DropdownMenu.Trigger
+            onclick={(e: MouseEvent) => e.stopPropagation()}
+          >
             <Button variant="ghost" size="icon" class="relative z-10">
               <MoreVertical class="h-4 w-4" />
             </Button>
           </DropdownMenu.Trigger>
-        <DropdownMenu.Content
-          onclick={(e: MouseEvent) => e.stopPropagation()}
-          class="relative z-20"
-        >
-          <DropdownMenu.Label>Department Actions</DropdownMenu.Label>
-          <DropdownMenu.Separator />
-          <DropdownMenu.Item
-            onclick={(e: MouseEvent) => {
-              e.stopPropagation();
-              if (props.onNewProject) props.onNewProject();
-            }}
+          <DropdownMenu.Content
+            onclick={(e: MouseEvent) => e.stopPropagation()}
+            class="relative z-20"
           >
-            <Plus class="h-4 w-4 mr-2" />
-            New Project
-          </DropdownMenu.Item>
-          
-          {#if isDepartment(props.item) && canRenameDepartment(props.item)}
+            <DropdownMenu.Label>Department Actions</DropdownMenu.Label>
+            <DropdownMenu.Separator />
             <DropdownMenu.Item
               onclick={(e: MouseEvent) => {
                 e.stopPropagation();
-                startRename(e);
+                if (props.onNewProject) props.onNewProject();
               }}
             >
-              <Edit3 class="h-4 w-4 mr-2" />
-              Rename Department
+              <Plus class="h-4 w-4 mr-2" />
+              New Project
             </DropdownMenu.Item>
-          {/if}
 
-          <!-- Delete Department Item -->
-          {#if isDepartment(props.item) && canPotentiallyDeleteDepartment(props.item)}
-            {@const departmentIsEmpty =
-              !props.filteredProjects || props.filteredProjects.length === 0}
-
-            {#if !departmentIsEmpty}
-              <!-- DISABLED: Show with Tooltip -->
-              <Tooltip.Root>
-                <Tooltip.Trigger class="w-full">
-                  <span
-                    class="w-full flex cursor-not-allowed"
-                    aria-label={"Delete Department (disabled, cannot delete non-empty department)"}
-                  >
-                    <DropdownMenu.Item
-                      class="w-full text-red-600 dark:text-red-500 focus:bg-red-100 dark:focus:bg-red-900/50 focus:text-red-700 dark:focus:text-red-400 data-[disabled]:text-muted-foreground data-[disabled]:opacity-70 data-[disabled]:pointer-events-none data-[disabled]:cursor-not-allowed"
-                      disabled={true}
-                      onclick={(e: MouseEvent) => {
-                        e.stopPropagation();
-                      }}
-                    >
-                      Delete Department
-                    </DropdownMenu.Item>
-                  </span>
-                </Tooltip.Trigger>
-                <Tooltip.Content
-                  side="right"
-                  class="bg-background text-foreground border rounded-md shadow-md p-2 text-sm"
-                >
-                  <p>Move or delete all projects in this department first.</p>
-                </Tooltip.Content>
-              </Tooltip.Root>
-            {:else}
-              <!-- ENABLED: Show without Tooltip -->
+            {#if isDepartment(props.item) && canRenameDepartment(props.item)}
               <DropdownMenu.Item
-                class="w-full text-red-600 dark:text-red-500 focus:bg-red-100 dark:focus:bg-red-900/50 focus:text-red-700 dark:focus:text-red-400"
-                disabled={false}
-                onclick={async (e: MouseEvent) => {
+                onclick={(e: MouseEvent) => {
                   e.stopPropagation();
-                  showDeleteConfirmDialog = true;
+                  startRename(e);
                 }}
-                aria-label="Delete Department"
               >
-                Delete Department
+                <Edit3 class="h-4 w-4 mr-2" />
+                Rename Department
               </DropdownMenu.Item>
             {/if}
-          {/if}
-        </DropdownMenu.Content>
+
+            <!-- Delete Department Item -->
+            {#if isDepartment(props.item) && canPotentiallyDeleteDepartment(props.item)}
+              {@const departmentIsEmpty =
+                !props.filteredProjects || props.filteredProjects.length === 0}
+
+              {#if !departmentIsEmpty}
+                <!-- DISABLED: Show with Tooltip -->
+                <Tooltip.Root>
+                  <Tooltip.Trigger class="w-full">
+                    <span
+                      class="w-full flex cursor-not-allowed"
+                      aria-label={"Delete Department (disabled, cannot delete non-empty department)"}
+                    >
+                      <DropdownMenu.Item
+                        class="w-full text-red-600 dark:text-red-500 focus:bg-red-100 dark:focus:bg-red-900/50 focus:text-red-700 dark:focus:text-red-400 data-[disabled]:text-muted-foreground data-[disabled]:opacity-70 data-[disabled]:pointer-events-none data-[disabled]:cursor-not-allowed"
+                        disabled={true}
+                        onclick={(e: MouseEvent) => {
+                          e.stopPropagation();
+                        }}
+                      >
+                        Delete Department
+                      </DropdownMenu.Item>
+                    </span>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content
+                    side="right"
+                    class="bg-background text-foreground border rounded-md shadow-md p-2 text-sm"
+                  >
+                    <p>Move or delete all projects in this department first.</p>
+                  </Tooltip.Content>
+                </Tooltip.Root>
+              {:else}
+                <!-- ENABLED: Show without Tooltip -->
+                <DropdownMenu.Item
+                  class="w-full text-red-600 dark:text-red-500 focus:bg-red-100 dark:focus:bg-red-900/50 focus:text-red-700 dark:focus:text-red-400"
+                  disabled={false}
+                  onclick={async (e: MouseEvent) => {
+                    e.stopPropagation();
+                    showDeleteConfirmDialog = true;
+                  }}
+                  aria-label="Delete Department"
+                >
+                  Delete Department
+                </DropdownMenu.Item>
+              {/if}
+            {/if}
+          </DropdownMenu.Content>
         </DropdownMenu.Root>
       {/if}
     </div>

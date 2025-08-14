@@ -1,14 +1,6 @@
 <script lang="ts">
-  import {
-    Handle,
-    NodeResizer,
-    NodeToolbar,
-    Position,
-    type NodeProps,
-  } from "@xyflow/svelte";
+  import { Handle, NodeResizer, NodeToolbar, Position } from "@xyflow/svelte";
   import { createEventDispatcher } from "svelte";
-
-  type $$Props = NodeProps;
 
   let {
     data = {},

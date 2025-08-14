@@ -1,4 +1,3 @@
-<!-- src/lib/components/project/ProjectOverview.svelte -->
 <script lang="ts">
   import {
     Card,
@@ -16,7 +15,7 @@
   import { InfoIcon, Loader2Icon, WandIcon } from "lucide-svelte";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
   import { toast } from "svelte-sonner";
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
 
   const projectStatusOptions = [
     { value: "Planning", label: "Planning" },
@@ -99,14 +98,12 @@
     streamingContent = "";
 
     try {
-      const response = await fetch(`${API_BASE_URL}/ai/rewrite-purpose`, {
+      const response = await api.stream("/ai/rewrite-purpose", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
+        body: {
           projectId: projectStore.currentProject.id,
           command: customInstruction || undefined,
-        }),
+        },
       });
 
       if (!response.ok) throw new Error("Failed to start rewrite");

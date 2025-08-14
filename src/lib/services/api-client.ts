@@ -199,6 +199,168 @@ export async function apiRequest<T = any>(
 }
 
 /**
+ * Stream configuration for SSE endpoints
+ */
+export interface StreamConfig extends APIRequestConfig {
+  onMessage?: (data: any) => void;
+  onError?: (error: Error) => void;
+  onComplete?: () => void;
+  method?: string;
+  body?: any;
+  headers?: Record<string, string>;
+}
+
+/**
+ * Handle Server-Sent Events (SSE) streaming responses
+ * Returns a Response object that can be processed for streaming
+ */
+export async function streamRequest(
+  url: string,
+  config: StreamConfig = {}
+): Promise<Response> {
+  const {
+    method = "POST",
+    body,
+    headers = {},
+    timeout = 60000, // 60 seconds for streaming
+    signal,
+    skipAuthCheck = false,
+  } = config;
+
+  // Ensure URL is absolute
+  const requestUrl = url.startsWith("http") ? url : `${API_BASE_URL}${url}`;
+
+  // Create abort controller for timeout if no signal provided
+  const controller = new AbortController();
+  const timeoutId = signal
+    ? null
+    : setTimeout(() => controller.abort(), timeout);
+
+  const requestSignal = signal || controller.signal;
+
+  const requestOptions: RequestInit = {
+    method,
+    signal: requestSignal,
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      ...headers,
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  };
+
+  try {
+    const response = await fetch(requestUrl, requestOptions);
+
+    // Clear timeout if we got a response
+    if (timeoutId) clearTimeout(timeoutId);
+
+    // Handle authentication errors
+    if (
+      !skipAuthCheck &&
+      (response.status === 401 || response.status === 403)
+    ) {
+      console.warn(
+        `Authentication error detected: ${response.status} on ${requestUrl}`
+      );
+
+      // Trigger global logout
+      if (globalLogoutHandler) {
+        globalLogoutHandler();
+      }
+
+      throw new AuthenticationError(
+        `Authentication failed (${response.status})`,
+        response.status,
+        response
+      );
+    }
+
+    // Handle other non-ok responses
+    if (!response.ok) {
+      let errorData: any;
+      try {
+        errorData = await response.json();
+      } catch {
+        errorData = { message: response.statusText };
+      }
+
+      throw new APIError(
+        errorData.message || `Request failed with status ${response.status}`,
+        response.status,
+        errorData.code,
+        response
+      );
+    }
+
+    return response;
+  } catch (error) {
+    if (timeoutId) clearTimeout(timeoutId);
+    throw error;
+  }
+}
+
+/**
+ * Process SSE stream from a Response object
+ * This helper processes the response body as a stream of SSE events
+ */
+export async function processSSEStream(
+  response: Response,
+  config: StreamConfig = {}
+): Promise<void> {
+  const { onMessage, onError, onComplete } = config;
+
+  if (!response.body) {
+    throw new Error("Response body is null");
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      
+      if (done) {
+        if (onComplete) onComplete();
+        break;
+      }
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      
+      // Keep the last incomplete line in the buffer
+      buffer = lines.pop() || "";
+
+      for (const line of lines) {
+        if (line.startsWith("data: ")) {
+          const content = line.slice(6);
+          
+          if (content === "[DONE]") {
+            if (onComplete) onComplete();
+            return;
+          }
+
+          try {
+            const parsed = JSON.parse(content);
+            if (onMessage) onMessage(parsed);
+          } catch (e) {
+            // If it's not JSON, pass the raw content
+            if (onMessage) onMessage(content);
+          }
+        }
+      }
+    }
+  } catch (error) {
+    if (onError) onError(error as Error);
+    throw error;
+  } finally {
+    reader.releaseLock();
+  }
+}
+
+/**
  * Convenience methods for common HTTP operations
  */
 export const api = {
@@ -237,6 +399,21 @@ export const api = {
 
   delete: <T = any>(url: string, config?: APIRequestConfig) =>
     apiRequest<T>(url, { method: "DELETE" }, config),
+
+  /**
+   * Stream endpoint for SSE responses
+   * Returns the raw Response object for custom processing
+   */
+  stream: (url: string, config?: StreamConfig) => streamRequest(url, config),
+
+  /**
+   * Stream endpoint with automatic SSE processing
+   * Handles the entire streaming lifecycle
+   */
+  streamSSE: async (url: string, config: StreamConfig) => {
+    const response = await streamRequest(url, config);
+    return processSSEStream(response, config);
+  },
 };
 
 /**

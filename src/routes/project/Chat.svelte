@@ -9,7 +9,7 @@
   import { Badge } from "$lib/components/ui/badge";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import Loader2 from "lucide-svelte/icons/loader-2";
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
   import MarkdownIt from "markdown-it";
   
   // Icons
@@ -161,38 +161,22 @@
 
     try {
       isLoadingHistory = true;
-      const response = await fetch(
-        `${API_BASE_URL}/chat/history/${projectStore.currentProject.id}`,
-        {
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to load chat history");
-
-      const data = await response.json();
+      const data = await api.get(`/chat/history/${projectStore.currentProject.id}`);
 
       // Load first message for each session
       const sessionsWithMessages = await Promise.all(
         data.sessions.map(async (session: ChatSession) => {
           try {
-            const messageResponse = await fetch(
-              `${API_BASE_URL}/chat/history/${projectStore.currentProject?.id}?sessionId=${session.chatSessionId}`,
-              {
-                credentials: "include",
-              }
+            const messageData = await api.get(
+              `/chat/history/${projectStore.currentProject?.id}?sessionId=${session.chatSessionId}`
             );
-
-            if (messageResponse.ok) {
-              const messageData = await messageResponse.json();
-              return {
-                ...session,
-                messages: messageData.messages.filter(
-                  (msg: Message) =>
-                    msg.role === "user" || msg.role === "assistant"
-                ),
-              };
-            }
+            return {
+              ...session,
+              messages: messageData.messages.filter(
+                (msg: Message) =>
+                  msg.role === "user" || msg.role === "assistant"
+              ),
+            };
           } catch (e) {
             console.error(
               `Failed to load messages for session ${session.chatSessionId}:`,
@@ -228,18 +212,7 @@
 
     try {
       isDeleting = true;
-      const response = await fetch(
-        `${API_BASE_URL}/chat/sessions/${sessionToDelete}`,
-        {
-          method: 'DELETE',
-          credentials: 'include',
-        }
-      );
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete session');
-      }
+      await api.delete(`/chat/sessions/${sessionToDelete}`);
 
       // Remove from local state
       recentSessions = recentSessions.filter(
@@ -267,16 +240,9 @@
 
     try {
       isLoading = true;
-      const response = await fetch(
-        `${API_BASE_URL}/chat/history/${projectStore.currentProject.id}?sessionId=${sessionId}`,
-        {
-          credentials: "include",
-        }
+      const data = await api.get(
+        `/chat/history/${projectStore.currentProject.id}?sessionId=${sessionId}`
       );
-
-      if (!response.ok) throw new Error("Failed to load chat session");
-
-      const data = await response.json();
       messages = data.messages.map((msg: any) => ({
         ...msg,
         timestamp: new Date(msg.createdAt),
@@ -339,19 +305,15 @@
       };
       messages = [...messages, userMsg];
 
-      const response = await fetch(
-        `${API_BASE_URL}/chat${sessionToUse ? `?chatSessionId=${sessionToUse}` : ""}`,
+      const response = await api.stream(
+        `/chat${sessionToUse ? `?chatSessionId=${sessionToUse}` : ""}`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
+          body: {
             projectId: projectStore.currentProject.id,
             message: userMessage,
             provider: "openai",
-          }),
+          },
         }
       );
 

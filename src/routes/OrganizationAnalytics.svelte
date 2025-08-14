@@ -37,7 +37,7 @@
   import { Button } from "$lib/components/ui/button";
   import ProjectUsersModal from "$lib/components/ProjectUsersModal.svelte";
   import * as Pagination from "$lib/components/ui/pagination/index.js";
-  import { navigate, Link } from "svelte-routing";
+  import { navigate } from "svelte-routing";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
   import { GraduationCap } from "lucide-svelte";

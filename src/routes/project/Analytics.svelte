@@ -1,4 +1,3 @@
-<!-- src/routes/project/Analytics.svelte -->
 <script lang="ts">
   import { onMount } from "svelte";
   import { Chart } from "chart.js/auto";

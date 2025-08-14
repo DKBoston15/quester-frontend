@@ -1,4 +1,3 @@
-<!-- src/routes/Settings.svelte -->
 <script lang="ts">
   import { onMount } from "svelte";
   import { auth } from "$lib/stores/AuthStore.svelte";
@@ -13,21 +12,14 @@
     CardDescription,
     CardContent,
   } from "$lib/components/ui/card";
-  import {
-    Settings as SettingsIcon,
-    User,
-    Building2,
-    GraduationCap,
-    CreditCard,
-  } from "lucide-svelte";
+  import { User, Building2, GraduationCap, CreditCard } from "lucide-svelte";
   import * as Tabs from "$lib/components/ui/tabs";
   import TeamSettings from "$lib/components/TeamSettings.svelte";
   import ManageSubscription from "$lib/components/ManageSubscription.svelte";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import AppSidebar from "$lib/components/AppSidebar.svelte";
-  // Import tooltip components
   import * as Tooltip from "$lib/components/ui/tooltip";
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
 
@@ -101,16 +93,7 @@
   // Check if user has access to organization settings based on subscription
   async function checkOrgSettingsCapability() {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/capabilities/org_settings_access`,
-        { credentials: "include" }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to check organization settings capability");
-      }
-
-      const data = await response.json();
+      const data = await api.get(`/capabilities/org_settings_access`);
       hasOrgSettingsAccess = data.allowed;
 
       // If user doesn't have access but organization tab is selected, switch to profile

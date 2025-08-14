@@ -1,7 +1,6 @@
 <script lang="ts" module>
   import type { Note } from "$lib/types";
   import { auth } from "$lib/stores/AuthStore.svelte";
-  import { API_BASE_URL } from "$lib/config";
   import { api, isAuthError } from "../services/api-client";
 
   type FilterType = "literature" | "research" | "all" | "unlinked" | "recent";

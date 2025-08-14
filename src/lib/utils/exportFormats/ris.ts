@@ -19,8 +19,10 @@ const typeToRIS: Record<string, string> = {
   'Other': 'GEN'
 };
 
-function formatRISAuthors(authors: string[]): string[] {
-  if (!authors || authors.length === 0) return [];
+function formatRISAuthors(authors: string[] | string): string[] {
+  if (!authors) return [];
+  if (typeof authors === 'string') return [`AU  - ${authors}`];
+  if (authors.length === 0) return [];
   
   return authors.map(author => {
     const parts = author.split(', ');
@@ -32,8 +34,10 @@ function formatRISAuthors(authors: string[]): string[] {
   });
 }
 
-function formatRISEditors(editors: string[]): string[] {
-  if (!editors || editors.length === 0) return [];
+function formatRISEditors(editors: string[] | string): string[] {
+  if (!editors) return [];
+  if (typeof editors === 'string') return [`ED  - ${editors}`];
+  if (editors.length === 0) return [];
   
   return editors.map(editor => {
     const parts = editor.split(', ');
@@ -44,8 +48,10 @@ function formatRISEditors(editors: string[]): string[] {
   });
 }
 
-function formatRISKeywords(keywords: any[]): string[] {
-  if (!keywords || keywords.length === 0) return [];
+function formatRISKeywords(keywords: any[] | string): string[] {
+  if (!keywords) return [];
+  if (typeof keywords === 'string') return [`KW  - ${keywords}`];
+  if (keywords.length === 0) return [];
   
   return keywords
     .map(k => typeof k === 'string' ? k : k.name || '')
@@ -187,13 +193,8 @@ export function generateRIS(options: RISExportOptions): string {
         break;
     }
 
-    // Abstract
-    if (item.abstract) {
-      const cleanAbstract = item.abstract.replace(/\n/g, ' ').trim();
-      if (cleanAbstract) {
-        lines.push(`AB  - ${cleanAbstract}`);
-      }
-    }
+    // Abstract - field not in Literature type
+    // Skipping abstract field
 
     // Keywords
     if (item.keywords && item.keywords.length > 0) {

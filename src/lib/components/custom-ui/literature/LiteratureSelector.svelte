@@ -17,9 +17,7 @@
     highlightedAuthors?: string;
   };
 
-  // Props
   const {
-    noteId,
     projectId,
     selectedLiteratureId = undefined,
     onLiteratureSelect,

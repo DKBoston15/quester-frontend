@@ -10,12 +10,12 @@
   import { Input } from "$lib/components/ui/input";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { cn } from "$lib/utils";
+  import type { ChatSession } from "$lib/services/chat-history-api";
 
   // Icons
   import Search from "lucide-svelte/icons/search";
   import Star from "lucide-svelte/icons/star";
   import MessageCircle from "lucide-svelte/icons/message-circle";
-  import Calendar from "lucide-svelte/icons/calendar";
   import Trash2 from "lucide-svelte/icons/trash-2";
   import Plus from "lucide-svelte/icons/plus";
   import Clock from "lucide-svelte/icons/clock";
@@ -23,7 +23,6 @@
   import Loader from "lucide-svelte/icons/loader";
   import AlertCircle from "lucide-svelte/icons/alert-circle";
   import X from "lucide-svelte/icons/x";
-  import Filter from "lucide-svelte/icons/filter";
   import RefreshCw from "lucide-svelte/icons/refresh-cw";
   import Loader2 from "lucide-svelte/icons/loader-2";
 
@@ -50,7 +49,6 @@
   // Local state
   let searchQuery = $state("");
   let showStarredOnly = $state(false);
-  let showProjectFilter = $state(false);
   let selectedProjectId = $state<string | null>(null);
   let hoveredSessionId = $state<string | null>(null);
   let showDeleteDialog = $state(false);
@@ -58,7 +56,7 @@
   let isDeleting = $state(false);
 
   // Manual filtered sessions using $state and $effect
-  let filteredSessions = $state([]);
+  let filteredSessions = $state<ChatSession[]>([]);
 
   // Update filtered sessions when dependencies change
   $effect(() => {
@@ -76,10 +74,13 @@
           try {
             messages = JSON.parse(messages);
           } catch (error) {
-            console.error('Failed to parse chat history messages for filtering:', {
-              sessionId: session.id,
-              error: error instanceof Error ? error.message : 'Unknown error'
-            });
+            console.error(
+              "Failed to parse chat history messages for filtering:",
+              {
+                sessionId: session.id,
+                error: error instanceof Error ? error.message : "Unknown error",
+              }
+            );
             messages = [];
           }
         }
@@ -112,15 +113,6 @@
     sessions.filter((session) => session.metadata?.isStarred === true)
   );
 
-  const projects = $derived(() => {
-    const projectMap = new Map();
-    sessions.forEach((session) => {
-      if (session.project) {
-        projectMap.set(session.project.id, session.project);
-      }
-    });
-    return Array.from(projectMap.values());
-  });
 
   const hasFilters = $derived(
     searchQuery.trim() !== "" || showStarredOnly || selectedProjectId !== null
@@ -224,9 +216,9 @@
       try {
         messages = JSON.parse(messages);
       } catch (error) {
-        console.error('Failed to parse chat history messages for preview:', {
+        console.error("Failed to parse chat history messages for preview:", {
           sessionId: session.id,
-          error: error instanceof Error ? error.message : 'Unknown error'
+          error: error instanceof Error ? error.message : "Unknown error",
         });
         return "No messages yet";
       }
@@ -254,18 +246,18 @@
       try {
         messages = JSON.parse(messages);
       } catch (error) {
-        console.error('Failed to parse chat history messages for count:', {
+        console.error("Failed to parse chat history messages for count:", {
           sessionId: session.id,
-          error: error instanceof Error ? error.message : 'Unknown error'
+          error: error instanceof Error ? error.message : "Unknown error",
         });
         return 0;
       }
     }
 
     if (!Array.isArray(messages)) {
-      console.warn('Chat history messages is not an array:', {
+      console.warn("Chat history messages is not an array:", {
         sessionId: session.id,
-        messageType: typeof messages
+        messageType: typeof messages,
       });
       return 0;
     }
@@ -406,7 +398,15 @@
             session.id
               ? 'bg-muted border-primary'
               : 'hover:border-muted-foreground/20'}"
+            role="button"
+            tabindex="0"
             onclick={() => handleSessionSelect(session.id)}
+            onkeydown={(e: KeyboardEvent) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleSessionSelect(session.id);
+              }
+            }}
             onmouseenter={() => (hoveredSessionId = session.id)}
             onmouseleave={() => (hoveredSessionId = null)}
             animate:flip={{ duration: 300, easing: quintOut }}
@@ -443,7 +443,7 @@
                 <Button
                   variant="ghost"
                   size="sm"
-                  onclick={(e) => handleToggleStar(session.id, e)}
+                  onclick={(e: MouseEvent) => handleToggleStar(session.id, e)}
                   class="h-6 w-6 p-0"
                 >
                   <Star
@@ -455,7 +455,7 @@
                 <Button
                   variant="ghost"
                   size="sm"
-                  onclick={(e) => handleDeleteSession(session.id, e)}
+                  onclick={(e: MouseEvent) => handleDeleteSession(session.id, e)}
                   class="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
                 >
                   <Trash2 class="size-3" />
@@ -526,6 +526,7 @@
   .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }

@@ -1,9 +1,7 @@
-<!-- src/lib/components/OrganizationStructure.svelte -->
 <script lang="ts">
   import {
     Plus,
     Building2,
-    FolderKanban,
     FileText,
     UserPlus,
     FolderTree,
@@ -28,11 +26,9 @@
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import * as Tabs from "$lib/components/ui/tabs/index.js";
   import TreeNode from "./TreeNodeItem.svelte";
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
   import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
-  import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
-  import { GraduationCap } from "lucide-svelte";
 
   // Props
   const props = $props<{
@@ -148,14 +144,9 @@
 
     try {
       // Fetch organizations separately (assuming userResources might not contain full org details needed)
-      const orgsResponse = await fetch(
-        `${API_BASE_URL}/organizations/by-user?userId=${auth.user.id}`,
-        { credentials: "include" }
+      const orgsData = await api.get(
+        `/organizations/by-user?userId=${auth.user.id}`
       );
-      if (!orgsResponse.ok) {
-        throw new Error("Failed to load organizations");
-      }
-      const orgsData = await orgsResponse.json();
       organizations = orgsData.data; // Assuming response structure
 
       // Load user resources (departments, projects with roles) using the store
@@ -222,28 +213,13 @@
     errorMessage = null;
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/projects/createProjectWithUser`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            name: newProjectName,
-            description: newProjectDescription,
-            organizationId: selectedOrganization.id,
-            departmentId: selectedDepartmentId,
-            userId: auth.user.id,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to create project");
-      }
-
-      const data = await response.json();
+      const data = await api.post("/projects/createProjectWithUser", {
+        name: newProjectName,
+        description: newProjectDescription,
+        organizationId: selectedOrganization.id,
+        departmentId: selectedDepartmentId,
+        userId: auth.user.id,
+      });
 
       // Reset form and close dialog
       newProjectName = "";
@@ -273,27 +249,12 @@
     errorMessage = null;
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/departments/createDepartmentWithUser`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            name: newDepartmentName,
-            description: newDepartmentDescription,
-            organizationId: selectedOrganization.id,
-            userId: auth.user.id,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to create department");
-      }
-
-      const data = await response.json();
+      const data = await api.post("/departments/createDepartmentWithUser", {
+        name: newDepartmentName,
+        description: newDepartmentDescription,
+        organizationId: selectedOrganization.id,
+        userId: auth.user.id,
+      });
       const newDepartment = data.department; // Assuming API returns the new department object
 
       // --- Start Client-side Store Update ---
@@ -335,25 +296,9 @@
     errorMessage = null;
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/projects/${projectToMove.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            departmentId: selectedDepartmentId || null,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to move project");
-      }
+      await api.put(`/projects/${projectToMove.id}`, {
+        departmentId: selectedDepartmentId || null,
+      });
 
       // Reset form and close dialog
       projectToMove = null;
@@ -385,20 +330,9 @@
     if (!auth.user) return;
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/team-management/project/${project.id}/self-assign`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ roleId: "member" }),
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to join project");
-      }
+      await api.post(`/team-management/project/${project.id}/self-assign`, {
+        roleId: "member",
+      });
 
       // Refresh data
       await loadData();
@@ -414,20 +348,12 @@
     if (!auth.user) return;
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/team-management/department/${department.id}/self-assign`,
+      await api.post(
+        `/team-management/department/${department.id}/self-assign`,
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ roleId: "member" }),
+          roleId: "member",
         }
       );
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to join department");
-      }
 
       // Refresh data and notify other components
       await loadData();
@@ -514,16 +440,7 @@
     }
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/capabilities/project_create`,
-        { credentials: "include" }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to check project creation capability");
-      }
-
-      const data = await response.json();
+      const data = await api.get("/capabilities/project_create");
 
       // Store the result in the capability cache
       projectCreationCapabilities[orgId] = {
@@ -557,16 +474,7 @@
     }
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/capabilities/department_create`,
-        { credentials: "include" }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to check department creation capability");
-      }
-
-      const data = await response.json();
+      const data = await api.get("/capabilities/department_create");
 
       // Store the result in the capability cache
       departmentCreationCapabilities[orgId] = {

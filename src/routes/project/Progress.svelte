@@ -1,4 +1,3 @@
-<!-- src/routes/project/Progress.svelte -->
 <script lang="ts">
   import * as Tabs from "$lib/components/ui/tabs";
   import {
@@ -43,7 +42,7 @@
   import { customEventsStore } from "$lib/stores/custom-events-store.svelte";
   import { convertCustomEventToTimelineEvent } from "$lib/types/custom-events";
   import { fade } from "svelte/transition";
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
   import {
@@ -379,97 +378,72 @@
 
       // Fetch and add status changes
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/events?type=project.status.changed&subjectId=${currentProject.id}`,
-          { credentials: "include" }
+        const statusChanges = await api.get(
+          `/events?type=project.status.changed&subjectId=${currentProject.id}`
         );
-        if (response.ok) {
-          const statusChanges = await response.json();
-          statusChanges.forEach((change: any) => {
-            events.push({
-              id: `status_${change.id}`,
-              title: "Project Status Changed",
-              description: `${change.data.previousStatus || "None"} → ${change.data.newStatus}`,
-              timestamp: new Date(change.createdAt),
-              type: "project",
-              data: change.data,
-              details: [
-                `Previous Status: ${change.data.previousStatus || "None"}`,
-                `New Status: ${change.data.newStatus}`,
-              ],
-            });
+        statusChanges.forEach((change: any) => {
+          events.push({
+            id: `status_${change.id}`,
+            title: "Project Status Changed",
+            description: `${change.data.previousStatus || "None"} → ${change.data.newStatus}`,
+            timestamp: new Date(change.createdAt),
+            type: "project",
+            data: change.data,
+            details: [
+              `Previous Status: ${change.data.previousStatus || "None"}`,
+              `New Status: ${change.data.newStatus}`,
+            ],
           });
-        }
+        });
       } catch (error) {
         console.error("Error fetching status changes:", error);
       }
 
       // Fetch and add design changes
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/events?type=project.design.changed&subjectId=${currentProject.id}`,
-          { credentials: "include" }
+        const designChanges = await api.get(
+          `/events?type=project.design.changed&subjectId=${currentProject.id}`
         );
-        if (response.ok) {
-          const designChanges = await response.json();
-          designChanges.forEach((change: any) => {
-            const fieldName = change.data.field
-              .replace(/([A-Z])/g, " $1")
-              .replace(/^./, (str: string) => str.toUpperCase());
+        designChanges.forEach((change: any) => {
+          const fieldName = change.data.field
+            .replace(/([A-Z])/g, " $1")
+            .replace(/^./, (str: string) => str.toUpperCase());
 
-            events.push({
-              id: `design_${change.id}`,
-              title: "Design Updated",
-              description: `${fieldName}: ${change.data.previousValue || "None"} → ${change.data.newValue}`,
-              timestamp: new Date(change.createdAt),
-              type: "design",
-              data: { ...change.data, fieldName },
-              details: [
-                `Design Type: ${fieldName}`,
-                `Previous: ${change.data.previousValue || "None"}`,
-                `New: ${change.data.newValue}`,
-              ],
-            });
+          events.push({
+            id: `design_${change.id}`,
+            title: "Design Updated",
+            description: `${fieldName}: ${change.data.previousValue || "None"} → ${change.data.newValue}`,
+            timestamp: new Date(change.createdAt),
+            type: "design",
+            data: { ...change.data, fieldName },
+            details: [
+              `Design Type: ${fieldName}`,
+              `Previous: ${change.data.previousValue || "None"}`,
+              `New: ${change.data.newValue}`,
+            ],
           });
-        }
+        });
       } catch (error) {
         console.error("Error fetching design changes:", error);
       }
 
       // Fetch and group all model events (created and updated) by date and model
       try {
-        const [createdResponse, updatedResponse] = await Promise.all([
-          fetch(
-            `${API_BASE_URL}/events?type=model.created&subjectId=${currentProject.id}`,
-            { credentials: "include" }
-          ),
-          fetch(
-            `${API_BASE_URL}/events?type=model.updated&subjectId=${currentProject.id}`,
-            { credentials: "include" }
-          ),
+        const [createdEvents, updatedEvents] = await Promise.all([
+          api.get(`/events?type=model.created&subjectId=${currentProject.id}`),
+          api.get(`/events?type=model.updated&subjectId=${currentProject.id}`),
         ]);
 
-        const allModelEvents = [];
-
-        if (createdResponse.ok) {
-          const createdEvents = await createdResponse.json();
-          allModelEvents.push(
-            ...createdEvents.map((event: any) => ({
-              ...event,
-              eventType: "created",
-            }))
-          );
-        }
-
-        if (updatedResponse.ok) {
-          const updatedEvents = await updatedResponse.json();
-          allModelEvents.push(
-            ...updatedEvents.map((event: any) => ({
-              ...event,
-              eventType: "updated",
-            }))
-          );
-        }
+        const allModelEvents = [
+          ...createdEvents.map((event: any) => ({
+            ...event,
+            eventType: "created",
+          })),
+          ...updatedEvents.map((event: any) => ({
+            ...event,
+            eventType: "updated",
+          })),
+        ];
 
         // Group model events by date and model name/ID
         const modelsByDateAndName = new Map<string, any[]>();
@@ -551,38 +525,25 @@
 
       // Fetch and group all outcome events (created and updated) by date and outcome
       try {
-        const [createdResponse, updatedResponse] = await Promise.all([
-          fetch(
-            `${API_BASE_URL}/events?type=outcome.created&subjectId=${currentProject.id}`,
-            { credentials: "include" }
+        const [createdEvents, updatedEvents] = await Promise.all([
+          api.get(
+            `/events?type=outcome.created&subjectId=${currentProject.id}`
           ),
-          fetch(
-            `${API_BASE_URL}/events?type=outcome.updated&subjectId=${currentProject.id}`,
-            { credentials: "include" }
+          api.get(
+            `/events?type=outcome.updated&subjectId=${currentProject.id}`
           ),
         ]);
 
-        const allOutcomeEvents = [];
-
-        if (createdResponse.ok) {
-          const createdEvents = await createdResponse.json();
-          allOutcomeEvents.push(
-            ...createdEvents.map((event: any) => ({
-              ...event,
-              eventType: "created",
-            }))
-          );
-        }
-
-        if (updatedResponse.ok) {
-          const updatedEvents = await updatedResponse.json();
-          allOutcomeEvents.push(
-            ...updatedEvents.map((event: any) => ({
-              ...event,
-              eventType: "updated",
-            }))
-          );
-        }
+        const allOutcomeEvents = [
+          ...createdEvents.map((event: any) => ({
+            ...event,
+            eventType: "created",
+          })),
+          ...updatedEvents.map((event: any) => ({
+            ...event,
+            eventType: "updated",
+          })),
+        ];
 
         // Group outcome events by date and outcome ID
         const outcomesByDateAndId = new Map<string, any[]>();
@@ -668,47 +629,41 @@
 
       // Fetch and group keyword analyses by date
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/keyword_analysis/project/${currentProject.id}`,
-          { credentials: "include" }
+        const keywordAnalyses = await api.get(
+          `/keyword_analysis/project/${currentProject.id}`
         );
-        if (response.ok) {
-          const keywordAnalyses = await response.json();
 
-          // Group keyword analyses by date
-          const insightsByDate = new Map<string, any[]>();
-          keywordAnalyses.forEach((insight: any) => {
-            const date = new Date(insight.createdAt || Date.now());
-            const dateKey = date.toDateString();
-            if (!insightsByDate.has(dateKey)) {
-              insightsByDate.set(dateKey, []);
-            }
-            insightsByDate.get(dateKey)?.push({ ...insight, exactDate: date });
+        // Group keyword analyses by date
+        const insightsByDate = new Map<string, any[]>();
+        keywordAnalyses.forEach((insight: any) => {
+          const date = new Date(insight.createdAt || Date.now());
+          const dateKey = date.toDateString();
+          if (!insightsByDate.has(dateKey)) {
+            insightsByDate.set(dateKey, []);
+          }
+          insightsByDate.get(dateKey)?.push({ ...insight, exactDate: date });
+        });
+
+        // Add grouped insight items
+        insightsByDate.forEach((insights, dateKey) => {
+          const count = insights.length;
+          const earliestTime = new Date(
+            Math.min(...insights.map((insight) => insight.exactDate.getTime()))
+          );
+
+          events.push({
+            id: `insight_${dateKey}`,
+            title:
+              count === 1 ? "Created Insight" : `Created ${count} Insights`,
+            description: `${count} keyword analysis insight${count !== 1 ? "s" : ""} created`,
+            timestamp: earliestTime,
+            type: "insights",
+            data: insights,
+            details: insights.map((insight: any) => {
+              return `Keywords: ${insight.keywords}`;
+            }),
           });
-
-          // Add grouped insight items
-          insightsByDate.forEach((insights, dateKey) => {
-            const count = insights.length;
-            const earliestTime = new Date(
-              Math.min(
-                ...insights.map((insight) => insight.exactDate.getTime())
-              )
-            );
-
-            events.push({
-              id: `insight_${dateKey}`,
-              title:
-                count === 1 ? "Created Insight" : `Created ${count} Insights`,
-              description: `${count} keyword analysis insight${count !== 1 ? "s" : ""} created`,
-              timestamp: earliestTime,
-              type: "insights",
-              data: insights,
-              details: insights.map((insight: any) => {
-                return `Keywords: ${insight.keywords}`;
-              }),
-            });
-          });
-        }
+        });
       } catch (error) {
         console.error("Error fetching keyword analyses:", error);
       }
@@ -1090,20 +1045,9 @@
     if (!projectStore.currentProject?.id) return;
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/achievement/project/${projectStore.currentProject.id}/status`,
-        {
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        }
+      const data = await api.get(
+        `/achievement/project/${projectStore.currentProject.id}/status`
       );
-
-      if (!response.ok) throw new Error("Failed to fetch achievements");
-
-      const data = await response.json();
       achievements = data.statuses;
       newlyAwarded = data.newlyAwarded;
 

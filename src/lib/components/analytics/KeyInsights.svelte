@@ -126,7 +126,7 @@
           History
         </Button>
         <Tooltip.Root>
-          <Tooltip.Trigger asChild>
+          <Tooltip.Trigger>
             <Button 
               variant="outline" 
               size="sm"
@@ -186,27 +186,10 @@
         description="Add literature and notes to your project to generate AI-powered insights about your research patterns."
         variant="data-empty"
         height="h-48"
-      >
-        <Tooltip.Root>
-          <Tooltip.Trigger asChild>
-            <Button 
-              onclick={() => generateInsights()} 
-              class="mt-4"
-              disabled={!canGenerate}
-            >
-              <Lightbulb class="h-4 w-4 mr-2" />
-              Generate Insights
-            </Button>
-          </Tooltip.Trigger>
-          <Tooltip.Content>
-            {#if !canGenerate}
-              <p>You've reached your daily insight limit</p>
-            {:else}
-              <p>Generate AI-powered insights for this project</p>
-            {/if}
-          </Tooltip.Content>
-        </Tooltip.Root>
-      </EmptyState>
+        ctaText="Generate Insights"
+        ctaAction={() => generateInsights()}
+        ctaDisabled={!canGenerate}
+      />
     {:else}
       <div class="grid gap-4 grid-cols-1 lg:grid-cols-2">
         {#each insights as insight}

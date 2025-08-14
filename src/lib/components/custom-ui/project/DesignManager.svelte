@@ -1,4 +1,3 @@
-<!-- src/lib/components/custom-ui/project/DesignManager.svelte -->
 <script lang="ts">
   import {
     Card,

@@ -1,4 +1,3 @@
-<!-- src/lib/components/custom-ui/literature/literatureItem/Keywords.svelte -->
 <script lang="ts">
   import TagInput from "../../TagInput.svelte";
   import { literatureStore } from "$lib/stores/LiteratureStore.svelte";

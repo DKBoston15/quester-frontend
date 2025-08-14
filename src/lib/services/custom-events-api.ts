@@ -1,6 +1,4 @@
-// Custom Events API Service
-
-import { API_BASE_URL } from "../config";
+import { api, type APIRequestConfig } from "./api-client";
 import type {
   CustomTimelineEvent,
   CreateCustomEventForm,
@@ -9,7 +7,6 @@ import type {
   CustomEventResponse,
   CustomEventFilters,
   CustomEventSearchParams,
-  CustomEventError,
   CustomEventValidationErrors,
 } from "../types/custom-events";
 
@@ -24,122 +21,6 @@ export class CustomEventAPIError extends Error {
     super(message);
     this.name = "CustomEventAPIError";
   }
-}
-
-// Request configuration interface
-interface RequestConfig {
-  retries?: number;
-  timeout?: number;
-  signal?: AbortSignal;
-}
-
-// Default request configuration
-const DEFAULT_CONFIG: RequestConfig = {
-  retries: 3,
-  timeout: 30000, // 30 seconds
-};
-
-// Utility function to create fetch requests with retry logic
-async function apiRequest<T>(
-  url: string,
-  options: RequestInit = {},
-  config: RequestConfig = {}
-): Promise<T> {
-  const {
-    retries = DEFAULT_CONFIG.retries!,
-    timeout = DEFAULT_CONFIG.timeout!,
-    signal,
-  } = config;
-
-  // Create abort controller for timeout if no signal provided
-  const controller = new AbortController();
-  const timeoutId = signal
-    ? null
-    : setTimeout(() => controller.abort(), timeout);
-
-  const requestSignal = signal || controller.signal;
-
-  const requestOptions: RequestInit = {
-    ...options,
-    signal: requestSignal,
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  };
-
-  let lastError: Error;
-
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      const response = await fetch(url, requestOptions);
-
-      // Clear timeout if we got a response
-      if (timeoutId) clearTimeout(timeoutId);
-
-      // Handle non-ok responses
-      if (!response.ok) {
-        let errorData: any;
-        try {
-          errorData = await response.json();
-        } catch {
-          errorData = { message: response.statusText };
-        }
-
-        throw new CustomEventAPIError(
-          errorData.message || `Request failed with status ${response.status}`,
-          response.status,
-          errorData.code,
-          errorData.errors
-        );
-      }
-
-      // Handle empty responses
-      const responseText = await response.text();
-      if (!responseText) {
-        return {} as T;
-      }
-
-      try {
-        return JSON.parse(responseText) as T;
-      } catch (parseError) {
-        throw new CustomEventAPIError(
-          "Invalid JSON response from server",
-          response.status
-        );
-      }
-    } catch (error) {
-      lastError = error as Error;
-
-      // Don't retry on certain errors
-      if (error instanceof CustomEventAPIError) {
-        if (
-          error.status === 401 ||
-          error.status === 403 ||
-          error.status === 404
-        ) {
-          throw error;
-        }
-      }
-
-      // Don't retry on abort
-      if (error instanceof Error && error.name === "AbortError") {
-        throw error;
-      }
-
-      // If this is the last attempt, throw the error
-      if (attempt === retries) {
-        throw error;
-      }
-
-      // Wait before retrying (exponential backoff)
-      const delay = Math.min(1000 * Math.pow(2, attempt), 5000);
-      await new Promise((resolve) => setTimeout(resolve, delay));
-    }
-  }
-
-  throw lastError!;
 }
 
 // Utility function to build query parameters
@@ -179,7 +60,7 @@ export class CustomEventsAPI {
   static async getCustomEvents(
     projectId: string,
     filters: CustomEventFilters = {},
-    config?: RequestConfig
+    config?: APIRequestConfig
   ): Promise<CustomEventListResponse> {
     const queryParams = buildQueryParams({
       page: filters.page || 1,
@@ -194,8 +75,8 @@ export class CustomEventsAPI {
       sortOrder: filters.sortOrder || "desc",
     });
 
-    const url = `${API_BASE_URL}/projects/${projectId}/custom-events?${queryParams}`;
-    return apiRequest<CustomEventListResponse>(url, { method: "GET" }, config);
+    const url = `/projects/${projectId}/custom-events?${queryParams}`;
+    return api.get<CustomEventListResponse>(url, config);
   }
 
   /**
@@ -204,23 +85,16 @@ export class CustomEventsAPI {
   static async createCustomEvent(
     projectId: string,
     eventData: CreateCustomEventForm,
-    config?: RequestConfig
+    config?: APIRequestConfig
   ): Promise<CustomEventResponse> {
-    const url = `${API_BASE_URL}/projects/${projectId}/custom-events`;
+    const url = `/projects/${projectId}/custom-events`;
 
     const requestPayload = {
       ...eventData,
       eventTimestamp: eventData.eventTimestamp.toISOString(),
     };
 
-    return apiRequest<CustomEventResponse>(
-      url,
-      {
-        method: "POST",
-        body: JSON.stringify(requestPayload),
-      },
-      config
-    );
+    return api.post<CustomEventResponse>(url, requestPayload, config);
   }
 
   /**
@@ -228,10 +102,10 @@ export class CustomEventsAPI {
    */
   static async getCustomEvent(
     eventId: number,
-    config?: RequestConfig
+    config?: APIRequestConfig
   ): Promise<CustomTimelineEvent> {
-    const url = `${API_BASE_URL}/custom-events/${eventId}`;
-    return apiRequest<CustomTimelineEvent>(url, { method: "GET" }, config);
+    const url = `/custom-events/${eventId}`;
+    return api.get<CustomTimelineEvent>(url, config);
   }
 
   /**
@@ -240,25 +114,16 @@ export class CustomEventsAPI {
   static async updateCustomEvent(
     eventId: number,
     eventData: UpdateCustomEventForm,
-    config?: RequestConfig
+    config?: APIRequestConfig
   ): Promise<CustomEventResponse> {
-    const url = `${API_BASE_URL}/custom-events/${eventId}`;
+    const url = `/custom-events/${eventId}`;
 
     const requestPayload = {
-      body: {
-        ...eventData,
-        eventTimestamp: eventData.eventTimestamp?.toISOString(),
-      }
+      ...eventData,
+      eventTimestamp: eventData.eventTimestamp?.toISOString(),
     };
 
-    return apiRequest<CustomEventResponse>(
-      url,
-      {
-        method: "PUT",
-        body: JSON.stringify(requestPayload),
-      },
-      config
-    );
+    return api.put<CustomEventResponse>(url, requestPayload, config);
   }
 
   /**
@@ -266,10 +131,10 @@ export class CustomEventsAPI {
    */
   static async deleteCustomEvent(
     eventId: number,
-    config?: RequestConfig
+    config?: APIRequestConfig
   ): Promise<CustomEventResponse> {
-    const url = `${API_BASE_URL}/custom-events/${eventId}`;
-    return apiRequest<CustomEventResponse>(url, { method: "DELETE" }, config);
+    const url = `/custom-events/${eventId}`;
+    return api.delete<CustomEventResponse>(url, config);
   }
 
   /**
@@ -277,10 +142,10 @@ export class CustomEventsAPI {
    */
   static async restoreCustomEvent(
     eventId: number,
-    config?: RequestConfig
+    config?: APIRequestConfig
   ): Promise<CustomEventResponse> {
-    const url = `${API_BASE_URL}/custom-events/${eventId}/restore`;
-    return apiRequest<CustomEventResponse>(url, { method: "POST" }, config);
+    const url = `/custom-events/${eventId}/restore`;
+    return api.post<CustomEventResponse>(url, undefined, config);
   }
 
   /**
@@ -288,11 +153,11 @@ export class CustomEventsAPI {
    */
   static async searchCustomEvents(
     searchParams: CustomEventSearchParams,
-    config?: RequestConfig
+    config?: APIRequestConfig
   ): Promise<CustomEventListResponse> {
     const queryParams = buildQueryParams(searchParams);
-    const url = `${API_BASE_URL}/custom-events/search?${queryParams}`;
-    return apiRequest<CustomEventListResponse>(url, { method: "GET" }, config);
+    const url = `/custom-events/search?${queryParams}`;
+    return api.get<CustomEventListResponse>(url, config);
   }
 
   /**
@@ -301,11 +166,11 @@ export class CustomEventsAPI {
   static async getUserCustomEvents(
     page: number = 1,
     limit: number = 20,
-    config?: RequestConfig
+    config?: APIRequestConfig
   ): Promise<CustomEventListResponse> {
     const queryParams = buildQueryParams({ page, limit });
-    const url = `${API_BASE_URL}/custom-events/user/my-events?${queryParams}`;
-    return apiRequest<CustomEventListResponse>(url, { method: "GET" }, config);
+    const url = `/custom-events/user/my-events?${queryParams}`;
+    return api.get<CustomEventListResponse>(url, config);
   }
 
   /**
@@ -313,17 +178,14 @@ export class CustomEventsAPI {
    */
   static async bulkDeleteCustomEvents(
     eventIds: number[],
-    config?: RequestConfig
+    config?: APIRequestConfig
   ): Promise<{ message: string; deletedCount: number }> {
-    const url = `${API_BASE_URL}/custom-events/bulk`;
-    return apiRequest(
+    const url = `/custom-events/bulk`;
+    return api.post(
       url,
       {
-        method: "POST",
-        body: JSON.stringify({
-          eventIds,
-          action: "delete",
-        }),
+        eventIds,
+        action: "delete",
       },
       config
     );
@@ -334,17 +196,14 @@ export class CustomEventsAPI {
    */
   static async bulkRestoreCustomEvents(
     eventIds: number[],
-    config?: RequestConfig
+    config?: APIRequestConfig
   ): Promise<{ message: string; restoredCount: number }> {
-    const url = `${API_BASE_URL}/custom-events/bulk`;
-    return apiRequest(
+    const url = `/custom-events/bulk`;
+    return api.post(
       url,
       {
-        method: "POST",
-        body: JSON.stringify({
-          eventIds,
-          action: "restore",
-        }),
+        eventIds,
+        action: "restore",
       },
       config
     );

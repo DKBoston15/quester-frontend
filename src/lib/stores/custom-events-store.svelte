@@ -1,4 +1,3 @@
-<!-- Custom Events Store -->
 <script lang="ts" module>
   // Check if we're in a browser environment
   const browser = typeof window !== "undefined";
@@ -7,7 +6,6 @@
     customEventsAPI,
     isCustomEventAPIError,
     getErrorMessage,
-    type CustomEventAPIError,
   } from "../services/custom-events-api";
   import type {
     CustomTimelineEvent,

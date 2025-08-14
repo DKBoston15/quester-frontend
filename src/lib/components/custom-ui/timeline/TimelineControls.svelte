@@ -1,24 +1,18 @@
-<!-- TimelineControls.svelte -->
 <script lang="ts">
   import {
     Search,
-    Filter,
     Calendar,
     SlidersHorizontal,
     X,
     CalendarDays,
     Download,
-    Share2,
     CheckSquare,
-    Square,
     MoreHorizontal,
     Trash2,
     Edit3,
-    Eye,
     Archive,
     Tag,
     User,
-    RotateCcw,
     FileText,
     Star,
     Plus,
@@ -30,10 +24,8 @@
   import { Input } from "$lib/components/ui/input";
   import { Badge } from "$lib/components/ui/badge";
   import { Checkbox } from "$lib/components/ui/checkbox";
-  import * as Select from "$lib/components/ui/select";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import * as ToggleGroup from "$lib/components/ui/toggle-group";
-  // import { DatePicker } from "$lib/components/ui/date-picker";
   import { fade, slide } from "svelte/transition";
   import { customEventsStore } from "$lib/stores/custom-events-store.svelte";
   import type {

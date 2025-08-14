@@ -52,14 +52,14 @@ const getNodeSize = (group: string) => {
   }
 };
 
-export function stripHtmlTags(content: string) {
+function stripHtmlTags(content: string) {
   if (content) {
     return content.replace(/<[^>]*>/g, "");
   }
   return content;
 }
 
-export async function retrieveGraphData(urlProjectId: string) {
+async function retrieveGraphData(urlProjectId: string) {
   // Check if data is already loaded in stores
   const storesLoaded = {
     project:

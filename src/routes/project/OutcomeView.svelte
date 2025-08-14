@@ -1,4 +1,3 @@
-<!-- src/routes/project/OutcomeView.svelte -->
 <script lang="ts">
   import { onMount } from "svelte";
   import { outcomeStore } from "$lib/stores/OutcomeStore.svelte";

@@ -1,4 +1,3 @@
-<!-- src/lib/components/ProjectSidebar.svelte -->
 <script lang="ts">
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import { DarkmodeToggle } from "$lib/components/ui/darkmode-toggle";
@@ -27,7 +26,7 @@
     Search,
     Command as CommandIcon,
   } from "lucide-svelte";
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
   import { DateTime } from "luxon"; // Import DateTime
 
   type Route = {
@@ -117,17 +116,9 @@
     if (!props.project?.id) return;
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/achievement/project/${props.project.id}/status`,
-        {
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        }
+      const data = await api.get(
+        `/achievement/project/${props.project.id}/status`
       );
-      const data = await response.json();
     } catch (error) {
       console.error("Error checking achievements:", error);
     }
@@ -153,68 +144,38 @@
 
     try {
       // First check if user can access model builder
-      const modelResponse = await fetch(
-        `${API_BASE_URL}/capabilities/model_access`,
-        {
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-          },
-        }
-      );
-
-      if (modelResponse.ok) {
-        const modelData = await modelResponse.json();
+      try {
+        const modelData = await api.get(`/capabilities/model_access`);
         canAccessModels = modelData.allowed;
         // Get plan name if available
         if (modelData.planName) {
           planName = modelData.planName;
         }
-      } else {
+      } catch (error) {
         canAccessModels = false; // Default to false on error
       }
 
       // Then check if user can access graph visualization
-      const graphResponse = await fetch(
-        `${API_BASE_URL}/capabilities/graph_access`,
-        {
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-          },
-        }
-      );
-
-      if (graphResponse.ok) {
-        const graphData = await graphResponse.json();
+      try {
+        const graphData = await api.get(`/capabilities/graph_access`);
         canAccessGraph = graphData.allowed;
         // Get plan name if not already set
         if (graphData.planName && !planName) {
           planName = graphData.planName;
         }
-      } else {
+      } catch (error) {
         canAccessGraph = false; // Default to false on error
       }
 
       // Check if user can access analysis features
-      const analysisResponse = await fetch(
-        `${API_BASE_URL}/capabilities/analysis_access`,
-        {
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-          },
-        }
-      );
-
-      if (analysisResponse.ok) {
-        const analysisData = await analysisResponse.json();
+      try {
+        const analysisData = await api.get(`/capabilities/analysis_access`);
         canAccessAnalysis = analysisData.allowed;
         // Get plan name if not already set
         if (analysisData.planName && !planName) {
           planName = analysisData.planName;
         }
-      } else {
+      } catch (error) {
         canAccessAnalysis = false; // Default to false on error
       }
 
@@ -281,27 +242,13 @@
       }
 
       // Not viewed today, call backend
-      const response = await fetch(
-        `${API_BASE_URL}/projects/${projectId}/view`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json", // Important even for empty body sometimes
-          },
-          // No body needed for this request
-        }
-      );
-
-      if (response.ok) {
+      try {
+        await api.post(`/projects/${projectId}/view`);
         // Successfully recorded on backend, update localStorage
         localStorage.setItem(storageKey, currentDate);
-      } else {
+      } catch (error) {
         // Handle potential errors like 401 Unauthorized, 404 Not Found, 500 Server Error
-        console.error(
-          `Failed to record project view. Status: ${response.status}`
-        );
+        console.error(`Failed to record project view:`, error);
         // Optional: Implement retry logic or user notification
       }
     } catch (error) {

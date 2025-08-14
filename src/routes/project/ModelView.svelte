@@ -1,10 +1,9 @@
-<!-- src/routes/project/ModelView.svelte -->
 <script lang="ts">
   import { onMount } from "svelte";
   import { navigate } from "svelte-routing";
   import { modelStore } from "$lib/stores/ModelStore.svelte";
   import Model from "$lib/components/model/Model.svelte";
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
   import { GraduationCap } from "lucide-svelte";
@@ -44,16 +43,7 @@
   // Check if user has access to model features
   async function checkModelAccessCapability() {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/capabilities/model_access`,
-        { credentials: "include" }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to check model access capability");
-      }
-
-      const data = await response.json();
+      const data = await api.get("/capabilities/model_access");
       hasAccess = data.allowed;
 
       // If user doesn't have access, redirect to overview

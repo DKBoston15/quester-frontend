@@ -1,4 +1,3 @@
-<!-- src/routes/components/TeamSettings.svelte -->
 <script lang="ts">
   import { Switch } from "$lib/components/ui/switch";
   import { Label } from "$lib/components/ui/label";

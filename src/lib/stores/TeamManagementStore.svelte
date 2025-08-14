@@ -1,9 +1,6 @@
-<!-- src/lib/stores/TeamManagementStore.svelte -->
 <script lang="ts" module>
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
   import { auth } from "./AuthStore.svelte";
-  // Remove the incorrect backend import
-  // import type { LoginStatUserJson } from "../../app/services/permission_service";
 
   type ResourceType = "organization" | "department" | "project";
 
@@ -128,7 +125,7 @@
       error = null;
 
       try {
-        let apiUrl = `${API_BASE_URL}/team-management/resources`;
+        let apiUrl = `/team-management/resources`;
         const queryParams = [];
         if (includeStats) {
           queryParams.push("includeStats=true");
@@ -140,15 +137,7 @@
           apiUrl += `?${queryParams.join("&")}`;
         }
 
-        const response = await fetch(apiUrl, {
-          credentials: "include",
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to load resources (${response.status})`);
-        }
-
-        const data = await response.json();
+        const data = await api.get(apiUrl);
         userResources = {
           organizations: data.organizations,
           departments: data.departments,
@@ -184,22 +173,9 @@
       error = null;
 
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/team-management/organization/${organizationId}`,
-          {
-            credentials: "include",
-          }
+        const data = await api.get(
+          `/team-management/organization/${organizationId}`
         );
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(
-            errorData.message ||
-              `Failed to load organization structure (${response.status})`
-          );
-        }
-
-        const data = await response.json();
 
         // Check if there are any roles available
         const hasRoles = data.organization?.users?.some(
@@ -287,22 +263,9 @@
       error = null;
 
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/team-management/department/${departmentId}`,
-          {
-            credentials: "include",
-          }
+        const data = await api.get(
+          `/team-management/department/${departmentId}`
         );
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(
-            errorData.message ||
-              `Failed to load department structure (${response.status})`
-          );
-        }
-
-        const data = await response.json();
 
         // Check if there are any roles available
         const hasRoles = data.department?.users?.some(
@@ -359,22 +322,7 @@
       error = null;
 
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/team-management/project/${projectId}`,
-          {
-            credentials: "include",
-          }
-        );
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(
-            errorData.message ||
-              `Failed to load project team (${response.status})`
-          );
-        }
-
-        const data = await response.json();
+        const data = await api.get(`/team-management/project/${projectId}`);
 
         // Check if there are any roles available
         const hasRoles = data.project?.users?.some(
@@ -433,19 +381,10 @@
       }
 
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/team-management/${selectedResourceType}/${selectedResourceId}/users`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ userId, roleId }),
-          }
+        await api.post(
+          `/team-management/${selectedResourceType}/${selectedResourceId}/users`,
+          { userId, roleId }
         );
-
-        if (!response.ok) {
-          throw new Error(`Failed to add user (${response.status})`);
-        }
 
         // Reload the current resource data
         await this.refreshCurrentResource();
@@ -469,30 +408,10 @@
         // So we can send the roleId directly without conversion
         const payload = { roleId };
 
-        const response = await fetch(
-          `${API_BASE_URL}/team-management/${selectedResourceType}/${selectedResourceId}/users/${userId}`,
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify(payload),
-          }
+        await api.put(
+          `/team-management/${selectedResourceType}/${selectedResourceId}/users/${userId}`,
+          payload
         );
-
-        if (!response.ok) {
-          // Try to get more error details from the response
-          let errorDetails = "";
-          try {
-            const errorData = await response.json();
-            errorDetails = errorData.message || errorData.error || "";
-          } catch (parseErr) {
-            errorDetails = "Could not parse error details";
-          }
-
-          throw new Error(
-            `Failed to update user role (${response.status}): ${errorDetails}`
-          );
-        }
 
         // Reload the current resource data
         await this.refreshCurrentResource();
@@ -512,17 +431,9 @@
       }
 
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/team-management/${selectedResourceType}/${selectedResourceId}/users/${userId}`,
-          {
-            method: "DELETE",
-            credentials: "include",
-          }
+        await api.delete(
+          `/team-management/${selectedResourceType}/${selectedResourceId}/users/${userId}`
         );
-
-        if (!response.ok) {
-          throw new Error(`Failed to remove user (${response.status})`);
-        }
 
         // Reload the current resource data
         await this.refreshCurrentResource();
@@ -551,27 +462,10 @@
       try {
         const payload = { roleId };
 
-        const response = await fetch(
-          `${API_BASE_URL}/team-management/${selectedResourceType}/${selectedResourceId}/self-assign`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify(payload),
-          }
+        await api.post(
+          `/team-management/${selectedResourceType}/${selectedResourceId}/self-assign`,
+          payload
         );
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          console.error("Self-assignment API response error:", {
-            status: response.status,
-            statusText: response.statusText,
-            data: errorData,
-          });
-          throw new Error(
-            `Failed to self-assign (${response.status}): ${errorData.message || response.statusText}`
-          );
-        }
 
         // Reload the current resource data
         await this.refreshCurrentResource();
@@ -606,23 +500,19 @@
       settingsError = null;
 
       try {
-        const url = `${API_BASE_URL}/settings/${selectedResourceType}/${selectedResourceId}`;
+        try {
+          const data = await api.get(
+            `/settings/${selectedResourceType}/${selectedResourceId}`
+          );
 
-        const response = await fetch(url, {
-          credentials: "include",
-        });
-
-        if (!response.ok) {
-          if (response.status === 403) {
+          // Merge fetched settings with existing ones
+          settings = { ...settings, ...data };
+        } catch (err: any) {
+          if (err.status === 403) {
             return; // Exit without modifying settings on 403
           }
-          throw new Error(`Failed to load settings (${response.status})`);
+          throw err;
         }
-
-        const data = await response.json();
-
-        // Merge fetched settings with existing ones
-        settings = { ...settings, ...data };
       } catch (err) {
         console.error("[TeamManagementStore] Error loading settings:", err);
         settingsError =
@@ -640,40 +530,18 @@
       }
 
       try {
-        const url = `${API_BASE_URL}/settings/${selectedResourceType}/${selectedResourceId}`;
-        const body = JSON.stringify({ [key]: value });
-
-        const response = await fetch(url, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: body,
-        });
-
-        if (!response.ok) {
+        try {
+          await api.put(
+            `/settings/${selectedResourceType}/${selectedResourceId}`,
+            { [key]: value }
+          );
+        } catch (err: any) {
           // Check if this is a permissions error (403)
-          if (response.status === 403) {
+          if (err.status === 403) {
             settingsError = "You don't have permission to update settings";
             return false;
           }
-
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(
-            `Failed to update setting (${response.status}): ${errorData.message || response.statusText}`
-          );
-        }
-
-        // Obtain response text first to check if there's any content
-        const responseText = await response.text();
-
-        // Only try to parse as JSON if there is content
-        let responseData = {};
-        if (responseText.trim().length > 0) {
-          try {
-            responseData = JSON.parse(responseText);
-          } catch (e) {
-            // Ignore JSON parse errors for empty responses
-          }
+          throw err;
         }
 
         // Create a new settings object to trigger reactivity only once
@@ -782,22 +650,7 @@
       modalProjectData = null; // Clear previous data
 
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/team-management/project/${projectId}`,
-          {
-            credentials: "include",
-          }
-        );
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(
-            errorData.message ||
-              `Failed to load project details (${response.status})`
-          );
-        }
-
-        const data = await response.json();
+        const data = await api.get(`/team-management/project/${projectId}`);
         // The actual project data is nested under a 'project' key in the response
         modalProjectData = data.project;
       } catch (err) {
@@ -817,24 +670,7 @@
       }
 
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/departments/${departmentId}`,
-          {
-            method: "DELETE",
-            credentials: "include",
-          }
-        );
-
-        if (!response.ok) {
-          let errorDetails = `Failed to delete department (${response.status})`;
-          try {
-            const errorData = await response.json();
-            errorDetails += `: ${errorData.message || "Unknown error"}`;
-          } catch (parseErr) {
-            /* Ignore parse error */
-          }
-          throw new Error(errorDetails);
-        }
+        await api.delete(`/departments/${departmentId}`);
 
         // Remove the department from the local store for immediate UI update
         if (userResources && userResources.departments) {

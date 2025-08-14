@@ -16,7 +16,6 @@
     SelectTrigger,
   } from "$lib/components/ui/select";
   import LiteratureSelector from "$lib/components/custom-ui/literature/LiteratureSelector.svelte";
-  import { API_BASE_URL } from "$lib/config";
   import { isAuthError, api } from "$lib/services/api-client";
 
   // Props

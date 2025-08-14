@@ -1,6 +1,5 @@
-<!-- Custom Event Context Menu -->
 <script lang="ts">
-  import { createEventDispatcher, onMount, onDestroy } from "svelte";
+  import { createEventDispatcher, onMount } from "svelte";
   import { fade, scale } from "svelte/transition";
   import { quintOut } from "svelte/easing";
   import { toast } from "svelte-sonner";

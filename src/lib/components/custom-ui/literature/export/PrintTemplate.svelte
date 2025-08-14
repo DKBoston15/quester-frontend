@@ -1,4 +1,3 @@
-<!-- src/lib/components/custom-ui/literature/export/PrintTemplate.svelte -->
 <script lang="ts">
   import type { Literature } from "$lib/types/literature";
   import type { CitationStyle } from "$lib/utils/citationFormatters";
@@ -88,7 +87,9 @@
 
       <div class="metadata">
         <p class="date">
-          Generated on {currentDate} by Quester{safeAuthorName ? ` for ${safeAuthorName}` : ''}
+          Generated on {currentDate} by Quester{safeAuthorName
+            ? ` for ${safeAuthorName}`
+            : ""}
         </p>
         <p class="style">Citation Style: {citationStyle}</p>
         <p class="count">
@@ -118,7 +119,7 @@
       </div>
     {:else}
       <div class="references-list">
-        {#each formattedCitations as citationItem, index}
+        {#each formattedCitations() as citationItem, index}
           <div class="reference-entry" data-reference-index={index + 1}>
             <div class="citation-text">
               {@html citationItem.formatted}
@@ -193,9 +194,6 @@
     font-size: 12pt;
   }
 
-  .author {
-    font-weight: bold;
-  }
 
   .page-break {
     page-break-before: always;
