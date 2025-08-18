@@ -1,4 +1,4 @@
-<script lang="ts" module>
+
   // Check if we're in a browser environment
   const browser = typeof window !== "undefined";
 
@@ -642,4 +642,4 @@
     // Cancel all requests when the component is destroyed
     // This would be handled by the component using this store
   }
-</script>
+

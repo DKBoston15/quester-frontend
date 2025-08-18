@@ -1,12 +1,12 @@
 <script lang="ts">
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import { DarkmodeToggle } from "$lib/components/ui/darkmode-toggle";
-  import { auth } from "$lib/stores/AuthStore.svelte";
+  import { auth } from "$lib/stores/AuthStore";
   import { navigate, Link } from "svelte-routing";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import * as Tooltip from "$lib/components/ui/tooltip/index.js";
   import { Button } from "$lib/components/ui/button";
-  import { globalSearchStore } from "$lib/stores/GlobalSearchStore.svelte";
+  import { globalSearchStore } from "$lib/stores/GlobalSearchStore";
   import {
     LogOut,
     Users,

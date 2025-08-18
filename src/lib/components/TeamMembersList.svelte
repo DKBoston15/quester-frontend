@@ -14,8 +14,8 @@
     Loader2,
   } from "lucide-svelte";
   import type { User } from "$lib/types/auth";
-  import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
-  import { auth } from "$lib/stores/AuthStore.svelte";
+  import { teamManagement } from "$lib/stores/TeamManagementStore";
+  import { auth } from "$lib/stores/AuthStore";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { EmptyState } from "$lib/components/ui/empty-state";
   import { toast } from "svelte-sonner";

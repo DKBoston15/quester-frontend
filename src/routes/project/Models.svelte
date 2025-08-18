@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy } from "svelte";
-  import { modelStore } from "$lib/stores/ModelStore.svelte";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { modelStore } from "$lib/stores/ModelStore";
+  import { projectStore } from "$lib/stores/ProjectStore";
   import { Button } from "$lib/components/ui/button";
   import * as Card from "$lib/components/ui/card";
   import { Root, Content, Title, Description } from "$lib/components/ui/dialog";

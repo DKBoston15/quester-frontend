@@ -1,4 +1,4 @@
-<script lang="ts" module>
+
   import type { Node, Edge } from "@xyflow/svelte";
 
   interface ModelState {
@@ -107,4 +107,3 @@
       };
     },
   };
-</script>

@@ -1,6 +1,6 @@
 <script lang="ts">
   import TagInput from "../../TagInput.svelte";
-  import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
+  import { literatureStore } from "$lib/stores/LiteratureStore";
   import type { Literature } from "$lib/types/literature";
 
   const { literature } = $props<{ literature: Literature }>();

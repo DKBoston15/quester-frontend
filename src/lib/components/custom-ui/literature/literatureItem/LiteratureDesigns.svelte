@@ -10,9 +10,9 @@
   import * as Tabs from "$lib/components/ui/tabs";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { InfoIcon } from "lucide-svelte";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { projectStore } from "$lib/stores/ProjectStore";
   import type { Literature } from "$lib/types/literature";
-  import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
+  import { literatureStore } from "$lib/stores/LiteratureStore";
 
   const designTypes = [
     "research",

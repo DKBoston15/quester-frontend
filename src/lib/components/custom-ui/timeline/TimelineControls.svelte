@@ -27,7 +27,7 @@
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import * as ToggleGroup from "$lib/components/ui/toggle-group";
   import { fade, slide } from "svelte/transition";
-  import { customEventsStore } from "$lib/stores/custom-events-store.svelte";
+  import { customEventsStore } from "$lib/stores/CustomEventsStore";
   import type {
     CustomTimelineEvent,
     CustomEventCreator,

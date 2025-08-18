@@ -3,7 +3,7 @@
   import { slide, fade } from "svelte/transition";
   import { flip } from "svelte/animate";
   import { quintOut } from "svelte/easing";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { projectStore } from "$lib/stores/ProjectStore";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { Badge } from "$lib/components/ui/badge";

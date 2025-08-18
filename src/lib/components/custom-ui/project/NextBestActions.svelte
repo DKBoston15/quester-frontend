@@ -15,8 +15,8 @@
   import { createEventDispatcher } from "svelte";
   import { AlertCircle, Filter, ChevronRight } from "lucide-svelte";
   import EmptyState from "$lib/components/ui/empty-state/EmptyState.svelte";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
-  import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
+  import { projectStore } from "$lib/stores/ProjectStore";
+  import { literatureStore } from "$lib/stores/LiteratureStore";
   import type { Literature } from "$lib/types/literature";
   import { api } from "$lib/services/api-client";
 

@@ -13,8 +13,8 @@
     ChartBar,
   } from "lucide-svelte";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
-  import { auth } from "$lib/stores/AuthStore.svelte";
-  import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
+  import { auth } from "$lib/stores/AuthStore";
+  import { teamManagement } from "$lib/stores/TeamManagementStore";
   import { navigate, Link } from "svelte-routing";
   import { DarkmodeToggle } from "$lib/components/ui/darkmode-toggle";
   import * as Tooltip from "$lib/components/ui/tooltip";

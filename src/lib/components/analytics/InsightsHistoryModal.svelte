@@ -3,7 +3,7 @@
   import * as Dialog from "$lib/components/ui/dialog";
   import { Badge } from "$lib/components/ui/badge";
   import { ScrollArea } from "$lib/components/ui/scroll-area";
-  import { insightsStore } from "$lib/stores/InsightsStore.svelte";
+  import { insightsStore } from "$lib/stores/InsightsStore";
   import {
     Calendar,
     History,

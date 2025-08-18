@@ -8,7 +8,7 @@
     CardTitle,
   } from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
-  import { auth } from "../stores/AuthStore.svelte";
+  import { auth } from "../stores/AuthStore";
   import { Separator } from "$lib/components/ui/separator";
   import { EmptyState } from "$lib/components/ui/empty-state";
   import { api } from "$lib/services/api-client";

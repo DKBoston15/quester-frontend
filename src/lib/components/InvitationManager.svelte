@@ -5,7 +5,7 @@
   import { Badge } from "$lib/components/ui/badge";
   import * as Table from "$lib/components/ui/table";
   import { Mail, Send, X, Info } from "lucide-svelte";
-  import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
+  import { teamManagement } from "$lib/stores/TeamManagementStore";
   import { api } from "$lib/services/api-client";
   import TeamSizeIndicator from "$lib/components/TeamSizeIndicator/TeamSizeIndicator.svelte";
   import { toast } from "svelte-sonner";

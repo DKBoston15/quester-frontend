@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import { Button } from "$lib/components/ui/button";
-  import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
+  import { teamManagement } from "$lib/stores/TeamManagementStore";
   import {
     Table,
     TableBody,

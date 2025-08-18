@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
-  import { auth } from "$lib/stores/AuthStore.svelte";
+  import { teamManagement } from "$lib/stores/TeamManagementStore";
+  import { auth } from "$lib/stores/AuthStore";
   import { Button } from "$lib/components/ui/button";
   import {
     Building2,

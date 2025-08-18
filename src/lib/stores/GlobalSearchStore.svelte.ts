@@ -1,5 +1,5 @@
 import { debounce } from "$lib/utils/debounce";
-import { projectStore } from "$lib/stores/ProjectStore.svelte";
+import { projectStore } from "$lib/stores/ProjectStore";
 import { api } from "$lib/services/api-client";
 import {
   chatHistoryAPI,

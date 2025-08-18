@@ -27,7 +27,7 @@
     CustomEventPermissions,
   } from "$lib/types/custom-events";
   import { getEventTypeConfig } from "$lib/config/custom-event-types";
-  import { customEventsStore } from "$lib/stores/custom-events-store.svelte";
+  import { customEventsStore } from "$lib/stores/CustomEventsStore";
 
   const dispatch = createEventDispatcher<{
     close: void;

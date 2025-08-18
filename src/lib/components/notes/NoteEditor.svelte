@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
-  import { notesStore } from "$lib/stores/NotesStore.svelte";
-  import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
+  import { notesStore } from "$lib/stores/NotesStore";
+  import { literatureStore } from "$lib/stores/LiteratureStore";
   import type { Note } from "$lib/types";
   import ShadEditor from "$lib/components/shad-editor/shad-editor.svelte";
   import { Button } from "$lib/components/ui/button";

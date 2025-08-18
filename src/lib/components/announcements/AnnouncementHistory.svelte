@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { announcementStore } from "$lib/stores/AnnouncementStore.svelte";
-  import type { Announcement } from "$lib/stores/AnnouncementStore.svelte";
+  import { announcementStore } from "$lib/stores/AnnouncementStore";
+  import type { Announcement } from "$lib/stores/AnnouncementStore";
   import {
     Dialog,
     DialogContent,

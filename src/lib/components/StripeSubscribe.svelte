@@ -3,7 +3,7 @@
   import type { Stripe } from "@stripe/stripe-js";
   import { loadStripe } from "@stripe/stripe-js";
   import { api } from "$lib/services/api-client";
-  import { auth } from "$lib/stores/AuthStore.svelte";
+  import { auth } from "$lib/stores/AuthStore";
 
   export let organizationId: string;
   export let priceId: string;

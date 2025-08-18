@@ -13,7 +13,7 @@
   import * as Popover from "$lib/components/ui/popover";
   import * as Card from "$lib/components/ui/card";
   import * as THREE from "three";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { projectStore } from "$lib/stores/ProjectStore";
   import { isDarkMode } from "$lib/utils/mode-watcher";
   import type { ForceGraph3DInstance } from "3d-force-graph";
 

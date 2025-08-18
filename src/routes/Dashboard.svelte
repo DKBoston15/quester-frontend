@@ -1,7 +1,7 @@
 <script lang="ts">
   import { navigate } from "svelte-routing";
   import { onMount } from "svelte";
-  import { auth } from "../lib/stores/AuthStore.svelte";
+  import { auth } from "../lib/stores/AuthStore";
   import { Button } from "$lib/components/ui/button";
   import {
     Card,

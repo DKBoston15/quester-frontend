@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { notesStore } from "$lib/stores/NotesStore.svelte";
-  import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
+  import { notesStore } from "$lib/stores/NotesStore";
+  import { literatureStore } from "$lib/stores/LiteratureStore";
   import type { Note } from "$lib/types";
   import type { Literature } from "$lib/types/literature";
   import { ScrollArea } from "$lib/components/ui/scroll-area";

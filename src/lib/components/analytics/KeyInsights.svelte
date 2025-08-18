@@ -7,7 +7,7 @@
   import EmptyState from "$lib/components/ui/empty-state/EmptyState.svelte";
   import InsightCard from "./InsightCard.svelte";
   import InsightsHistoryModal from "./InsightsHistoryModal.svelte";
-  import { insightsStore } from "$lib/stores/InsightsStore.svelte";
+  import { insightsStore } from "$lib/stores/InsightsStore";
   import { Lightbulb, RefreshCw, Sparkles, AlertCircle, History } from "lucide-svelte";
 
   interface Props {

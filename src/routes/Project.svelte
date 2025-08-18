@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { projectStore } from "../lib/stores/ProjectStore.svelte";
+  import { projectStore } from "../lib/stores/ProjectStore";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import ProjectSidebar from "$lib/components/ProjectSidebar.svelte";
   import { useLocation } from "svelte-routing";

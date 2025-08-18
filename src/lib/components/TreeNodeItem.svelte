@@ -13,7 +13,7 @@
     X,
   } from "lucide-svelte";
   import type { Department, Project } from "$lib/types/auth";
-  import { auth } from "$lib/stores/AuthStore.svelte";
+  import { auth } from "$lib/stores/AuthStore";
   import { Button } from "$lib/components/ui/button";
   import { Badge } from "$lib/components/ui/badge";
   import { Input } from "$lib/components/ui/input";
@@ -22,7 +22,7 @@
   import * as Tooltip from "$lib/components/ui/tooltip/index.js";
   import { navigate } from "svelte-routing";
   import { api } from "$lib/services/api-client";
-  import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
+  import { teamManagement } from "$lib/stores/TeamManagementStore";
 
   // Props
   const props = $props();

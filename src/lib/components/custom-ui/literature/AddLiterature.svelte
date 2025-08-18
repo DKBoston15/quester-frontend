@@ -10,8 +10,8 @@
   import * as Progress from "$lib/components/ui/progress";
   import TagInput from "../TagInput.svelte";
   import { createEventDispatcher, onDestroy } from "svelte";
-  import { auth } from "$lib/stores/AuthStore.svelte";
-  import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
+  import { auth } from "$lib/stores/AuthStore";
+  import { literatureStore } from "$lib/stores/LiteratureStore";
   import {
     Loader2,
     CheckCircle2,

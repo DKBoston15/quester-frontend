@@ -13,7 +13,7 @@
   import * as Select from "$lib/components/ui/select";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { InfoIcon, Loader2Icon, WandIcon } from "lucide-svelte";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { projectStore } from "$lib/stores/ProjectStore";
   import { toast } from "svelte-sonner";
   import { api } from "$lib/services/api-client";
 

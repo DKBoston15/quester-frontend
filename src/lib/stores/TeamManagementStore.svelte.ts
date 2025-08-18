@@ -1,4 +1,4 @@
-<script lang="ts" module>
+
   import { api } from "$lib/services/api-client";
   import { auth } from "./AuthStore.svelte";
 
@@ -707,4 +707,4 @@
       }
     },
   };
-</script>
+

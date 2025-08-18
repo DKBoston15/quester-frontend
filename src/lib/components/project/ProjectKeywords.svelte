@@ -1,6 +1,6 @@
 <script lang="ts">
   import TagInput from "../custom-ui/TagInput.svelte";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { projectStore } from "$lib/stores/ProjectStore";
   import type { Project } from "$lib/types/auth";
 
   const { project } = $props<{ project: Project }>();

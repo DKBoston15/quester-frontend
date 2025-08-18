@@ -1,4 +1,4 @@
-<script lang="ts" module>
+
   import { api } from "../services/api-client";
   import type { Project } from "../types/auth";
 
@@ -105,4 +105,4 @@
       isLoading = false;
     },
   };
-</script>
+

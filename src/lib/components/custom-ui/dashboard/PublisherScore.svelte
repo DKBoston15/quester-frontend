@@ -2,8 +2,8 @@
   import { Button } from "$lib/components/ui/button";
   import * as Card from "$lib/components/ui/card";
   import * as Dialog from "$lib/components/ui/dialog";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
-  import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
+  import { projectStore } from "$lib/stores/ProjectStore";
+  import { literatureStore } from "$lib/stores/LiteratureStore";
   import type { Literature } from "$lib/types/literature";
   import _ from "lodash";
 

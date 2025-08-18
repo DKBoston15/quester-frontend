@@ -1,8 +1,8 @@
 <script lang="ts">
   import AppSidebar from "$lib/components/AppSidebar.svelte";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
-  import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
-  import { auth } from "$lib/stores/AuthStore.svelte";
+  import { teamManagement } from "$lib/stores/TeamManagementStore";
+  import { auth } from "$lib/stores/AuthStore";
   import ProjectActivityChart from "$lib/components/ProjectActivityChart.svelte";
   import { onMount } from "svelte";
   import * as RadioGroup from "$lib/components/ui/radio-group";

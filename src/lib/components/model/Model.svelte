@@ -13,8 +13,8 @@
   import { writable } from "svelte/store";
   import { onDestroy, onMount } from "svelte";
   import "@xyflow/svelte/dist/style.css";
-  import { modelStore } from "$lib/stores/ModelStore.svelte";
-  import { undoRedoStore } from "$lib/stores/UndoRedoStore.svelte";
+  import { modelStore } from "$lib/stores/ModelStore";
+  import { undoRedoStore } from "$lib/stores/UndoRedoStore";
   import { edgeSettings } from "./edge-settings-store";
   import ResizableNode from "./ResizableNode.svelte";
   import CircleNode from "./CircleNode.svelte";

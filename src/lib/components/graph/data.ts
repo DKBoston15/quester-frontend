@@ -1,6 +1,6 @@
-import { projectStore } from "$lib/stores/ProjectStore.svelte";
-import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
-import { notesStore } from "$lib/stores/NotesStore.svelte";
+import { projectStore } from "$lib/stores/ProjectStore";
+import { literatureStore } from "$lib/stores/LiteratureStore";
+import { notesStore } from "$lib/stores/NotesStore";
 
 export const groupColorMap = {
   1: "#006eff",

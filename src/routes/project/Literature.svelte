@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onDestroy } from "svelte";
-  import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
-  import { auth } from "$lib/stores/AuthStore.svelte";
+  import { literatureStore } from "$lib/stores/LiteratureStore";
+  import { projectStore } from "$lib/stores/ProjectStore";
+  import { auth } from "$lib/stores/AuthStore";
   import LiteratureTable from "$lib/components/custom-ui/literature/LiteratureTable.svelte";
   import AddLiterature from "$lib/components/custom-ui/literature/AddLiterature.svelte";
   import { Button } from "$lib/components/ui/button";

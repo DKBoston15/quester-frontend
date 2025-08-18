@@ -1,6 +1,6 @@
 <script lang="ts">
   import { navigate } from "svelte-routing";
-  import { auth } from "../../lib/stores/AuthStore.svelte";
+  import { auth } from "../../lib/stores/AuthStore";
   import { DarkmodeToggle } from "$lib/components/ui/darkmode-toggle";
   import { onMount } from "svelte";
   import { api } from "$lib/services/api-client";

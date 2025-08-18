@@ -9,7 +9,7 @@
   import { Button } from "$lib/components/ui/button";
   import { Label } from "$lib/components/ui/label";
   import DesignManager from "$lib/components/custom-ui/project/DesignManager.svelte";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { projectStore } from "$lib/stores/ProjectStore";
   import { toast } from "svelte-sonner";
   import { api, getApiUrl } from "$lib/services/api-client";
   import { driver } from "driver.js";

@@ -9,7 +9,7 @@
   import { DateFormatter } from "@internationalized/date";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { InfoIcon } from "lucide-svelte";
-  import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
+  import { literatureStore } from "$lib/stores/LiteratureStore";
   import type { Literature } from "$lib/types/literature";
   import { format, parse } from "date-fns";
 

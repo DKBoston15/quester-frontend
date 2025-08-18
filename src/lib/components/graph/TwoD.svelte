@@ -12,7 +12,7 @@
   import * as Card from "$lib/components/ui/card";
   import TypeCheckbox from "./TypeCheckbox.svelte";
   import * as Popover from "$lib/components/ui/popover";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { projectStore } from "$lib/stores/ProjectStore";
 
   // Types for graph data
   interface GraphNode {

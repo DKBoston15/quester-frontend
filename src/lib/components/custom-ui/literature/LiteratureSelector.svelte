@@ -6,7 +6,7 @@
   import { Button } from "$lib/components/ui/button";
   import { Check, ChevronsUpDown, X, Book } from "lucide-svelte";
   import { cn } from "$lib/utils";
-  import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
+  import { literatureStore } from "$lib/stores/LiteratureStore";
   import type { Literature } from "$lib/types/literature";
   import { Badge } from "$lib/components/ui/badge";
   import { Portal } from "bits-ui";

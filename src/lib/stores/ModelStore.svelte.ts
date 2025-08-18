@@ -1,4 +1,4 @@
-<script lang="ts" module>
+
   import { api } from "../services/api-client";
   import type { Node, Edge } from "@xyflow/svelte";
   import { toPng } from "html-to-image";
@@ -199,4 +199,4 @@
       isLoading = false;
     },
   };
-</script>
+

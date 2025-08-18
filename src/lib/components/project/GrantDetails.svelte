@@ -15,8 +15,8 @@
     ChevronDownIcon,
     ChevronUpIcon,
   } from "lucide-svelte";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
-  import { grantStore } from "$lib/stores/GrantStore.svelte";
+  import { projectStore } from "$lib/stores/ProjectStore";
+  import { grantStore } from "$lib/stores/GrantStore";
   import { toast } from "svelte-sonner";
   import GrantForm from "./GrantForm.svelte";
   import GrantListItem from "./GrantListItem.svelte";

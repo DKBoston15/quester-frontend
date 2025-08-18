@@ -3,7 +3,7 @@
   import { slide, fade } from "svelte/transition";
   import { flip } from "svelte/animate";
   import { quintOut } from "svelte/easing";
-  import { globalSearchStore } from "$lib/stores/GlobalSearchStore.svelte";
+  import { globalSearchStore } from "$lib/stores/GlobalSearchStore";
   import { Button } from "$lib/components/ui/button";
   import { Badge } from "$lib/components/ui/badge";
   import { ChatHistory } from "$lib/components/global-search";

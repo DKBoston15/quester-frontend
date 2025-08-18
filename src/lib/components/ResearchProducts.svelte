@@ -21,7 +21,7 @@
     Pencil,
   } from "lucide-svelte";
   import type { ResearchProduct, ResearchProductType } from "$lib/types/auth";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { projectStore } from "$lib/stores/ProjectStore";
   import { flip } from "svelte/animate";
   import { dndzone } from "svelte-dnd-action";
 

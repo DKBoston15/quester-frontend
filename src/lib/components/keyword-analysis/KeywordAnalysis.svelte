@@ -6,7 +6,7 @@
   import { Card } from "$lib/components/ui/card";
   import { EmptyState } from "$lib/components/ui/empty-state";
   import type { KeywordAnalysis } from "$lib/types/index";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { projectStore } from "$lib/stores/ProjectStore";
   import { api } from "$lib/services/api-client";
   import { driver } from "driver.js";
   import type { DriveStep } from "driver.js";

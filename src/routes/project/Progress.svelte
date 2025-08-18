@@ -36,10 +36,10 @@
     Gavel,
   } from "lucide-svelte";
   import { onDestroy, onMount } from "svelte";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
-  import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
-  import { notesStore } from "$lib/stores/NotesStore.svelte";
-  import { customEventsStore } from "$lib/stores/custom-events-store.svelte";
+  import { projectStore } from "$lib/stores/ProjectStore";
+  import { literatureStore } from "$lib/stores/LiteratureStore";
+  import { notesStore } from "$lib/stores/NotesStore";
+  import { customEventsStore } from "$lib/stores/CustomEventsStore";
   import { convertCustomEventToTimelineEvent } from "$lib/types/custom-events";
   import { fade } from "svelte/transition";
   import { api } from "$lib/services/api-client";

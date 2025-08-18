@@ -12,11 +12,11 @@
     LayoutList,
   } from "lucide-svelte";
   import type { Organization, Department, Project } from "$lib/types/auth";
-  import { auth } from "$lib/stores/AuthStore.svelte";
+  import { auth } from "$lib/stores/AuthStore";
   import {
     departmentUpdated,
     notifyDepartmentUpdate,
-  } from "$lib/stores/DepartmentStore.svelte";
+  } from "$lib/stores/DepartmentStore";
   import { navigate } from "svelte-routing";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
@@ -27,7 +27,7 @@
   import * as Tabs from "$lib/components/ui/tabs/index.js";
   import TreeNode from "./TreeNodeItem.svelte";
   import { api } from "$lib/services/api-client";
-  import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
+  import { teamManagement } from "$lib/stores/TeamManagementStore";
   import "driver.js/dist/driver.css";
 
   // Props

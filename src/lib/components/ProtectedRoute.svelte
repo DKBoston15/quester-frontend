@@ -1,7 +1,7 @@
 <script>
   import { onMount } from "svelte";
   import { navigate } from "svelte-routing";
-  import { auth } from "../stores/AuthStore.svelte";
+  import { auth } from "../stores/AuthStore";
 
   onMount(() => {
     if (!auth.isAuthenticated && !auth.isLoading) {

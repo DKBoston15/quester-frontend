@@ -32,7 +32,7 @@
     type CustomEventType,
   } from "$lib/types/custom-events";
   import { getEventTypeConfig } from "$lib/config/custom-event-types";
-  import { customEventsStore } from "$lib/stores/custom-events-store.svelte";
+  import { customEventsStore } from "$lib/stores/CustomEventsStore";
 
   interface TimelineEvent {
     id: string;

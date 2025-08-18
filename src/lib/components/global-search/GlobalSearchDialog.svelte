@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
-  import { globalSearchStore } from "$lib/stores/GlobalSearchStore.svelte";
+  import { globalSearchStore } from "$lib/stores/GlobalSearchStore";
   import * as Dialog from "$lib/components/ui/dialog";
   import { Badge } from "$lib/components/ui/badge";
   import { ScrollArea } from "$lib/components/ui/scroll-area";

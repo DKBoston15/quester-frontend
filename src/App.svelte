@@ -2,7 +2,7 @@
   import "./app.css";
   import { Router, Route } from "svelte-routing";
   import { onMount } from "svelte";
-  import { auth } from "./lib/stores/AuthStore.svelte";
+  import { auth } from "./lib/stores/AuthStore";
   import Dashboard from "./routes/Dashboard.svelte";
   import OrganizationAnalytics from "./routes/OrganizationAnalytics.svelte";
   import ProtectedLayout from "./lib/components/ProtectedLayout.svelte";
@@ -19,7 +19,7 @@
   import { api } from "$lib/services/api-client";
   import { GlobalSearchDialog } from "$lib/components/global-search";
   import AnnouncementModal from "$lib/components/announcements/AnnouncementModal.svelte";
-  import { announcementStore } from "$lib/stores/AnnouncementStore.svelte";
+  import { announcementStore } from "$lib/stores/AnnouncementStore";
   import { initializeFullStory } from "$lib/services/fullstory";
 
   const props = $props<{ url: string }>();

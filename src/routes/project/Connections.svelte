@@ -8,7 +8,7 @@
   import * as Card from "$lib/components/ui/card";
   import { onMount } from "svelte";
   import { navigate } from "svelte-routing";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { projectStore } from "$lib/stores/ProjectStore";
   import { api } from "$lib/services/api-client";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";

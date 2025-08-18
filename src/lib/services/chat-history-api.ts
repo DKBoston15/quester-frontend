@@ -1,7 +1,7 @@
 // Chat History API Service
 
 import { api, type APIRequestConfig } from "./api-client";
-import type { ChatMessage } from "../stores/GlobalSearchStore.svelte";
+import type { ChatMessage } from "../stores/GlobalSearchStore";
 
 // Chat session interfaces
 export interface ChatSession {

@@ -1,4 +1,4 @@
-<script lang="ts" module>
+
   import { api } from "../services/api-client";
   import type { Literature } from "../types/literature";
 
@@ -84,4 +84,4 @@
       isLoading = false;
     },
   };
-</script>
+

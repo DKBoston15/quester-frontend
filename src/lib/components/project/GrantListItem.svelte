@@ -16,7 +16,7 @@
     PhoneIcon,
     Loader2Icon,
   } from "lucide-svelte";
-  import { grantStore } from "$lib/stores/GrantStore.svelte";
+  import { grantStore } from "$lib/stores/GrantStore";
   import { toast } from "svelte-sonner";
   import GrantForm from "./GrantForm.svelte";
   import type { Grant } from "$lib/types/auth";

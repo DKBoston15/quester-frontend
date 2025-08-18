@@ -1,10 +1,10 @@
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
-  import { outcomeStore } from "$lib/stores/OutcomeStore.svelte";
+  import { outcomeStore } from "$lib/stores/OutcomeStore";
   import ShadEditor from "$lib/components/shad-editor/shad-editor.svelte";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { Badge } from "$lib/components/ui/badge";
-  import { auth } from "$lib/stores/AuthStore.svelte";
+  import { auth } from "$lib/stores/AuthStore";
 
   interface Outcome {
     id: string;

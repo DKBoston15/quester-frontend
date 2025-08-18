@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { navigate } from "svelte-routing";
-  import { modelStore } from "$lib/stores/ModelStore.svelte";
+  import { modelStore } from "$lib/stores/ModelStore";
   import Model from "$lib/components/model/Model.svelte";
   import { api } from "$lib/services/api-client";
   import { driver } from "driver.js";

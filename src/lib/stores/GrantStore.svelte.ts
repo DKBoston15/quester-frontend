@@ -1,13 +1,12 @@
-<script lang="ts" module>
-  import { api } from "$lib/services/api-client";
-  import type { Grant } from "../types/auth";
+import { api } from "$lib/services/api-client";
+import type { Grant } from "../types/auth";
 
-  let grants = $state<Grant[]>([]);
-  let currentGrant = $state<Grant | null>(null);
-  let isLoading = $state(false);
-  let error = $state<string | null>(null);
+let grants = $state<Grant[]>([]);
+let currentGrant = $state<Grant | null>(null);
+let isLoading = $state(false);
+let error = $state<string | null>(null);
 
-  export const grantStore = {
+export const grantStore = {
     get grants() {
       return grants;
     },
@@ -162,4 +161,3 @@
       error = null;
     },
   };
-</script>

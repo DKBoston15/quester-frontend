@@ -11,7 +11,7 @@
   import * as Table from "$lib/components/ui/table";
   import { toast } from "svelte-sonner";
   import { Search, UserPlus } from "lucide-svelte";
-  import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
+  import { teamManagement } from "$lib/stores/TeamManagementStore";
   import { api } from "$lib/services/api-client";
 
   // Props with Svelte 5 runes

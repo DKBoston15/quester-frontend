@@ -1,4 +1,4 @@
-<script lang="ts" module>
+
   import { api } from "../services/api-client";
 
   interface Outcome {
@@ -1404,4 +1404,4 @@
       isLoading = false;
     },
   };
-</script>
+

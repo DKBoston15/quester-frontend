@@ -1,9 +1,9 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { Chart } from "chart.js/auto";
-  import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
-  import { notesStore } from "$lib/stores/NotesStore.svelte";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { literatureStore } from "$lib/stores/LiteratureStore";
+  import { notesStore } from "$lib/stores/NotesStore";
+  import { projectStore } from "$lib/stores/ProjectStore";
   import { analyzeLiterature, extractTextFromTipTap } from "./analytics/utils";
   import * as Tabs from "$lib/components/ui/tabs";
   import * as Dialog from "$lib/components/ui/dialog";
@@ -22,7 +22,7 @@
   import "driver.js/dist/driver.css";
   import EmptyState from "$lib/components/ui/empty-state/EmptyState.svelte";
   import KeyInsights from "$lib/components/analytics/KeyInsights.svelte";
-  import { insightsStore } from "$lib/stores/InsightsStore.svelte";
+  import { insightsStore } from "$lib/stores/InsightsStore";
 
   // Watch for theme changes and update charts
   const observer = new MutationObserver((mutations) => {
