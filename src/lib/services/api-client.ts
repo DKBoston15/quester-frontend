@@ -7,6 +7,18 @@ import { API_BASE_URL } from "../config";
 // Global logout handler - will be set by the AuthStore
 let globalLogoutHandler: (() => void) | null = null;
 
+// Request/Response interceptors
+interface RequestInterceptor {
+  (url: string, options: RequestInit): void | Promise<void>;
+}
+
+interface ResponseInterceptor {
+  (response: Response, url: string): void | Promise<void>;
+}
+
+const requestInterceptors: RequestInterceptor[] = [];
+const responseInterceptors: ResponseInterceptor[] = [];
+
 // Error classes for better error handling
 export class APIError extends Error {
   constructor(
@@ -33,6 +45,10 @@ export interface APIRequestConfig {
   timeout?: number;
   signal?: AbortSignal;
   skipAuthCheck?: boolean; // For login/logout endpoints
+  mode?: RequestMode; // CORS mode
+  cache?: RequestCache; // Cache mode
+  preserveErrorDetail?: boolean; // Preserve original error messages
+  expectedContentType?: 'json' | 'text' | 'blob' | 'auto'; // Expected response type
 }
 
 // Default configuration
@@ -40,6 +56,8 @@ const DEFAULT_CONFIG: APIRequestConfig = {
   retries: 3,
   timeout: 30000, // 30 seconds
   skipAuthCheck: false,
+  preserveErrorDetail: true,
+  expectedContentType: 'auto',
 };
 
 /**
@@ -48,6 +66,72 @@ const DEFAULT_CONFIG: APIRequestConfig = {
  */
 export function setGlobalLogoutHandler(handler: () => void) {
   globalLogoutHandler = handler;
+}
+
+/**
+ * Get the full API URL for a given endpoint
+ * This is useful for browser redirects, downloads, etc.
+ */
+export function getApiUrl(endpoint: string): string {
+  return endpoint.startsWith("http") ? endpoint : `${API_BASE_URL}${endpoint}`;
+}
+
+/**
+ * Add a request interceptor
+ */
+export function addRequestInterceptor(interceptor: RequestInterceptor): () => void {
+  requestInterceptors.push(interceptor);
+  
+  // Return cleanup function
+  return () => {
+    const index = requestInterceptors.indexOf(interceptor);
+    if (index > -1) {
+      requestInterceptors.splice(index, 1);
+    }
+  };
+}
+
+/**
+ * Add a response interceptor
+ */
+export function addResponseInterceptor(interceptor: ResponseInterceptor): () => void {
+  responseInterceptors.push(interceptor);
+  
+  // Return cleanup function
+  return () => {
+    const index = responseInterceptors.indexOf(interceptor);
+    if (index > -1) {
+      responseInterceptors.splice(index, 1);
+    }
+  };
+}
+
+/**
+ * Add a simple logging interceptor for debugging
+ */
+export function enableDebugLogging(): () => void {
+  const requestLogger = (url: string, options: RequestInit) => {
+    console.log(`[API] ${options.method || 'GET'} ${url}`, {
+      headers: options.headers,
+      body: options.body
+    });
+  };
+  
+  const responseLogger = (response: Response, url: string) => {
+    console.log(`[API] ${response.status} ${url}`, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries())
+    });
+  };
+  
+  const removeRequest = addRequestInterceptor(requestLogger);
+  const removeResponse = addResponseInterceptor(responseLogger);
+  
+  return () => {
+    removeRequest();
+    removeResponse();
+  };
 }
 
 /**
@@ -81,6 +165,8 @@ export async function apiRequest<T = any>(
     ...options,
     signal: requestSignal,
     credentials: "include", // Always include cookies for session auth
+    mode: config.mode || 'cors',
+    cache: config.cache || 'default',
     headers: {
       "Content-Type": "application/json",
       ...options.headers,
@@ -91,10 +177,20 @@ export async function apiRequest<T = any>(
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
+      // Call request interceptors
+      for (const interceptor of requestInterceptors) {
+        await interceptor(requestUrl, requestOptions);
+      }
+      
       const response = await fetch(requestUrl, requestOptions);
 
       // Clear timeout if we got a response
       if (timeoutId) clearTimeout(timeoutId);
+      
+      // Call response interceptors
+      for (const interceptor of responseInterceptors) {
+        await interceptor(response.clone(), requestUrl);
+      }
 
       // Handle authentication errors BEFORE other error handling
       if (
@@ -132,14 +228,45 @@ export async function apiRequest<T = any>(
       // Handle other non-ok responses
       if (!response.ok) {
         let errorData: any;
-        try {
-          errorData = await response.json();
-        } catch {
-          errorData = { message: response.statusText };
+        let errorMessage: string;
+        
+        // Try to parse error response based on content type
+        const contentType = response.headers.get('content-type');
+        
+        if (contentType?.includes('application/json')) {
+          try {
+            errorData = await response.json();
+            errorMessage = errorData.message || errorData.error || response.statusText;
+          } catch {
+            errorMessage = response.statusText;
+            errorData = { message: errorMessage };
+          }
+        } else if (contentType?.includes('text/html')) {
+          // Handle HTML error pages (like 404s)
+          try {
+            const text = await response.text();
+            // Extract title or first heading from HTML if possible
+            const titleMatch = text.match(/<title>([^<]*)<\/title>/i);
+            errorMessage = titleMatch ? titleMatch[1] : response.statusText;
+            errorData = { message: errorMessage, html: true };
+          } catch {
+            errorMessage = response.statusText;
+            errorData = { message: errorMessage };
+          }
+        } else {
+          // Handle plain text or other content types
+          try {
+            const text = await response.text();
+            errorMessage = text || response.statusText;
+            errorData = { message: errorMessage };
+          } catch {
+            errorMessage = response.statusText;
+            errorData = { message: errorMessage };
+          }
         }
 
         throw new APIError(
-          errorData.message || `Request failed with status ${response.status}`,
+          config.preserveErrorDetail ? errorMessage : `Request failed with status ${response.status}`,
           response.status,
           errorData.code,
           response
@@ -250,10 +377,20 @@ export async function streamRequest(
   };
 
   try {
+    // Call request interceptors for streaming requests too
+    for (const interceptor of requestInterceptors) {
+      await interceptor(requestUrl, requestOptions);
+    }
+    
     const response = await fetch(requestUrl, requestOptions);
 
     // Clear timeout if we got a response
     if (timeoutId) clearTimeout(timeoutId);
+    
+    // Call response interceptors for streaming requests
+    for (const interceptor of responseInterceptors) {
+      await interceptor(response.clone(), requestUrl);
+    }
 
     // Handle authentication errors
     if (
@@ -346,6 +483,8 @@ export async function processSSEStream(
             const parsed = JSON.parse(content);
             if (onMessage) onMessage(parsed);
           } catch (e) {
+            // Log parsing errors for debugging but don't break the stream
+            console.warn('Failed to parse SSE message:', content, e);
             // If it's not JSON, pass the raw content
             if (onMessage) onMessage(content);
           }

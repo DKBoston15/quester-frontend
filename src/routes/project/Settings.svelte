@@ -11,7 +11,7 @@
   import DesignManager from "$lib/components/custom-ui/project/DesignManager.svelte";
   import { projectStore } from "$lib/stores/ProjectStore.svelte";
   import { toast } from "svelte-sonner";
-  import { api } from "$lib/services/api-client";
+  import { api, getApiUrl } from "$lib/services/api-client";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
   import { GraduationCap, Info } from "lucide-svelte";
@@ -77,7 +77,7 @@
     isExporting = true;
     try {
       // Trigger download by navigating to the export URL
-      window.location.href = `/api/projects/${projectStore.currentProject.id}/export`;
+      window.location.href = getApiUrl(`/projects/${projectStore.currentProject.id}/export`);
 
       // Optionally show a success toast, though the browser handles the download itself
       // toast.success("Project export started...");

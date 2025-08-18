@@ -409,7 +409,7 @@
 
       try {
         // Use centralized API client which handles auth errors automatically
-        const fetchedData = await api.get(
+        const fetchedData = await api.get<any[]>(
           `/note/project/${projectId}${
             literatureId ? `?literatureId=${literatureId}` : ""
           }`
@@ -479,7 +479,7 @@
         } as any; // Type assertion to avoid linter errors
 
         // Use centralized API client which handles auth errors automatically
-        const newNote = await api.post(`/note`, payload);
+        const newNote = await api.post<Note>(`/note`, payload);
 
         // Create a new object with the correct structure before processing
         const noteWithCorrectTypes = {
@@ -562,7 +562,7 @@
         // Skip the API call for UI-only updates
         if (!uiOnlyUpdate) {
           // Use centralized API client which handles auth errors automatically
-          const updatedNote = await api.put(`/note/${id}`, payload);
+          const updatedNote = await api.put<{note: Note} | Note>(`/note/${id}`, payload);
 
           const processedUpdatedNote = processNoteData(
             updatedNote.note || updatedNote
@@ -633,7 +633,7 @@
 
       try {
         // Use centralized API client which handles auth errors automatically
-        await api.delete(`/note/${id}`);
+        await api.delete<void>(`/note/${id}`);
 
         notes = notes.filter((note) => note.id !== id);
         activeNoteId = activeNoteId === id ? null : activeNoteId;

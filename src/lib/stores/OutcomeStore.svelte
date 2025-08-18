@@ -1262,7 +1262,7 @@
       error = null;
 
       try {
-        const data = await api.get(`/outcome/project/${projectId}`);
+        const data = await api.get<Outcome[]>(`/outcome/project/${projectId}`);
         outcomes = data;
       } catch (err) {
         console.error("Error loading outcomes:", err);
@@ -1289,7 +1289,7 @@
       this.setError(null);
 
       try {
-        const data = await api.get(`/outcome/${outcomeId}`);
+        const data = await api.get<Outcome>(`/outcome/${outcomeId}`);
         if (!data) {
           throw new Error("Outcome not found");
         }
@@ -1339,7 +1339,7 @@
           }
         }
 
-        const newOutcome = await api.post(`/outcome`, data);
+        const newOutcome = await api.post<Outcome>(`/outcome`, data);
         outcomes = [newOutcome, ...outcomes];
         currentOutcome = newOutcome;
         return newOutcome;
@@ -1354,7 +1354,7 @@
 
     async updateOutcome(id: string, data: Partial<Outcome>) {
       try {
-        const result = await api.put(`/outcome/${id}`, data);
+        const result = await api.put<{outcome: Outcome} | Outcome>(`/outcome/${id}`, data);
         const updatedOutcome = result.outcome || result; // Handle both wrapped and unwrapped responses
 
         // Update the outcomes array
@@ -1378,7 +1378,7 @@
 
     async deleteOutcome(id: string) {
       try {
-        await api.delete(`/outcome/${id}`);
+        await api.delete<void>(`/outcome/${id}`);
 
         outcomes = outcomes.filter((outcome) => outcome.id !== id);
         if (currentOutcome?.id === id) {

@@ -84,7 +84,7 @@
     const userEmail = auth.user.email; // Store email for filtering
 
     try {
-      const invitations = await api.get(
+      const invitations = await api.get<Array<{email: string; id: string}>>(
         `/invitations/pending?email=${encodeURIComponent(userEmail)}`
       );
 

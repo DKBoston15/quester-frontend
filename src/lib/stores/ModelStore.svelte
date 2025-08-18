@@ -86,7 +86,7 @@
       error = null;
 
       try {
-        const newModel: Model = await api.post(`/model`, {
+        const newModel: Model = await api.post<Model>(`/model`, {
           ...data,
           nodes: JSON.stringify([]),
           edges: JSON.stringify([]),
@@ -117,7 +117,7 @@
           edges: data.edges ? JSON.stringify(data.edges) : undefined,
         };
 
-        const updatedModelResponse = await api.put(`/model/${id}`, cleanData);
+        const updatedModelResponse = await api.put<{model: Model}>(`/model/${id}`, cleanData);
 
         // Extract the actual model data from the response
         const actualUpdatedModel = updatedModelResponse.model;
@@ -150,7 +150,7 @@
 
     async deleteModel(id: string) {
       try {
-        await api.delete(`/model/${id}`);
+        await api.delete<void>(`/model/${id}`);
 
         models = models.filter((model) => model.id !== id);
         if (currentModel?.id === id) {

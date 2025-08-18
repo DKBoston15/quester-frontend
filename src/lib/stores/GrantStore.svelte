@@ -31,7 +31,7 @@
       error = null;
 
       try {
-        const grantsData = await api.get(`/projects/${projectId}/grants`);
+        const grantsData = await api.get<Grant[]>(`/projects/${projectId}/grants`);
         grants = grantsData;
       } catch (err) {
         console.error("Error loading grants:", err);
@@ -52,7 +52,7 @@
       error = null;
 
       try {
-        const grantData = await api.get(`/grants/${grantId}`);
+        const grantData = await api.get<Grant>(`/grants/${grantId}`);
         currentGrant = grantData;
         return grantData;
       } catch (err) {
@@ -74,7 +74,7 @@
       error = null;
 
       try {
-        const newGrant = await api.post(
+        const newGrant = await api.post<Grant>(
           `/projects/${projectId}/grants`,
           grantData
         );
@@ -98,7 +98,7 @@
       error = null;
 
       try {
-        const updatedGrant = await api.put(`/grants/${grantId}`, updateData);
+        const updatedGrant = await api.put<Grant>(`/grants/${grantId}`, updateData);
 
         // Update in grants array
         grants = grants.map((grant) =>
@@ -129,7 +129,7 @@
       error = null;
 
       try {
-        await api.delete(`/grants/${grantId}`);
+        await api.delete<void>(`/grants/${grantId}`);
 
         // Remove from grants array
         grants = grants.filter((grant) => grant.id !== grantId);
