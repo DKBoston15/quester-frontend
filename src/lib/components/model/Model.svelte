@@ -15,7 +15,7 @@
   import "@xyflow/svelte/dist/style.css";
   import { modelStore } from "$lib/stores/ModelStore";
   import { undoRedoStore } from "$lib/stores/UndoRedoStore";
-  import { edgeSettings } from "./edge-settings-store";
+  import { edgeSettings } from "$lib/stores/EdgeSettingsStore";
   import ResizableNode from "./ResizableNode.svelte";
   import CircleNode from "./CircleNode.svelte";
   import EllipseNode from "./EllipseNode.svelte";
