@@ -172,27 +172,21 @@
 
       // Fall back to individual API calls if team management API doesn't return data
       if (!teamResources.departments?.length) {
-        const deptsResponse = await fetch(
-          `${API_BASE_URL}/departments/by-user?userId=${auth.user.id}`,
-          { credentials: "include" }
-        );
-
-        if (deptsResponse.ok) {
-          const deptsData = await deptsResponse.json();
+        try {
+          const deptsData = await api.get(`/departments/by-user?userId=${auth.user.id}`);
           departments = deptsData.data;
+        } catch (error) {
+          console.error("Failed to fetch departments:", error);
         }
       }
 
       if (!teamResources.projects?.length) {
-        const projectsResponse = await fetch(
-          `${API_BASE_URL}/projects/by-user?userId=${auth.user.id}`,
-          { credentials: "include" }
-        );
-
-        if (projectsResponse.ok) {
-          const projectsData = await projectsResponse.json();
+        try {
+          const projectsData = await api.get(`/projects/by-user?userId=${auth.user.id}`);
           projects = projectsData.data;
           flatProjects = projectsData.data;
+        } catch (error) {
+          console.error("Failed to fetch projects:", error);
         }
       }
       */

@@ -135,6 +135,64 @@ export function enableDebugLogging(): () => void {
 }
 
 /**
+ * Parse response based on expected content type
+ */
+async function parseResponseByContentType<T>(
+  response: Response, 
+  expectedContentType: 'json' | 'text' | 'blob' | 'auto'
+): Promise<T> {
+  const contentType = response.headers.get('content-type') || '';
+  
+  // If expectedContentType is 'auto', determine from Content-Type header
+  if (expectedContentType === 'auto') {
+    if (contentType.includes('application/json')) {
+      expectedContentType = 'json';
+    } else if (contentType.includes('text/')) {
+      expectedContentType = 'text';
+    } else if (contentType.includes('application/octet-stream') || 
+               contentType.includes('image/') || 
+               contentType.includes('audio/') || 
+               contentType.includes('video/')) {
+      expectedContentType = 'blob';
+    } else {
+      // Default to JSON for unknown types
+      expectedContentType = 'json';
+    }
+  }
+
+  switch (expectedContentType) {
+    case 'text': {
+      const text = await response.text();
+      return text as unknown as T;
+    }
+    
+    case 'blob': {
+      const blob = await response.blob();
+      return blob as unknown as T;
+    }
+    
+    case 'json':
+    default: {
+      const responseText = await response.text();
+      if (!responseText) {
+        return {} as T;
+      }
+
+      try {
+        return JSON.parse(responseText) as T;
+      } catch (parseError) {
+        throw new APIError(
+          "Invalid JSON response from server",
+          response.status,
+          undefined,
+          response
+        );
+      }
+    }
+  }
+}
+
+/**
  * Centralized fetch wrapper with automatic auth error handling
  * This function intercepts all API calls and handles 401/403 responses globally
  */
@@ -179,7 +237,12 @@ export async function apiRequest<T = any>(
     try {
       // Call request interceptors
       for (const interceptor of requestInterceptors) {
-        await interceptor(requestUrl, requestOptions);
+        try {
+          await interceptor(requestUrl, requestOptions);
+        } catch (error) {
+          console.error('Request interceptor error:', error);
+          // Continue with the request despite interceptor failure
+        }
       }
       
       const response = await fetch(requestUrl, requestOptions);
@@ -189,7 +252,12 @@ export async function apiRequest<T = any>(
       
       // Call response interceptors
       for (const interceptor of responseInterceptors) {
-        await interceptor(response.clone(), requestUrl);
+        try {
+          await interceptor(response.clone(), requestUrl);
+        } catch (error) {
+          console.error('Response interceptor error:', error);
+          // Continue with the response despite interceptor failure
+        }
       }
 
       // Handle authentication errors BEFORE other error handling
@@ -273,22 +341,8 @@ export async function apiRequest<T = any>(
         );
       }
 
-      // Handle successful responses
-      const responseText = await response.text();
-      if (!responseText) {
-        return {} as T;
-      }
-
-      try {
-        return JSON.parse(responseText) as T;
-      } catch (parseError) {
-        throw new APIError(
-          "Invalid JSON response from server",
-          response.status,
-          undefined,
-          response
-        );
-      }
+      // Handle successful responses based on expected content type
+      return await parseResponseByContentType<T>(response, config.expectedContentType || 'auto');
     } catch (error) {
       lastError = error as Error;
 

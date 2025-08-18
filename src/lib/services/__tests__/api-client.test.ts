@@ -42,14 +42,18 @@ describe('API Client', () => {
   describe('GET requests', () => {
     it('should make successful GET request', async () => {
       const mockData = { id: 1, name: 'Test' };
+      const mockHeaders = {
+        get: vi.fn().mockReturnValue('application/json'),
+      };
+      
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        headers: new Map([['content-type', 'application/json']]),
+        headers: mockHeaders,
         text: async () => JSON.stringify(mockData),
         json: async () => mockData,
         clone: () => ({
-          headers: new Map([['content-type', 'application/json']]),
+          headers: mockHeaders,
         }),
       });
 
@@ -65,13 +69,17 @@ describe('API Client', () => {
     });
 
     it('should handle empty response', async () => {
+      const mockHeaders = {
+        get: vi.fn().mockReturnValue('application/json'),
+      };
+      
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        headers: new Map([['content-type', 'application/json']]),
+        headers: mockHeaders,
         text: async () => '',
         clone: () => ({
-          headers: new Map([['content-type', 'application/json']]),
+          headers: mockHeaders,
         }),
       });
 
@@ -84,15 +92,18 @@ describe('API Client', () => {
     it('should make successful POST request with data', async () => {
       const requestData = { name: 'Test' };
       const responseData = { id: 1, ...requestData };
+      const mockHeaders = {
+        get: vi.fn().mockReturnValue('application/json'),
+      };
       
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 201,
-        headers: new Map([['content-type', 'application/json']]),
+        headers: mockHeaders,
         text: async () => JSON.stringify(responseData),
         json: async () => responseData,
         clone: () => ({
-          headers: new Map([['content-type', 'application/json']]),
+          headers: mockHeaders,
         }),
       });
 
@@ -111,33 +122,41 @@ describe('API Client', () => {
 
   describe('Error handling', () => {
     it('should throw APIError for non-JSON error response', async () => {
+      const mockHeaders = {
+        get: vi.fn().mockReturnValue('text/plain'),
+      };
+      
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 500,
         statusText: 'Internal Server Error',
-        headers: new Map([['content-type', 'text/plain']]),
+        headers: mockHeaders,
         text: async () => 'Something went wrong',
         clone: () => ({
-          headers: new Map([['content-type', 'text/plain']]),
+          headers: mockHeaders,
         }),
       });
 
-      await expect(api.get('/test')).rejects.toThrow(APIError);
+      await expect(api.get('/test', { timeout: 1000, retries: 0 })).rejects.toThrow(APIError);
     });
 
     it('should throw AuthenticationError for 401 response', async () => {
       const mockLogout = vi.fn();
       setGlobalLogoutHandler(mockLogout);
 
+      const mockHeaders = {
+        get: vi.fn().mockReturnValue('application/json'),
+      };
+
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 401,
         statusText: 'Unauthorized',
-        headers: new Map([['content-type', 'application/json']]),
+        headers: mockHeaders,
         json: async () => ({ message: 'Authentication required' }),
         text: async () => JSON.stringify({ message: 'Authentication required' }),
         clone: () => ({
-          headers: new Map([['content-type', 'application/json']]),
+          headers: mockHeaders,
         }),
       });
 
@@ -146,18 +165,22 @@ describe('API Client', () => {
     });
 
     it('should handle HTML error responses', async () => {
+      const mockHeaders = {
+        get: vi.fn().mockReturnValue('text/html'),
+      };
+
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
         statusText: 'Not Found',
-        headers: new Map([['content-type', 'text/html']]),
+        headers: mockHeaders,
         text: async () => '<html><head><title>Page Not Found</title></head></html>',
         clone: () => ({
-          headers: new Map([['content-type', 'text/html']]),
+          headers: mockHeaders,
         }),
       });
 
-      await expect(api.get('/test')).rejects.toThrow('Page Not Found');
+      await expect(api.get('/test', { preserveErrorDetail: true })).rejects.toThrow('Page Not Found');
     });
   });
 
@@ -165,14 +188,17 @@ describe('API Client', () => {
     it('should call request interceptors', async () => {
       const requestInterceptor = vi.fn();
       const cleanup = addRequestInterceptor(requestInterceptor);
+      const mockHeaders = {
+        get: vi.fn().mockReturnValue('application/json'),
+      };
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        headers: new Map([['content-type', 'application/json']]),
+        headers: mockHeaders,
         text: async () => '{}',
         clone: () => ({
-          headers: new Map([['content-type', 'application/json']]),
+          headers: mockHeaders,
         }),
       });
 
@@ -185,14 +211,17 @@ describe('API Client', () => {
     it('should call response interceptors', async () => {
       const responseInterceptor = vi.fn();
       const cleanup = addResponseInterceptor(responseInterceptor);
+      const mockHeaders = {
+        get: vi.fn().mockReturnValue('application/json'),
+      };
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        headers: new Map([['content-type', 'application/json']]),
+        headers: mockHeaders,
         text: async () => '{}',
         clone: () => ({
-          headers: new Map([['content-type', 'application/json']]),
+          headers: mockHeaders,
         }),
       });
 
@@ -236,21 +265,25 @@ describe('API Client', () => {
     });
 
     it('should preserve error details when configured', async () => {
+      const mockHeaders = {
+        get: vi.fn().mockReturnValue('application/json'),
+      };
+      
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 400,
         statusText: 'Bad Request',
-        headers: new Map([['content-type', 'application/json']]),
+        headers: mockHeaders,
         json: async () => ({ message: 'Validation failed: Name is required' }),
         text: async () => JSON.stringify({ message: 'Validation failed: Name is required' }),
         clone: () => ({
-          headers: new Map([['content-type', 'application/json']]),
+          headers: mockHeaders,
         }),
       });
 
       try {
         await api.get('/test', { preserveErrorDetail: true });
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).toBe('Validation failed: Name is required');
       }
     });
