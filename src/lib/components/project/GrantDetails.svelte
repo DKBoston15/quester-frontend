@@ -96,7 +96,7 @@
             </p>
           </Tooltip.Content>
         </Tooltip.Root>
-        <CardTitle>Grant Details</CardTitle>
+        <CardTitle>Project Grants</CardTitle>
       </div>
 
       {#if !showAddForm}

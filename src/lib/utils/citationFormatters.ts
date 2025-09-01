@@ -183,7 +183,7 @@ export function formatAPACitation(citation: Citation): string {
   }
 
   if (citation.url) {
-    let urlWithPeriod = `<a class="underline" href="${citation.url}" target="_blank">${citation.url}</a>`;
+    let urlWithPeriod = `<a class="underline break-words" href="${citation.url}" target="_blank">${citation.url}</a>`;
     citationComponents.push(urlWithPeriod);
   }
 

@@ -46,7 +46,7 @@
       case "selection-empty":
         return "border border-gray-200 bg-gray-50";
       case "completion":
-        return "border border-green-200 bg-green-50";
+        return "border border-green-200 bg-background";
       default:
         return "border-2 border-dashed border-gray-300";
     }
