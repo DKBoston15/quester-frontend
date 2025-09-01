@@ -78,6 +78,7 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
+    "markdown-it": "^14.1.0",
     "@ag-grid-community/client-side-row-model": "^32.3.3",
     "@ag-grid-community/core": "^32.3.3",
     "@ag-grid-community/styles": "^33.0.3",
