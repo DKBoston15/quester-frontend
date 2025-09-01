@@ -1,4 +1,3 @@
-<!-- src/lib/components/project/ResearchDesigns.svelte -->
 <script lang="ts">
   import {
     Card,
@@ -11,7 +10,7 @@
   import * as Tabs from "$lib/components/ui/tabs";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { InfoIcon } from "lucide-svelte";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { projectStore } from "$lib/stores/ProjectStore";
 
   const designTypes = [
     "research",

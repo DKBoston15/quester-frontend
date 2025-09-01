@@ -1,6 +1,6 @@
 <script lang="ts">
   import { navigate } from "svelte-routing";
-  import { auth } from "../lib/stores/AuthStore.svelte";
+  import { auth } from "$lib/stores/AuthStore";
   import { onMount } from "svelte";
   import type { Organization as AuthOrganization } from "../lib/types/auth";
   import { Input } from "$lib/components/ui/input";
@@ -8,7 +8,7 @@
   import Pricing from "./Pricing.svelte";
   import { DarkmodeToggle } from "$lib/components/ui/darkmode-toggle";
   import { LogOut } from "lucide-svelte";
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
 
   // Define the expected structure for the role information
   // interface OrganizationRole {
@@ -65,11 +65,9 @@
         currentStep = state.step;
       }
 
-      const response = await fetch(
-        `${API_BASE_URL}/organizations/by-user?userId=${auth.user?.id}`,
-        { credentials: "include" }
+      const data = await api.get(
+        `/organizations/by-user?userId=${auth.user?.id}`
       );
-      const data = await response.json();
       organizations = data.data;
 
       // Check if user has any organizations with active subscriptions
@@ -163,23 +161,14 @@
     error = "";
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/organizations/createOrgWithUser`,
+      const data = await api.post(
+        `/organizations/createOrgWithUser`,
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            name: orgName,
-            slug: orgName.toLowerCase().replace(/\s+/g, "-"),
-            userId: auth.user?.id,
-          }),
+          name: orgName,
+          slug: orgName.toLowerCase().replace(/\s+/g, "-"),
+          userId: auth.user?.id,
         }
       );
-
-      if (!response.ok) throw new Error("Failed to create organization");
-
-      const data = await response.json();
       createdOrganization = data.organization;
       currentStep = 2;
     } catch (error) {
@@ -202,26 +191,15 @@
         departments
           .filter((dept) => dept.name.trim())
           .map(async (dept) => {
-            const response = await fetch(
-              `${API_BASE_URL}/departments/createDepartmentWithUser`,
+            // The response directly contains the department data
+            const department = await api.post(
+              `/departments/createDepartmentWithUser`,
               {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({
-                  name: dept.name,
-                  organizationId: createdOrganization.id,
-                  userId: auth.user?.id,
-                }),
+                name: dept.name,
+                organizationId: createdOrganization.id,
+                userId: auth.user?.id,
               }
             );
-
-            if (!response.ok) {
-              throw new Error(`Failed to create department: ${dept.name}`);
-            }
-
-            // The response directly contains the department data
-            const department = await response.json();
 
             return {
               name: department.name,
@@ -256,25 +234,18 @@
     error = "";
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/projects/createProjectWithUser`,
+      await api.post(
+        `/projects/createProjectWithUser`,
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            name: projectName,
-            organizationId: createdOrganization.id,
-            departmentId:
-              subscriptionType === "organization"
-                ? selectedDepartmentId
-                : undefined,
-            userId: auth.user?.id,
-          }),
+          name: projectName,
+          organizationId: createdOrganization.id,
+          departmentId:
+            subscriptionType === "organization"
+              ? selectedDepartmentId
+              : undefined,
+          userId: auth.user?.id,
         }
       );
-
-      if (!response.ok) throw new Error("Failed to create project");
 
       // After successful project creation, navigate to dashboard
       navigate("/dashboard");

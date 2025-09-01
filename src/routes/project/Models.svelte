@@ -1,8 +1,7 @@
-<!-- src/routes/project/Models.svelte -->
 <script lang="ts">
   import { onDestroy } from "svelte";
-  import { modelStore } from "$lib/stores/ModelStore.svelte";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { modelStore } from "$lib/stores/ModelStore";
+  import { projectStore } from "$lib/stores/ProjectStore";
   import { Button } from "$lib/components/ui/button";
   import * as Card from "$lib/components/ui/card";
   import { Root, Content, Title, Description } from "$lib/components/ui/dialog";
@@ -21,7 +20,7 @@
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { fly } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
 
@@ -49,16 +48,7 @@
   // Check if user has access to model features
   async function checkModelAccessCapability() {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/capabilities/model_access`,
-        { credentials: "include" }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to check model access capability");
-      }
-
-      const data = await response.json();
+      const data = await api.get("/capabilities/model_access");
       hasAccess = data.allowed;
 
       // If user doesn't have access, redirect to overview

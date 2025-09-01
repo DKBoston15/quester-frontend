@@ -19,13 +19,17 @@ function escapeCSV(value: any): string {
   return stringValue;
 }
 
-function formatCSVAuthors(authors: string[]): string {
-  if (!authors || authors.length === 0) return '';
+function formatCSVAuthors(authors: string[] | string): string {
+  if (!authors) return '';
+  if (typeof authors === 'string') return authors;
+  if (authors.length === 0) return '';
   return authors.join('; ');
 }
 
-function formatCSVKeywords(keywords: any[]): string {
-  if (!keywords || keywords.length === 0) return '';
+function formatCSVKeywords(keywords: any[] | string): string {
+  if (!keywords) return '';
+  if (typeof keywords === 'string') return keywords;
+  if (keywords.length === 0) return '';
   
   return keywords
     .map(k => typeof k === 'string' ? k : k.name || '')
@@ -89,7 +93,7 @@ export function generateCSV(options: CSVExportOptions): string {
       escapeCSV(item.endPage || ''),
       escapeCSV(item.doi || ''),
       escapeCSV(item.link || ''),
-      escapeCSV(item.abstract || ''),
+      escapeCSV(''), // abstract field not in Literature type
       escapeCSV(formatCSVKeywords(item.keywords || [])),
       escapeCSV(formatCSVAuthors(item.editors || [])),
       escapeCSV(item.secondName || ''),

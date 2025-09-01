@@ -1,12 +1,11 @@
-<!-- src/routes/components/TeamSettings.svelte -->
 <script lang="ts">
   import { Switch } from "$lib/components/ui/switch";
   import { Label } from "$lib/components/ui/label";
   import { Separator } from "$lib/components/ui/separator";
   import { Alert, AlertDescription } from "$lib/components/ui/alert";
   import { Info, Lock } from "lucide-svelte";
-  import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
-  import { auth } from "$lib/stores/AuthStore.svelte";
+  import { teamManagement } from "$lib/stores/TeamManagementStore";
+  import { auth } from "$lib/stores/AuthStore";
   import { Badge } from "$lib/components/ui/badge";
 
   // Props

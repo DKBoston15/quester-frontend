@@ -1,4 +1,3 @@
-<!-- Custom Event Form Modal -->
 <script lang="ts">
   import { createEventDispatcher, onMount, onDestroy } from "svelte";
   import { fade } from "svelte/transition";
@@ -31,8 +30,8 @@
   import { Badge } from "$lib/components/ui/badge";
   import * as Dialog from "$lib/components/ui/dialog";
 
-  import { customEventsStore } from "$lib/stores/custom-events-store.svelte";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { customEventsStore } from "$lib/stores/CustomEventsStore";
+  import { projectStore } from "$lib/stores/ProjectStore";
   import type { CreateCustomEventForm } from "$lib/types/custom-events";
   import {
     getEventTypeOptions,

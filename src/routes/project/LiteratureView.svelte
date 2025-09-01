@@ -1,7 +1,6 @@
-<!-- src/routes/project/LiteratureView.svelte -->
 <script lang="ts">
-  import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { literatureStore } from "$lib/stores/LiteratureStore";
+  import { projectStore } from "$lib/stores/ProjectStore";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import LiteratureDetails from "$lib/components/custom-ui/literature/literatureItem/LiteratureDetails.svelte";

@@ -1,16 +1,15 @@
-<script lang="ts" module>
-  import { API_BASE_URL } from "$lib/config";
-  import { setGlobalLogoutHandler, api } from "../services/api-client";
-  import type { Organization, User } from "../types/auth";
-  import { identifyUser, clearUserIdentity } from "../services/fullstory";
+import { API_BASE_URL } from "$lib/config";
+import { setGlobalLogoutHandler, api } from "../services/api-client";
+import type { Organization, User } from "../types/auth";
+import { identifyUser, clearUserIdentity } from "../services/fullstory";
 
-  let user: User | null = $state(null);
-  let currentOrganization = $state<Organization | null>(null);
-  let isLoading = $state(true);
-  const isAuthenticated = $derived(Boolean(user));
-  const currentOrgId = $derived(currentOrganization?.id || null);
+let user: User | null = $state(null);
+let currentOrganization = $state<Organization | null>(null);
+let isLoading = $state(true);
+const isAuthenticated = $derived(Boolean(user));
+const currentOrgId = $derived(currentOrganization?.id || null);
 
-  export const auth = {
+export const auth = {
     get user() {
       return user;
     },
@@ -160,7 +159,6 @@
     },
   };
 
-  // Register the global logout handler with the API client
-  // This ensures all API calls will trigger logout on 401/403 errors
-  setGlobalLogoutHandler(() => auth.handleGlobalLogout());
-</script>
+// Register the global logout handler with the API client
+// This ensures all API calls will trigger logout on 401/403 errors
+setGlobalLogoutHandler(() => auth.handleGlobalLogout());

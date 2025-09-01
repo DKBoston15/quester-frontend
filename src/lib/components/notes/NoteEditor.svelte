@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
-  import { notesStore } from "$lib/stores/NotesStore.svelte";
-  import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
+  import { notesStore } from "$lib/stores/NotesStore";
+  import { literatureStore } from "$lib/stores/LiteratureStore";
   import type { Note } from "$lib/types";
   import ShadEditor from "$lib/components/shad-editor/shad-editor.svelte";
   import { Button } from "$lib/components/ui/button";
@@ -16,7 +16,6 @@
     SelectTrigger,
   } from "$lib/components/ui/select";
   import LiteratureSelector from "$lib/components/custom-ui/literature/LiteratureSelector.svelte";
-  import { API_BASE_URL } from "$lib/config";
   import { isAuthError, api } from "$lib/services/api-client";
 
   // Props

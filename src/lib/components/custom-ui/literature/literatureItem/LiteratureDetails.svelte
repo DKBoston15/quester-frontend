@@ -1,4 +1,3 @@
-<!-- src/lib/components/custom-ui/literature/literatureItem/LiteratureDetails.svelte -->
 <script lang="ts">
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
@@ -10,7 +9,7 @@
   import { DateFormatter } from "@internationalized/date";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { InfoIcon } from "lucide-svelte";
-  import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
+  import { literatureStore } from "$lib/stores/LiteratureStore";
   import type { Literature } from "$lib/types/literature";
   import { format, parse } from "date-fns";
 
@@ -201,10 +200,8 @@
       }
       if (!editingLiterature.chapterTitle?.trim())
         dataToUpdate.chapterTitle = "";
-      if (!editingLiterature.secondName?.trim())
-        dataToUpdate.secondName = "";
-      if (!editingLiterature.city?.trim())
-        dataToUpdate.city = "";
+      if (!editingLiterature.secondName?.trim()) dataToUpdate.secondName = "";
+      if (!editingLiterature.city?.trim()) dataToUpdate.city = "";
       if (!editingLiterature.link?.trim()) dataToUpdate.link = "";
       if (!editingLiterature.issue?.trim()) dataToUpdate.issue = "";
       if (!editingLiterature.volume?.trim()) dataToUpdate.volume = "";
@@ -294,7 +291,9 @@
 
   {#if selectedType === "Book Chapter" || selectedType === "Conference Presentation"}
     <div class="grid gap-3">
-      <Label for={selectedType === "Book Chapter" ? "chapterTitle" : "secondName"}>
+      <Label
+        for={selectedType === "Book Chapter" ? "chapterTitle" : "secondName"}
+      >
         {#if selectedType === "Book Chapter"}
           Chapter Title
         {:else if selectedType === "Conference Presentation"}
@@ -318,7 +317,11 @@
           />
         {/if}
       {:else}
-        <p>{selectedType === "Book Chapter" ? (literature.chapterTitle || "") : (literature.secondName || "")}</p>
+        <p>
+          {selectedType === "Book Chapter"
+            ? literature.chapterTitle || ""
+            : literature.secondName || ""}
+        </p>
       {/if}
     </div>
   {/if}

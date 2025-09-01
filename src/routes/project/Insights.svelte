@@ -2,8 +2,8 @@
   import KeywordAnalysis from "$lib/components/keyword-analysis/KeywordAnalysis.svelte";
   import { onMount } from "svelte";
   import { navigate } from "svelte-routing";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
-  import { API_BASE_URL } from "$lib/config";
+  import { projectStore } from "$lib/stores/ProjectStore";
+  import { api } from "$lib/services/api-client";
   import { Info } from "lucide-svelte";
   import * as Tooltip from "$lib/components/ui/tooltip";
 
@@ -13,16 +13,7 @@
   // Check if user has access to analysis features
   async function checkAnalysisAccessCapability() {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/capabilities/analysis_access`,
-        { credentials: "include" }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to check analysis access capability");
-      }
-
-      const data = await response.json();
+      const data = await api.get('/capabilities/analysis_access');
       hasAccess = data.allowed;
 
       // If user doesn't have access, redirect to overview

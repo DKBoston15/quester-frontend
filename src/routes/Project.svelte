@@ -1,6 +1,5 @@
-<!-- src/routes/Project.svelte -->
 <script lang="ts">
-  import { projectStore } from "../lib/stores/ProjectStore.svelte";
+  import { projectStore } from "$lib/stores/ProjectStore";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import ProjectSidebar from "$lib/components/ProjectSidebar.svelte";
   import { useLocation } from "svelte-routing";
@@ -19,7 +18,7 @@
   import OutcomeView from "./project/OutcomeView.svelte";
   import Chat from "./project/Chat.svelte";
   import { trackPageView } from "$lib/services/fullstory";
-  
+
   type SectionKey =
     | "overview"
     | "literature"
@@ -66,10 +65,10 @@
   // Track page views in FullStory
   $effect(() => {
     const { projectId, literatureId, modelId, outcomeId, view } = props.params;
-    
+
     // Determine section from params or default to overview
-    const section = view || 'overview';
-    
+    const section = view || "overview";
+
     trackPageView(`Project - ${section}`, {
       projectId,
       section,

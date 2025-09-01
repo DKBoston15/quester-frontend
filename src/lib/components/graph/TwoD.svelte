@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { onMount } from "svelte";
   import {
     colorCheckboxMap,
@@ -8,65 +8,98 @@
   } from "./data";
   import Button from "$lib/components/ui/button/button.svelte";
   import EmptyState from "$lib/components/ui/empty-state/EmptyState.svelte";
-  let graph;
-  let ForceGraph;
-  let labels = false;
-  let showIcons = false;
-  let stickNodes = false;
-  let Graph;
   import { groupColorMap } from "./data";
   import * as Card from "$lib/components/ui/card";
   import TypeCheckbox from "./TypeCheckbox.svelte";
   import * as Popover from "$lib/components/ui/popover";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { projectStore } from "$lib/stores/ProjectStore";
+
+  // Types for graph data
+  interface GraphNode {
+    id: string;
+    val: number;
+    group: number;
+    icon: string;
+    createdAt: string;
+    x?: number;
+    y?: number;
+    fx?: number;
+    fy?: number;
+    [key: string]: any;
+  }
+
+  interface GraphLink {
+    source: string | GraphNode;
+    target: string | GraphNode;
+    value?: number;
+    [key: string]: any;
+  }
+
+  interface GraphData {
+    nodes: GraphNode[];
+    links: GraphLink[];
+  }
+
+  interface TypeVisibility {
+    [key: string]: boolean;
+  }
 
   const projectId = projectStore.currentProject?.id;
 
-  let selectedNodes = new Set();
-  let selectedNode = null;
-  let originalGraphData;
-  let timelapseInterval;
+  let graph: HTMLDivElement;
+  let ForceGraph: any;
+  let labels = false;
+  let showIcons = false;
+  let stickNodes = false;
+  let Graph: any;
+  let selectedNodes = new Set<GraphNode>();
+  let selectedNode: GraphNode | null = null;
+  let originalGraphData: GraphData;
+  let timelapseInterval: NodeJS.Timeout;
   let currentNodeIndex = 0;
-  let selectedNodesForRendering = new Set();
+  let selectedNodesForRendering = new Set<string>();
 
   onMount(async () => {
     if (typeof window !== "undefined") {
       const module = await import("force-graph");
       ForceGraph = module.default;
-      Graph = ForceGraph()(graph)
+      Graph = (ForceGraph as any)()(graph)
         .nodeId("id")
         .nodeVal("val")
         .nodeLabel("id")
-        .nodeColor((node) =>
-          node === selectedNode ? "pink" : groupColorMap[node.group]
+        .nodeColor((node: GraphNode) =>
+          node === selectedNode ? "pink" : groupColorMap[node.group as keyof typeof groupColorMap]
         )
-        .linkColor((link) =>
+        .linkColor((link: GraphLink) =>
           link.source === selectedNode || link.target === selectedNode
             ? "#0d52f5"
             : "#757575"
         )
-        .linkWidth((link) =>
+        .linkWidth((link: GraphLink) =>
           link.source === selectedNode || link.target === selectedNode ? 4 : 1
         )
         .linkSource("source")
         .linkTarget("target")
         .linkDirectionalParticleColor(() => "#0d52f5")
-        .onNodeClick((node, event) => {
+        .onNodeClick((node: GraphNode, event: MouseEvent) => {
           handleNodeClick(node, event);
         })
-        .onNodeDrag((node, translate) => {
+        .onNodeDrag((node: GraphNode, translate: { x: number; y: number }) => {
           if (selectedNodes.has(node)) {
             [...selectedNodes]
               .filter((selNode) => selNode !== node)
-              .forEach((node) =>
+              .forEach((dragNode) =>
                 ["x", "y"].forEach(
-                  (coord) =>
-                    (node[`f${coord}`] = node[coord] + translate[coord])
+                  (coord) => {
+                    const coordKey = coord as 'x' | 'y';
+                    const fCoordKey = `f${coord}` as 'fx' | 'fy';
+                    dragNode[fCoordKey] = (dragNode[coordKey] || 0) + translate[coordKey];
+                  }
                 )
               );
           }
         })
-        .onNodeDragEnd((node) => {
+        .onNodeDragEnd((node: GraphNode) => {
           if (selectedNodes.has(node)) {
             [...selectedNodes].forEach((selNode) => {
               if (stickNodes) {
@@ -92,7 +125,7 @@
         Graph.d3Force("charge").strength(-30);
         Graph.d3Force("link").strength();
 
-        const graphData = await createGraphData(projectId);
+        const graphData = await createGraphData(projectId!);
         originalGraphData = graphData;
         // Initialize with both literature and keyword nodes visible
         const initialNodes = graphData.nodes.filter(
@@ -105,21 +138,24 @@
         const initialLinks = graphData.links
           .filter(
             (link) =>
-              visibleNodeIds.has(link.source) && visibleNodeIds.has(link.target)
+              visibleNodeIds.has(typeof link.source === 'string' ? link.source : (link.source as any).id) && 
+              visibleNodeIds.has(typeof link.target === 'string' ? link.target : (link.target as any).id)
           )
           .map((link) => {
             // Find the actual node objects from our filtered nodes
+            const sourceId = typeof link.source === 'string' ? link.source : (link.source as any).id;
+            const targetId = typeof link.target === 'string' ? link.target : (link.target as any).id;
             const sourceNode = initialNodes.find(
-              (node) => node.id === link.source
+              (node) => node.id === sourceId
             );
             const targetNode = initialNodes.find(
-              (node) => node.id === link.target
+              (node) => node.id === targetId
             );
 
             return {
               ...link,
-              source: sourceNode,
-              target: targetNode,
+              source: sourceNode!,
+              target: targetNode!,
             };
           });
 
@@ -133,10 +169,10 @@
     }
   });
 
-  function addParticleEffects(node) {
+  function addParticleEffects(node: GraphNode) {
     // Add directional particles on the links connected to the selected node
     if (Graph) {
-      Graph.linkDirectionalParticles((link) => {
+      Graph.linkDirectionalParticles((link: GraphLink) => {
         if (link.source === node || link.target === node) {
           return 4; // Number of particles
         }
@@ -146,10 +182,10 @@
     }
   }
 
-  function handleNodeClick(node, event) {
+  function handleNodeClick(node: GraphNode, event: MouseEvent) {
     selectedNode = node;
-    Graph.nodeColor(Graph.nodeColor());
-    Graph.linkColor(Graph.linkColor());
+    Graph.nodeColor(Graph.nodeColor() as any);
+    Graph.linkColor(Graph.linkColor() as any);
     Graph.linkDirectionalParticles(0);
     addParticleEffects(node);
 
@@ -162,8 +198,8 @@
             ? selectedNodes.delete(node)
             : selectedNodes.add(node);
         }
-        Graph.nodeColor((node) =>
-          selectedNodes.has(node) ? "orange" : groupColorMap[node.group]
+        Graph.nodeColor((node: GraphNode) =>
+          selectedNodes.has(node) ? "orange" : groupColorMap[node.group as keyof typeof groupColorMap]
         );
       } else {
         Graph.centerAt(node.x, node.y, 1000);
@@ -172,10 +208,10 @@
     }
   }
 
-  let typeVisibility = nodeTypes.reduce((acc, type) => {
+  let typeVisibility: TypeVisibility = nodeTypes.reduce((acc, type) => {
     acc[type] = type === "keyword" || type === "literature"; // Show both keyword and literature by default
     return acc;
-  }, {});
+  }, {} as TypeVisibility);
 
   function renderIcons() {
     const imgCache = new Map();
@@ -207,23 +243,23 @@
     }
 
     function renderNodesWithIcons() {
-      Graph.nodeCanvasObject((node, ctx) => {
+      Graph.nodeCanvasObject((node: GraphNode, ctx: CanvasRenderingContext2D) => {
         const size = 24;
         const img = imgCache.get(node.icon);
 
         if (img) {
-          ctx.drawImage(img, node.x - size / 2, node.y - size / 2, size, size);
+          ctx.drawImage(img, (node.x || 0) - size / 2, (node.y || 0) - size / 2, size, size);
         } else {
           // Fallback if image is not available
           ctx.beginPath();
-          ctx.arc(node.x, node.y, size / 2, 0, 2 * Math.PI);
-          ctx.fillStyle = groupColorMap[node.group];
+          ctx.arc(node.x || 0, node.y || 0, size / 2, 0, 2 * Math.PI);
+          ctx.fillStyle = groupColorMap[node.group as keyof typeof groupColorMap];
           ctx.fill();
         }
-      }).nodePointerAreaPaint((node, color, ctx) => {
+      }).nodePointerAreaPaint((node: GraphNode, color: string, ctx: CanvasRenderingContext2D) => {
         const size = 24;
         ctx.fillStyle = color;
-        ctx.fillRect(node.x - size / 2, node.y - size / 2, size, size);
+        ctx.fillRect((node.x || 0) - size / 2, (node.y || 0) - size / 2, size, size);
       });
 
       Graph.d3ReheatSimulation();
@@ -232,7 +268,7 @@
 
   function addLabels() {
     if (labels) {
-      Graph.nodeCanvasObject((node, ctx, globalScale) => {
+      Graph.nodeCanvasObject((node: GraphNode, ctx: CanvasRenderingContext2D, globalScale: number) => {
         const label = node.id;
         const fontSize = 16 / globalScale;
         ctx.font = `${fontSize}px Sans-Serif`;
@@ -246,32 +282,34 @@
         ctx.fillStyle = document.documentElement.classList.contains("dark")
           ? "white"
           : "black";
-        ctx.fillText(label, node.x, node.y);
+        ctx.fillText(label, node.x || 0, node.y || 0);
 
         node.__bckgDimensions = bckgDimensions;
-      }).nodePointerAreaPaint((node, color, ctx) => {
+      }).nodePointerAreaPaint((node: GraphNode, color: string, ctx: CanvasRenderingContext2D) => {
         ctx.fillStyle = color;
         const bckgDimensions = node.__bckgDimensions;
-        bckgDimensions &&
+        if (bckgDimensions) {
           ctx.fillRect(
-            node.x - bckgDimensions[0] / 2,
-            node.y - bckgDimensions[1] / 2,
-            ...bckgDimensions
+            (node.x || 0) - bckgDimensions[0] / 2,
+            (node.y || 0) - bckgDimensions[1] / 2,
+            bckgDimensions[0],
+            bckgDimensions[1]
           );
+        }
       });
     } else {
       Graph.nodeCanvasObject(null).nodePointerAreaPaint(null);
     }
   }
 
-  function toggleTypeVisibility(type) {
+  function toggleTypeVisibility(type: string) {
     typeVisibility[type] = !typeVisibility[type];
     typeVisibility = typeVisibility;
     updateGraphData(type);
     Graph.d3ReheatSimulation();
   }
 
-  function updateGraphData(type) {
+  function updateGraphData(type: string) {
     if (typeVisibility[type]) {
       // Adding nodes of the selected type
       let currentData = Graph.graphData();
@@ -279,35 +317,40 @@
 
       if (selectedNodesForRendering.size > 0) {
         addedNodes = originalGraphData.nodes.filter(
-          (node) => node.icon === type && selectedNodesForRendering.has(node.id)
+          (node: GraphNode) => node.icon === type && selectedNodesForRendering.has(node.id)
         );
       } else {
         addedNodes = originalGraphData.nodes.filter(
-          (node) => node.icon === type
+          (node: GraphNode) => node.icon === type
         );
       }
 
       // Combine current and new nodes
-      const updatedNodes = [...currentData.nodes, ...addedNodes];
-      const visibleNodeIds = new Set(updatedNodes.map((node) => node.id));
+      const updatedNodes = [...currentData.nodes, ...addedNodes] as GraphNode[];
+      const visibleNodeIds = new Set(updatedNodes.map((node: GraphNode) => node.id));
 
       // Get all links where both source and target are in our visible nodes
       const updatedLinks = originalGraphData.links
         .filter(
-          (link) =>
-            visibleNodeIds.has(link.source) && visibleNodeIds.has(link.target)
+          (link) => {
+            const sourceId = typeof link.source === 'string' ? link.source : (link.source as any).id;
+            const targetId = typeof link.target === 'string' ? link.target : (link.target as any).id;
+            return visibleNodeIds.has(sourceId) && visibleNodeIds.has(targetId);
+          }
         )
         .map((link) => {
+          const sourceId = typeof link.source === 'string' ? link.source : (link.source as any).id;
+          const targetId = typeof link.target === 'string' ? link.target : (link.target as any).id;
           const sourceNode = updatedNodes.find(
-            (node) => node.id === link.source
+            (node) => node.id === sourceId
           );
           const targetNode = updatedNodes.find(
-            (node) => node.id === link.target
+            (node) => node.id === targetId
           );
           return {
             ...link,
-            source: sourceNode,
-            target: targetNode,
+            source: sourceNode!,
+            target: targetNode!,
           };
         });
 
@@ -322,32 +365,35 @@
 
       if (selectedNodesForRendering.size > 0) {
         filteredNodes = currentData.nodes.filter(
-          (node) =>
+          (node: GraphNode) =>
             node.icon !== type || !selectedNodesForRendering.has(node.id)
         );
       } else {
-        filteredNodes = currentData.nodes.filter((node) => node.icon !== type);
+        filteredNodes = currentData.nodes.filter((node: GraphNode) => node.icon !== type);
       }
 
-      const visibleNodeIds = new Set(filteredNodes.map((node) => node.id));
+      const visibleNodeIds = new Set(filteredNodes.map((node: GraphNode) => node.id));
 
       // Filter links to only keep those between remaining visible nodes
       const filteredLinks = originalGraphData.links
         .filter(
-          (link) =>
-            visibleNodeIds.has(link.source) && visibleNodeIds.has(link.target)
+          (link) => {
+            const sourceId = typeof link.source === 'string' ? link.source : (link.source as any).id;
+            const targetId = typeof link.target === 'string' ? link.target : (link.target as any).id;
+            return visibleNodeIds.has(sourceId) && visibleNodeIds.has(targetId);
+          }
         )
         .map((link) => {
           const sourceNode = filteredNodes.find(
-            (node) => node.id === link.source
+            (node: GraphNode) => node.id === (typeof link.source === 'string' ? link.source : (link.source as any).id)
           );
           const targetNode = filteredNodes.find(
-            (node) => node.id === link.target
+            (node: GraphNode) => node.id === (typeof link.target === 'string' ? link.target : (link.target as any).id)
           );
           return {
             ...link,
-            source: sourceNode,
-            target: targetNode,
+            source: sourceNode!,
+            target: targetNode!,
           };
         });
 
@@ -365,19 +411,24 @@
     const sortedNodes =
       selectedNodesForRendering.size > 0
         ? [...selectedNodesForRendering].map((nodeId) =>
-            filteredNodes.find((node) => node.id === nodeId)
-          )
+            filteredNodes.find((node: GraphNode) => node.id === nodeId)
+          ).filter(Boolean)
         : filteredNodes;
 
-    sortedNodes.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    const validSortedNodes = sortedNodes.filter(Boolean) as GraphNode[];
+    validSortedNodes.sort((a: GraphNode, b: GraphNode) => {
+      const aTime = a?.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bTime = b?.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return aTime - bTime;
+    });
 
     clearInterval(timelapseInterval);
     currentNodeIndex = 0;
     Graph.graphData({ nodes: [], links: [] });
 
     timelapseInterval = setInterval(() => {
-      if (currentNodeIndex < sortedNodes.length) {
-        const currentNode = sortedNodes[currentNodeIndex];
+      if (currentNodeIndex < validSortedNodes.length) {
+        const currentNode = validSortedNodes[currentNodeIndex];
         let graphData = Graph.graphData();
         let { nodes, links } = graphData;
 
@@ -385,19 +436,26 @@
         nodes.push(currentNode);
 
         // Create a set of visible node IDs for efficient lookup
-        const visibleNodeIds = new Set(nodes.map((node) => node.id));
+        const visibleNodeIds = new Set(nodes.map((node: GraphNode) => node.id));
 
         // Find all links that could connect to currently visible nodes
         const newLinks = originalGraphData.links
           .filter(
-            (link) =>
-              visibleNodeIds.has(link.source) && visibleNodeIds.has(link.target)
+            (link) => {
+              const sourceId = typeof link.source === 'string' ? link.source : (link.source as any).id;
+              const targetId = typeof link.target === 'string' ? link.target : (link.target as any).id;
+              return visibleNodeIds.has(sourceId) && visibleNodeIds.has(targetId);
+            }
           )
-          .map((link) => ({
-            source: nodes.find((node) => node.id === link.source),
-            target: nodes.find((node) => node.id === link.target),
-            value: link.value,
-          }))
+          .map((link) => {
+            const sourceId = typeof link.source === 'string' ? link.source : (link.source as any).id;
+            const targetId = typeof link.target === 'string' ? link.target : (link.target as any).id;
+            return {
+              source: nodes.find((node: GraphNode) => node.id === sourceId),
+              target: nodes.find((node: GraphNode) => node.id === targetId),
+              value: link.value,
+            };
+          })
           .filter((link) => link.source && link.target); // Ensure both endpoints exist
 
         Graph.graphData({
@@ -420,7 +478,7 @@
       <div class="absolute z-40">
         <div class="flex w-full justify-between">
           <div class="flex items-center space-x-1 ml-4">
-            <Popover.Root portal={null}>
+            <Popover.Root>
               <Popover.Trigger>
                 <Button
                   variant="outline"
@@ -476,7 +534,7 @@
                 </Card.Root>
               </Popover.Content>
             </Popover.Root>
-            <Popover.Root portal={null}>
+            <Popover.Root>
               <Popover.Trigger>
                 <Button
                   variant="outline"
@@ -501,8 +559,8 @@
                       {#each nodeTypes as type}
                         <div class="flex items-center space-x-2 bg-[#1F2024]">
                           <TypeCheckbox
-                            {type}
-                            color={colorCheckboxMap[type]}
+                            type={type as keyof typeof colorCheckboxMap}
+                            color={colorCheckboxMap[type as keyof typeof colorCheckboxMap]}
                             bind:checked={typeVisibility[type]}
                             onToggle={toggleTypeVisibility}
                           />

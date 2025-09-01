@@ -1,6 +1,5 @@
-<!-- src/lib/stores/OutcomeStore.svelte -->
-<script lang="ts" module>
-  import { API_BASE_URL } from "$lib/config";
+
+  import { api } from "../services/api-client";
 
   interface Outcome {
     id: string;
@@ -1263,18 +1262,7 @@
       error = null;
 
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/outcome/project/${projectId}`,
-          {
-            credentials: "include",
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`Failed to load outcomes (${response.status})`);
-        }
-
-        const data = await response.json();
+        const data = await api.get<Outcome[]>(`/outcome/project/${projectId}`);
         outcomes = data;
       } catch (err) {
         console.error("Error loading outcomes:", err);
@@ -1301,15 +1289,7 @@
       this.setError(null);
 
       try {
-        const response = await fetch(`${API_BASE_URL}/outcome/${outcomeId}`, {
-          credentials: "include",
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to load outcome (${response.status})`);
-        }
-
-        const data = await response.json();
+        const data = await api.get<Outcome>(`/outcome/${outcomeId}`);
         if (!data) {
           throw new Error("Outcome not found");
         }
@@ -1359,20 +1339,7 @@
           }
         }
 
-        const response = await fetch(`${API_BASE_URL}/outcome`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify(data),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to create outcome (${response.status})`);
-        }
-
-        const newOutcome = await response.json();
+        const newOutcome = await api.post<Outcome>(`/outcome`, data);
         outcomes = [newOutcome, ...outcomes];
         currentOutcome = newOutcome;
         return newOutcome;
@@ -1387,20 +1354,7 @@
 
     async updateOutcome(id: string, data: Partial<Outcome>) {
       try {
-        const response = await fetch(`${API_BASE_URL}/outcome/${id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify(data),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to update outcome (${response.status})`);
-        }
-
-        const result = await response.json();
+        const result = await api.put<{outcome: Outcome} | Outcome>(`/outcome/${id}`, data);
         const updatedOutcome = result.outcome || result; // Handle both wrapped and unwrapped responses
 
         // Update the outcomes array
@@ -1424,14 +1378,7 @@
 
     async deleteOutcome(id: string) {
       try {
-        const response = await fetch(`${API_BASE_URL}/outcome/${id}`, {
-          method: "DELETE",
-          credentials: "include",
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to delete outcome (${response.status})`);
-        }
+        await api.delete<void>(`/outcome/${id}`);
 
         outcomes = outcomes.filter((outcome) => outcome.id !== id);
         if (currentOutcome?.id === id) {
@@ -1457,4 +1404,4 @@
       isLoading = false;
     },
   };
-</script>
+

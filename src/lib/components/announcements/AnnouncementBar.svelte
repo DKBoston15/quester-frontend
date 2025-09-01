@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { announcementStore } from '$lib/stores/AnnouncementStore.svelte'
+  import { announcementStore } from '$lib/stores/AnnouncementStore'
   import { Button } from '$lib/components/ui/button'
   import { Card } from '$lib/components/ui/card'
   import { Sparkles, ChevronRight, History } from 'lucide-svelte'
@@ -146,12 +146,13 @@
 {/if}
 
 <!-- Announcement History Modal -->
-<AnnouncementHistory bind:open={showHistoryModal} />
+<AnnouncementHistory bind:open={showHistoryModal} onOpenChange={(open) => showHistoryModal = open} />
 
 <style>
   .line-clamp-1 {
     display: -webkit-box;
     -webkit-line-clamp: 1;
+    line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }

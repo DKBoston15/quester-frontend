@@ -1,7 +1,6 @@
-<!-- src/routes/project/OutcomeView.svelte -->
 <script lang="ts">
   import { onMount } from "svelte";
-  import { outcomeStore } from "$lib/stores/OutcomeStore.svelte";
+  import { outcomeStore } from "$lib/stores/OutcomeStore";
   import OutcomeEditor from "$lib/components/outcomes/OutcomeEditor.svelte";
 
   const props = $props<{

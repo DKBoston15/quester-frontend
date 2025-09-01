@@ -9,5 +9,6 @@ export default defineConfig({
     alias: {
       $lib: path.resolve("./src/lib"),
     },
+    extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.svelte', '.svelte.ts'],
   },
 })

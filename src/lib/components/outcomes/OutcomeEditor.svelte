@@ -1,11 +1,10 @@
-<!-- src/lib/components/outcomes/OutcomeEditor.svelte -->
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
-  import { outcomeStore } from "$lib/stores/OutcomeStore.svelte";
+  import { outcomeStore } from "$lib/stores/OutcomeStore";
   import ShadEditor from "$lib/components/shad-editor/shad-editor.svelte";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { Badge } from "$lib/components/ui/badge";
-  import { auth } from "$lib/stores/AuthStore.svelte";
+  import { auth } from "$lib/stores/AuthStore";
 
   interface Outcome {
     id: string;
@@ -19,12 +18,6 @@
     userId: string;
   }
 
-  interface OutcomeResponse {
-    message: string;
-    outcome: Outcome;
-  }
-
-  // Helper function to parse content
   function parseContent(rawContent: any) {
     if (!rawContent) {
       return {
@@ -87,11 +80,14 @@
             return;
           }
 
-          const updatedOutcome = await outcomeStore.updateOutcome(currentOutcome.id, {
-            content: currentContentString,
-            name,
-            type: currentOutcome.type,
-          });
+          const updatedOutcome = await outcomeStore.updateOutcome(
+            currentOutcome.id,
+            {
+              content: currentContentString,
+              name,
+              type: currentOutcome.type,
+            }
+          );
 
           // Ensure we maintain all fields when updating currentOutcome
           if (updatedOutcome) {

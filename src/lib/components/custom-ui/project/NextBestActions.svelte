@@ -1,4 +1,3 @@
-<!-- src/lib/components/custom-ui/project/NextBestActions.svelte -->
 <script lang="ts">
   import * as Card from "$lib/components/ui/card";
   import * as Tabs from "$lib/components/ui/tabs";
@@ -14,17 +13,12 @@
   import { quintOut } from "svelte/easing";
   import { navigate } from "svelte-routing";
   import { createEventDispatcher } from "svelte";
-  import {
-    AlertCircle,
-    CheckCircle2,
-    Filter,
-    ChevronRight,
-  } from "lucide-svelte";
+  import { AlertCircle, Filter, ChevronRight } from "lucide-svelte";
   import EmptyState from "$lib/components/ui/empty-state/EmptyState.svelte";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
-  import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
+  import { projectStore } from "$lib/stores/ProjectStore";
+  import { literatureStore } from "$lib/stores/LiteratureStore";
   import type { Literature } from "$lib/types/literature";
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
 
   const dispatch = createEventDispatcher<{
     literatureSelect: Literature;
@@ -78,18 +72,9 @@
     error = null;
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/projects/${projectStore.currentProject.id}/next-actions`,
-        {
-          credentials: "include",
-        }
+      nextActions = await api.get(
+        `/projects/${projectStore.currentProject.id}/next-actions`
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch next actions");
-      }
-
-      nextActions = await response.json();
     } catch (err) {
       console.error("Error fetching next actions:", err);
       error = err instanceof Error ? err.message : "An error occurred";

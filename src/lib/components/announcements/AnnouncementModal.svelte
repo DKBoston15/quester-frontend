@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { announcementStore } from "$lib/stores/AnnouncementStore.svelte";
-  import type { Announcement } from "$lib/stores/AnnouncementStore.svelte";
+  import { announcementStore } from "$lib/stores/AnnouncementStore";
+  import type { Announcement } from "$lib/stores/AnnouncementStore";
   import {
     Dialog,
     DialogContent,
@@ -10,7 +10,6 @@
     DialogFooter,
   } from "$lib/components/ui/dialog";
   import { Button } from "$lib/components/ui/button";
-  import { Badge } from "$lib/components/ui/badge";
   import { Info, AlertTriangle, CheckCircle, AlertCircle } from "lucide-svelte";
 
   // Component registry for different announcement types
@@ -18,7 +17,7 @@
   import AnnouncementTwo from "./AnnouncementTwo.svelte";
   import AnnouncementLaunch from "./AnnouncementLaunch.svelte";
 
-  const announcementComponents = {
+  const announcementComponents: Record<string, any> = {
     "announcement-one": AnnouncementOne,
     "announcement-two": AnnouncementTwo,
     "announcement-launch": AnnouncementLaunch,
@@ -75,7 +74,7 @@
   // Determine which component to render based on announcement metadata
   function getAnnouncementComponent(announcement: Announcement) {
     const componentType = announcement.metadata?.componentType;
-    return announcementComponents[componentType] || null;
+    return componentType ? announcementComponents[componentType] || null : null;
   }
 
   // Get modal size based on announcement type
@@ -100,10 +99,10 @@
           <div
             class={`p-2 rounded-full ${typeColors[currentAnnouncement.type]}`}
           >
-            <svelte:component
-              this={typeIcons[currentAnnouncement.type]}
-              class="h-5 w-5"
-            />
+            {#if typeIcons[currentAnnouncement.type]}
+              {@const IconComponent = typeIcons[currentAnnouncement.type]}
+              <IconComponent class="h-5 w-5" />
+            {/if}
           </div>
           <div class="flex-1">
             <DialogTitle class="text-xl font-semibold text-left">
@@ -116,8 +115,8 @@
       <div class="flex-1 overflow-y-auto py-4">
         {#if getAnnouncementComponent(currentAnnouncement)}
           <!-- Render custom announcement component -->
-          <svelte:component
-            this={getAnnouncementComponent(currentAnnouncement)}
+          {@const AnnouncementComponent = getAnnouncementComponent(currentAnnouncement)}
+          <AnnouncementComponent
             announcement={currentAnnouncement}
             onAction={handleCustomAction}
           />
@@ -190,18 +189,36 @@
 
   /* Enhanced contrast for announcement content */
   .prose :global(p) {
-    @apply text-gray-800 dark:text-gray-200;
+    color: rgb(31 41 55);
+  }
+  
+  :global(.dark) .prose :global(p) {
+    color: rgb(229 231 235);
   }
 
   .prose :global(ul li) {
-    @apply text-gray-700 dark:text-gray-300;
+    color: rgb(55 65 81);
+  }
+  
+  :global(.dark) .prose :global(ul li) {
+    color: rgb(209 213 219);
   }
 
   .prose :global(ol li) {
-    @apply text-gray-700 dark:text-gray-300;
+    color: rgb(55 65 81);
+  }
+  
+  :global(.dark) .prose :global(ol li) {
+    color: rgb(209 213 219);
   }
 
   .prose :global(strong) {
-    @apply text-gray-900 dark:text-gray-100 font-semibold;
+    color: rgb(17 24 39);
+    font-weight: 600;
+  }
+  
+  :global(.dark) .prose :global(strong) {
+    color: rgb(243 244 246);
+    font-weight: 600;
   }
 </style>

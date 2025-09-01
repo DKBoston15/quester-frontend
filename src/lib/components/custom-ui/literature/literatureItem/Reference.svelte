@@ -1,4 +1,3 @@
-<!-- src/lib/components/custom-ui/literature/literatureItem/Reference.svelte -->
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
   import * as Card from "$lib/components/ui/card";
@@ -86,9 +85,10 @@
       secondName: literature?.secondName ?? "",
       chapterTitle: literature?.chapterTitle ?? "",
       url: literature?.link ?? "",
-      type: typeof literature?.type === "string" 
-        ? { label: literature.type, value: literature.type }
-        : literature?.type ?? { label: "", value: "" },
+      type:
+        typeof literature?.type === "string"
+          ? { label: literature.type, value: literature.type }
+          : (literature?.type ?? { label: "", value: "" }),
     };
   });
 
@@ -97,15 +97,15 @@
       const parts = author.split(", ");
       const lastName = parts[0] || "";
       const firstName = parts[1] || "";
-      
+
       if (!firstName || firstName.trim() === "") {
         return lastName;
       }
-      
+
       const formattedInitials = firstName
         .trim()
         .split(" ")
-        .filter(name => name.length > 0)
+        .filter((name) => name.length > 0)
         .map((initial) => `${initial.charAt(0)}.`)
         .join(" ");
       return `${lastName}, ${formattedInitials}`;
@@ -118,15 +118,15 @@
       const parts = editor.split(", ");
       const lastName = parts[0] || "";
       const firstName = parts[1] || "";
-      
+
       if (!firstName || firstName.trim() === "") {
         return lastName;
       }
-      
+
       const formattedInitials = firstName
         .trim()
         .split(" ")
-        .filter(name => name.length > 0)
+        .filter((name) => name.length > 0)
         .map((initial) => `${initial.charAt(0)}.`)
         .join(" ");
       return `${formattedInitials} ${lastName}`;
@@ -180,7 +180,7 @@
     if (citation.type.value === "Book Chapter") {
       // For book chapters, citation.chapterTitle contains the chapter title and citation.title contains book title
       formattedChapterTitle = `${citation.chapterTitle || ""}.`; // Chapter title comes from chapterTitle field
-      
+
       let formattedEditors = "";
       if (citation.editors && citation.editors.length > 0) {
         if (citation.editors.length === 1) {
@@ -189,8 +189,13 @@
           formattedEditors = `${formatEditorName(citation.editors[0])} & ${formatEditorName(citation.editors[1])} (Eds.),`;
         } else {
           // For 3 or more editors
-          const formattedEditorsList = citation.editors.slice(0, -1).map(formatEditorName).join(", ");
-          const lastEditor = formatEditorName(citation.editors[citation.editors.length - 1]);
+          const formattedEditorsList = citation.editors
+            .slice(0, -1)
+            .map(formatEditorName)
+            .join(", ");
+          const lastEditor = formatEditorName(
+            citation.editors[citation.editors.length - 1]
+          );
           formattedEditors = `${formattedEditorsList}, & ${lastEditor} (Eds.),`;
         }
       }

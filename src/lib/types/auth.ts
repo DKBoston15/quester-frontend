@@ -1,4 +1,3 @@
-// src/lib/types/auth.ts
 export type User = {
   id: number;
   email: string;
@@ -7,20 +6,6 @@ export type User = {
   avatarUrl: string | null;
   orcidUrl: string | null;
 };
-
-// Add a type assertion function to validate user data
-export function isUser(data: any): data is User {
-  return (
-    typeof data === "object" &&
-    data !== null &&
-    typeof data.id === "number" &&
-    typeof data.email === "string" &&
-    typeof data.firstName === "string" &&
-    typeof data.lastName === "string" &&
-    (data.avatarUrl === null || typeof data.avatarUrl === "string") &&
-    (data.orcidUrl === null || typeof data.orcidUrl === "string")
-  );
-}
 
 export interface Organization {
   id: string;

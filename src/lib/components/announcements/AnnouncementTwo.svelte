@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Announcement } from '$lib/stores/AnnouncementStore.svelte'
+  import type { Announcement } from '$lib/stores/AnnouncementStore'
   import { Button } from '$lib/components/ui/button'
   import { Card, CardContent } from '$lib/components/ui/card'
   import { Badge } from '$lib/components/ui/badge'

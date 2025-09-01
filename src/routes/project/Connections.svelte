@@ -8,8 +8,8 @@
   import * as Card from "$lib/components/ui/card";
   import { onMount } from "svelte";
   import { navigate } from "svelte-routing";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
-  import { API_BASE_URL } from "$lib/config";
+  import { projectStore } from "$lib/stores/ProjectStore";
+  import { api } from "$lib/services/api-client";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
   import { GraduationCap } from "lucide-svelte";
@@ -24,16 +24,7 @@
   // Check if user has access to graph visualization features
   async function checkGraphAccessCapability() {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/capabilities/graph_access`,
-        { credentials: "include" }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to check graph access capability");
-      }
-
-      const data = await response.json();
+      const data = await api.get('/capabilities/graph_access');
       hasAccess = data.allowed;
 
       // If user doesn't have access, redirect to overview

@@ -1,14 +1,11 @@
-<!-- src/lib/components/project/GrantDetails.svelte -->
 <script lang="ts">
   import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
-    CardFooter,
   } from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
-  import { Badge } from "$lib/components/ui/badge";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { EmptyState } from "$lib/components/ui/empty-state";
   import {
@@ -18,8 +15,8 @@
     ChevronDownIcon,
     ChevronUpIcon,
   } from "lucide-svelte";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
-  import { grantStore } from "$lib/stores/GrantStore.svelte";
+  import { projectStore } from "$lib/stores/ProjectStore";
+  import { grantStore } from "$lib/stores/GrantStore";
   import { toast } from "svelte-sonner";
   import GrantForm from "./GrantForm.svelte";
   import GrantListItem from "./GrantListItem.svelte";

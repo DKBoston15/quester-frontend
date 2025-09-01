@@ -1,6 +1,6 @@
-import { projectStore } from "$lib/stores/ProjectStore.svelte";
-import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
-import { notesStore } from "$lib/stores/NotesStore.svelte";
+import { projectStore } from "$lib/stores/ProjectStore";
+import { literatureStore } from "$lib/stores/LiteratureStore";
+import { notesStore } from "$lib/stores/NotesStore";
 
 export const groupColorMap = {
   1: "#006eff",
@@ -52,14 +52,14 @@ const getNodeSize = (group: string) => {
   }
 };
 
-export function stripHtmlTags(content: string) {
+function stripHtmlTags(content: string) {
   if (content) {
     return content.replace(/<[^>]*>/g, "");
   }
   return content;
 }
 
-export async function retrieveGraphData(urlProjectId: string) {
+async function retrieveGraphData(urlProjectId: string) {
   // Check if data is already loaded in stores
   const storesLoaded = {
     project:

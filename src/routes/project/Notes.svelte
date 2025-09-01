@@ -1,8 +1,7 @@
-<!-- src/routes/project/Notes.svelte -->
 <script lang="ts">
   import { onMount } from "svelte";
-  import { notesStore } from "$lib/stores/NotesStore.svelte";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { notesStore } from "$lib/stores/NotesStore";
+  import { projectStore } from "$lib/stores/ProjectStore";
   import type { Note } from "$lib/types";
   import NoteList from "$lib/components/notes/NoteList.svelte";
   import NoteEditor from "$lib/components/notes/NoteEditor.svelte";
@@ -10,7 +9,7 @@
   import { Tabs, TabsList, TabsTrigger } from "$lib/components/ui/tabs";
   import { Layout, Maximize2, Minimize2, Plus, Info } from "lucide-svelte";
   import { EmptyState } from "$lib/components/ui/empty-state";
-  import { auth } from "$lib/stores/AuthStore.svelte";
+  import { auth } from "$lib/stores/AuthStore";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";

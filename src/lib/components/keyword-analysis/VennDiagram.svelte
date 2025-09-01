@@ -1,4 +1,3 @@
-<!-- VennDiagram.svelte -->
 <script lang="ts">
   import { onMount, createEventDispatcher } from "svelte";
   import * as d3 from "d3";
@@ -390,15 +389,15 @@
     const tripleOverlap = getTripleFrequency(kw1, kw2, kw3);
 
     // CORRECTED: Use actual Google Scholar search counts (consistent with frequency tables)
-    // The Venn diagram regions now show the actual search result counts instead of 
+    // The Venn diagram regions now show the actual search result counts instead of
     // calculated exclusive regions, since Google Scholar data represents overlapping
     // search results, not mutually exclusive document sets.
-    
+
     // Show individual search counts in outer regions
     const exclusiveA = freqs[0]; // "water" search results
-    const exclusiveB = freqs[1]; // "fire" search results  
+    const exclusiveB = freqs[1]; // "fire" search results
     const exclusiveC = freqs[2]; // "air" search results
-    
+
     // Show pair search counts in overlap regions
     const exclusiveAB = pairOverlaps[0]; // "water AND fire" search results
     const exclusiveBC = pairOverlaps[1]; // "fire AND air" search results
@@ -609,7 +608,9 @@
 <Card class="p-4">
   <h3 class="text-lg font-semibold mb-4">Keyword Overlap</h3>
   <p class="text-sm text-muted-foreground mb-4">
-    Values show Google Scholar search result counts. Numbers represent total documents containing the keywords (individual) or keyword combinations (overlaps), not exclusive regions.
+    Values show Google Scholar search result counts. Numbers represent total
+    documents containing the keywords (individual) or keyword combinations
+    (overlaps), not exclusive regions.
   </p>
   <div class="flex flex-col gap-4">
     <div class="flex flex-wrap gap-2">

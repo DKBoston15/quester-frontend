@@ -1,5 +1,3 @@
-// Custom Timeline Events Type Definitions
-
 export enum CustomEventType {
   MILESTONE = "milestone",
   DEADLINE = "deadline",

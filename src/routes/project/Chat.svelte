@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { onMount, tick } from "svelte";
+  import { onMount, onDestroy, tick } from "svelte";
   import { slide, fade } from "svelte/transition";
   import { flip } from "svelte/animate";
   import { quintOut } from "svelte/easing";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { projectStore } from "$lib/stores/ProjectStore";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { Badge } from "$lib/components/ui/badge";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import Loader2 from "lucide-svelte/icons/loader-2";
-  import { API_BASE_URL } from "$lib/config";
+  import { api, processSSEStream } from "$lib/services/api-client";
   import MarkdownIt from "markdown-it";
   
   // Icons
@@ -156,43 +156,35 @@
     }
   });
 
+  // Clean up active streams when component is destroyed
+  onDestroy(() => {
+    if (currentAbortController) {
+      currentAbortController.abort();
+      currentAbortController = null;
+    }
+  });
+
   async function loadRecentSessions() {
     if (!projectStore.currentProject?.id) return;
 
     try {
       isLoadingHistory = true;
-      const response = await fetch(
-        `${API_BASE_URL}/chat/history/${projectStore.currentProject.id}`,
-        {
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to load chat history");
-
-      const data = await response.json();
+      const data = await api.get(`/chat/history/${projectStore.currentProject.id}`);
 
       // Load first message for each session
       const sessionsWithMessages = await Promise.all(
         data.sessions.map(async (session: ChatSession) => {
           try {
-            const messageResponse = await fetch(
-              `${API_BASE_URL}/chat/history/${projectStore.currentProject?.id}?sessionId=${session.chatSessionId}`,
-              {
-                credentials: "include",
-              }
+            const messageData = await api.get(
+              `/chat/history/${projectStore.currentProject?.id}?sessionId=${session.chatSessionId}`
             );
-
-            if (messageResponse.ok) {
-              const messageData = await messageResponse.json();
-              return {
-                ...session,
-                messages: messageData.messages.filter(
-                  (msg: Message) =>
-                    msg.role === "user" || msg.role === "assistant"
-                ),
-              };
-            }
+            return {
+              ...session,
+              messages: messageData.messages.filter(
+                (msg: Message) =>
+                  msg.role === "user" || msg.role === "assistant"
+              ),
+            };
           } catch (e) {
             console.error(
               `Failed to load messages for session ${session.chatSessionId}:`,
@@ -228,18 +220,7 @@
 
     try {
       isDeleting = true;
-      const response = await fetch(
-        `${API_BASE_URL}/chat/sessions/${sessionToDelete}`,
-        {
-          method: 'DELETE',
-          credentials: 'include',
-        }
-      );
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete session');
-      }
+      await api.delete(`/chat/sessions/${sessionToDelete}`);
 
       // Remove from local state
       recentSessions = recentSessions.filter(
@@ -267,16 +248,9 @@
 
     try {
       isLoading = true;
-      const response = await fetch(
-        `${API_BASE_URL}/chat/history/${projectStore.currentProject.id}?sessionId=${sessionId}`,
-        {
-          credentials: "include",
-        }
+      const data = await api.get(
+        `/chat/history/${projectStore.currentProject.id}?sessionId=${sessionId}`
       );
-
-      if (!response.ok) throw new Error("Failed to load chat session");
-
-      const data = await response.json();
       messages = data.messages.map((msg: any) => ({
         ...msg,
         timestamp: new Date(msg.createdAt),
@@ -316,9 +290,20 @@
     }
   }
 
+  // Store current abort controller for cancellation
+  let currentAbortController: AbortController | null = null;
+
   // Handle message submission
   async function handleSubmit() {
     if (!chatInput.trim() || !projectStore.currentProject?.id) return;
+
+    // Cancel any existing stream
+    if (currentAbortController) {
+      currentAbortController.abort();
+    }
+
+    // Create new abort controller for this request
+    currentAbortController = new AbortController();
 
     isLoading = true;
     isStreaming = true;
@@ -339,19 +324,16 @@
       };
       messages = [...messages, userMsg];
 
-      const response = await fetch(
-        `${API_BASE_URL}/chat${sessionToUse ? `?chatSessionId=${sessionToUse}` : ""}`,
+      const response = await api.stream(
+        `/chat${sessionToUse ? `?chatSessionId=${sessionToUse}` : ""}`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
+          body: {
             projectId: projectStore.currentProject.id,
             message: userMessage,
             provider: "openai",
-          }),
+          },
+          signal: currentAbortController.signal, // Add abort signal
         }
       );
 
@@ -370,68 +352,59 @@
         },
       ];
 
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error("No reader available");
-
       let receivedSessionId = false;
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        // Convert the chunk to text
-        const chunk = new TextDecoder().decode(value);
-        const lines = chunk.split("\n").filter((line) => line.trim() !== "");
-
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            const content = line.slice(6);
-            if (content === "[DONE]") continue;
-
-            try {
-              const parsed = JSON.parse(content);
-
-              if (parsed.type === "metadata") {
-                if (parsed.chatSessionId && !receivedSessionId) {
-                  if (!currentChatSession) {
-                    currentChatSession = parsed.chatSessionId;
-                  }
-                  receivedSessionId = true;
+      // Use the built-in SSE stream processor for better reliability
+      await processSSEStream(response, {
+        onMessage: (data) => {
+          try {
+            if (data.type === "metadata") {
+              if (data.chatSessionId && !receivedSessionId) {
+                if (!currentChatSession) {
+                  currentChatSession = data.chatSessionId;
                 }
-                
-                // Attach sources to the last message (assistant message)
-                if (parsed.sources && parsed.sources.length > 0) {
-                  messages = messages.map((msg, i) => {
-                    if (i === messages.length - 1) {
-                      return {
-                        ...msg,
-                        sources: parsed.sources,
-                        metadata: { ...msg.metadata, sources: parsed.sources }
-                      };
-                    }
-                    return msg;
-                  });
-                }
-              } else if (parsed.type === "content") {
-                streamingContent += parsed.content;
-
-                // Update the last message with the new content
+                receivedSessionId = true;
+              }
+              
+              // Attach sources to the last message (assistant message)
+              if (data.sources && data.sources.length > 0) {
                 messages = messages.map((msg, i) => {
                   if (i === messages.length - 1) {
                     return {
                       ...msg,
-                      content: streamingContent,
+                      sources: data.sources,
+                      metadata: { ...msg.metadata, sources: data.sources }
                     };
                   }
                   return msg;
                 });
               }
-            } catch (e) {
-              console.error("Failed to parse chunk:", e);
+            } else if (data.type === "content") {
+              streamingContent += data.content;
+
+              // Update the last message with the new content
+              messages = messages.map((msg, i) => {
+                if (i === messages.length - 1) {
+                  return {
+                    ...msg,
+                    content: streamingContent,
+                  };
+                }
+                return msg;
+              });
             }
+          } catch (e) {
+            console.error("Failed to process message:", e);
           }
+        },
+        onError: (error) => {
+          console.error("Stream error:", error);
+          throw error; // Re-throw to be caught by outer try-catch
+        },
+        onComplete: () => {
+          console.log("Stream completed successfully");
         }
-      }
+      });
 
       // After streaming is complete, remove streaming state
       messages = messages.map((msg, i) =>
@@ -441,12 +414,24 @@
       // Refresh recent sessions after completion
       await loadRecentSessions();
     } catch (e) {
+      // Don't show error for aborted requests
+      if (e instanceof Error && e.name === 'AbortError') {
+        console.log("Chat request was cancelled");
+        return;
+      }
+      
       error = e instanceof Error ? e.message : "Failed to get response";
       console.error("Chat error:", e);
+      
+      // Remove the failed assistant message if it was added
+      if (messages.length > 0 && messages[messages.length - 1].role === "assistant" && messages[messages.length - 1].streaming) {
+        messages = messages.slice(0, -1);
+      }
     } finally {
       isLoading = false;
       isStreaming = false;
       streamingContent = "";
+      currentAbortController = null; // Clean up abort controller
       
       // Refocus input after submission
       if (chatInputRef) {

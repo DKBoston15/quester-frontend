@@ -1,6 +1,5 @@
-<!-- src/lib/stores/LiteratureStore.svelte -->
-<script lang="ts" module>
-  import { API_BASE_URL } from "$lib/config";
+
+  import { api } from "../services/api-client";
   import type { Literature } from "../types/literature";
 
   let literatureData = $state<Literature[]>([]);
@@ -29,18 +28,9 @@
       error = null;
 
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/literature/project/${projectId}`,
-          {
-            credentials: "include",
-          }
+        const data = await api.get<Literature[]>(
+          `/literature/project/${projectId}`
         );
-
-        if (!response.ok) {
-          throw new Error(`Failed to load literature (${response.status})`);
-        }
-
-        const data = await response.json();
         literatureData = data;
       } catch (err) {
         console.error("Error loading literature:", err);
@@ -53,20 +43,7 @@
 
     async addLiterature(literature: Partial<Literature>) {
       try {
-        const response = await fetch(`${API_BASE_URL}/literature`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify(literature),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to add literature (${response.status})`);
-        }
-
-        const newLiterature = await response.json();
+        const newLiterature = await api.post(`/literature`, literature);
         literatureData = [newLiterature.literature, ...literatureData];
         return newLiterature;
       } catch (err) {
@@ -77,20 +54,10 @@
 
     async updateLiterature(id: string, updateData: Partial<Literature>) {
       try {
-        const response = await fetch(`${API_BASE_URL}/literature/${id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify(updateData),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to update literature (${response.status})`);
-        }
-
-        const updatedLiterature = await response.json();
+        const updatedLiterature = await api.put(
+          `/literature/${id}`,
+          updateData
+        );
         literatureData = literatureData.map((item) =>
           item.id === id ? updatedLiterature.literature : item
         );
@@ -103,15 +70,7 @@
 
     async deleteLiterature(id: string) {
       try {
-        const response = await fetch(`${API_BASE_URL}/literature/${id}`, {
-          method: "DELETE",
-          credentials: "include",
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to delete literature (${response.status})`);
-        }
-
+        await api.delete(`/literature/${id}`);
         literatureData = literatureData.filter((item) => item.id !== id);
       } catch (err) {
         console.error("Error deleting literature:", err);
@@ -125,4 +84,4 @@
       isLoading = false;
     },
   };
-</script>
+
