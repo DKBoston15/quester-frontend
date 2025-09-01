@@ -81,8 +81,15 @@ export function generateRIS(options: RISExportOptions): string {
     // ID (use index + 1 for simplicity)
     lines.push(`ID  - ${index + 1}`);
 
-    // Title
-    if (item.name) {
+    // Title: for CHAP use chapter title; else use item.name
+    if (typeToRIS[item.type || 'Other'] === 'CHAP') {
+      const chapterTitle = (item as any).chapterTitle || '';
+      if (chapterTitle) {
+        lines.push(`TI  - ${chapterTitle}`);
+      } else if (item.name) {
+        lines.push(`TI  - ${item.name}`);
+      }
+    } else if (item.name) {
       lines.push(`TI  - ${item.name}`);
     }
 
@@ -130,9 +137,12 @@ export function generateRIS(options: RISExportOptions): string {
         break;
 
       case 'CHAP': // Book chapter
-        if (item.secondName) {
-          lines.push(`T2  - ${item.secondName}`); // Book title
-          lines.push(`BT  - ${item.secondName}`);
+        {
+          const bookTitle = item.secondName || item.name || '';
+          if (bookTitle) {
+            lines.push(`T2  - ${bookTitle}`); // Book title
+            lines.push(`BT  - ${bookTitle}`);
+          }
         }
         if (item.editors && item.editors.length > 0) {
           lines.push(...formatRISEditors(item.editors));

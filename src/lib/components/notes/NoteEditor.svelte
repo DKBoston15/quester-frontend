@@ -6,9 +6,9 @@
   import ShadEditor from "$lib/components/shad-editor/shad-editor.svelte";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
-  import { Save, Trash2 } from "lucide-svelte";
+  import { Save, Trash2, Pencil } from "lucide-svelte";
   import type { Content } from "@tiptap/core";
-  import { fade } from "svelte/transition";
+  // Removed fade transition (no floating save chip anymore)
   import {
     Select,
     SelectContent,
@@ -26,19 +26,22 @@
 
   // Local state
   let title = $state(note.name);
-  let content = parseNoteContent(note.content);
+  let content = $state(parseNoteContent(note.content));
   let previousContent = JSON.stringify(content);
   let isSaving = $state(false);
   let saveTimeout: NodeJS.Timeout;
   let isUnmounting = false;
-  let contentChanged = false;
+  let contentChanged = $state(false);
   let lastSaveTime = Date.now();
+  let lastSavedAt = $state<number | null>(null); // display of last successful save
   let currentNoteId = note.id;
   let originalTitle = $state(note.name);
   let lastKnownUpdatedAt = $state(note.updated_at);
   let titleChanged = $state(false);
   let isTitleFocused = $state(false);
   let isUserEditingTitle = $state(false);
+  let isEditingTitle = $state(false);
+  let isCancellingTitle = false;
   let titleInputRef: HTMLInputElement;
 
   // Track section type locally to avoid remounting
@@ -69,15 +72,28 @@
 
   // Ensure literature data is loaded
   onMount(async () => {
-    // For new notes (with "Untitled Note"), we want to make the title editable immediately
+    // For new notes, switch to edit mode and focus title to encourage renaming
     if (note.name === "Untitled Note" && title === "Untitled Note") {
-      titleChanged = true;
+      isEditingTitle = true;
+      setTimeout(() => titleInputRef?.focus(), 0);
     }
 
     // Load literature data if needed
-    if (literatureStore.data.length === 0 && note.project_id) {
-      await literatureStore.loadLiterature(note.project_id);
+    if (literatureStore.data.length === 0 && note.projectId) {
+      await literatureStore.loadLiterature(note.projectId);
     }
+  });
+
+  // Keyboard shortcut: Cmd/Ctrl + S to force save
+  onMount(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        saveNote(true);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
   });
 
   // Direct function to save title
@@ -113,6 +129,7 @@
         // Update original title to match current title
         originalTitle = titleToSave;
         titleChanged = false; // Reset the title changed flag
+        lastSavedAt = Date.now();
 
         // Trigger reactivity update through search query refresh
         const currentQuery = notesStore.searchQuery;
@@ -128,6 +145,12 @@
       } finally {
         isSaving = false;
       }
+    }
+  }
+
+  function confirmDelete() {
+    if (confirm("Delete this note? This action cannot be undone.")) {
+      onDelete();
     }
   }
 
@@ -154,6 +177,9 @@
             break;
           }
         }
+
+        // Update last saved time for status UI
+        lastSavedAt = Date.now();
 
         // Refresh the notes list via search query to trigger reactivity
         const currentQuery = notesStore.searchQuery;
@@ -304,10 +330,8 @@
         content: contentToSave,
       });
 
-      // Update our conflict detection timestamp
-      if (updatedNote && updatedNote.updated_at) {
-        lastKnownUpdatedAt = updatedNote.updated_at;
-      }
+      // Update our conflict detection timestamp (approximate to now)
+      lastKnownUpdatedAt = new Date().toISOString();
 
       // Update the note in the store's notes array to ensure NoteList updates
       const storeNotes = notesStore.notes;
@@ -320,6 +344,9 @@
           break;
         }
       }
+
+      // Mark time of successful save for status UI
+      lastSavedAt = Date.now();
 
       // Trigger reactivity update through search query refresh
       const currentQuery = notesStore.searchQuery;
@@ -466,79 +493,95 @@
 </script>
 
 <div class="flex flex-col">
-  <!-- Saving Indicator (Absolute Position) -->
-  {#if isSaving}
-    <div
-      class="absolute top-4 right-4 z-10 px-3 py-1 rounded-full bg-background/80 backdrop-blur border shadow-sm flex items-center gap-2 text-sm text-muted-foreground"
-      transition:fade={{ duration: 200 }}
-    >
-      <Save class="h-3 w-3 animate-spin" />
-      Saving...
-    </div>
-  {/if}
-
   <!-- Editor Header -->
-  <header
-    class="sticky top-0 z-10 border-b p-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-  >
-    <div class="flex items-center justify-between">
-      <div class="flex-1 mr-4 flex items-center">
-        <div class="relative flex-1">
+  <header class="sticky top-0 z-10 border-b p-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <!-- Row 1: Title and save status -->
+    <div class="flex items-center justify-between gap-3">
+      {#if isEditingTitle}
+        <div class="flex-1 min-w-0 flex items-center gap-2">
           <Input
-            bind:this={titleInputRef}
+            bind:ref={titleInputRef}
             type="text"
-            placeholder="Untitled Note"
-            class="text-lg font-medium border border-input rounded-md bg-background px-3 py-2 h-auto focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 hover:bg-muted/50 focus:bg-muted/30 transition-colors"
+            placeholder="Untitled note"
+            class="w-full bg-transparent cursor-text border-0 border-b border-border/50 px-0 py-1 h-auto text-2xl font-semibold rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-ring/60"
             bind:value={title}
             onfocus={(e) => {
-              // When the input is focused, mark as editing and ensure save button is visible
               isUserEditingTitle = true;
               isTitleFocused = true;
-              titleChanged = true;
-
-              // Auto-select text if it's "Untitled Note"
-              if (title === "Untitled Note") {
+              if (title === "Untitled Note" || title === "Untitled note") {
                 const target = e.target as HTMLInputElement;
                 setTimeout(() => target.select(), 0);
               }
             }}
             onblur={() => {
-              // When input loses focus, save if changed
-              if (title !== originalTitle) {
+              if (isCancellingTitle) {
+                // Skip saving on cancel flow
+              } else if (title !== originalTitle) {
                 saveTitle();
               }
-
-              // Small delay to allow for save operations to complete
               setTimeout(() => {
                 isUserEditingTitle = false;
                 isTitleFocused = false;
-              }, 100);
-            }}
-            onkeydown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault(); // Prevent form submission
-                if (title !== originalTitle) {
-                  saveTitle();
+                // Stay in or exit edit mode based on cancel flag
+                if (!isCancellingTitle) {
+                  isEditingTitle = false;
                 }
+                isCancellingTitle = false;
+              }, 0);
+            }}
+            onkeydown={async (e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                if (title !== originalTitle) {
+                  await saveTitle();
+                }
+                isEditingTitle = false;
+              } else if (e.key === "Escape") {
+                e.preventDefault();
+                isCancellingTitle = true;
+                title = originalTitle;
+                isEditingTitle = false;
+                setTimeout(() => (isCancellingTitle = false), 0);
               }
             }}
+            aria-label="Note title"
           />
+          <Button size="sm" onclick={async () => { if (title !== originalTitle) { await saveTitle(); } isEditingTitle = false; }} aria-label="Save title" disabled={isSaving}>
+            Save
+          </Button>
+          <Button variant="ghost" size="sm" onclick={() => { isCancellingTitle = true; title = originalTitle; isEditingTitle = false; setTimeout(() => (isCancellingTitle = false), 0); }} aria-label="Cancel rename">
+            Cancel
+          </Button>
         </div>
-        {#if titleChanged}
-          <Button
-            variant="ghost"
-            size="icon"
-            class="h-6 w-6 ml-1"
-            onclick={saveTitle}
-            title="Save title"
-          >
-            <Save class="h-4 w-4" />
+      {:else}
+        <div class="flex-1 min-w-0">
+          <h1 class="text-2xl font-semibold truncate" title={title}>{title || "Untitled note"}</h1>
+        </div>
+      {/if}
+      <div class="flex items-center gap-2 shrink-0">
+        {#if authErrorOccurred}
+          <span class="text-sm text-destructive">Session expired — not saving</span>
+        {:else if isSaving}
+          <span class="text-sm text-muted-foreground flex items-center gap-1"><Save class="h-3 w-3 animate-spin" /> Saving…</span>
+        {:else}
+          <span class="text-sm text-muted-foreground">{lastSavedAt ? `Saved ${new Date(lastSavedAt).toLocaleTimeString()}` : ""}</span>
+        {/if}
+        {#if (titleChanged || contentChanged) && !authErrorOccurred && !isEditingTitle}
+          <Button size="sm" class="min-w-[96px] justify-center" onclick={() => saveNote(true)} aria-label="Save changes" disabled={isSaving}>
+            Save
+          </Button>
+        {/if}
+        {#if !isEditingTitle}
+          <Button variant="outline" size="sm" class="min-w-[96px] justify-center" aria-label="Rename title" title="Rename title" onclick={() => { isEditingTitle = true; setTimeout(() => titleInputRef?.focus(), 0); }}>
+            <Pencil class="h-4 w-4 mr-1" /> Rename
           </Button>
         {/if}
       </div>
+    </div>
 
-      <div class="flex items-center gap-2 ml-auto">
-        <!-- Literature Selector Component -->
+    <!-- Row 2: Metadata and actions -->
+    <div class="mt-2 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
         {#if note && note.projectId && note.type === "LITERATURE"}
           <LiteratureSelector
             noteId={note.id}
@@ -546,21 +589,9 @@
             selectedLiteratureId={note.literatureId}
             onLiteratureSelect={handleLiteratureSelect}
           />
-        {/if}
-
-        {#if note && note.type === "LITERATURE"}
           <div class="flex items-center gap-2">
-            <label
-              for="section-type-select"
-              class="text-sm font-medium text-muted-foreground"
-            >
-              Section:
-            </label>
-            <Select
-              type="single"
-              value={currentSectionType.value}
-              onValueChange={handleSectionTypeChange}
-            >
+            <label for="section-type-select" class="text-sm text-muted-foreground">Section</label>
+            <Select type="single" value={currentSectionType.value} onValueChange={handleSectionTypeChange}>
               <SelectTrigger id="section-type-select" class="h-8 w-[180px]">
                 <span>{currentSectionType.label}</span>
               </SelectTrigger>
@@ -572,26 +603,10 @@
             </Select>
           </div>
         {/if}
-
-        <Button
-          variant="ghost"
-          size="icon"
-          class="h-8 w-8"
-          onclick={() => saveNote(true)}
-          title="Save note"
-          disabled={isSaving}
-        >
-          <Save class={isSaving ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          class="h-8 w-8"
-          onclick={() => onDelete()}
-          title="Delete note"
-        >
-          <Trash2 class="h-4 w-4" />
+      </div>
+      <div class="flex items-center gap-2">
+        <Button variant="destructive" size="sm" class="min-w-[96px] justify-center" onclick={() => confirmDelete()} aria-label="Delete note">
+          <Trash2 class="h-4 w-4 mr-1" /> Delete
         </Button>
       </div>
     </div>

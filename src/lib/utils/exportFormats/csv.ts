@@ -80,10 +80,13 @@ export function generateCSV(options: CSVExportOptions): string {
 
   // Add data rows
   compiledLiterature.forEach((item, index) => {
+    const isBookChapter = item.type === 'Book Chapter';
+    const csvTitle = isBookChapter ? ((item as any).chapterTitle || item.name || '') : (item.name || '');
+    const csvBookTitle = isBookChapter ? (item.name || item.secondName || '') : (item.secondName || '');
     const row = [
       escapeCSV(item.id || index + 1),
       escapeCSV(item.type || ''),
-      escapeCSV(item.name || ''),
+      escapeCSV(csvTitle),
       escapeCSV(formatCSVAuthors(item.authors || [])),
       escapeCSV(item.publishYear || ''),
       escapeCSV(item.publisherName || ''),
@@ -96,7 +99,7 @@ export function generateCSV(options: CSVExportOptions): string {
       escapeCSV(''), // abstract field not in Literature type
       escapeCSV(formatCSVKeywords(item.keywords || [])),
       escapeCSV(formatCSVAuthors(item.editors || [])),
-      escapeCSV(item.secondName || ''),
+      escapeCSV(csvBookTitle),
       escapeCSV(item.city || ''),
       escapeCSV(item.startDate || ''),
       escapeCSV(item.endDate || ''),

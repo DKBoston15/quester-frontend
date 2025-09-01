@@ -153,9 +153,12 @@
       }
 
       // Validate that all selected items have required data
-      const invalidItems = selectedItems.filter(
-        (item) => !item.title || !item.authors || item.authors.length === 0
-      );
+      const invalidItems = selectedItems.filter((item) => {
+        const type = typeof item.type === 'string' ? item.type : (item.type as any)?.value;
+        const hasTitle = type === 'Book Chapter' ? Boolean((item as any).chapterTitle) : Boolean(item.name);
+        const hasAuthors = Array.isArray(item.authors) ? item.authors.length > 0 : Boolean(item.authors);
+        return !hasTitle || !hasAuthors;
+      });
 
       if (invalidItems.length > 0) {
         console.warn("Found literature items with missing data:", invalidItems);
