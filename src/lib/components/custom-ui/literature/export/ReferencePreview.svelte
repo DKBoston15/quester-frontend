@@ -200,12 +200,16 @@
   :global(.reference-item .citation-text) {
     line-height: 1.6;
     text-align: justify;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   :global(.reference-item .citation-text a) {
     color: hsl(var(--primary));
     text-decoration: underline;
     text-decoration-color: hsl(var(--primary) / 0.5);
+    word-break: break-all;
+    overflow-wrap: anywhere;
   }
 
   :global(.reference-item .citation-text a:hover) {

@@ -260,7 +260,7 @@
     }
 
     if (citation.url) {
-      let urlWithPeriod = `<a class="underline" href="${citation.url}" target="_blank">${citation.url}</a>`;
+      let urlWithPeriod = `<a class="underline break-words" href="${citation.url}" target="_blank">${citation.url}</a>`;
       citationComponents.push(urlWithPeriod);
     }
 
@@ -900,7 +900,7 @@
 
   <Card.Content>
     <div class="space-y-4">
-      <div id="lit-ref-text" class="prose dark:prose-invert max-w-none">
+      <div id="lit-ref-text" class="prose dark:prose-invert max-w-none break-words">
         {@html formattedCitation}
       </div>
     </div>

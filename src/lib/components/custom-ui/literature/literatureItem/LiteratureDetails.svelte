@@ -576,7 +576,7 @@
         <p>{selectedType}</p>
       {/if}
     </div>
-    <div class="grid gap-3" id="lit-detail-link-section">
+    <div class="grid gap-3 min-w-0" id="lit-detail-link-section">
       <Label for="link">Link</Label>
       {#if editMode.details}
         <Input
@@ -586,7 +586,7 @@
           placeholder="Link"
         />
       {:else}
-        <p>{literature.link || ""}</p>
+        <p class="break-all max-w-full">{literature.link || ""}</p>
       {/if}
     </div>
   </div>
