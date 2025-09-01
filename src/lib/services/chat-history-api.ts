@@ -1,7 +1,7 @@
 // Chat History API Service
 
 import { api, type APIRequestConfig } from "./api-client";
-import type { ChatMessage } from "../stores/GlobalSearchStore";
+import type { ChatMessage } from "$lib/stores/GlobalSearchStore";
 
 // Chat session interfaces
 export interface ChatSession {

@@ -48,7 +48,7 @@ export interface APIRequestConfig {
   mode?: RequestMode; // CORS mode
   cache?: RequestCache; // Cache mode
   preserveErrorDetail?: boolean; // Preserve original error messages
-  expectedContentType?: 'json' | 'text' | 'blob' | 'auto'; // Expected response type
+  expectedContentType?: "json" | "text" | "blob" | "auto"; // Expected response type
 }
 
 // Default configuration
@@ -57,7 +57,7 @@ const DEFAULT_CONFIG: APIRequestConfig = {
   timeout: 30000, // 30 seconds
   skipAuthCheck: false,
   preserveErrorDetail: true,
-  expectedContentType: 'auto',
+  expectedContentType: "auto",
 };
 
 /**
@@ -79,9 +79,11 @@ export function getApiUrl(endpoint: string): string {
 /**
  * Add a request interceptor
  */
-export function addRequestInterceptor(interceptor: RequestInterceptor): () => void {
+export function addRequestInterceptor(
+  interceptor: RequestInterceptor
+): () => void {
   requestInterceptors.push(interceptor);
-  
+
   // Return cleanup function
   return () => {
     const index = requestInterceptors.indexOf(interceptor);
@@ -94,9 +96,11 @@ export function addRequestInterceptor(interceptor: RequestInterceptor): () => vo
 /**
  * Add a response interceptor
  */
-export function addResponseInterceptor(interceptor: ResponseInterceptor): () => void {
+export function addResponseInterceptor(
+  interceptor: ResponseInterceptor
+): () => void {
   responseInterceptors.push(interceptor);
-  
+
   // Return cleanup function
   return () => {
     const index = responseInterceptors.indexOf(interceptor);
@@ -111,23 +115,23 @@ export function addResponseInterceptor(interceptor: ResponseInterceptor): () => 
  */
 export function enableDebugLogging(): () => void {
   const requestLogger = (url: string, options: RequestInit) => {
-    console.log(`[API] ${options.method || 'GET'} ${url}`, {
+    console.log(`[API] ${options.method || "GET"} ${url}`, {
       headers: options.headers,
-      body: options.body
+      body: options.body,
     });
   };
-  
+
   const responseLogger = (response: Response, url: string) => {
     console.log(`[API] ${response.status} ${url}`, {
       status: response.status,
       statusText: response.statusText,
-      headers: Object.fromEntries(response.headers.entries())
+      headers: Object.fromEntries(response.headers.entries()),
     });
   };
-  
+
   const removeRequest = addRequestInterceptor(requestLogger);
   const removeResponse = addResponseInterceptor(responseLogger);
-  
+
   return () => {
     removeRequest();
     removeResponse();
@@ -138,40 +142,42 @@ export function enableDebugLogging(): () => void {
  * Parse response based on expected content type
  */
 async function parseResponseByContentType<T>(
-  response: Response, 
-  expectedContentType: 'json' | 'text' | 'blob' | 'auto'
+  response: Response,
+  expectedContentType: "json" | "text" | "blob" | "auto"
 ): Promise<T> {
-  const contentType = response.headers.get('content-type') || '';
-  
+  const contentType = response.headers.get("content-type") || "";
+
   // If expectedContentType is 'auto', determine from Content-Type header
-  if (expectedContentType === 'auto') {
-    if (contentType.includes('application/json')) {
-      expectedContentType = 'json';
-    } else if (contentType.includes('text/')) {
-      expectedContentType = 'text';
-    } else if (contentType.includes('application/octet-stream') || 
-               contentType.includes('image/') || 
-               contentType.includes('audio/') || 
-               contentType.includes('video/')) {
-      expectedContentType = 'blob';
+  if (expectedContentType === "auto") {
+    if (contentType.includes("application/json")) {
+      expectedContentType = "json";
+    } else if (contentType.includes("text/")) {
+      expectedContentType = "text";
+    } else if (
+      contentType.includes("application/octet-stream") ||
+      contentType.includes("image/") ||
+      contentType.includes("audio/") ||
+      contentType.includes("video/")
+    ) {
+      expectedContentType = "blob";
     } else {
       // Default to JSON for unknown types
-      expectedContentType = 'json';
+      expectedContentType = "json";
     }
   }
 
   switch (expectedContentType) {
-    case 'text': {
+    case "text": {
       const text = await response.text();
       return text as unknown as T;
     }
-    
-    case 'blob': {
+
+    case "blob": {
       const blob = await response.blob();
       return blob as unknown as T;
     }
-    
-    case 'json':
+
+    case "json":
     default: {
       const responseText = await response.text();
       if (!responseText) {
@@ -223,8 +229,8 @@ export async function apiRequest<T = any>(
     ...options,
     signal: requestSignal,
     credentials: "include", // Always include cookies for session auth
-    mode: config.mode || 'cors',
-    cache: config.cache || 'default',
+    mode: config.mode || "cors",
+    cache: config.cache || "default",
     headers: {
       "Content-Type": "application/json",
       ...options.headers,
@@ -240,31 +246,28 @@ export async function apiRequest<T = any>(
         try {
           await interceptor(requestUrl, requestOptions);
         } catch (error) {
-          console.error('Request interceptor error:', error);
+          console.error("Request interceptor error:", error);
           // Continue with the request despite interceptor failure
         }
       }
-      
+
       const response = await fetch(requestUrl, requestOptions);
 
       // Clear timeout if we got a response
       if (timeoutId) clearTimeout(timeoutId);
-      
+
       // Call response interceptors
       for (const interceptor of responseInterceptors) {
         try {
           await interceptor(response.clone(), requestUrl);
         } catch (error) {
-          console.error('Response interceptor error:', error);
+          console.error("Response interceptor error:", error);
           // Continue with the response despite interceptor failure
         }
       }
 
       // Handle authentication errors BEFORE other error handling
-      if (
-        !skipAuthCheck &&
-        (response.status === 401 || response.status === 403)
-      ) {
+      if (!skipAuthCheck && response.status === 401) {
         console.warn(
           `Authentication error detected: ${response.status} on ${requestUrl}`
         );
@@ -297,19 +300,20 @@ export async function apiRequest<T = any>(
       if (!response.ok) {
         let errorData: any;
         let errorMessage: string;
-        
+
         // Try to parse error response based on content type
-        const contentType = response.headers.get('content-type');
-        
-        if (contentType?.includes('application/json')) {
+        const contentType = response.headers.get("content-type");
+
+        if (contentType?.includes("application/json")) {
           try {
             errorData = await response.json();
-            errorMessage = errorData.message || errorData.error || response.statusText;
+            errorMessage =
+              errorData.message || errorData.error || response.statusText;
           } catch {
             errorMessage = response.statusText;
             errorData = { message: errorMessage };
           }
-        } else if (contentType?.includes('text/html')) {
+        } else if (contentType?.includes("text/html")) {
           // Handle HTML error pages (like 404s)
           try {
             const text = await response.text();
@@ -334,7 +338,9 @@ export async function apiRequest<T = any>(
         }
 
         throw new APIError(
-          config.preserveErrorDetail ? errorMessage : `Request failed with status ${response.status}`,
+          config.preserveErrorDetail
+            ? errorMessage
+            : `Request failed with status ${response.status}`,
           response.status,
           errorData.code,
           response
@@ -342,7 +348,10 @@ export async function apiRequest<T = any>(
       }
 
       // Handle successful responses based on expected content type
-      return await parseResponseByContentType<T>(response, config.expectedContentType || 'auto');
+      return await parseResponseByContentType<T>(
+        response,
+        config.expectedContentType || "auto"
+      );
     } catch (error) {
       lastError = error as Error;
 
@@ -435,22 +444,19 @@ export async function streamRequest(
     for (const interceptor of requestInterceptors) {
       await interceptor(requestUrl, requestOptions);
     }
-    
+
     const response = await fetch(requestUrl, requestOptions);
 
     // Clear timeout if we got a response
     if (timeoutId) clearTimeout(timeoutId);
-    
+
     // Call response interceptors for streaming requests
     for (const interceptor of responseInterceptors) {
       await interceptor(response.clone(), requestUrl);
     }
 
     // Handle authentication errors
-    if (
-      !skipAuthCheck &&
-      (response.status === 401 || response.status === 403)
-    ) {
+    if (!skipAuthCheck && response.status === 401) {
       console.warn(
         `Authentication error detected: ${response.status} on ${requestUrl}`
       );
@@ -512,7 +518,7 @@ export async function processSSEStream(
   try {
     while (true) {
       const { done, value } = await reader.read();
-      
+
       if (done) {
         if (onComplete) onComplete();
         break;
@@ -520,14 +526,14 @@ export async function processSSEStream(
 
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split("\n");
-      
+
       // Keep the last incomplete line in the buffer
       buffer = lines.pop() || "";
 
       for (const line of lines) {
         if (line.startsWith("data: ")) {
           const content = line.slice(6);
-          
+
           if (content === "[DONE]") {
             if (onComplete) onComplete();
             return;
@@ -538,7 +544,7 @@ export async function processSSEStream(
             if (onMessage) onMessage(parsed);
           } catch (e) {
             // Log parsing errors for debugging but don't break the stream
-            console.warn('Failed to parse SSE message:', content, e);
+            console.warn("Failed to parse SSE message:", content, e);
             // If it's not JSON, pass the raw content
             if (onMessage) onMessage(content);
           }

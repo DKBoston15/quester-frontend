@@ -12,6 +12,7 @@
   import type { DriveStep } from "driver.js";
   import "driver.js/dist/driver.css";
   import { GraduationCap } from "lucide-svelte";
+  import { onDestroy } from "svelte";
 
   let loading = $state(false);
   let switching = $state(false);
@@ -19,6 +20,12 @@
   let currentAnalysis = $state<KeywordAnalysis | null>(null);
   let analyses = $state<KeywordAnalysis[]>([]);
   let showNewAnalysis = $state(false);
+  // Track in-flight create request to allow cancellation and avoid timeouts
+  let createAnalysisAbort: AbortController | null = null;
+
+  onDestroy(() => {
+    if (createAnalysisAbort) createAnalysisAbort.abort();
+  });
 
   // --- Driver.js Steps Definitions ---
   const noAnalysisSteps: DriveStep[] = [
@@ -243,13 +250,27 @@
       return;
     }
 
+    // Cancel any previous create request
+    if (createAnalysisAbort) {
+      createAnalysisAbort.abort();
+    }
+    createAnalysisAbort = new AbortController();
+
     loading = true;
     error = null;
     try {
-      const data = await api.post(`/keyword_analysis`, {
-        keywords,
-        projectId: projectStore.currentProject.id,
-      });
+      const data = await api.post(
+        `/keyword_analysis`,
+        {
+          keywords,
+          projectId: projectStore.currentProject.id,
+        },
+        {
+          // Keyword analysis can take longer; extend timeout and wire abort
+          timeout: 180000, // 3 minutes
+          signal: createAnalysisAbort.signal,
+        }
+      );
       const newAnalysis = {
         ...data.keyword_analysis,
         keywords:
@@ -274,10 +295,16 @@
       currentAnalysis = newAnalysis;
       showNewAnalysis = false;
     } catch (err) {
-      console.error("Error creating analysis:", err);
-      error = "Failed to create keyword analysis";
+      // Suppress console noise on intentional aborts; show clearer message on timeout
+      if (err instanceof Error && err.name === "AbortError") {
+        error = "Keyword analysis was canceled or timed out.";
+      } else {
+        console.error("Error creating analysis:", err);
+        error = "Failed to create keyword analysis";
+      }
     } finally {
       loading = false;
+      createAnalysisAbort = null;
     }
   }
 

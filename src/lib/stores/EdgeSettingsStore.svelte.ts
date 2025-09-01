@@ -1,4 +1,5 @@
 import { MarkerType } from "@xyflow/svelte";
+import { derived, get, writable } from "svelte/store";
 
 export type EdgeType = "straight" | "step" | "smoothstep" | "bezier";
 
@@ -20,86 +21,67 @@ const defaultSettings: EdgeSettings = {
   markerEnd: true,
 };
 
-let edgeSettingsState = $state<EdgeSettings>({ ...defaultSettings });
+// Core writable store for edge settings
+const edgeSettingsWritable = writable<EdgeSettings>({ ...defaultSettings });
 
 // Derived value for edge options that can be used directly with SvelteFlow
-const derivedDefaultEdgeOptions = $derived(() => {
-  return {
-    type: edgeSettingsState.type,
-    animated: edgeSettingsState.animated,
-    style: `stroke: ${edgeSettingsState.color}; stroke-width: ${edgeSettingsState.width}px;`,
-    markerEnd: edgeSettingsState.markerEnd
-      ? { type: MarkerType.ArrowClosed }
-      : undefined,
-    markerStart: edgeSettingsState.markerStart
-      ? { type: MarkerType.ArrowClosed }
-      : undefined,
-  };
-});
+const defaultEdgeOptionsDerived = derived(edgeSettingsWritable, (state) => ({
+  type: state.type,
+  animated: state.animated,
+  style: `stroke: ${state.color}; stroke-width: ${state.width}px;`,
+  markerEnd: state.markerEnd ? { type: MarkerType.ArrowClosed } : undefined,
+  markerStart: state.markerStart ? { type: MarkerType.ArrowClosed } : undefined,
+}));
 
 export const edgeSettingsStore = {
   get edgeSettings() {
-    return edgeSettingsState;
+    return get(edgeSettingsWritable);
   },
-  
+
   get defaultEdgeOptions() {
-    return derivedDefaultEdgeOptions;
+    return get(defaultEdgeOptionsDerived);
   },
 
   updateSettings(newSettings: Partial<EdgeSettings>) {
-    edgeSettingsState = { ...edgeSettingsState, ...newSettings };
+    edgeSettingsWritable.update((s) => ({ ...s, ...newSettings }));
   },
 
   resetToDefaults() {
-    edgeSettingsState = { ...defaultSettings };
+    edgeSettingsWritable.set({ ...defaultSettings });
   },
 
   setType(type: EdgeType) {
-    edgeSettingsState.type = type;
+    edgeSettingsWritable.update((s) => ({ ...s, type }));
   },
 
   setColor(color: string) {
-    edgeSettingsState.color = color;
+    edgeSettingsWritable.update((s) => ({ ...s, color }));
   },
 
   setWidth(width: number) {
-    edgeSettingsState.width = width;
+    edgeSettingsWritable.update((s) => ({ ...s, width }));
   },
 
   setAnimated(animated: boolean) {
-    edgeSettingsState.animated = animated;
+    edgeSettingsWritable.update((s) => ({ ...s, animated }));
   },
 
   setMarkerStart(markerStart: boolean) {
-    edgeSettingsState.markerStart = markerStart;
+    edgeSettingsWritable.update((s) => ({ ...s, markerStart }));
   },
 
   setMarkerEnd(markerEnd: boolean) {
-    edgeSettingsState.markerEnd = markerEnd;
+    edgeSettingsWritable.update((s) => ({ ...s, markerEnd }));
   },
 };
 
 // Legacy exports for backward compatibility during migration
 export const edgeSettings = {
-  subscribe: (callback: (value: EdgeSettings) => void) => {
-    const unsubscribe = $effect(() => {
-      callback(edgeSettingsState);
-    });
-    return { unsubscribe };
-  },
-  set: (value: EdgeSettings) => {
-    edgeSettingsState = value;
-  },
-  update: (updater: (value: EdgeSettings) => EdgeSettings) => {
-    edgeSettingsState = updater(edgeSettingsState);
-  },
+  subscribe: edgeSettingsWritable.subscribe,
+  set: edgeSettingsWritable.set,
+  update: edgeSettingsWritable.update,
 };
 
 export const defaultEdgeOptions = {
-  subscribe: (callback: (value: any) => void) => {
-    const unsubscribe = $effect(() => {
-      callback(derivedDefaultEdgeOptions);
-    });
-    return { unsubscribe };
-  },
+  subscribe: defaultEdgeOptionsDerived.subscribe,
 };

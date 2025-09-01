@@ -2,7 +2,7 @@
   import "./app.css";
   import { Router, Route } from "svelte-routing";
   import { onMount } from "svelte";
-  import { auth } from "./lib/stores/AuthStore";
+  import { auth } from "$lib/stores/AuthStore";
   import Dashboard from "./routes/Dashboard.svelte";
   import OrganizationAnalytics from "./routes/OrganizationAnalytics.svelte";
   import ProtectedLayout from "./lib/components/ProtectedLayout.svelte";

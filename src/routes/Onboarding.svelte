@@ -1,6 +1,6 @@
 <script lang="ts">
   import { navigate } from "svelte-routing";
-  import { auth } from "../lib/stores/AuthStore";
+  import { auth } from "$lib/stores/AuthStore";
   import { onMount } from "svelte";
   import type { Organization as AuthOrganization } from "../lib/types/auth";
   import { Input } from "$lib/components/ui/input";

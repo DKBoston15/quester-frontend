@@ -1,6 +1,6 @@
 
   import { api } from "$lib/services/api-client";
-  import { auth } from "./AuthStore.svelte";
+  import { auth } from "$lib/stores/AuthStore";
 
   type ResourceType = "organization" | "department" | "project";
 
@@ -707,4 +707,3 @@
       }
     },
   };
-

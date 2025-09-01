@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { announcementStore } from '$lib/stores/AnnouncementStore.svelte'
+  import { announcementStore } from '$lib/stores/AnnouncementStore'
   import { Button } from '$lib/components/ui/button'
   import { Card } from '$lib/components/ui/card'
   import { Sparkles, ChevronRight, History } from 'lucide-svelte'
