@@ -199,53 +199,41 @@
 
   // Reactive block to update local state when the note prop changes
   $effect(() => {
-    // Always update content when note changes
-    const noteContentStr =
-      typeof note.content === "string"
-        ? note.content
-        : JSON.stringify(note.content);
-    const currentContentStr =
-      typeof content === "string" ? content : JSON.stringify(content);
+    const isNewNote = currentNoteId !== note.id;
+    
+    // Update note ID tracking
+    currentNoteId = note.id;
 
-    // Force immediate update of all state when note changes
-    if (currentNoteId !== note.id || noteContentStr !== currentContentStr) {
-      // Only reset contentChanged if the note ID has changed
-      // This preserves unsaved changes when content is updated externally
-      const isNewNote = currentNoteId !== note.id;
+    // Update title if not actively editing or if switching notes
+    if (!isUserEditingTitle || isNewNote) {
+      title = note.name;
+      originalTitle = note.name;
+    }
 
-      currentNoteId = note.id;
-
-      // Only update title if user is not actively editing it or if we're switching notes
-      if (!isUserEditingTitle || isNewNote) {
-        title = note.name; // Update title when note changes
-        originalTitle = note.name; // Update original title reference
-      }
-
-      titleChanged = false; // Reset title changed flag when note changes
+    // Only update content if switching to a new note or if we're not currently editing
+    // This prevents interference with user typing
+    if (isNewNote || !contentChanged) {
       const newContent = parseNoteContent(note.content);
+      content = newContent;
+      previousContent = JSON.stringify(newContent);
+    }
 
-      // Only update content and previousContent if this is a new note
-      // or if the content has actually changed from the server
-      if (isNewNote || noteContentStr !== currentContentStr) {
-        content = newContent;
-        previousContent = JSON.stringify(newContent);
+    // Update section type
+    if (note.section_type) {
+      currentSectionType =
+        typeof note.section_type === "object"
+          ? { ...note.section_type }
+          : { value: note.section_type, label: note.section_type };
+    }
 
-        // Only reset contentChanged flag if we're switching to a new note
-        if (isNewNote) {
-          contentChanged = false;
-        }
-      }
-
-      if (note.section_type) {
-        currentSectionType =
-          typeof note.section_type === "object"
-            ? { ...note.section_type }
-            : { value: note.section_type, label: note.section_type };
-      }
+    // Reset change flags when switching notes
+    if (isNewNote) {
+      contentChanged = false;
+      titleChanged = false;
     }
   });
 
-  // Monitor content changes using $effect instead of afterUpdate
+  // Monitor content changes using $effect
   $effect(() => {
     // Skip processing if we're unmounting to avoid state mutation errors
     if (isUnmounting) {
@@ -263,7 +251,6 @@
       if (currentNoteId === note.id) {
         contentChanged = true;
         scheduleSave();
-      } else {
       }
     }
   });
@@ -295,9 +282,9 @@
     saveTimeout = setTimeout(saveNote, delay);
   }
 
-  async function saveNote(forceSave = false) {
+  async function saveNote(forceSave = false): Promise<void> {
     if (isSaving || isUnmounting || (!contentChanged && !forceSave) || !note) {
-      return Promise.resolve(); // Return a resolved promise
+      return;
     }
 
     // Store current values to check if they change during save
@@ -315,37 +302,25 @@
     try {
       const contentToSave = JSON.stringify(content);
 
-      // Update the lastKnownUpdatedAt when saving
-      try {
-        const currentServerNote = await api.get(`/note/${note.id}`);
-        lastKnownUpdatedAt = currentServerNote.updated_at;
-      } catch (error) {
-        // Silently continue if we can't get current state
-      }
-
       // Use the store's update method to ensure the note list updates
       const updatedNote = await notesStore.updateNote(note.id, {
         name: currentTitle,
         content: contentToSave,
       });
 
-      // Update our conflict detection timestamp (approximate to now)
-      lastKnownUpdatedAt = new Date().toISOString();
-
-      // Update the note in the store's notes array to ensure NoteList updates
-      const storeNotes = notesStore.notes;
-      for (let i = 0; i < storeNotes.length; i++) {
-        if (storeNotes[i].id === note.id) {
-          // Update the note in place
-          storeNotes[i].name = currentTitle;
-          storeNotes[i].content = contentToSave;
-          storeNotes[i].updated_at = new Date().toISOString();
-          break;
-        }
-      }
+      // Update our conflict detection timestamp
+      lastKnownUpdatedAt = updatedNote.updated_at || new Date().toISOString();
 
       // Mark time of successful save for status UI
       lastSavedAt = Date.now();
+
+      // Update originalTitle and reset change flags after successful save
+      originalTitle = currentTitle;
+      titleChanged = false;
+      contentChanged = false; // Reset content changed flag after successful save
+
+      // Update previousContent to match what was just saved to prevent duplicate saves
+      previousContent = JSON.stringify(content);
 
       // Trigger reactivity update through search query refresh
       const currentQuery = notesStore.searchQuery;
@@ -353,7 +328,7 @@
         notesStore.setSearchQuery(currentQuery);
       }
 
-      return Promise.resolve(); // Return a resolved promise
+      return; // Return successfully
     } catch (error) {
       console.error("Failed to save note:", error);
 
@@ -365,13 +340,13 @@
         authErrorOccurred = true;
         // Don't mark content as changed - let the user re-authenticate to save
         // The API client will trigger logout automatically
-        return Promise.reject(error);
+        throw error;
       }
 
       if (!isUnmounting) {
         contentChanged = true; // Mark as still needing save, but only if not unmounting
       }
-      return Promise.reject(error); // Return a rejected promise
+      throw error; // Re-throw the error
     } finally {
       isSaving = false;
 
@@ -616,14 +591,8 @@
     <div class="flex-1">
       <ShadEditor
         {content}
-        on:contentChange={(e) => {
-          const newContent = e.detail;
-          // Check if content has actually changed
-          if (JSON.stringify(newContent) !== JSON.stringify(content)) {
-            content = newContent;
-            contentChanged = true;
-            scheduleSave();
-          }
+on:contentChange={(e) => {
+          content = e.detail;
         }}
         placeholder="Start writing..."
       />

@@ -506,7 +506,7 @@
       id: string,
       data: Partial<Note>,
       uiOnlyUpdate: boolean = false
-    ) {
+    ): Promise<Note> {
       // Don't set loading state for content updates to avoid UI flicker
       const isContentUpdate =
         Object.keys(data).length === 2 && "name" in data && "content" in data;
@@ -540,12 +540,17 @@
         // For UI-only updates, update the local state first
         if (uiOnlyUpdate) {
           // Update the note in the local state without causing full array replacement
+          const updatedNote = notes.find(n => n.id === id);
+          if (!updatedNote) {
+            throw new Error("Note not found");
+          }
+          
+          const newNote = { ...updatedNote, ...data };
+          newNote.updated_at = new Date().toISOString();
+          
           notes = notes.map((note) => {
             if (note.id === id) {
-              const updatedNote = { ...note, ...data };
-              // Ensure updated_at is set
-              updatedNote.updated_at = new Date().toISOString();
-              return updatedNote;
+              return newNote;
             }
             return note;
           });
@@ -554,16 +559,17 @@
           if (searchQuery) {
             this.setSearchQuery(searchQuery);
           }
+          
+          return newNote;
         }
 
-        // Skip the API call for UI-only updates
-        if (!uiOnlyUpdate) {
-          // Use centralized API client which handles auth errors automatically
-          const updatedNote = await api.put<{note: Note} | Note>(`/note/${id}`, payload);
+        // Make the API call for non-UI-only updates
+        // Use centralized API client which handles auth errors automatically
+        const response = await api.put<{note: Note} | Note>(`/note/${id}`, payload);
 
-          const processedUpdatedNote = processNoteData(
-            'note' in updatedNote ? updatedNote.note : updatedNote
-          );
+        const processedUpdatedNote = processNoteData(
+          'note' in response ? response.note : response
+        );
 
           // Update the note in the local state without causing full array replacement
           notes = notes.map((note) => {
@@ -612,7 +618,14 @@
           if (searchQuery) {
             this.setSearchQuery(searchQuery);
           }
-        }
+          
+          // Return the updated note
+          const finalNote = notes.find(n => n.id === id);
+          if (!finalNote) {
+            throw new Error("Failed to update note");
+          }
+          return finalNote;
+
       } catch (err) {
         console.error("Error updating note:", err);
         error = err instanceof Error ? err.message : "An error occurred";
