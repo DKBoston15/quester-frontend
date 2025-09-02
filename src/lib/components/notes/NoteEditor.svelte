@@ -42,7 +42,8 @@
   let isUserEditingTitle = $state(false);
   let isEditingTitle = $state(false);
   let isCancellingTitle = false;
-  let titleInputRef: HTMLInputElement;
+  // Initialize to null to avoid passing undefined to bind:ref
+  let titleInputRef: HTMLInputElement | null = null;
 
   // Track section type locally to avoid remounting
   let currentSectionType = $state(
@@ -113,8 +114,7 @@
         // Use centralized API client with proper auth error handling
         await api.put(`/note/${note.id}`, { name: titleToSave });
 
-        // Update the note object directly to prevent future effect runs from resetting
-        note.name = titleToSave;
+        // Do not mutate the incoming note prop; parent/store will propagate updates
 
         // Update the note in the store's notes array
         const storeNotes = notesStore.notes;
@@ -165,8 +165,7 @@
           literatureId: literatureId || null,
         });
 
-        // Update the note object directly
-        note.literatureId = literatureId;
+        // Do not mutate the incoming note prop; parent/store will propagate updates
 
         // Update the note in the store's notes array
         const storeNotes = notesStore.notes;
