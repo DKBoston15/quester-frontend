@@ -7,6 +7,7 @@
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Save, Trash2, Pencil } from "lucide-svelte";
+  import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import type { Content } from "@tiptap/core";
   // Removed fade transition (no floating save chip anymore)
   import {
@@ -44,6 +45,7 @@
   let isCancellingTitle = false;
   // Initialize to null to avoid passing undefined to bind:ref
   let titleInputRef: HTMLInputElement | null = null;
+  let showDeleteDialog = $state(false);
 
   // Track section type locally to avoid remounting
   let currentSectionType = $state(
@@ -149,9 +151,12 @@
   }
 
   function confirmDelete() {
-    if (confirm("Delete this note? This action cannot be undone.")) {
-      onDelete();
-    }
+    showDeleteDialog = true;
+  }
+
+  function handleDeleteConfirm() {
+    showDeleteDialog = false;
+    onDelete();
   }
 
   // Handle literature selection
@@ -599,6 +604,27 @@ on:contentChange={(e) => {
     </div>
   {/if}
 </div>
+
+<!-- Delete Confirmation Dialog -->
+<AlertDialog.Root bind:open={showDeleteDialog}>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>Delete Note</AlertDialog.Title>
+      <AlertDialog.Description>
+        Are you sure you want to delete this note? This action cannot be undone.
+      </AlertDialog.Description>
+    </AlertDialog.Header>
+    <AlertDialog.Footer>
+      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+      <AlertDialog.Action
+        onclick={handleDeleteConfirm}
+        class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+      >
+        Delete Note
+      </AlertDialog.Action>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>
 
 <style>
   :global(.tiptap p.is-editor-empty:first-child::before) {
