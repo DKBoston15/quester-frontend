@@ -1,4 +1,3 @@
-<!-- src/lib/components/custom-ui/project/DesignManager.svelte -->
 <script lang="ts">
   import {
     Card,
@@ -13,7 +12,7 @@
   import * as Tabs from "$lib/components/ui/tabs";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { InfoIcon, Plus, X, Edit, Check, Save } from "lucide-svelte";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { projectStore } from "$lib/stores/ProjectStore";
   import { toast } from "svelte-sonner";
 
   // Design types that match our existing components

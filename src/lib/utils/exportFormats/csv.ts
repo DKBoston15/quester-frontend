@@ -19,13 +19,17 @@ function escapeCSV(value: any): string {
   return stringValue;
 }
 
-function formatCSVAuthors(authors: string[]): string {
-  if (!authors || authors.length === 0) return '';
+function formatCSVAuthors(authors: string[] | string): string {
+  if (!authors) return '';
+  if (typeof authors === 'string') return authors;
+  if (authors.length === 0) return '';
   return authors.join('; ');
 }
 
-function formatCSVKeywords(keywords: any[]): string {
-  if (!keywords || keywords.length === 0) return '';
+function formatCSVKeywords(keywords: any[] | string): string {
+  if (!keywords) return '';
+  if (typeof keywords === 'string') return keywords;
+  if (keywords.length === 0) return '';
   
   return keywords
     .map(k => typeof k === 'string' ? k : k.name || '')
@@ -76,10 +80,13 @@ export function generateCSV(options: CSVExportOptions): string {
 
   // Add data rows
   compiledLiterature.forEach((item, index) => {
+    const isBookChapter = item.type === 'Book Chapter';
+    const csvTitle = isBookChapter ? ((item as any).chapterTitle || item.name || '') : (item.name || '');
+    const csvBookTitle = isBookChapter ? (item.name || item.secondName || '') : (item.secondName || '');
     const row = [
       escapeCSV(item.id || index + 1),
       escapeCSV(item.type || ''),
-      escapeCSV(item.name || ''),
+      escapeCSV(csvTitle),
       escapeCSV(formatCSVAuthors(item.authors || [])),
       escapeCSV(item.publishYear || ''),
       escapeCSV(item.publisherName || ''),
@@ -89,10 +96,10 @@ export function generateCSV(options: CSVExportOptions): string {
       escapeCSV(item.endPage || ''),
       escapeCSV(item.doi || ''),
       escapeCSV(item.link || ''),
-      escapeCSV(item.abstract || ''),
+      escapeCSV(''), // abstract field not in Literature type
       escapeCSV(formatCSVKeywords(item.keywords || [])),
       escapeCSV(formatCSVAuthors(item.editors || [])),
-      escapeCSV(item.secondName || ''),
+      escapeCSV(csvBookTitle),
       escapeCSV(item.city || ''),
       escapeCSV(item.startDate || ''),
       escapeCSV(item.endDate || ''),

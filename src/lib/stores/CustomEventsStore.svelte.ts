@@ -1,5 +1,4 @@
-<!-- Custom Events Store -->
-<script lang="ts" module>
+
   // Check if we're in a browser environment
   const browser = typeof window !== "undefined";
 
@@ -7,7 +6,6 @@
     customEventsAPI,
     isCustomEventAPIError,
     getErrorMessage,
-    type CustomEventAPIError,
   } from "../services/custom-events-api";
   import type {
     CustomTimelineEvent,
@@ -19,7 +17,7 @@
     CustomEventAction,
   } from "../types/custom-events";
   import { DEFAULT_EVENT_TYPE } from "../config/custom-event-types";
-  import { projectStore } from "./ProjectStore.svelte";
+  import { projectStore } from "$lib/stores/ProjectStore";
   import { toast } from "svelte-sonner";
 
   // Main state
@@ -644,4 +642,3 @@
     // Cancel all requests when the component is destroyed
     // This would be handled by the component using this store
   }
-</script>

@@ -1,8 +1,7 @@
-<!-- src/routes/Settings.svelte -->
 <script lang="ts">
   import { onMount } from "svelte";
-  import { auth } from "$lib/stores/AuthStore.svelte";
-  import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
+  import { auth } from "$lib/stores/AuthStore";
+  import { teamManagement } from "$lib/stores/TeamManagementStore";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
@@ -13,21 +12,14 @@
     CardDescription,
     CardContent,
   } from "$lib/components/ui/card";
-  import {
-    Settings as SettingsIcon,
-    User,
-    Building2,
-    GraduationCap,
-    CreditCard,
-  } from "lucide-svelte";
+  import { User, Building2, GraduationCap, CreditCard } from "lucide-svelte";
   import * as Tabs from "$lib/components/ui/tabs";
   import TeamSettings from "$lib/components/TeamSettings.svelte";
   import ManageSubscription from "$lib/components/ManageSubscription.svelte";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import AppSidebar from "$lib/components/AppSidebar.svelte";
-  // Import tooltip components
   import * as Tooltip from "$lib/components/ui/tooltip";
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
 
@@ -101,16 +93,7 @@
   // Check if user has access to organization settings based on subscription
   async function checkOrgSettingsCapability() {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/capabilities/org_settings_access`,
-        { credentials: "include" }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to check organization settings capability");
-      }
-
-      const data = await response.json();
+      const data = await api.get(`/capabilities/org_settings_access`);
       hasOrgSettingsAccess = data.allowed;
 
       // If user doesn't have access but organization tab is selected, switch to profile
@@ -343,11 +326,11 @@
             <!-- Add Learn Button -->
             <Button
               variant="outline"
-              size="icon"
               onclick={() => driverObj.drive()}
               aria-label="Learn about Settings"
             >
-              <GraduationCap class="h-4 w-4" />
+              <GraduationCap class="h-4 w-4 mr-2" />
+              Tour
             </Button>
           </div>
           <p class="text-muted-foreground">
@@ -576,11 +559,14 @@
                             <CardTitle>Subscription</CardTitle>
                           </div>
                           <CardDescription>
-                            Current Plan: {auth.currentOrganization.subscription?.plan?.name || "No plan"}
+                            Current Plan: {auth.currentOrganization.subscription
+                              ?.plan?.name || "No plan"}
                           </CardDescription>
                         </CardHeader>
                         <CardContent>
-                          <ManageSubscription organizationId={auth.currentOrganization.id} />
+                          <ManageSubscription
+                            organizationId={auth.currentOrganization.id}
+                          />
                         </CardContent>
                       </Card>
                     {:else}
@@ -596,7 +582,8 @@
                         </CardHeader>
                         <CardContent>
                           <Button
-                            onclick={() => window.location.href = "/onboarding"}
+                            onclick={() =>
+                              (window.location.href = "/onboarding")}
                             class="w-full"
                           >
                             View Plans

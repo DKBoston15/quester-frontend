@@ -1,34 +1,25 @@
-<!-- src/routes/components/TeamMembersList.svelte -->
 <script lang="ts">
   import { Badge } from "$lib/components/ui/badge";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import * as Table from "$lib/components/ui/table";
-  import {
-    Alert,
-    AlertDescription,
-    AlertTitle,
-  } from "$lib/components/ui/alert";
   import { Card, CardContent, CardHeader } from "$lib/components/ui/card";
   import * as Tooltip from "$lib/components/ui/tooltip";
-  import TeamSizeIndicator from "$lib/components/TeamSizeIndicator/TeamSizeIndicator.svelte";
   import {
     UserCog,
     Search,
     UserMinus,
-    Info,
     MoreHorizontal,
-    ChevronDown,
     Building,
     Loader2,
   } from "lucide-svelte";
   import type { User } from "$lib/types/auth";
-  import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
-  import { auth } from "$lib/stores/AuthStore.svelte";
+  import { teamManagement } from "$lib/stores/TeamManagementStore";
+  import { auth } from "$lib/stores/AuthStore";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { EmptyState } from "$lib/components/ui/empty-state";
   import { toast } from "svelte-sonner";
-  import { fly, fade } from "svelte/transition";
+  import { fly } from "svelte/transition";
   import { onDestroy } from "svelte";
 
   // Define a type for team members that includes role information
@@ -260,9 +251,12 @@
         // We need to match this with the parent organization
         // Since we're viewing a project, we need to check if this user has a role
         // in the parent organization of the current project
-        return roleRelation.role?.name === "Owner" || roleRelation.role?.name === "Admin";
+        return (
+          roleRelation.role?.name === "Owner" ||
+          roleRelation.role?.name === "Admin"
+        );
       });
-      
+
       if (orgRole) {
         return orgRole.role?.name as "Owner" | "Admin";
       }
@@ -274,7 +268,7 @@
       const projectUser = teamManagement.projectTeam.users.find(
         (u: any) => String(u.id) === String(user.id)
       );
-      
+
       if (projectUser && projectUser.organizationRole) {
         if (projectUser.organizationRole === "Owner") return "Owner";
         if (projectUser.organizationRole === "Admin") return "Admin";

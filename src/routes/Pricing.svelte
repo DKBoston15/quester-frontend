@@ -13,7 +13,7 @@
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
 
   const props = $props<{
     organizationId: string;
@@ -53,17 +53,7 @@
 
   onMount(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/subscription-plans`, {
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch plans: ${response.status} ${response.statusText}`
-        );
-      }
-
-      const allPlans = await response.json();
+      const allPlans = await api.get(`/subscription-plans`);
 
       if (!Array.isArray(allPlans)) {
         throw new Error(

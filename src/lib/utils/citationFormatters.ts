@@ -41,7 +41,11 @@ export function literatureToCitation(literature: Literature): Citation {
         ? JSON.parse(literature.editors || "[]")
         : [],
     publicationYear: literature?.publishYear ?? "n.d.",
-    title: literature?.name ?? "",
+    // Title mapping: for Book Chapter, use the chapter title; otherwise use the main name/title field
+    title:
+      typeValue === "Book Chapter"
+        ? (literature?.chapterTitle || literature?.title || "")
+        : (literature?.name ?? literature?.title ?? ""),
     journalName: literature?.publisherName || "",
     volumeNumber: literature?.volume ?? "",
     issueNumber: literature?.issue ?? "",
@@ -50,7 +54,11 @@ export function literatureToCitation(literature: Literature): Citation {
     startDate: literature?.startDate ?? "",
     endDate: literature?.endDate ?? "",
     city: literature?.city ?? "",
-    secondName: literature?.secondName ?? "",
+    // For Book Chapter, store the book title in secondName. Fall back to existing secondName if present.
+    secondName:
+      typeValue === "Book Chapter"
+        ? (literature?.name || literature?.secondName || "")
+        : (literature?.secondName ?? ""),
     url: literature?.link ?? "",
     type: typeValue,
     doi: literature?.doi,
@@ -183,7 +191,7 @@ export function formatAPACitation(citation: Citation): string {
   }
 
   if (citation.url) {
-    let urlWithPeriod = `<a class="underline" href="${citation.url}" target="_blank">${citation.url}</a>`;
+    let urlWithPeriod = `<a class="underline break-words" href="${citation.url}" target="_blank">${citation.url}</a>`;
     citationComponents.push(urlWithPeriod);
   }
 

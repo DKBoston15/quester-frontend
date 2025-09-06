@@ -1,14 +1,5 @@
 <script lang="ts">
-  import {
-    Handle,
-    NodeResizer,
-    NodeToolbar,
-    Position,
-    type NodeProps,
-  } from "@xyflow/svelte";
-  import { createEventDispatcher } from "svelte";
-
-  type $$Props = NodeProps;
+  import { Handle, NodeResizer, NodeToolbar, Position } from "@xyflow/svelte";
 
   let {
     data = {},
@@ -20,7 +11,6 @@
     sourcePosition,
     targetPosition,
   } = $props();
-  const dispatch = createEventDispatcher();
 
   // Local state
   let bgColor = $state((data.bgColor as string) || "#ffffff");
@@ -35,6 +25,7 @@
   let textAlign = $state((data.textAlign as string) || "center");
   let shadowColor = $state((data.shadowColor as string) || "#000000");
   let shadowBlur = $state((data.shadowBlur as number) || 0);
+  let label = $state((data.label as string) || "");
   let transparentBg = $state((data.transparentBg as boolean) || false);
   let transparentBorder = $state((data.transparentBorder as boolean) || false);
   let showHandles = $state((data.showHandles as boolean) ?? true);
@@ -54,6 +45,7 @@
     data.textAlign = textAlign;
     data.shadowColor = shadowColor;
     data.shadowBlur = shadowBlur;
+    data.label = label;
     data.transparentBg = transparentBg;
     data.transparentBorder = transparentBorder;
     data.showHandles = showHandles;
@@ -406,7 +398,7 @@
   "
 >
   <textarea
-    bind:value={data.label}
+    bind:value={label}
     class="bg-transparent w-full h-full focus:outline-none resize-none overflow-hidden mt-36"
     style="
       font-size: {fontSize}px; 

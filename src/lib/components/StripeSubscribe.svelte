@@ -2,8 +2,8 @@
   import { onMount } from "svelte";
   import type { Stripe } from "@stripe/stripe-js";
   import { loadStripe } from "@stripe/stripe-js";
-  import { API_BASE_URL } from "$lib/config";
-  import { auth } from "$lib/stores/AuthStore.svelte";
+  import { api } from "$lib/services/api-client";
+  import { auth } from "$lib/stores/AuthStore";
 
   export let organizationId: string;
   export let priceId: string;
@@ -22,26 +22,13 @@
 
     try {
       isLoading = true;
-      const response = await fetch(`${API_BASE_URL}/stripe/generate-checkout`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          organizationId,
-          priceId,
-          planId,
-          userEmail: auth.user?.email,
-          isOwner: isOwner,
-        }),
+      const { sessionId } = await api.post(`/stripe/generate-checkout`, {
+        organizationId,
+        priceId,
+        planId,
+        userEmail: auth.user?.email,
+        isOwner: isOwner,
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to create checkout session");
-      }
-
-      const { sessionId } = await response.json();
 
       const { error } = await stripe.redirectToCheckout({
         sessionId,

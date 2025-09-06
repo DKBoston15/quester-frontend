@@ -1,4 +1,3 @@
-<!-- src/lib/components/custom-ui/literature/LiteratureTable.svelte -->
 <script lang="ts">
   import { onMount, onDestroy, createEventDispatcher } from "svelte";
   import { createGrid, ModuleRegistry } from "@ag-grid-community/core";
@@ -87,7 +86,6 @@
 
   const columnDefs: ColDef<Literature>[] = [
     {
-      field: "selection",
       headerName: "",
       width: 50,
       checkboxSelection: true,
@@ -300,7 +298,10 @@
     animateRows: true,
     rowSelection: "multiple",
     onRowClicked: (event) => {
-      if (event.data && !event.event?.target?.closest('.ag-checkbox-input-wrapper')) {
+      if (
+        event.data &&
+        !(event.event?.target as HTMLElement)?.closest(".ag-checkbox-input-wrapper")
+      ) {
         dispatch("literatureSelect", event.data);
       }
     },
@@ -609,5 +610,4 @@
     background-repeat: no-repeat;
     background-size: contain;
   }
-
 </style>

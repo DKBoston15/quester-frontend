@@ -1,16 +1,8 @@
-<!-- src/lib/components/custom-ui/literature/export/ExportReferences.svelte -->
 <script lang="ts">
   import * as Dialog from "$lib/components/ui/dialog";
   import { Button } from "$lib/components/ui/button";
-  import * as Select from "$lib/components/ui/select";
   import { Badge } from "$lib/components/ui/badge";
-  import {
-    Copy,
-    Download,
-    FileText,
-    CheckSquare,
-    Square,
-  } from "lucide-svelte";
+  import { Copy, Download, FileText, CheckSquare, Square } from "lucide-svelte";
   import type { Literature } from "$lib/types/literature";
   import type { CitationStyle } from "$lib/utils/citationFormatters";
   import {
@@ -51,7 +43,12 @@
   // Initialize internal selection when modal opens (but preserve user changes)
   $effect(() => {
     // ONLY initialize when modal first opens, never reset after that
-    if (open && selectedLiterature && internalSelectedIds.size === 0 && !userHasManuallyChanged) {
+    if (
+      open &&
+      selectedLiterature &&
+      internalSelectedIds.size === 0 &&
+      !userHasManuallyChanged
+    ) {
       internalSelectedIds = new Set(
         selectedLiterature.map((item) => item.id).filter(Boolean)
       );
@@ -92,7 +89,6 @@
     internalSelectedIds = new Set();
     selectionVersion++; // Force reactivity
   }
-
 
   let selectedStyle = $state<CitationStyle>("APA");
   let selectedFormat = $state<
@@ -150,24 +146,27 @@
     try {
       // Validate export data completeness
       const selectedItems = currentlySelected;
-      
+
       if (selectedItems.length === 0) {
-        toast.error('No references selected for export');
+        toast.error("No references selected for export");
         return;
       }
-      
+
       // Validate that all selected items have required data
-      const invalidItems = selectedItems.filter(item => 
-        !item.title || !item.authors || item.authors.length === 0
-      );
-      
+      const invalidItems = selectedItems.filter((item) => {
+        const type = typeof item.type === 'string' ? item.type : (item.type as any)?.value;
+        const hasTitle = type === 'Book Chapter' ? Boolean((item as any).chapterTitle) : Boolean(item.name);
+        const hasAuthors = Array.isArray(item.authors) ? item.authors.length > 0 : Boolean(item.authors);
+        return !hasTitle || !hasAuthors;
+      });
+
       if (invalidItems.length > 0) {
-        console.warn('Found literature items with missing data:', invalidItems);
+        console.warn("Found literature items with missing data:", invalidItems);
         toast.warning(
           `${invalidItems.length} references are missing title or authors. Export may be incomplete.`
         );
       }
-      
+
       switch (selectedFormat) {
         case "copy":
           await copyToClipboard();
@@ -318,8 +317,7 @@
               variant="ghost"
               size="sm"
               onclick={selectAll}
-              disabled={currentlySelected.length ===
-                selectedLiterature.length}
+              disabled={currentlySelected.length === selectedLiterature.length}
             >
               <CheckSquare class="h-4 w-4 mr-1" />
               All

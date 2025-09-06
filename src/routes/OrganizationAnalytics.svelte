@@ -1,8 +1,8 @@
 <script lang="ts">
   import AppSidebar from "$lib/components/AppSidebar.svelte";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
-  import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
-  import { auth } from "$lib/stores/AuthStore.svelte";
+  import { teamManagement } from "$lib/stores/TeamManagementStore";
+  import { auth } from "$lib/stores/AuthStore";
   import ProjectActivityChart from "$lib/components/ProjectActivityChart.svelte";
   import { onMount } from "svelte";
   import * as RadioGroup from "$lib/components/ui/radio-group";
@@ -37,7 +37,7 @@
   import { Button } from "$lib/components/ui/button";
   import ProjectUsersModal from "$lib/components/ProjectUsersModal.svelte";
   import * as Pagination from "$lib/components/ui/pagination/index.js";
-  import { navigate, Link } from "svelte-routing";
+  import { navigate } from "svelte-routing";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
   import { GraduationCap } from "lucide-svelte";
@@ -921,7 +921,10 @@
                 </Tooltip.Trigger>
                 <Tooltip.Content>
                   <p class="text-sm max-w-xs">
-                    View comprehensive analytics about your organization's activity, including user engagement patterns, project content creation, and team productivity metrics across all your projects.
+                    View comprehensive analytics about your organization's
+                    activity, including user engagement patterns, project
+                    content creation, and team productivity metrics across all
+                    your projects.
                   </p>
                 </Tooltip.Content>
               </Tooltip.Root>
@@ -934,11 +937,11 @@
           <!-- Add Learn Button Here -->
           <Button
             variant="outline"
-            size="icon"
             onclick={() => driverObj.drive()}
             aria-label="Learn about Organization Analytics"
           >
-            <GraduationCap class="h-4 w-4" />
+            <GraduationCap class="h-4 w-4 mr-2" />
+            Tour
           </Button>
         </div>
 

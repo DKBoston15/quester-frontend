@@ -1,4 +1,3 @@
-<!-- src/lib/components/PendingInvites.svelte -->
 <script lang="ts">
   import { onMount } from "svelte";
   import { navigate } from "svelte-routing";
@@ -9,10 +8,10 @@
     CardTitle,
   } from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
-  import { auth } from "../stores/AuthStore.svelte";
+  import { auth } from "$lib/stores/AuthStore";
   import { Separator } from "$lib/components/ui/separator";
   import { EmptyState } from "$lib/components/ui/empty-state";
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
 
   type Invitation = {
     id: string;
@@ -42,16 +41,9 @@
 
   async function loadInvitations() {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/invitations/pending?email=${encodeURIComponent(auth.user?.email || "")}`,
-        { credentials: "include" }
+      invitations = await api.get(
+        `/invitations/pending?email=${encodeURIComponent(auth.user?.email || "")}`
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to load invitations");
-      }
-
-      invitations = await response.json();
     } catch (err) {
       error = err instanceof Error ? err.message : "Failed to load invitations";
     } finally {
@@ -64,21 +56,9 @@
     error = null;
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/invitations/accept-multiple`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            invitationIds: invitations.map((inv) => inv.id),
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to accept invitations");
-      }
+      await api.post(`/invitations/accept-multiple`, {
+        invitationIds: invitations.map((inv) => inv.id),
+      });
 
       isLoading = false;
 

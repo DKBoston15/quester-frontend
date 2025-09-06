@@ -1,4 +1,3 @@
-<!-- src/lib/components/ResourceUserManager.svelte -->
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
   import { Card } from "$lib/components/ui/card";
@@ -12,8 +11,8 @@
   import * as Table from "$lib/components/ui/table";
   import { toast } from "svelte-sonner";
   import { Search, UserPlus } from "lucide-svelte";
-  import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
-  import { API_BASE_URL } from "$lib/config";
+  import { teamManagement } from "$lib/stores/TeamManagementStore";
+  import { api } from "$lib/services/api-client";
 
   // Props with Svelte 5 runes
   const { resourceType, resourceId, organizationId, onUserAdded } = $props<{
@@ -46,33 +45,21 @@
     isLoading = true;
     try {
       // Get users from organization structure via team management
-      const response = await fetch(
-        `${API_BASE_URL}/team-management/organization/${organizationId}`,
-        {
-          credentials: "include",
-        }
+      const orgData = await api.get(
+        `/team-management/organization/${organizationId}`
       );
 
-      if (response.ok) {
-        const orgData = await response.json();
+      // Extract users correctly - they're nested under organization.users
+      const orgUsers = orgData.organization?.users || [];
 
-        // Extract users correctly - they're nested under organization.users
-        const orgUsers = orgData.organization?.users || [];
+      // Get current resource users to filter them out
+      const currentUsers = getCurrentResourceUsers();
+      const currentUserIds = currentUsers.map((u) => String(u.id));
 
-        // Get current resource users to filter them out
-        const currentUsers = getCurrentResourceUsers();
-        const currentUserIds = currentUsers.map((u) => String(u.id));
-
-        // Filter out users who are already in the resource
-        availableUsers = orgUsers.filter(
-          (user: any) => !currentUserIds.includes(String(user.id))
-        );
-      } else {
-        console.error(
-          "Failed to load organization users:",
-          await response.text()
-        );
-      }
+      // Filter out users who are already in the resource
+      availableUsers = orgUsers.filter(
+        (user: any) => !currentUserIds.includes(String(user.id))
+      );
     } catch (error) {
       console.error("Error loading available users:", error);
     } finally {
@@ -91,28 +78,17 @@
 
   async function loadRoles() {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/roles?scope=${resourceType}`,
-        {
-          credentials: "include",
-        }
+      const rolesData = await api.get(`/roles?scope=${resourceType}`);
+      availableRoles = rolesData;
+
+      // Set default role to Member if available
+      const memberRole = rolesData.find(
+        (role: any) => role.name.toLowerCase() === "member"
       );
-
-      if (response.ok) {
-        const rolesData = await response.json();
-        availableRoles = rolesData;
-
-        // Set default role to Member if available
-        const memberRole = rolesData.find(
-          (role: any) => role.name.toLowerCase() === "member"
-        );
-        if (memberRole) {
-          selectedRoleId = memberRole.id;
-        } else if (rolesData.length > 0) {
-          selectedRoleId = rolesData[0].id;
-        }
-      } else {
-        console.error("Failed to load roles:", await response.text());
+      if (memberRole) {
+        selectedRoleId = memberRole.id;
+      } else if (rolesData.length > 0) {
+        selectedRoleId = rolesData[0].id;
       }
     } catch (error) {
       console.error("Error loading roles:", error);
@@ -164,41 +140,18 @@
     isAdding = true;
     selectedUserId = String(userId);
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/team-management/${resourceType}/${resourceId}/users`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            userId,
-            roleId: selectedRoleId,
-          }),
-        }
-      );
+      await api.post(`/team-management/${resourceType}/${resourceId}/users`, {
+        userId,
+        roleId: selectedRoleId,
+      });
 
-      if (response.ok) {
-        toast.success(`User added to ${resourceType} successfully`);
-        // Refresh the list of available users
-        loadAvailableUsers();
-        // Notify parent
-        onUserAdded();
-        // Reset selection
-        selectedUserId = "";
-      } else {
-        const errorText = await response.text();
-        let errorMessage;
-        try {
-          const error = JSON.parse(errorText);
-          errorMessage = error.message;
-        } catch {
-          errorMessage = errorText;
-        }
-        toast.error(errorMessage || `Failed to add user to ${resourceType}`);
-        console.error("Failed to add user:", errorText);
-      }
+      toast.success(`User added to ${resourceType} successfully`);
+      // Refresh the list of available users
+      loadAvailableUsers();
+      // Notify parent
+      onUserAdded();
+      // Reset selection
+      selectedUserId = "";
     } catch (error) {
       console.error(`Error adding user to ${resourceType}:`, error);
       toast.error(`Error adding user to ${resourceType}`);

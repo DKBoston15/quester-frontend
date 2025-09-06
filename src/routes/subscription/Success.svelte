@@ -1,9 +1,9 @@
 <script lang="ts">
   import { navigate } from "svelte-routing";
-  import { auth } from "../../lib/stores/AuthStore.svelte";
+  import { auth } from "$lib/stores/AuthStore";
   import { DarkmodeToggle } from "$lib/components/ui/darkmode-toggle";
   import { onMount } from "svelte";
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
 
   let isLoading = $state(true);
   let error = $state("");
@@ -28,34 +28,14 @@
 
     try {
       // First get the organization details to determine subscription type
-      const orgResponse = await fetch(
-        `${API_BASE_URL}/organizations/${currentOrgId}`,
-        { credentials: "include" }
-      );
-
-      if (!orgResponse.ok) {
-        throw new Error("Failed to fetch organization details");
-      }
-
-      const orgData = await orgResponse.json();
+      const orgData = await api.get(`/organizations/${currentOrgId}`);
       const isTeamSubscription = orgData.subscriptionType === "organization";
 
       // Then sync the subscription
-      const response = await fetch(`${API_BASE_URL}/stripe/sync`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          organizationId: currentOrgId,
-          subscriptionType: isTeamSubscription ? "organization" : "personal",
-        }),
+      await api.post("/stripe/sync", {
+        organizationId: currentOrgId,
+        subscriptionType: isTeamSubscription ? "organization" : "personal",
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to sync subscription");
-      }
 
       // After successful subscription sync, continue onboarding flow
       if (isTeamSubscription) {

@@ -1,8 +1,7 @@
-<!-- src/routes/Dashboard.svelte -->
 <script lang="ts">
   import { navigate } from "svelte-routing";
   import { onMount } from "svelte";
-  import { auth } from "../lib/stores/AuthStore.svelte";
+  import { auth } from "$lib/stores/AuthStore";
   import { Button } from "$lib/components/ui/button";
   import {
     Card,
@@ -17,7 +16,7 @@
   import AppSidebar from "$lib/components/AppSidebar.svelte";
   import AnnouncementBar from "$lib/components/announcements/AnnouncementBar.svelte";
   import { FolderTree, GraduationCap } from "lucide-svelte";
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
   import * as Tooltip from "$lib/components/ui/tooltip";
@@ -144,21 +143,9 @@
     try {
       if (!auth.user?.id) return;
 
-      const response = await fetch(
-        `${API_BASE_URL}/organizations/by-user?userId=${auth.user.id}`,
-        {
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-          },
-        }
+      const data = await api.get(
+        `/organizations/by-user?userId=${auth.user.id}`
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to load organizations");
-      }
-
-      const data = await response.json();
       organizations = data.data || [];
 
       if (organizations.length > 0) {
@@ -178,29 +165,17 @@
 
         // Load organization details including roles
         try {
-          const orgDetailsResponse = await fetch(
-            `${API_BASE_URL}/team-management/resources`,
-            {
-              credentials: "include",
-              headers: {
-                Accept: "application/json",
-              },
-            }
-          );
-
-          if (orgDetailsResponse.ok) {
-            const resourcesData = await orgDetailsResponse.json();
-            // Use the organization data from team-management/resources if available
-            if (
-              resourcesData.organizations &&
-              resourcesData.organizations.length > 0
-            ) {
-              const foundOrg = resourcesData.organizations.find(
-                (o: Organization) => o.id === orgToUse.id
-              );
-              if (foundOrg) {
-                orgToUse = { ...orgToUse, ...foundOrg };
-              }
+          const resourcesData = await api.get(`/team-management/resources`);
+          // Use the organization data from team-management/resources if available
+          if (
+            resourcesData.organizations &&
+            resourcesData.organizations.length > 0
+          ) {
+            const foundOrg = resourcesData.organizations.find(
+              (o: Organization) => o.id === orgToUse.id
+            );
+            if (foundOrg) {
+              orgToUse = { ...orgToUse, ...foundOrg };
             }
           }
         } catch (error) {
@@ -238,32 +213,18 @@
     if (!currentOrg || !auth.user) return;
 
     try {
-      const deptResponse = await fetch(
-        `${API_BASE_URL}/departments/by-user?userId=${auth.user.id}`,
-        { credentials: "include" }
+      const deptData = await api.get(
+        `/departments/by-user?userId=${auth.user.id}`
       );
-
-      if (!deptResponse.ok) {
-        throw new Error("Failed to fetch departments");
-      }
-
-      const deptData = await deptResponse.json();
 
       // Filter for current organization
       departments = deptData.data.filter(
         (d: Department) => d.organizationId === currentOrg?.id
       );
 
-      const projectsResponse = await fetch(
-        `${API_BASE_URL}/projects/by-user?userId=${auth.user.id}`,
-        { credentials: "include" }
+      const projectsData = await api.get(
+        `/projects/by-user?userId=${auth.user.id}`
       );
-
-      if (!projectsResponse.ok) {
-        throw new Error("Failed to fetch projects");
-      }
-
-      const projectsData = await projectsResponse.json();
 
       // Filter for current organization
       projects = projectsData.data.filter(
@@ -309,11 +270,11 @@
                   <Tooltip.Trigger>
                     <Button
                       variant="outline"
-                      size="icon"
                       onclick={() => driverObj.drive()}
                       aria-label="Learn about the Dashboard"
                     >
-                      <GraduationCap class="h-4 w-4" />
+                      <GraduationCap class="h-4 w-4 mr-2" />
+                      Tour
                     </Button>
                   </Tooltip.Trigger>
                   <Tooltip.Content>
@@ -380,9 +341,7 @@
           <!-- Main Actions Grid -->
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Right Column -->
-            <div class="space-y-6">
-              
-            </div>
+            <div class="space-y-6"></div>
           </div>
           <!-- Workspace Overview -->
           {#if currentOrg}

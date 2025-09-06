@@ -235,8 +235,9 @@
       ],
       autofocus: true,
       onUpdate: (transaction) => {
-        content = transaction.editor.getJSON();
-        dispatch("contentChange", content);
+        const newContent = transaction.editor.getJSON();
+        content = newContent;
+        dispatch("contentChange", newContent);
       },
     });
 

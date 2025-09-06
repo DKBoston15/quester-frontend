@@ -1,4 +1,3 @@
-<!-- KeywordAnalysis.svelte -->
 <script lang="ts">
   import { fade, slide } from "svelte/transition";
   import KeywordInput from "./KeywordInput.svelte";
@@ -7,12 +6,13 @@
   import { Card } from "$lib/components/ui/card";
   import { EmptyState } from "$lib/components/ui/empty-state";
   import type { KeywordAnalysis } from "$lib/types/index";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
-  import { API_BASE_URL } from "$lib/config";
+  import { projectStore } from "$lib/stores/ProjectStore";
+  import { api } from "$lib/services/api-client";
   import { driver } from "driver.js";
-  import type { DriveStep, Side } from "driver.js";
+  import type { DriveStep } from "driver.js";
   import "driver.js/dist/driver.css";
   import { GraduationCap } from "lucide-svelte";
+  import { onDestroy } from "svelte";
 
   let loading = $state(false);
   let switching = $state(false);
@@ -20,6 +20,12 @@
   let currentAnalysis = $state<KeywordAnalysis | null>(null);
   let analyses = $state<KeywordAnalysis[]>([]);
   let showNewAnalysis = $state(false);
+  // Track in-flight create request to allow cancellation and avoid timeouts
+  let createAnalysisAbort: AbortController | null = null;
+
+  onDestroy(() => {
+    if (createAnalysisAbort) createAnalysisAbort.abort();
+  });
 
   // --- Driver.js Steps Definitions ---
   const noAnalysisSteps: DriveStep[] = [
@@ -199,14 +205,9 @@
     loading = true;
     error = null;
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/keyword_analysis/project/${projectStore.currentProject!.id}`,
-        { credentials: "include" }
+      const data = await api.get(
+        `/keyword_analysis/project/${projectStore.currentProject!.id}`
       );
-      if (!response.ok) {
-        throw new Error("Failed to fetch analyses");
-      }
-      const data = await response.json();
 
       analyses = data.map((analysis: KeywordAnalysis) => {
         const processed = {
@@ -249,24 +250,27 @@
       return;
     }
 
+    // Cancel any previous create request
+    if (createAnalysisAbort) {
+      createAnalysisAbort.abort();
+    }
+    createAnalysisAbort = new AbortController();
+
     loading = true;
     error = null;
     try {
-      const response = await fetch(`${API_BASE_URL}/keyword_analysis`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
+      const data = await api.post(
+        `/keyword_analysis`,
+        {
           keywords,
           projectId: projectStore.currentProject.id,
-        }),
-      });
-      if (!response.ok) {
-        throw new Error("Failed to create analysis");
-      }
-      const data = await response.json();
+        },
+        {
+          // Keyword analysis can take longer; extend timeout and wire abort
+          timeout: 180000, // 3 minutes
+          signal: createAnalysisAbort.signal,
+        }
+      );
       const newAnalysis = {
         ...data.keyword_analysis,
         keywords:
@@ -291,22 +295,22 @@
       currentAnalysis = newAnalysis;
       showNewAnalysis = false;
     } catch (err) {
-      console.error("Error creating analysis:", err);
-      error = "Failed to create keyword analysis";
+      // Suppress console noise on intentional aborts; show clearer message on timeout
+      if (err instanceof Error && err.name === "AbortError") {
+        error = "Keyword analysis was canceled or timed out.";
+      } else {
+        console.error("Error creating analysis:", err);
+        error = "Failed to create keyword analysis";
+      }
     } finally {
       loading = false;
+      createAnalysisAbort = null;
     }
   }
 
   async function handleDelete(id: string) {
     try {
-      const response = await fetch(`${API_BASE_URL}/keyword_analysis/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (!response.ok) {
-        throw new Error("Failed to delete analysis");
-      }
+      await api.delete(`/keyword_analysis/${id}`);
       analyses = analyses.filter((a) => a.id !== id);
       if (currentAnalysis?.id === id) {
         currentAnalysis = analyses[0] || null;
@@ -367,9 +371,9 @@
         >
           {showNewAnalysis ? "Cancel" : "New Analysis"}
         </Button>
-        <Button variant="outline" size="icon" onclick={startTour}>
-          <GraduationCap class="h-4 w-4" />
-          <span class="sr-only">Learn about Keyword Analysis</span>
+        <Button variant="outline" onclick={startTour}>
+          <GraduationCap class="h-4 w-4 mr-2" />
+          Tour
         </Button>
       </div>
     {/if}

@@ -3,8 +3,8 @@
   import * as Progress from "$lib/components/ui/progress";
   import * as Accordion from "$lib/components/ui/accordion";
   import * as Tooltip from "$lib/components/ui/tooltip";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
-  import { grantStore } from "$lib/stores/GrantStore.svelte";
+  import { projectStore } from "$lib/stores/ProjectStore";
+  import { grantStore } from "$lib/stores/GrantStore";
   import { AlertCircle, CheckCircle2, Sparkles } from "lucide-svelte";
   import EmptyState from "$lib/components/ui/empty-state/EmptyState.svelte";
   import { navigate } from "svelte-routing";

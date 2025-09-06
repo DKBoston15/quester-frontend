@@ -1,7 +1,7 @@
 // Chat History API Service
 
-import { API_BASE_URL } from "../config";
-import type { ChatMessage } from "../stores/GlobalSearchStore.svelte";
+import { api, type APIRequestConfig } from "./api-client";
+import type { ChatMessage } from "$lib/stores/GlobalSearchStore";
 
 // Chat session interfaces
 export interface ChatSession {
@@ -81,121 +81,6 @@ export class ChatHistoryAPIError extends Error {
   }
 }
 
-// Request configuration interface
-interface RequestConfig {
-  retries?: number;
-  timeout?: number;
-  signal?: AbortSignal;
-}
-
-// Default request configuration
-const DEFAULT_CONFIG: RequestConfig = {
-  retries: 3,
-  timeout: 30000, // 30 seconds
-};
-
-// Utility function to create fetch requests with retry logic
-async function apiRequest<T>(
-  url: string,
-  options: RequestInit = {},
-  config: RequestConfig = {}
-): Promise<T> {
-  const {
-    retries = DEFAULT_CONFIG.retries!,
-    timeout = DEFAULT_CONFIG.timeout!,
-    signal,
-  } = config;
-
-  // Create abort controller for timeout if no signal provided
-  const controller = new AbortController();
-  const timeoutId = signal
-    ? null
-    : setTimeout(() => controller.abort(), timeout);
-
-  const requestSignal = signal || controller.signal;
-
-  const requestOptions: RequestInit = {
-    ...options,
-    signal: requestSignal,
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  };
-
-  let lastError: Error;
-
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      const response = await fetch(url, requestOptions);
-
-      // Clear timeout if we got a response
-      if (timeoutId) clearTimeout(timeoutId);
-
-      // Handle non-ok responses
-      if (!response.ok) {
-        let errorData: any;
-        try {
-          errorData = await response.json();
-        } catch {
-          errorData = { message: response.statusText };
-        }
-
-        throw new ChatHistoryAPIError(
-          errorData.message || `Request failed with status ${response.status}`,
-          response.status,
-          errorData.code,
-          errorData.details
-        );
-      }
-
-      // Handle empty responses
-      const responseText = await response.text();
-      if (!responseText) {
-        return {} as T;
-      }
-
-      try {
-        return JSON.parse(responseText) as T;
-      } catch (parseError) {
-        throw new ChatHistoryAPIError(
-          "Invalid JSON response from server",
-          response.status
-        );
-      }
-    } catch (error) {
-      lastError = error as Error;
-
-      // Don't retry on certain errors
-      if (error instanceof ChatHistoryAPIError) {
-        if (
-          error.status === 401 ||
-          error.status === 403 ||
-          error.status === 404
-        ) {
-          throw error;
-        }
-      }
-
-      // Don't retry on abort
-      if (error instanceof Error && error.name === "AbortError") {
-        throw error;
-      }
-
-      // If this is the last attempt, throw the error
-      if (attempt === retries) {
-        throw error;
-      }
-
-      // Wait before retrying (exponential backoff)
-      const delay = Math.min(1000 * Math.pow(2, attempt), 5000);
-      await new Promise((resolve) => setTimeout(resolve, delay));
-    }
-  }
-
-  throw lastError!;
-}
 
 // Utility function to build query parameters
 function buildQueryParams(params: Record<string, any>): string {
@@ -230,7 +115,7 @@ export class ChatHistoryAPI {
    */
   static async getChatSessions(
     filters: ChatSessionFilters = {},
-    config?: RequestConfig
+    config?: APIRequestConfig
   ): Promise<ChatSessionListResponse> {
     const queryParams = buildQueryParams({
       projectId: filters.projectId,
@@ -242,8 +127,8 @@ export class ChatHistoryAPI {
       sortOrder: filters.sortOrder || 'desc',
     });
 
-    const url = `${API_BASE_URL}/chat/sessions?${queryParams}`;
-    const response = await apiRequest<ChatSession[]>(url, { method: "GET" }, config);
+    const url = `/chat/sessions?${queryParams}`;
+    const response = await api.get<ChatSession[]>(url, config);
     
     // Transform response to expected format
     return {
@@ -260,10 +145,10 @@ export class ChatHistoryAPI {
    */
   static async getChatSession(
     sessionId: string,
-    config?: RequestConfig
+    config?: APIRequestConfig
   ): Promise<ChatSession> {
-    const url = `${API_BASE_URL}/chat/sessions/${sessionId}`;
-    return apiRequest<ChatSession>(url, { method: "GET" }, config);
+    const url = `/chat/sessions/${sessionId}`;
+    return api.get<ChatSession>(url, config);
   }
 
   /**
@@ -271,17 +156,10 @@ export class ChatHistoryAPI {
    */
   static async createChatSession(
     sessionData: CreateChatSessionRequest,
-    config?: RequestConfig
+    config?: APIRequestConfig
   ): Promise<ChatSession> {
-    const url = `${API_BASE_URL}/chat/sessions`;
-    return apiRequest<ChatSession>(
-      url,
-      {
-        method: "POST",
-        body: JSON.stringify(sessionData),
-      },
-      config
-    );
+    const url = `/chat/sessions`;
+    return api.post<ChatSession>(url, sessionData, config);
   }
 
   /**
@@ -290,17 +168,10 @@ export class ChatHistoryAPI {
   static async updateChatSession(
     sessionId: string,
     sessionData: UpdateChatSessionRequest,
-    config?: RequestConfig
+    config?: APIRequestConfig
   ): Promise<ChatSession> {
-    const url = `${API_BASE_URL}/chat/sessions/${sessionId}`;
-    return apiRequest<ChatSession>(
-      url,
-      {
-        method: "PUT",
-        body: JSON.stringify(sessionData),
-      },
-      config
-    );
+    const url = `/chat/sessions/${sessionId}`;
+    return api.put<ChatSession>(url, sessionData, config);
   }
 
   /**
@@ -308,10 +179,10 @@ export class ChatHistoryAPI {
    */
   static async deleteChatSession(
     sessionId: string,
-    config?: RequestConfig
+    config?: APIRequestConfig
   ): Promise<{ message: string }> {
-    const url = `${API_BASE_URL}/chat/sessions/${sessionId}`;
-    return apiRequest<{ message: string }>(url, { method: "DELETE" }, config);
+    const url = `/chat/sessions/${sessionId}`;
+    return api.delete<{ message: string }>(url, config);
   }
 
   /**
@@ -322,7 +193,7 @@ export class ChatHistoryAPI {
     messages: ChatMessage[],
     projectId?: string,
     metadata?: any,
-    config?: RequestConfig
+    config?: APIRequestConfig
   ): Promise<ChatSession> {
     if (sessionId) {
       // Update existing session - backend returns session directly
@@ -352,7 +223,7 @@ export class ChatHistoryAPI {
   static async searchChatSessions(
     query: string,
     filters: Omit<ChatSessionFilters, 'search'> = {},
-    config?: RequestConfig
+    config?: APIRequestConfig
   ): Promise<ChatSessionListResponse> {
     return this.getChatSessions({ ...filters, search: query }, config);
   }
@@ -363,8 +234,8 @@ export class ChatHistoryAPI {
   static async toggleStarSession(
     sessionId: string,
     isStarred: boolean,
-    config?: RequestConfig
-  ): Promise<ChatSessionResponse> {
+    config?: APIRequestConfig
+  ): Promise<ChatSession> {
     const session = await this.getChatSession(sessionId, config);
     const metadata = { ...(session.metadata || {}), isStarred };
     
@@ -395,7 +266,7 @@ export class ChatHistoryAPI {
   static async getProjectSessions(
     projectId: string,
     limit: number = 10,
-    config?: RequestConfig
+    config?: APIRequestConfig
   ): Promise<ChatSession[]> {
     const response = await this.getChatSessions(
       { projectId, limit, sortBy: 'updatedAt', sortOrder: 'desc' },
@@ -409,7 +280,7 @@ export class ChatHistoryAPI {
    */
   static async getRecentSessions(
     limit: number = 10,
-    config?: RequestConfig
+    config?: APIRequestConfig
   ): Promise<ChatSession[]> {
     const response = await this.getChatSessions(
       { limit, sortBy: 'updatedAt', sortOrder: 'desc' },
@@ -423,7 +294,7 @@ export class ChatHistoryAPI {
    */
   static async getStarredSessions(
     limit: number = 20,
-    config?: RequestConfig
+    config?: APIRequestConfig
   ): Promise<ChatSession[]> {
     const response = await this.getChatSessions(
       { limit, sortBy: 'updatedAt', sortOrder: 'desc' },

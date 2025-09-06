@@ -13,9 +13,9 @@
   import { writable } from "svelte/store";
   import { onDestroy, onMount } from "svelte";
   import "@xyflow/svelte/dist/style.css";
-  import { modelStore } from "$lib/stores/ModelStore.svelte";
-  import { undoRedoStore } from "$lib/stores/UndoRedoStore.svelte";
-  import { edgeSettings } from "./edge-settings-store";
+  import { modelStore } from "$lib/stores/ModelStore";
+  import { undoRedoStore } from "$lib/stores/UndoRedoStore";
+  import { edgeSettings } from "$lib/stores/EdgeSettingsStore";
   import ResizableNode from "./ResizableNode.svelte";
   import CircleNode from "./CircleNode.svelte";
   import EllipseNode from "./EllipseNode.svelte";
@@ -25,8 +25,6 @@
   import FlowToolbar from "./FlowToolbar.svelte";
   import { driver, type DriveStep, type Driver } from "driver.js";
   import "driver.js/dist/driver.css";
-  import { GraduationCap } from "lucide-svelte";
-  import { Button } from "$lib/components/ui/button";
 
   let { modelId } = $props<{
     modelId: string;
@@ -51,14 +49,14 @@
 
   // Get the model name reactively
   let modelName = $derived(modelStore.currentModel?.name);
-  
+
   // Expose method for tutorial to add nodes
-  export function addTutorialNode(nodeType: string = 'ResizableNode') {
+  export function addTutorialNode(nodeType: string = "ResizableNode") {
     const position = {
       x: 300,
       y: 200,
     };
-    
+
     const newNode: Node = {
       id: `tutorial-${nodeType}-${Date.now()}`,
       type: nodeType,
@@ -66,9 +64,9 @@
       data: { label: "Tutorial Node" },
       selected: false,
     };
-    
+
     nodes.update((currentNodes) => [...currentNodes, newNode]);
-    
+
     return newNode.id;
   }
 
@@ -90,9 +88,14 @@
       undoRedoStore.completeHistoryChange();
     }
   }
-  
+
   // Expose method for tutorial to add nodes at specific position
-  export function addTutorialNodeAt(nodeType: string = 'ResizableNode', x: number, y: number, label?: string) {
+  export function addTutorialNodeAt(
+    nodeType: string = "ResizableNode",
+    x: number,
+    y: number,
+    label?: string
+  ) {
     const newNode: Node = {
       id: `tutorial-${nodeType}-${Date.now()}`,
       type: nodeType,
@@ -100,22 +103,22 @@
       data: { label: label || "Tutorial Node" },
       selected: false,
     };
-    
+
     nodes.update((currentNodes) => [...currentNodes, newNode]);
-    
+
     return newNode.id;
   }
-  
+
   // Expose method to select a node
   export function selectNode(nodeId: string) {
-    nodes.update((currentNodes) => 
-      currentNodes.map(node => ({
+    nodes.update((currentNodes) =>
+      currentNodes.map((node) => ({
         ...node,
-        selected: node.id === nodeId
+        selected: node.id === nodeId,
       }))
     );
   }
-  
+
   // Expose undo/redo methods
   export { performUndo, performRedo };
 
@@ -132,26 +135,25 @@
       markerEnd: undefined,
       markerStart: undefined,
     };
-    
+
     edges.update((currentEdges) => [...currentEdges, newEdge]);
-    
+
     return newEdge.id;
   }
-  
+
   // Register globally for tutorial access
   onMount(() => {
     (window as any).tutorialMethods = {
       addTutorialNode,
       addTutorialNodeAt,
       selectNode,
-      addTutorialEdge
+      addTutorialEdge,
     };
-    
+
     return () => {
       delete (window as any).tutorialMethods;
     };
   });
-
 
   // Function to duplicate a node
   function duplicateNode(nodeToDuplicate: Node) {
@@ -275,23 +277,25 @@
 
       nodes.update((currentNodes) => {
         // Find the node to bring to front
-        const nodeIndex = currentNodes.findIndex(node => node.id === nodeId);
+        const nodeIndex = currentNodes.findIndex((node) => node.id === nodeId);
         if (nodeIndex === -1) return currentNodes;
 
         // Remove the node from its current position
         const nodeToMove = currentNodes[nodeIndex];
-        const remainingNodes = currentNodes.filter(node => node.id !== nodeId);
-        
+        const remainingNodes = currentNodes.filter(
+          (node) => node.id !== nodeId
+        );
+
         // Add it to the end (top layer)
         const newNodes = [...remainingNodes, nodeToMove];
-        
+
         // Save state for undo/redo after a short delay
         setTimeout(() => {
           if (!undoRedoStore.isApplyingChange) {
             undoRedoStore.saveState(newNodes, $edges);
           }
         }, 100);
-        
+
         return newNodes;
       });
     };
@@ -307,36 +311,38 @@
 
       nodes.update((currentNodes) => {
         // Find the node to send to back
-        const nodeIndex = currentNodes.findIndex(node => node.id === nodeId);
+        const nodeIndex = currentNodes.findIndex((node) => node.id === nodeId);
         if (nodeIndex === -1) return currentNodes;
 
         // Remove the node from its current position
         const nodeToMove = currentNodes[nodeIndex];
-        const remainingNodes = currentNodes.filter(node => node.id !== nodeId);
-        
+        const remainingNodes = currentNodes.filter(
+          (node) => node.id !== nodeId
+        );
+
         // Add it to the beginning (back layer)
         const newNodes = [nodeToMove, ...remainingNodes];
-        
+
         // Save state for undo/redo after a short delay
         setTimeout(() => {
           if (!undoRedoStore.isApplyingChange) {
             undoRedoStore.saveState(newNodes, $edges);
           }
         }, 100);
-        
+
         return newNodes;
       });
     };
 
     const handleAutoConnect = (event: CustomEvent) => {
       const detail = event.detail;
-      if (detail?.action === 'connect-latest-nodes') {
+      if (detail?.action === "connect-latest-nodes") {
         // Get the two most recent nodes
         const currentNodes = $nodes;
         if (currentNodes.length >= 2) {
           const sourceNode = currentNodes[currentNodes.length - 2];
           const targetNode = currentNodes[currentNodes.length - 1];
-          
+
           // Create connection
           const connection = {
             source: sourceNode.id,
@@ -344,16 +350,22 @@
             sourceHandle: null,
             targetHandle: null,
           };
-          
+
           onConnect(connection);
         }
       }
     };
 
     document.addEventListener("duplicate", handleDuplicate as EventListener);
-    document.addEventListener("bringToFront", handleBringToFront as EventListener);
+    document.addEventListener(
+      "bringToFront",
+      handleBringToFront as EventListener
+    );
     document.addEventListener("sendToBack", handleSendToBack as EventListener);
-    document.addEventListener("autoConnectNodes", handleAutoConnect as EventListener);
+    document.addEventListener(
+      "autoConnectNodes",
+      handleAutoConnect as EventListener
+    );
 
     return () => {
       document.removeEventListener(
@@ -365,7 +377,7 @@
         handleBringToFront as EventListener
       );
       document.removeEventListener(
-        "sendToBack", 
+        "sendToBack",
         handleSendToBack as EventListener
       );
       document.removeEventListener(
@@ -402,7 +414,7 @@
           // Convert objects to arrays if needed (for new models that might have {} instead of [])
           const finalNodes = Array.isArray(parsedNodes) ? parsedNodes : [];
           const finalEdges = Array.isArray(parsedEdges) ? parsedEdges : [];
-          
+
           nodes.set(finalNodes);
           edges.set(finalEdges);
 
@@ -412,12 +424,14 @@
           // Apply loaded edge settings
           const firstEdge = finalEdges[0];
           if (firstEdge && firstEdge.style) {
-            const colorMatch = firstEdge.style.match(/stroke: (#[0-9a-fA-F]{6})/);
+            const colorMatch = firstEdge.style.match(
+              /stroke: (#[0-9a-fA-F]{6})/
+            );
             const widthMatch = firstEdge.style.match(/stroke-width: (\d+)px/);
-            
+
             edgeSettings.set({
-              type: firstEdge.type || 'default',
-              color: colorMatch ? colorMatch[1] : '#000000',
+              type: firstEdge.type || "default",
+              color: colorMatch ? colorMatch[1] : "#000000",
               width: widthMatch ? parseInt(widthMatch[1]) : 1,
               animated: firstEdge.animated || false,
               markerStart: !!firstEdge.markerStart,
@@ -502,7 +516,6 @@
     if (historyTimeout) clearTimeout(historyTimeout);
   });
 
-
   const onConnect = (params: any) => {
     const newEdge: Edge = {
       ...params,
@@ -513,7 +526,6 @@
       markerEnd: undefined,
       markerStart: undefined,
     };
-
 
     edges.update((eds) => {
       const updatedEdges = [...eds, newEdge];
@@ -586,7 +598,7 @@
   let lastEdgeSettings = $state($edgeSettings);
   $effect(() => {
     const currentSettings = $edgeSettings;
-    
+
     // Only update if settings actually changed to prevent infinite loops
     if (
       !initialLoadComplete ||

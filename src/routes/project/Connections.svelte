@@ -8,8 +8,8 @@
   import * as Card from "$lib/components/ui/card";
   import { onMount } from "svelte";
   import { navigate } from "svelte-routing";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
-  import { API_BASE_URL } from "$lib/config";
+  import { projectStore } from "$lib/stores/ProjectStore";
+  import { api } from "$lib/services/api-client";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
   import { GraduationCap } from "lucide-svelte";
@@ -24,16 +24,7 @@
   // Check if user has access to graph visualization features
   async function checkGraphAccessCapability() {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/capabilities/graph_access`,
-        { credentials: "include" }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to check graph access capability");
-      }
-
-      const data = await response.json();
+      const data = await api.get('/capabilities/graph_access');
       hasAccess = data.allowed;
 
       // If user doesn't have access, redirect to overview
@@ -246,9 +237,13 @@
                     <div class="space-y-2">
                       <h4 class="text-sm font-medium">2D Graph Controls</h4>
                       <ul class="text-xs space-y-1 text-muted-foreground">
-                        <li><strong>Left Click:</strong> Pan/Select/Drag nodes</li>
+                        <li>
+                          <strong>Left Click:</strong> Pan/Select/Drag nodes
+                        </li>
                         <li><strong>Scroll Wheel:</strong> Zoom in/out</li>
-                        <li><strong>Left Click + Shift:</strong> Select multiple nodes</li>
+                        <li>
+                          <strong>Left Click + Shift:</strong> Select multiple nodes
+                        </li>
                       </ul>
                     </div>
                   {:else if value === "3D"}
@@ -268,12 +263,11 @@
         </Popover.Root>
         <Button
           variant="outline"
-          size="icon"
           onclick={() => driverObj.drive()}
           class="border-2 dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
         >
-          <GraduationCap class="h-4 w-4" />
-          <span class="sr-only">Start Tour</span>
+          <GraduationCap class="h-4 w-4 mr-2" />
+          Tour
         </Button>
       </div>
     </div>

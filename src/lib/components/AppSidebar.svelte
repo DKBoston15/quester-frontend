@@ -13,12 +13,12 @@
     ChartBar,
   } from "lucide-svelte";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
-  import { auth } from "$lib/stores/AuthStore.svelte";
-  import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
+  import { auth } from "$lib/stores/AuthStore";
+  import { teamManagement } from "$lib/stores/TeamManagementStore";
   import { navigate, Link } from "svelte-routing";
   import { DarkmodeToggle } from "$lib/components/ui/darkmode-toggle";
   import * as Tooltip from "$lib/components/ui/tooltip";
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
 
   // Define MenuItem type
   interface MenuItem {
@@ -159,19 +159,9 @@
       let hasMorePages = true;
 
       while (hasMorePages) {
-        const response = await fetch(
-          `${API_BASE_URL}/projects/by-user?userId=${auth.user.id}&page=${currentPage}&limit=50&sort=lastViewedAt&order=desc`,
-          { credentials: "include" }
+        const data = await api.get(
+          `/projects/by-user?userId=${auth.user.id}&page=${currentPage}&limit=50&sort=lastViewedAt&order=desc`
         );
-
-        if (!response.ok) {
-          console.error(
-            `Failed to load projects page ${currentPage}. Status: ${response.status}`
-          );
-          throw new Error("Failed to load projects"); // Stop if a page fails
-        }
-
-        const data = await response.json();
         const pageProjects = data.data || [];
 
         // Filter for the current organization *after* fetching
@@ -322,12 +312,8 @@
                               onclick={async (e) => {
                                 e.preventDefault();
                                 try {
-                                  fetch(
-                                    `${API_BASE_URL}/projects/${project.id}/view`,
-                                    {
-                                      method: "POST",
-                                      credentials: "include",
-                                    }
+                                  api.post(
+                                    `/projects/${project.id}/view`
                                   );
                                 } catch (fetchError) {
                                   console.error(

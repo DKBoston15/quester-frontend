@@ -1,7 +1,6 @@
-<script lang="ts" module>
+
   import type { Note } from "$lib/types";
-  import { auth } from "$lib/stores/AuthStore.svelte";
-  import { API_BASE_URL } from "$lib/config";
+  import { auth } from "$lib/stores/AuthStore";
   import { api, isAuthError } from "../services/api-client";
 
   type FilterType = "literature" | "research" | "all" | "unlinked" | "recent";
@@ -410,7 +409,7 @@
 
       try {
         // Use centralized API client which handles auth errors automatically
-        const fetchedData = await api.get(
+        const fetchedData = await api.get<any[]>(
           `/note/project/${projectId}${
             literatureId ? `?literatureId=${literatureId}` : ""
           }`
@@ -480,15 +479,12 @@
         } as any; // Type assertion to avoid linter errors
 
         // Use centralized API client which handles auth errors automatically
-        const newNote = await api.post(`/note`, payload);
+        const newNote = await api.post<Note>(`/note`, payload);
 
         // Create a new object with the correct structure before processing
         const noteWithCorrectTypes = {
           ...newNote,
-          project_id: newNote.projectId || newNote.project_id,
-          user_id: newNote.userId || newNote.user_id,
-          // Map sectionType to section_type for frontend consistency
-          section_type: newNote.sectionType || newNote.section_type,
+          // Note: API already returns data in correct format matching Note interface
         };
 
         // Process the note data to ensure correct formatting
@@ -510,7 +506,7 @@
       id: string,
       data: Partial<Note>,
       uiOnlyUpdate: boolean = false
-    ) {
+    ): Promise<Note> {
       // Don't set loading state for content updates to avoid UI flicker
       const isContentUpdate =
         Object.keys(data).length === 2 && "name" in data && "content" in data;
@@ -544,12 +540,17 @@
         // For UI-only updates, update the local state first
         if (uiOnlyUpdate) {
           // Update the note in the local state without causing full array replacement
+          const updatedNote = notes.find(n => n.id === id);
+          if (!updatedNote) {
+            throw new Error("Note not found");
+          }
+          
+          const newNote = { ...updatedNote, ...data };
+          newNote.updated_at = new Date().toISOString();
+          
           notes = notes.map((note) => {
             if (note.id === id) {
-              const updatedNote = { ...note, ...data };
-              // Ensure updated_at is set
-              updatedNote.updated_at = new Date().toISOString();
-              return updatedNote;
+              return newNote;
             }
             return note;
           });
@@ -558,16 +559,17 @@
           if (searchQuery) {
             this.setSearchQuery(searchQuery);
           }
+          
+          return newNote;
         }
 
-        // Skip the API call for UI-only updates
-        if (!uiOnlyUpdate) {
-          // Use centralized API client which handles auth errors automatically
-          const updatedNote = await api.put(`/note/${id}`, payload);
+        // Make the API call for non-UI-only updates
+        // Use centralized API client which handles auth errors automatically
+        const response = await api.put<{note: Note} | Note>(`/note/${id}`, payload);
 
-          const processedUpdatedNote = processNoteData(
-            updatedNote.note || updatedNote
-          );
+        const processedUpdatedNote = processNoteData(
+          'note' in response ? response.note : response
+        );
 
           // Update the note in the local state without causing full array replacement
           notes = notes.map((note) => {
@@ -616,7 +618,14 @@
           if (searchQuery) {
             this.setSearchQuery(searchQuery);
           }
-        }
+          
+          // Return the updated note
+          const finalNote = notes.find(n => n.id === id);
+          if (!finalNote) {
+            throw new Error("Failed to update note");
+          }
+          return finalNote;
+
       } catch (err) {
         console.error("Error updating note:", err);
         error = err instanceof Error ? err.message : "An error occurred";
@@ -634,7 +643,7 @@
 
       try {
         // Use centralized API client which handles auth errors automatically
-        await api.delete(`/note/${id}`);
+        await api.delete<void>(`/note/${id}`);
 
         notes = notes.filter((note) => note.id !== id);
         activeNoteId = activeNoteId === id ? null : activeNoteId;
@@ -847,4 +856,4 @@
 
     return processedNote as Note;
   }
-</script>
+

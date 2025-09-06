@@ -3,14 +3,12 @@
   import { slide, fade } from "svelte/transition";
   import { flip } from "svelte/animate";
   import { quintOut } from "svelte/easing";
-  import { globalSearchStore, type ChatMessage } from "$lib/stores/GlobalSearchStore.svelte";
+  import { globalSearchStore } from "$lib/stores/GlobalSearchStore";
   import { Button } from "$lib/components/ui/button";
   import { Badge } from "$lib/components/ui/badge";
-  import { ScrollArea } from "$lib/components/ui/scroll-area";
-  import { cn } from "$lib/utils";
   import { ChatHistory } from "$lib/components/global-search";
   import MarkdownIt from "markdown-it";
-  
+
   // Icons
   import Send from "lucide-svelte/icons/send";
   import Loader from "lucide-svelte/icons/loader";
@@ -47,7 +45,6 @@
   let isSavingSession = $derived(globalSearchStore.isSavingSession);
   let hasUnsavedChanges = $derived(globalSearchStore.hasUnsavedChanges);
   let sessionTitle = $derived(globalSearchStore.sessionTitle);
-  let autoSaveEnabled = $derived(globalSearchStore.autoSaveEnabled);
   let lastSaveTime = $derived(globalSearchStore.lastSaveTime);
 
   // Local state for UI
@@ -58,15 +55,15 @@
   let typingTimeout: NodeJS.Timeout;
 
   // Initialize markdown renderer
-  const md = new MarkdownIt({
+  const md: MarkdownIt = new MarkdownIt({
     html: true,
     linkify: true,
     typographer: true,
     breaks: true,
-    highlight: function (str, lang) {
+    highlight: function (str: string, lang: string): string {
       // Basic code highlighting - you can enhance this later
       return `<pre class="language-${lang}"><code>${md.utils.escapeHtml(str)}</code></pre>`;
-    }
+    },
   });
 
   // Research question suggestions
@@ -74,23 +71,23 @@
     {
       icon: Search,
       title: "Summarize my recent research findings",
-      description: "Get an overview of your latest research progress"
+      description: "Get an overview of your latest research progress",
     },
     {
       icon: TrendingUp,
       title: "What are the key themes in my literature?",
-      description: "Identify patterns and trends across your sources"
+      description: "Identify patterns and trends across your sources",
     },
     {
       icon: Lightbulb,
       title: "Help me find research gaps",
-      description: "Discover unexplored areas in your field"
+      description: "Discover unexplored areas in your field",
     },
     {
       icon: Target,
       title: "What are my next research steps?",
-      description: "Get recommendations for continuing your work"
-    }
+      description: "Get recommendations for continuing your work",
+    },
   ];
 
   // Auto-scroll to bottom when new messages arrive
@@ -124,32 +121,32 @@
   // Safe message count getter with proper error handling
   function getSessionMessageCount(session: any): number {
     if (!session?.messages) return 0;
-    
+
     let messages = session.messages;
-    if (typeof messages === 'string') {
+    if (typeof messages === "string") {
       try {
         messages = JSON.parse(messages);
       } catch (error) {
-        console.error('Failed to parse chat session messages JSON:', {
+        console.error("Failed to parse chat session messages JSON:", {
           sessionId: session.id,
-          error: error instanceof Error ? error.message : 'Unknown error',
-          rawMessages: messages?.substring(0, 100) + '...' // Log first 100 chars for debugging
+          error: error instanceof Error ? error.message : "Unknown error",
+          rawMessages: messages?.substring(0, 100) + "...", // Log first 100 chars for debugging
         });
         // Return 0 but notify user that data might be corrupted
         // This prevents the UI from breaking while alerting about data issues
         return 0;
       }
     }
-    
+
     if (!Array.isArray(messages)) {
-      console.warn('Chat session messages is not an array:', {
+      console.warn("Chat session messages is not an array:", {
         sessionId: session.id,
         messageType: typeof messages,
-        messages
+        messages,
       });
       return 0;
     }
-    
+
     return messages.length;
   }
 
@@ -168,9 +165,9 @@
       chatInput = "";
       isTyping = false;
       clearTimeout(typingTimeout);
-      
+
       await globalSearchStore.sendChatMessage(message);
-      
+
       // Refocus input after submission
       if (chatInputRef) {
         chatInputRef.focus();
@@ -205,20 +202,23 @@
   // Transform tool names to friendly display names
   function getFriendlyToolName(toolName: string): string {
     const toolNames: Record<string, string> = {
-      'get_literature_count': 'Literature Counter',
-      'get_relevant_content': 'Content Search',
-      'semantic_search': 'Semantic Search',
-      'analyze_literature_gaps': 'Gap Analysis',
-      'suggest_research_directions': 'Research Suggestions',
-      'summarize_search_results': 'Search Summarizer',
-      'compare_methodologies': 'Methodology Comparison'
+      get_literature_count: "Literature Counter",
+      get_relevant_content: "Content Search",
+      semantic_search: "Semantic Search",
+      analyze_literature_gaps: "Gap Analysis",
+      suggest_research_directions: "Research Suggestions",
+      summarize_search_results: "Search Summarizer",
+      compare_methodologies: "Methodology Comparison",
     };
-    return toolNames[toolName] || toolName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    return (
+      toolNames[toolName] ||
+      toolName.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
+    );
   }
 
   // Format timestamp
-  function formatTimestamp(timestamp: string): string {
-    const date = new Date(timestamp);
+  function formatTimestamp(timestamp: Date | string): string {
+    const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
@@ -229,7 +229,7 @@
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
-    
+
     return date.toLocaleDateString();
   }
 
@@ -243,7 +243,7 @@
     // Show timestamp if messages are more than 5 minutes apart
     const prevTime = new Date(prevMessage.timestamp).getTime();
     const currentTime = new Date(currentMessage.timestamp).getTime();
-    
+
     return currentTime - prevTime > 5 * 60 * 1000;
   }
 
@@ -253,25 +253,28 @@
   }
 
   // Parse source citations from AI responses
-  function parseSourceCitations(content: string): { content: string; sources: Array<{ id: string; title: string; type: string }> } {
+  function parseSourceCitations(content: string): {
+    content: string;
+    sources: Array<{ id: string; title: string; type: string }>;
+  } {
     const sourcePattern = /\[Source: ([^\]]+)\]/g;
     const sources: Array<{ id: string; title: string; type: string }> = [];
     let match;
 
     while ((match = sourcePattern.exec(content)) !== null) {
-      const sourceInfo = match[1].split(' - ');
+      const sourceInfo = match[1].split(" - ");
       if (sourceInfo.length >= 2) {
         sources.push({
           id: sourceInfo[0],
           title: sourceInfo[1],
-          type: sourceInfo[2] || 'unknown'
+          type: sourceInfo[2] || "unknown",
         });
       }
     }
 
     // Remove source citations from content for display
-    const cleanContent = content.replace(sourcePattern, '').trim();
-    
+    const cleanContent = content.replace(sourcePattern, "").trim();
+
     return { content: cleanContent, sources };
   }
 
@@ -302,14 +305,14 @@
 
   function getLastSaveText(): string {
     if (!lastSaveTime) return "Not saved";
-    
+
     const now = new Date();
     const diffMs = now.getTime() - lastSaveTime.getTime();
     const diffMins = Math.floor(diffMs / 60000);
-    
+
     if (diffMins < 1) return "Saved just now";
     if (diffMins < 60) return `Saved ${diffMins}m ago`;
-    
+
     return `Saved ${lastSaveTime.toLocaleTimeString()}`;
   }
 </script>
@@ -317,9 +320,12 @@
 <div class="flex h-full">
   <!-- Chat History Sidebar -->
   {#if showChatHistory}
-    <div class="w-80 border-r bg-background flex-shrink-0" transition:slide={{ axis: 'x' }}>
-      <ChatHistory 
-        class="h-full" 
+    <div
+      class="w-80 border-r bg-background flex-shrink-0"
+      transition:slide={{ axis: "x" }}
+    >
+      <ChatHistory
+        class="h-full"
         onSessionSelect={handleSessionSelect}
         onNewSession={handleNewSession}
       />
@@ -345,12 +351,15 @@
           {/if}
           History
         </Button>
-        
+
         <!-- Session Title -->
         <div class="flex items-center gap-2">
           <h2 class="font-semibold text-sm truncate">{sessionTitle}</h2>
           {#if hasUnsavedChanges}
-            <div class="w-2 h-2 bg-orange-500 rounded-full" title="Unsaved changes"></div>
+            <div
+              class="w-2 h-2 bg-orange-500 rounded-full"
+              title="Unsaved changes"
+            ></div>
           {/if}
           {#if currentSession}
             <Badge variant="secondary" class="text-xs">
@@ -405,7 +414,7 @@
         <Button
           variant="ghost"
           size="sm"
-          onclick={() => globalSearchStore.setMode('search')}
+          onclick={() => globalSearchStore.setMode("search")}
           class="text-muted-foreground hover:text-foreground h-7"
         >
           <ArrowLeft class="size-3 mr-1" />
@@ -414,19 +423,23 @@
       </div>
     </div>
 
-  <!-- Chat Messages Area -->
-  <div class="flex-1 overflow-y-auto">
+    <!-- Chat Messages Area -->
+    <div class="flex-1 overflow-y-auto">
       <div bind:this={chatContainer} class="p-4 pt-12 space-y-4">
         {#if chatMessages.length === 0}
           <!-- Empty State with Suggestions -->
           <div class="text-center py-4">
             <div class="mb-6">
-              <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mb-4">
+              <div
+                class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mb-4"
+              >
                 <Sparkles class="size-8 text-white" />
               </div>
               <h3 class="font-semibold text-lg mb-2">AI Research Assistant</h3>
               <p class="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
-                Ask questions about your research, get insights from your literature, or explore patterns in your data. I'm here to help accelerate your research process.
+                Ask questions about your research, get insights from your
+                literature, or explore patterns in your data. I'm here to help
+                accelerate your research process.
               </p>
             </div>
 
@@ -441,12 +454,16 @@
                   onclick={() => selectSuggestion(suggestion.title)}
                 >
                   <div class="flex items-start gap-3 w-full">
-                    <div class="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                    <div
+                      class="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors"
+                    >
                       <Icon class="size-4 text-primary" />
                     </div>
                     <div class="flex-1 text-left">
                       <div class="font-medium text-sm">{suggestion.title}</div>
-                      <div class="text-xs text-muted-foreground mt-1">{suggestion.description}</div>
+                      <div class="text-xs text-muted-foreground mt-1">
+                        {suggestion.description}
+                      </div>
                     </div>
                   </div>
                 </Button>
@@ -458,7 +475,9 @@
               <div class="mt-6 p-4 border rounded-lg bg-muted/30">
                 <div class="flex items-center gap-2 mb-2">
                   <Search class="size-4 text-muted-foreground" />
-                  <span class="text-sm font-medium">Search context available</span>
+                  <span class="text-sm font-medium"
+                    >Search context available</span
+                  >
                 </div>
                 <p class="text-xs text-muted-foreground">
                   I can reference {searchResults.length} search results in our conversation
@@ -469,35 +488,42 @@
         {:else}
           <!-- Chat Messages -->
           <div class="space-y-4">
-            {#each chatMessages() as message, i (message.id)}
+            {#each chatMessages as message, i (message.id)}
               {@const showTimestamp = shouldShowTimestamp(i)}
               {@const isUser = message.role === "user"}
               {@const isAssistant = message.role === "assistant"}
-              {@const sources = message.sources || message.metadata?.sources || []}
+              {@const sources = message.sources || []}
               {@const content = message.content}
-              
+
               <div
                 class="message-container"
                 animate:flip={{ duration: 300, easing: quintOut }}
                 transition:slide|local={{ duration: 200 }}
               >
                 {#if showTimestamp}
-                  <div class="flex items-center justify-center my-4" transition:fade>
-                    <div class="flex items-center gap-2 px-3 py-1 bg-muted rounded-full text-xs text-muted-foreground">
+                  <div
+                    class="flex items-center justify-center my-4"
+                    transition:fade
+                  >
+                    <div
+                      class="flex items-center gap-2 px-3 py-1 bg-muted rounded-full text-xs text-muted-foreground"
+                    >
                       <Clock class="size-3" />
                       {formatTimestamp(message.timestamp)}
                     </div>
                   </div>
                 {/if}
 
-                <div class="flex gap-3 {isUser ? 'flex-row-reverse' : 'flex-row'}">
+                <div
+                  class="flex gap-3 {isUser ? 'flex-row-reverse' : 'flex-row'}"
+                >
                   <!-- Avatar -->
                   <div class="flex-shrink-0">
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center {
-                      isUser 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'bg-gradient-to-br from-blue-500 to-purple-600 text-white'
-                    }">
+                    <div
+                      class="w-8 h-8 rounded-full flex items-center justify-center {isUser
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-gradient-to-br from-blue-500 to-purple-600 text-white'}"
+                    >
                       {#if isUser}
                         <User class="size-4" />
                       {:else}
@@ -507,30 +533,47 @@
                   </div>
 
                   <!-- Message Content -->
-                  <div class="flex-1 max-w-[85%] {isUser ? 'text-right' : 'text-left'}">
-                    <div class="inline-block rounded-2xl px-4 py-3 {
-                      isUser 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'bg-muted border border-border'
-                    } relative group">
+                  <div
+                    class="flex-1 max-w-[85%] {isUser
+                      ? 'text-right'
+                      : 'text-left'}"
+                  >
+                    <div
+                      class="inline-block rounded-2xl px-4 py-3 {isUser
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted border border-border'} relative group"
+                    >
                       <!-- Message Content -->
                       {#if isAssistant}
                         <div class="prose-chat text-sm leading-relaxed">
                           {@html renderMarkdown(content || message.content)}
                         </div>
                       {:else}
-                        <div class="whitespace-pre-wrap text-sm leading-relaxed">
+                        <div
+                          class="whitespace-pre-wrap text-sm leading-relaxed"
+                        >
                           {content || message.content}
                         </div>
                       {/if}
 
                       <!-- Streaming Indicator -->
                       {#if message.streaming}
-                        <div class="flex items-center gap-1 mt-2 text-xs opacity-70" transition:fade>
+                        <div
+                          class="flex items-center gap-1 mt-2 text-xs opacity-70"
+                          transition:fade
+                        >
                           <div class="flex gap-1">
-                            <div class="w-1 h-1 bg-current rounded-full animate-pulse typing-dot"></div>
-                            <div class="w-1 h-1 bg-current rounded-full animate-pulse typing-dot" style="animation-delay: 0.2s;"></div>
-                            <div class="w-1 h-1 bg-current rounded-full animate-pulse typing-dot" style="animation-delay: 0.4s;"></div>
+                            <div
+                              class="w-1 h-1 bg-current rounded-full animate-pulse typing-dot"
+                            ></div>
+                            <div
+                              class="w-1 h-1 bg-current rounded-full animate-pulse typing-dot"
+                              style="animation-delay: 0.2s;"
+                            ></div>
+                            <div
+                              class="w-1 h-1 bg-current rounded-full animate-pulse typing-dot"
+                              style="animation-delay: 0.4s;"
+                            ></div>
                           </div>
                           <span class="ml-2">AI is thinking...</span>
                         </div>
@@ -538,11 +581,16 @@
 
                       <!-- Enhanced Source Citations & Context -->
                       {#if sources.length > 0 || message.metadata?.tools_used}
-                        <div class="mt-3 pt-3 border-t border-border/50" transition:slide|local>
+                        <div
+                          class="mt-3 pt-3 border-t border-border/50"
+                          transition:slide|local
+                        >
                           <!-- Tools Used -->
                           {#if message.metadata?.tools_used && message.metadata.tools_used.length > 0}
                             <div class="mb-3">
-                              <div class="text-xs text-muted-foreground mb-2 font-medium flex items-center gap-1">
+                              <div
+                                class="text-xs text-muted-foreground mb-2 font-medium flex items-center gap-1"
+                              >
                                 <Sparkles class="size-3" />
                                 AI Analysis Tools Used:
                               </div>
@@ -559,32 +607,57 @@
                           <!-- Referenced sources -->
                           {#if sources.length > 0}
                             <div class="mb-2">
-                              <div class="text-xs text-muted-foreground mb-2 font-medium">
+                              <div
+                                class="text-xs text-muted-foreground mb-2 font-medium"
+                              >
                                 Referenced sources:
                               </div>
                               <div class="space-y-2">
                                 {#each sources as source}
                                   {@const Icon = getResultIcon(source.type)}
-                                  <div class="border rounded-md p-2 bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer group">
+                                  <div
+                                    class="border rounded-md p-2 bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer group"
+                                  >
                                     <div class="flex items-start gap-2">
-                                      <Icon class="size-3 mt-0.5 text-muted-foreground" />
+                                      <Icon
+                                        class="size-3 mt-0.5 text-muted-foreground"
+                                      />
                                       <div class="flex-1 min-w-0">
-                                        <div class="text-xs font-medium truncate">{source.title}</div>
+                                        <div
+                                          class="text-xs font-medium truncate"
+                                        >
+                                          {source.title}
+                                        </div>
                                         {#if source.snippet}
-                                          <div class="text-xs text-muted-foreground mt-1 line-clamp-2">{source.snippet}</div>
+                                          <div
+                                            class="text-xs text-muted-foreground mt-1 line-clamp-2"
+                                          >
+                                            {source.snippet}
+                                          </div>
                                         {/if}
-                                        <div class="flex items-center gap-2 mt-1">
-                                          <Badge variant="outline" class="text-xs capitalize">
+                                        <div
+                                          class="flex items-center gap-2 mt-1"
+                                        >
+                                          <Badge
+                                            variant="outline"
+                                            class="text-xs capitalize"
+                                          >
                                             {source.type}
                                           </Badge>
                                           {#if source.similarity}
-                                            <span class="text-xs text-muted-foreground">
-                                              {Math.round(source.similarity * 100)}% relevance
+                                            <span
+                                              class="text-xs text-muted-foreground"
+                                            >
+                                              {Math.round(
+                                                source.similarity * 100
+                                              )}% relevance
                                             </span>
                                           {/if}
                                         </div>
                                       </div>
-                                      <ExternalLink class="size-3 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground" />
+                                      <ExternalLink
+                                        class="size-3 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground"
+                                      />
                                     </div>
                                   </div>
                                 {/each}
@@ -594,15 +667,21 @@
 
                           <!-- Search Context Indicator -->
                           {#if sources.length > 0}
-                            <div class="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                            <div
+                              class="mt-2 flex items-center gap-2 text-xs text-muted-foreground"
+                            >
                               <Search class="size-3" />
-                              <span>Used {sources.length} sources from your research</span>
+                              <span
+                                >Used {sources.length} sources from your research</span
+                              >
                             </div>
                           {/if}
 
                           <!-- Project Context Indicator -->
                           {#if message.metadata?.project_context}
-                            <div class="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                            <div
+                              class="mt-2 flex items-center gap-2 text-xs text-muted-foreground"
+                            >
                               <Folder class="size-3" />
                               <span>Using current project context</span>
                             </div>
@@ -612,7 +691,11 @@
                     </div>
 
                     <!-- Message Timestamp -->
-                    <div class="text-xs text-muted-foreground mt-1 {isUser ? 'text-right' : 'text-left'}">
+                    <div
+                      class="text-xs text-muted-foreground mt-1 {isUser
+                        ? 'text-right'
+                        : 'text-left'}"
+                    >
                       {formatTimestamp(message.timestamp)}
                     </div>
                   </div>
@@ -624,11 +707,13 @@
 
         <!-- Error Display -->
         {#if error}
-          <div 
+          <div
             class="flex items-center gap-3 p-4 border border-destructive/20 bg-destructive/5 rounded-lg text-destructive"
             transition:slide|local
           >
-            <div class="w-6 h-6 rounded-full bg-destructive/20 flex items-center justify-center flex-shrink-0">
+            <div
+              class="w-6 h-6 rounded-full bg-destructive/20 flex items-center justify-center flex-shrink-0"
+            >
               <span class="text-xs">!</span>
             </div>
             <div class="flex-1">
@@ -638,89 +723,101 @@
           </div>
         {/if}
       </div>
-  </div>
+    </div>
 
-  <!-- Input Area -->
-  <div class="border-t bg-background p-4">
-    <div class="relative">
-      <!-- Typing Indicator -->
-      {#if isTyping}
-        <div 
-          class="absolute -top-8 left-0 text-xs text-muted-foreground"
-          transition:fade={{ duration: 200 }}
-        >
-          You are typing...
+    <!-- Input Area -->
+    <div class="border-t bg-background p-4">
+      <div class="relative">
+        <!-- Typing Indicator -->
+        {#if isTyping}
+          <div
+            class="absolute -top-8 left-0 text-xs text-muted-foreground"
+            transition:fade={{ duration: 200 }}
+          >
+            You are typing...
+          </div>
+        {/if}
+
+        <!-- Input Container -->
+        <div class="flex gap-3 items-end">
+          <!-- Text Area -->
+          <div class="flex-1 relative">
+            <textarea
+              bind:this={chatInputRef}
+              bind:value={chatInput}
+              onkeydown={handleKeydown}
+              oninput={handleInput}
+              placeholder="Ask questions about your research, get insights, or explore your data..."
+              disabled={isStreaming}
+              rows="1"
+              class="w-full resize-none rounded-lg border bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] max-h-32 overflow-y-auto"
+              style="field-sizing: content;"
+            ></textarea>
+
+            <!-- Character count for long messages -->
+            {#if chatInput.length > 200}
+              <div
+                class="absolute -top-6 right-0 text-xs text-muted-foreground"
+              >
+                {chatInput.length}/1000
+              </div>
+            {/if}
+          </div>
+
+          <!-- Send Button -->
+          <Button
+            onclick={handleSubmit}
+            disabled={!chatInput.trim() || isStreaming}
+            size="sm"
+            class="px-4 py-3 h-11 min-w-11"
+            aria-label="Send message"
+          >
+            {#if isStreaming}
+              <Loader class="size-4 animate-spin" />
+            {:else}
+              <Send class="size-4" />
+            {/if}
+          </Button>
         </div>
-      {/if}
 
-      <!-- Input Container -->
-      <div class="flex gap-3 items-end">
-        <!-- Text Area -->
-        <div class="flex-1 relative">
-          <textarea
-            bind:this={chatInputRef}
-            bind:value={chatInput}
-            onkeydown={handleKeydown}
-            oninput={handleInput}
-            placeholder="Ask questions about your research, get insights, or explore your data..."
-            disabled={isStreaming}
-            rows="1"
-            class="w-full resize-none rounded-lg border bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] max-h-32 overflow-y-auto"
-            style="field-sizing: content;"
-          ></textarea>
-          
-          <!-- Character count for long messages -->
-          {#if chatInput.length > 200}
-            <div class="absolute -top-6 right-0 text-xs text-muted-foreground">
-              {chatInput.length}/1000
+        <!-- Input Help Text -->
+        <div
+          class="flex items-center justify-between mt-2 text-xs text-muted-foreground"
+        >
+          <div class="flex items-center gap-4">
+            <kbd
+              class="inline-flex items-center gap-1 rounded border bg-muted px-1.5 py-0.5 font-mono"
+            >
+              Enter
+            </kbd>
+            <span>to send</span>
+            <kbd
+              class="inline-flex items-center gap-1 rounded border bg-muted px-1.5 py-0.5 font-mono"
+            >
+              Shift + Enter
+            </kbd>
+            <span>for new line</span>
+          </div>
+          {#if hasResults}
+            <div class="flex items-center gap-1">
+              <Search class="size-3" />
+              <span
+                >{searchResults.length} search results available as context</span
+              >
             </div>
           {/if}
         </div>
-
-        <!-- Send Button -->
-        <Button
-          onclick={handleSubmit}
-          disabled={!chatInput.trim() || isStreaming}
-          size="sm"
-          class="px-4 py-3 h-11 min-w-11"
-          aria-label="Send message"
-        >
-          {#if isStreaming}
-            <Loader class="size-4 animate-spin" />
-          {:else}
-            <Send class="size-4" />
-          {/if}
-        </Button>
-      </div>
-
-      <!-- Input Help Text -->
-      <div class="flex items-center justify-between mt-2 text-xs text-muted-foreground">
-        <div class="flex items-center gap-4">
-          <kbd class="inline-flex items-center gap-1 rounded border bg-muted px-1.5 py-0.5 font-mono">
-            Enter
-          </kbd>
-          <span>to send</span>
-          <kbd class="inline-flex items-center gap-1 rounded border bg-muted px-1.5 py-0.5 font-mono">
-            Shift + Enter
-          </kbd>
-          <span>for new line</span>
-        </div>
-        {#if hasResults}
-          <div class="flex items-center gap-1">
-            <Search class="size-3" />
-            <span>{searchResults.length} search results available as context</span>
-          </div>
-        {/if}
       </div>
     </div>
-  </div>
   </div>
 </div>
 
 <style>
   /* Typing animation for dots */
   @keyframes typingDot {
-    0%, 60%, 100% {
+    0%,
+    60%,
+    100% {
       opacity: 0.3;
       transform: scale(0.8);
     }
@@ -783,14 +880,8 @@
     border-radius: 3px;
   }
 
-  /* Smooth transitions for all interactive elements */
-  .transition-all {
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
   /* Focus styles for accessibility */
-  textarea:focus,
-  button:focus {
+  textarea:focus {
     outline: 2px solid hsl(var(--ring));
     outline-offset: 2px;
   }

@@ -1,15 +1,15 @@
-<script lang="ts" module>
-  import { API_BASE_URL } from "$lib/config";
-  import { setGlobalLogoutHandler, api } from "../services/api-client";
-  import type { Organization, User } from "../types/auth";
+import { API_BASE_URL } from "$lib/config";
+import { setGlobalLogoutHandler, api } from "../services/api-client";
+import type { Organization, User } from "../types/auth";
+import { identifyUser, clearUserIdentity } from "../services/fullstory";
 
-  let user: User | null = $state(null);
-  let currentOrganization = $state<Organization | null>(null);
-  let isLoading = $state(true);
-  const isAuthenticated = $derived(Boolean(user));
-  const currentOrgId = $derived(currentOrganization?.id || null);
+let user: User | null = $state(null);
+let currentOrganization = $state<Organization | null>(null);
+let isLoading = $state(true);
+const isAuthenticated = $derived(Boolean(user));
+const currentOrgId = $derived(currentOrganization?.id || null);
 
-  export const auth = {
+export const auth = {
     get user() {
       return user;
     },
@@ -29,6 +29,9 @@
     async setUser(newUser: User) {
       user = newUser;
       if (newUser) {
+        // Identify user in FullStory
+        identifyUser(newUser);
+        
         const orgs = await this.fetchUserOrganizations();
         if (orgs && orgs.length > 0) {
           // Load the last selected org from localStorage if available
@@ -62,6 +65,8 @@
       currentOrganization = null;
       localStorage.removeItem("lastSelectedOrgId");
       isLoading = false;
+      // Clear FullStory user identity
+      clearUserIdentity();
     },
 
     // Global logout handler for API client - called automatically on 401/403 errors
@@ -94,6 +99,11 @@
         if (data?.user) {
           // First set the user
           user = data.user;
+          
+          // Identify user in FullStory
+          if (user) {
+            identifyUser(user);
+          }
 
           // Then load organizations
           const orgs = await this.fetchUserOrganizations();
@@ -149,7 +159,6 @@
     },
   };
 
-  // Register the global logout handler with the API client
-  // This ensures all API calls will trigger logout on 401/403 errors
-  setGlobalLogoutHandler(() => auth.handleGlobalLogout());
-</script>
+// Register the global logout handler with the API client
+// This ensures all API calls will trigger logout on 401/403 errors
+setGlobalLogoutHandler(() => auth.handleGlobalLogout());

@@ -1,10 +1,9 @@
-<!-- src/routes/project/ModelView.svelte -->
 <script lang="ts">
   import { onMount } from "svelte";
   import { navigate } from "svelte-routing";
-  import { modelStore } from "$lib/stores/ModelStore.svelte";
+  import { modelStore } from "$lib/stores/ModelStore";
   import Model from "$lib/components/model/Model.svelte";
-  import { API_BASE_URL } from "$lib/config";
+  import { api } from "$lib/services/api-client";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
   import { GraduationCap } from "lucide-svelte";
@@ -44,16 +43,7 @@
   // Check if user has access to model features
   async function checkModelAccessCapability() {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/capabilities/model_access`,
-        { credentials: "include" }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to check model access capability");
-      }
-
-      const data = await response.json();
+      const data = await api.get("/capabilities/model_access");
       hasAccess = data.allowed;
 
       // If user doesn't have access, redirect to overview
@@ -171,9 +161,12 @@
       },
       {
         element: () => {
-          // Use the node ID we stored from the previous step
           const nodeId = (window as any).tutorialNodeId;
-          return nodeId ? `[data-id="${nodeId}"]` : ".svelte-flow__node";
+          const selector = nodeId
+            ? `[data-id="${nodeId}"]`
+            : ".svelte-flow__node";
+          const el = document.querySelector(selector);
+          return (el as Element) ?? document.body;
         },
         popover: {
           title: "Your First Node!",
@@ -183,7 +176,6 @@
           align: "center",
         },
         onHighlightStarted: async (_element, _step, _options) => {
-          // Select the node to show the NodeToolbar
           setTimeout(() => {
             const nodeId = (window as any).tutorialNodeId;
             const tutorialMethods = (window as any).tutorialMethods;
@@ -368,7 +360,6 @@
   <div class="absolute top-2 right-2 z-50">
     <Button
       variant="outline"
-      size="icon"
       onclick={() => {
         driverObj.drive();
 
@@ -415,8 +406,8 @@
       }}
       class="border-2 dark:border-dark-border"
     >
-      <GraduationCap class="h-4 w-4" />
-      <span class="sr-only">Interactive Model Building Tutorial</span>
+      <GraduationCap class="h-4 w-4 mr-2" />
+      Tour
     </Button>
   </div>
   {#if isLoadingCapability}

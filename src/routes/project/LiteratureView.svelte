@@ -1,7 +1,6 @@
-<!-- src/routes/project/LiteratureView.svelte -->
 <script lang="ts">
-  import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { literatureStore } from "$lib/stores/LiteratureStore";
+  import { projectStore } from "$lib/stores/ProjectStore";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import LiteratureDetails from "$lib/components/custom-ui/literature/literatureItem/LiteratureDetails.svelte";
@@ -305,11 +304,11 @@
             </Button>
             <Button
               variant="outline"
-              size="icon"
               onclick={() => driverObj.drive()}
               aria-label="Learn about Literature View"
             >
-              <GraduationCap class="h-4 w-4" />
+              <GraduationCap class="h-4 w-4 mr-2" />
+              Tour
             </Button>
           </div>
         {/if}

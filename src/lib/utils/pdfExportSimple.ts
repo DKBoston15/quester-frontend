@@ -87,6 +87,36 @@ function addFormattedTextWithHangingIndent(
   hangingIndent: number,
   lineHeight: number
 ): number {
+  // Helper to split a long token (e.g., a URL without spaces) into chunks that fit within the line width
+  function splitTokenByWidth(token: string, maxWidth: number): string[] {
+    const chunks: string[] = [];
+    let buffer = '';
+    // Try to break at common URL delimiters when possible
+    const delimiters = new Set(['/','-','_','?','&','=','.', '#']);
+    for (let i = 0; i < token.length; i++) {
+      const tentative = buffer + token[i];
+      const width = pdf.getTextWidth(tentative);
+      if (width > maxWidth && buffer.length > 0) {
+        // Look back for a delimiter to split on for a cleaner break
+        let splitAt = -1;
+        for (let j = buffer.length - 1; j >= 0; j--) {
+          if (delimiters.has(buffer[j])) { splitAt = j + 1; break; }
+        }
+        if (splitAt > 0) {
+          chunks.push(buffer.slice(0, splitAt));
+          buffer = buffer.slice(splitAt) + token[i];
+        } else {
+          chunks.push(buffer);
+          buffer = token[i];
+        }
+      } else {
+        buffer = tentative;
+      }
+    }
+    if (buffer) chunks.push(buffer);
+    return chunks;
+  }
+
   let currentY = startY;
   let currentX = leftMargin;
   let isFirstLine = true;
@@ -100,19 +130,20 @@ function addFormattedTextWithHangingIndent(
       pdf.setFont('helvetica', 'normal');
     }
     
-    // Split text into words
-    const words = segment.text.split(' ');
+    // Split text into tokens by spaces so we can handle long words (like URLs)
+    const tokens = segment.text.split(' ');
     
-    for (let i = 0; i < words.length; i++) {
-      const word = words[i] + (i < words.length - 1 ? ' ' : '');
-      const wordWidth = pdf.getTextWidth(word);
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
+      const trailingSpace = i < tokens.length - 1 ? ' ' : '';
+      const tokenWidth = pdf.getTextWidth(token + trailingSpace);
       
       // Calculate line width limit
       const lineWidth = isFirstLine ? availableWidth + hangingIndent : availableWidth;
       const lineStartX = isFirstLine ? leftMargin : leftMargin + hangingIndent;
       
-      // Check if word fits on current line
-      if (currentX + wordWidth > lineStartX + lineWidth && currentX > lineStartX) {
+      // Check if token fits on current line
+      if (currentX + tokenWidth > lineStartX + lineWidth && currentX > lineStartX) {
         // Move to next line
         currentY += lineHeight;
         currentX = leftMargin + hangingIndent;
@@ -124,9 +155,44 @@ function addFormattedTextWithHangingIndent(
         currentX = isFirstLine ? leftMargin : leftMargin + hangingIndent;
       }
       
-      // Add the word
-      pdf.text(word, currentX, currentY);
-      currentX += wordWidth;
+      // If the token itself is longer than the entire line, split it into chunks
+      if (pdf.getTextWidth(token) > lineWidth) {
+        const parts = splitTokenByWidth(token, lineWidth);
+        for (let p = 0; p < parts.length; p++) {
+          const part = parts[p];
+          const partWidth = pdf.getTextWidth(part);
+          if (currentX + partWidth > lineStartX + lineWidth && currentX > lineStartX) {
+            currentY += lineHeight;
+            currentX = leftMargin + hangingIndent;
+            isFirstLine = false;
+          }
+          if (currentX === leftMargin) {
+            currentX = isFirstLine ? leftMargin : leftMargin + hangingIndent;
+          }
+          pdf.text(part, currentX, currentY);
+          currentX += partWidth;
+          if (p < parts.length - 1) {
+            currentY += lineHeight;
+            currentX = leftMargin + hangingIndent;
+            isFirstLine = false;
+          }
+        }
+        // Add trailing space after a long token if needed
+        if (trailingSpace) {
+          const spaceWidth = pdf.getTextWidth(trailingSpace);
+          if (currentX + spaceWidth > lineStartX + lineWidth) {
+            currentY += lineHeight;
+            currentX = leftMargin + hangingIndent;
+            isFirstLine = false;
+          }
+          pdf.text(trailingSpace, currentX, currentY);
+          currentX += spaceWidth;
+        }
+      } else {
+        // Normal token draw
+        pdf.text(token + trailingSpace, currentX, currentY);
+        currentX += tokenWidth;
+      }
       
       // After first word, no longer first line
       if (isFirstLine && i === 0) {

@@ -1,4 +1,3 @@
-<!-- src/lib/components/custom-ui/literature/AddLiterature.svelte -->
 <script lang="ts">
   import * as Dialog from "$lib/components/ui/dialog";
   import { Button, buttonVariants } from "$lib/components/ui/button";
@@ -8,21 +7,19 @@
   import * as Select from "$lib/components/ui/select";
   import { Badge } from "$lib/components/ui/badge";
   import * as Label from "$lib/components/ui/label";
-  import { Progress } from "$lib/components/ui/progress";
+  import * as Progress from "$lib/components/ui/progress";
   import TagInput from "../TagInput.svelte";
   import { createEventDispatcher, onDestroy } from "svelte";
-  import { auth } from "$lib/stores/AuthStore.svelte";
-  import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
+  import { auth } from "$lib/stores/AuthStore";
+  import { literatureStore } from "$lib/stores/LiteratureStore";
   import {
     Loader2,
     CheckCircle2,
     AlertCircle,
     BookOpen,
     Plus,
-    X,
   } from "lucide-svelte";
-  import { API_BASE_URL } from "$lib/config";
-  // Note: driver.js CSS is imported at the page level only
+  import { api } from "$lib/services/api-client";
 
   const dispatch = createEventDispatcher();
 
@@ -76,6 +73,7 @@
   // Manual entry state
   let name = $state("");
   let second_name = $state("");
+  let chapterTitle = $state("");
   let authors = $state<string[]>([]);
   let editors = $state<string[]>([]);
   let publisher_name = $state("");
@@ -94,6 +92,7 @@
   let manualEntry = $derived({
     name,
     second_name,
+    chapterTitle,
     authors,
     editors,
     publisher_name,
@@ -222,19 +221,10 @@
         return;
       }
 
-      const response = await fetch(`${API_BASE_URL}/ai/extract-references`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          referenceText: pasteText,
-          projectId: urlProjectId,
-        }),
+      const data = await api.post(`/ai/extract-references`, {
+        referenceText: pasteText,
+        projectId: urlProjectId,
       });
-
-      if (!response.ok) throw new Error("Failed to process references");
-
-      const data = await response.json();
 
       // Map the references and add status
       extractedReferences = data.map((ref: any) => ({
@@ -278,10 +268,14 @@
           const authors = ref.authors || [];
           const editors = ref.editors || [];
 
+          const isBookChapter = ref?.type?.value
+            ? ref.type.value === "Book Chapter"
+            : ref.type === "Book Chapter";
+
           const literatureData = {
             name: ref.name,
-            secondName: ref.type === "Book Chapter" ? "" : (ref.second_name || ""),
-            chapterTitle: ref.type === "Book Chapter" ? (ref.chapterTitle || "") : "",
+            secondName: isBookChapter ? "" : ref.second_name || "",
+            chapterTitle: isBookChapter ? ref.chapterTitle || "" : "",
             authors: JSON.stringify(authors),
             editors: JSON.stringify(editors),
             publisherName: ref.publisher_name || "",
@@ -300,19 +294,7 @@
             userId: auth.user?.id,
           };
 
-          const response = await fetch(`${API_BASE_URL}/literature`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify(literatureData),
-          });
-
-          if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || "Failed to save literature");
-          }
-
-          return response.json();
+          return await api.post(`/literature`, literatureData);
         })
       );
 
@@ -354,6 +336,7 @@
     processingProgress = 0;
     name = "";
     second_name = "";
+    chapterTitle = "";
     authors = [];
     editors = [];
     publisher_name = "";
@@ -477,7 +460,7 @@
 
               {#if isProcessing || isSaving}
                 <div class="space-y-2">
-                  <Progress
+                  <Progress.Root
                     value={isProcessing ? processingProgress : saveProgress}
                     class="{saveSuccess
                       ? 'bg-green-500'
@@ -556,8 +539,15 @@
               <div id="manual-entry-form" class="space-y-4">
                 <div class="grid grid-cols-2 gap-4">
                   <div class="space-y-2">
-                    <Label.Root for="manual-entry-name">Name (Title)</Label.Root
-                    >
+                    <Label.Root for="manual-entry-name">
+                      {#if type.value === "Book Chapter"}
+                        Book
+                      {:else if type.value === "Conference Presentation"}
+                        Presentation Title
+                      {:else}
+                        Name (Title)
+                      {/if}
+                    </Label.Root>
                     <Input
                       id="manual-entry-name"
                       bind:value={name}
@@ -574,6 +564,42 @@
                       placeholder="Add authors"
                     />
                   </div>
+
+                  {#if type.value === "Conference Presentation"}
+                    <!-- Conference Name for Conference Presentation -->
+                    <div class="space-y-2">
+                      <Label.Root for="conference-name"
+                        >Conference Name</Label.Root
+                      >
+                      <Input
+                        id="conference-name"
+                        bind:value={second_name}
+                        placeholder="Enter conference name"
+                      />
+                    </div>
+                  {/if}
+
+                  {#if type.value === "Book Chapter"}
+                    <!-- Chapter Title for Book Chapter -->
+                    <div class="space-y-2">
+                      <Label.Root for="chapter-title">Chapter Title</Label.Root>
+                      <Input
+                        id="chapter-title"
+                        bind:value={chapterTitle}
+                        placeholder="Enter chapter title"
+                      />
+                    </div>
+
+                    <!-- Editors for Book Chapter -->
+                    <div class="space-y-2">
+                      <Label.Root>Editors</Label.Root>
+                      <TagInput
+                        tags={editors}
+                        on:change={(e) => (editors = e.detail.tags)}
+                        placeholder="Add editors"
+                      />
+                    </div>
+                  {/if}
 
                   <!-- Type -->
                   <div class="space-y-2">
@@ -610,17 +636,24 @@
                         placeholder="Publisher name"
                       />
                     </div>
-                    <div class="space-y-2">
-                      <Label.Root>Year</Label.Root>
-                      <Input
-                        bind:value={publish_year}
-                        placeholder="Publication year"
-                      />
-                    </div>
+                    {#if type.value !== "Conference Presentation"}
+                      <div class="space-y-2">
+                        <Label.Root>Year</Label.Root>
+                        <Input
+                          bind:value={publish_year}
+                          placeholder="Publication year"
+                        />
+                      </div>
+                    {:else}
+                      <div class="space-y-2">
+                        <Label.Root>City</Label.Root>
+                        <Input bind:value={city} placeholder="City" />
+                      </div>
+                    {/if}
                   </div>
 
                   <!-- Additional Fields based on type -->
-                  {#if type.value === "Journal Article"}
+                  {#if type.value !== "Book" && type.value !== "Book Chapter" && type.value !== "Conference Presentation"}
                     <div class="grid grid-cols-2 gap-4">
                       <div class="space-y-2">
                         <Label.Root>Volume</Label.Root>
@@ -632,6 +665,55 @@
                       <div class="space-y-2">
                         <Label.Root>Issue</Label.Root>
                         <Input bind:value={issue} placeholder="Issue number" />
+                      </div>
+                    </div>
+                  {/if}
+
+                  {#if type.value === "Conference Presentation"}
+                    <div class="grid grid-cols-2 gap-4">
+                      <div class="space-y-2">
+                        <Label.Root>Start Date</Label.Root>
+                        <Input
+                          type="date"
+                          value={start_date
+                            ? new Date(start_date).toISOString().slice(0, 10)
+                            : ""}
+                          onchange={(e) => {
+                            const v = (e.currentTarget as HTMLInputElement)
+                              .value;
+                            start_date = v ? new Date(v) : undefined;
+                          }}
+                        />
+                      </div>
+                      <div class="space-y-2">
+                        <Label.Root>End Date</Label.Root>
+                        <Input
+                          type="date"
+                          value={end_date
+                            ? new Date(end_date).toISOString().slice(0, 10)
+                            : ""}
+                          onchange={(e) => {
+                            const v = (e.currentTarget as HTMLInputElement)
+                              .value;
+                            end_date = v ? new Date(v) : undefined;
+                          }}
+                        />
+                      </div>
+                    </div>
+                  {/if}
+
+                  {#if type.value !== "Book" && type.value !== "Conference Presentation"}
+                    <div class="grid grid-cols-2 gap-4">
+                      <div class="space-y-2">
+                        <Label.Root>Start Page</Label.Root>
+                        <Input
+                          bind:value={start_page}
+                          placeholder="Start page"
+                        />
+                      </div>
+                      <div class="space-y-2">
+                        <Label.Root>End Page</Label.Root>
+                        <Input bind:value={end_page} placeholder="End page" />
                       </div>
                     </div>
                   {/if}
@@ -813,25 +895,6 @@
                   <Input
                     bind:value={selectedReference.issue}
                     placeholder="Issue number"
-                  />
-                </div>
-              </div>
-            {/if}
-
-            {#if selectedReference.type?.value !== "Book" && selectedReference.type?.value !== "Conference Presentation"}
-              <div class="grid grid-cols-2 gap-4">
-                <div class="space-y-2">
-                  <Label.Root>Start Page</Label.Root>
-                  <Input
-                    bind:value={selectedReference.start_page}
-                    placeholder="Start page"
-                  />
-                </div>
-                <div class="space-y-2">
-                  <Label.Root>End Page</Label.Root>
-                  <Input
-                    bind:value={selectedReference.end_page}
-                    placeholder="End page"
                   />
                 </div>
               </div>

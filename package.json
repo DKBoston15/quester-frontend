@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json"
+    "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json",
+    "test": "vitest --reporter=verbose",
+    "test:run": "vitest run --reporter=verbose",
+    "test:ui": "vitest --ui",
+    "test:quiet": "vitest run --reporter=default --reporter.summary=false"
   },
   "devDependencies": {
     "@aarkue/tiptap-math-extension": "^1.3.4",
@@ -47,9 +51,11 @@
     "@types/node": "^22.13.0",
     "@types/three": "^0.174.0",
     "@types/uuid": "^10.0.0",
+    "@vitest/ui": "^3.2.4",
     "autoprefixer": "^10.4.20",
     "bits-ui": "^1.3.19",
     "clsx": "^2.1.1",
+    "jsdom": "^26.1.0",
     "katex": "^0.16.21",
     "lowlight": "^3.3.0",
     "lucide-svelte": "^0.474.0",
@@ -68,12 +74,15 @@
     "tiptap-extension-global-drag-handle": "^0.1.18",
     "tiptap-markdown": "^0.8.10",
     "typescript": "~5.6.2",
-    "vite": "^6.0.5"
+    "vite": "^6.0.5",
+    "vitest": "^3.2.4"
   },
   "dependencies": {
+    "markdown-it": "^14.1.0",
     "@ag-grid-community/client-side-row-model": "^32.3.3",
     "@ag-grid-community/core": "^32.3.3",
     "@ag-grid-community/styles": "^33.0.3",
+    "@fullstory/browser": "^2.0.6",
     "@melt-ui/svelte": "^0.86.3",
     "@stripe/stripe-js": "^5.6.0",
     "@types/chart.js": "^2.9.41",

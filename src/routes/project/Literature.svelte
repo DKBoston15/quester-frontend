@@ -1,8 +1,8 @@
-<!-- src/routes/project/Literature.svelte -->
 <script lang="ts">
   import { onDestroy } from "svelte";
-  import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { literatureStore } from "$lib/stores/LiteratureStore";
+  import { projectStore } from "$lib/stores/ProjectStore";
+  import { auth } from "$lib/stores/AuthStore";
   import LiteratureTable from "$lib/components/custom-ui/literature/LiteratureTable.svelte";
   import AddLiterature from "$lib/components/custom-ui/literature/AddLiterature.svelte";
   import { Button } from "$lib/components/ui/button";
@@ -22,7 +22,6 @@
   let searchQuery = $state("");
   let gridApi = $state<GridApi<Literature>>();
   let isAddLiteratureOpen = $state(false);
-  let selectedLiterature = $state<Literature | null>(null);
   let selectedLiteratureItems = $state<Literature[]>([]);
   let isExportDialogOpen = $state(false);
   let isDocumentUploadOpen = $state(false);
@@ -183,7 +182,6 @@
   }
 
   function handleLiteratureSelect(event: CustomEvent<Literature>) {
-    selectedLiterature = event.detail;
     const literatureId = event.detail.id;
     const projectId = projectStore.currentProject?.id;
     if (projectId && literatureId) {
@@ -195,7 +193,9 @@
     gridApi = event.detail.api;
   }
 
-  function handleSelectionChanged(event: CustomEvent<{ selectedItems: Literature[] }>) {
+  function handleSelectionChanged(
+    event: CustomEvent<{ selectedItems: Literature[] }>
+  ) {
     selectedLiteratureItems = event.detail.selectedItems;
   }
 
@@ -206,7 +206,7 @@
         gridApi.selectAll();
         // Wait a moment for selection to update
         setTimeout(() => {
-          selectedLiteratureItems = gridApi.getSelectedRows();
+          selectedLiteratureItems = gridApi?.getSelectedRows() ?? [];
           isExportDialogOpen = true;
         }, 100);
         return;
@@ -265,7 +265,9 @@
             </Tooltip.Trigger>
             <Tooltip.Content>
               <p class="text-sm max-w-xs">
-                Manage and organize your project literature. Add sources, track reading status, and build your research library all in one place.
+                Manage and organize your project literature. Add sources, track
+                reading status, and build your research library all in one
+                place.
               </p>
             </Tooltip.Content>
           </Tooltip.Root>
@@ -280,7 +282,9 @@
             <Download class="h-4 w-4 mr-2" />
             Export References
             {#if selectedLiteratureItems.length > 0}
-              <span class="ml-1 px-1.5 py-0.5 text-xs bg-primary text-primary-foreground rounded-full">
+              <span
+                class="ml-1 px-1.5 py-0.5 text-xs bg-primary text-primary-foreground rounded-full"
+              >
                 {selectedLiteratureItems.length}
               </span>
             {/if}
@@ -304,13 +308,9 @@
           <Tooltip.Provider>
             <Tooltip.Root>
               <Tooltip.Trigger>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onclick={() => driverObj.drive()}
-                >
-                  <GraduationCap class="h-4 w-4" />
-                  <span class="sr-only">Learn about Literature Management</span>
+                <Button variant="outline" onclick={() => driverObj.drive()}>
+                  <GraduationCap class="h-4 w-4 mr-2" />
+                  Tour
                 </Button>
               </Tooltip.Trigger>
               <Tooltip.Content>
@@ -392,7 +392,7 @@
   bind:open={isExportDialogOpen}
   selectedLiterature={selectedLiteratureItems}
   projectTitle={projectStore.currentProject?.name}
-  userName={projectStore.currentUser?.name || projectStore.currentUser?.email}
+  userName={auth.user ? `${auth.user.firstName} ${auth.user.lastName}`.trim() || auth.user.email : undefined}
   onOpenChange={(open: boolean) => (isExportDialogOpen = open)}
 />
 

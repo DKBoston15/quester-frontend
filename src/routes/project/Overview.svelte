@@ -1,4 +1,3 @@
-<!-- src/routes/project/Dashboard.svelte -->
 <script lang="ts">
   import ProjectInsights from "$lib/components/ProjectInsights.svelte";
   import ResearchProducts from "$lib/components/ResearchProducts.svelte";
@@ -6,13 +5,13 @@
   import ResearchDesigns from "$lib/components/project/ResearchDesigns.svelte";
   import ProjectKeywords from "$lib/components/project/ProjectKeywords.svelte";
   import * as Card from "$lib/components/ui/card";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { projectStore } from "$lib/stores/ProjectStore";
   import NextBestActions from "$lib/components/custom-ui/project/NextBestActions.svelte";
   import { Button } from "$lib/components/ui/button";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
   import { GraduationCap, Plus } from "lucide-svelte";
-  import { customEventsStore } from "$lib/stores/custom-events-store.svelte";
+  import { customEventsStore } from "$lib/stores/CustomEventsStore";
   import CustomEventForm from "$lib/components/custom-ui/custom-events/CustomEventForm.svelte";
   import GrantDetails from "$lib/components/project/GrantDetails.svelte";
   import * as Tooltip from "$lib/components/ui/tooltip";
@@ -123,9 +122,9 @@
         <Tooltip.Provider>
           <Tooltip.Root>
             <Tooltip.Trigger>
-              <Button variant="outline" size="icon" onclick={() => driverObj.drive()}>
-                <GraduationCap class="h-4 w-4" />
-                <span class="sr-only">Learn about Project Overview</span>
+              <Button variant="outline" onclick={() => driverObj.drive()}>
+                <GraduationCap class="h-4 w-4 mr-2" />
+                Tour
               </Button>
             </Tooltip.Trigger>
             <Tooltip.Content>

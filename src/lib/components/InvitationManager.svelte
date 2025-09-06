@@ -1,4 +1,3 @@
-<!-- src/routes/components/InvitationManager.svelte -->
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
@@ -6,8 +5,7 @@
   import { Badge } from "$lib/components/ui/badge";
   import * as Table from "$lib/components/ui/table";
   import { Mail, Send, X, Info } from "lucide-svelte";
-  import { teamManagement } from "$lib/stores/TeamManagementStore.svelte";
-  import { API_BASE_URL } from "$lib/config";
+  import { teamManagement } from "$lib/stores/TeamManagementStore";
   import { api } from "$lib/services/api-client";
   import TeamSizeIndicator from "$lib/components/TeamSizeIndicator/TeamSizeIndicator.svelte";
   import { toast } from "svelte-sonner";
@@ -30,7 +28,7 @@
   let isLoading = $state(false);
   let error = $state<string | null>(null);
   let success = $state<string | null>(null);
-  
+
   // Use derived for validation instead of effects to prevent loops
   const emailError = $derived(() => {
     if (!email || email.length === 0) return null;
@@ -68,22 +66,22 @@
     if (!props.subscriptionLimits) {
       return true;
     }
-    
+
     // Check if user has invitation capability from subscription
     if (!props.subscriptionLimits.canInviteUsers) {
       return false;
     }
-    
+
     // Check if user hasn't reached their limit
     if (props.subscriptionLimits.maxUsers > 0) {
-      return remainingInvitations > 0;
+      return remainingInvitations() > 0;
     }
-    
+
     return true;
   });
 
   type Role = { id: string; name: string };
-  
+
   // Use $derived for available roles to prevent infinite loops
   const availableRoles = $derived(() => {
     if (
@@ -130,8 +128,50 @@
         return Array.from(uniqueRoles.values());
       }
     }
-    
+
     return [];
+  });
+
+  // Derived users list for current resource
+  const resourceUsers = $derived(() => {
+    if (props.resourceType === "organization") {
+      return teamManagement.organizationStructure?.users || [];
+    }
+    if (props.resourceType === "department") {
+      return teamManagement.departmentStructure?.users || [];
+    }
+    if (props.resourceType === "project") {
+      return teamManagement.projectTeam?.users || [];
+    }
+    return [];
+  });
+
+  // Normalize email for comparisons
+  const normalizedEmail = $derived(() => (email || "").trim().toLowerCase());
+
+  // Prevent inviting users already invited or already members
+  const isAlreadyInvited = $derived(() => {
+    if (!normalizedEmail()) return false;
+    return pendingInvitations.some(
+      (inv: any) => String(inv.email || "").toLowerCase() === normalizedEmail()
+    );
+  });
+
+  const isAlreadyMember = $derived(() => {
+    if (!normalizedEmail()) return false;
+    const users = resourceUsers();
+    return users.some(
+      (u: any) => String(u?.email || "").toLowerCase() === normalizedEmail()
+    );
+  });
+
+  const duplicateInviteError = $derived(() => {
+    if (!normalizedEmail() || emailError()) return null;
+    if (isAlreadyMember())
+      return "This user is already a member of this workspace.";
+    if (isAlreadyInvited())
+      return "This user has already been invited and is pending.";
+    return null;
   });
 
   // Auto-select default role when available roles change (with guard to prevent loops)
@@ -142,12 +182,12 @@
     if (roles.length > 0 && !selectedRoleId && !hasAutoSelectedRole) {
       // Try to find a "Member" role as default
       const memberRole = roles.find(
-        (r) => r.name.toLowerCase() === "member"
+        (r: Role) => r.name.toLowerCase() === "member"
       );
       selectedRoleId = memberRole ? memberRole.id : roles[0].id;
       hasAutoSelectedRole = true;
     }
-    
+
     // Reset the guard when roles change completely
     if (roles.length === 0 && hasAutoSelectedRole) {
       hasAutoSelectedRole = false;
@@ -167,6 +207,11 @@
 
     if (emailError() || roleError()) {
       toast.error("Please fix the validation errors before submitting");
+      return;
+    }
+
+    if (duplicateInviteError()) {
+      toast.error(duplicateInviteError() as string);
       return;
     }
 
@@ -218,7 +263,8 @@
       // Refresh the invitations list
       await loadPendingInvitations();
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to send invitation";
+      const message =
+        err instanceof Error ? err.message : "Failed to send invitation";
       toast.error(message);
     } finally {
       isLoading = false;
@@ -235,7 +281,7 @@
       // Use centralized API client with query params
       const endpoint = `/invitations?${props.resourceType}Id=${props.resourceId}`;
       const data = await api.get(endpoint);
-      
+
       // Filter for pending invitations only - exclude both acceptedAt and status "accepted"
       pendingInvitations = data.filter(
         (inv: any) =>
@@ -267,7 +313,8 @@
       // Show success message
       toast.success("Invitation revoked successfully");
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to revoke invitation";
+      const message =
+        err instanceof Error ? err.message : "Failed to revoke invitation";
       toast.error(message);
     }
   }
@@ -290,8 +337,9 @@
 
     {#if props.subscriptionLimits && props.subscriptionLimits.maxUsers > 0}
       <div class="mb-4">
-        <TeamSizeIndicator 
-          currentCount={props.subscriptionLimits.currentUserCount + pendingInvitations.length}
+        <TeamSizeIndicator
+          currentCount={props.subscriptionLimits.currentUserCount +
+            pendingInvitations.length}
           maxUsers={props.subscriptionLimits.maxUsers}
           subscriptionPlan={props.subscriptionLimits.subscriptionPlan}
           showAlerts={false}
@@ -314,12 +362,18 @@
             type="email"
             placeholder="user@example.com"
             bind:value={email}
-            class="border-2 dark:border-dark-border {emailError() ? 'border-destructive' : ''}"
+            class="border-2 dark:border-dark-border {emailError() ||
+            duplicateInviteError()
+              ? 'border-destructive'
+              : ''}"
             required
             disabled={!canSendInvitations}
           />
           {#if emailError()}
             <p class="text-sm text-destructive">{emailError()}</p>
+          {/if}
+          {#if !emailError() && duplicateInviteError()}
+            <p class="text-sm text-destructive">{duplicateInviteError()}</p>
           {/if}
         </div>
 
@@ -328,7 +382,9 @@
           <select
             id="role"
             bind:value={selectedRoleId}
-            class="w-full rounded-md border-2 dark:border-dark-border bg-card dark:bg-dark-card p-2 {roleError() ? 'border-destructive' : ''}"
+            class="w-full rounded-md border-2 dark:border-dark-border bg-card dark:bg-dark-card p-2 {roleError()
+              ? 'border-destructive'
+              : ''}"
             required
             disabled={!canSendInvitations}
           >
@@ -345,7 +401,11 @@
         <div class="space-y-2 flex items-end">
           <Button
             type="submit"
-            disabled={isLoading || !canSendInvitations}
+            disabled={isLoading ||
+              !canSendInvitations ||
+              !!emailError() ||
+              !!roleError() ||
+              !!duplicateInviteError()}
             class="w-full"
           >
             {#if isLoading}
@@ -383,7 +443,6 @@
           </span>
         </div>
       {/if}
-
     </form>
   </div>
 
@@ -398,7 +457,9 @@
           ></div>
           <div class="space-y-1">
             <p class="font-medium">Loading Pending Invitations</p>
-            <p class="text-sm text-muted-foreground">Fetching invitation status from server...</p>
+            <p class="text-sm text-muted-foreground">
+              Fetching invitation status from server...
+            </p>
           </div>
         </div>
       </div>

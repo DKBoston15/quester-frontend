@@ -1,10 +1,9 @@
 import { debounce } from "$lib/utils/debounce";
-import { API_BASE_URL } from "$lib/config";
-import { projectStore } from "$lib/stores/ProjectStore.svelte";
+import { projectStore } from "$lib/stores/ProjectStore";
+import { api } from "$lib/services/api-client";
 import {
   chatHistoryAPI,
   type ChatSession,
-  type ChatHistoryAPIError,
 } from "$lib/services/chat-history-api";
 
 export interface SearchResult {
@@ -481,13 +480,9 @@ async function performSearch(searchQuery: string = query): Promise<void> {
   error = null;
 
   try {
-    const response = await fetch(`${API_BASE_URL}/search`, {
+    const response = await api.stream(`/search`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({
+      body: {
         query: searchQuery,
         mode: "search",
         projectId: projectId || null, // Allow null for "All Projects" searches
@@ -499,7 +494,7 @@ async function performSearch(searchQuery: string = query): Promise<void> {
           // Map other filters as needed
         },
         limit: dynamicLimit,
-      }),
+      },
     });
 
     if (!response.ok) {
@@ -562,13 +557,9 @@ async function sendChatMessage(message: string): Promise<void> {
   error = null;
 
   try {
-    const response = await fetch(`${API_BASE_URL}/search`, {
+    const response = await api.stream(`/search`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({
+      body: {
         query: message,
         mode: "chat",
         projectId: projectId || null, // Allow null for "All Projects" chats
@@ -580,7 +571,7 @@ async function sendChatMessage(message: string): Promise<void> {
             ? { chatHistory: chatMessages.slice(-10) }
             : {}), // Include last 10 messages for context
         },
-      }),
+      },
     });
 
     if (!response.ok) {

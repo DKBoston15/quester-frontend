@@ -1,8 +1,7 @@
-<!-- src/routes/project/Outcomes.svelte -->
 <script lang="ts">
   import { onDestroy } from "svelte";
-  import { outcomeStore } from "$lib/stores/OutcomeStore.svelte";
-  import { projectStore } from "$lib/stores/ProjectStore.svelte";
+  import { outcomeStore } from "$lib/stores/OutcomeStore";
+  import { projectStore } from "$lib/stores/ProjectStore";
   import { Button } from "$lib/components/ui/button";
   import * as Card from "$lib/components/ui/card";
   import { Root, Content, Title, Description } from "$lib/components/ui/dialog";
@@ -21,7 +20,7 @@
   import { fly } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
   import * as Select from "$lib/components/ui/select";
-  import { auth } from "$lib/stores/AuthStore.svelte";
+  import { auth } from "$lib/stores/AuthStore";
   import PublisherScore from "$lib/components/custom-ui/dashboard/PublisherScore.svelte";
   import { EmptyState } from "$lib/components/ui/empty-state";
   import { driver } from "driver.js";
@@ -400,12 +399,11 @@
           <Button
             id="learn-outcomes-button"
             variant="outline"
-            size="icon"
             onclick={() => driverObj.drive()}
             class="border-2 dark:border-dark-border"
           >
-            <GraduationCap class="h-4 w-4" />
-            <span class="sr-only">Learn about Outcomes Management</span>
+            <GraduationCap class="h-4 w-4 mr-2" />
+            Tour
           </Button>
         </div>
       </div>

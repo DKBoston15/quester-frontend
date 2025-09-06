@@ -95,8 +95,17 @@ export function generateBibTeX(options: BibTeXExportOptions): string {
     // Build entry fields
     const fields: string[] = [];
 
-    // Common fields
-    if (item.name) {
+    // Common fields (title depends on type)
+    if (entryType === 'incollection') {
+      // For book chapters, the BibTeX title is the chapter title
+      const chapterTitle = (item as any).chapterTitle || '';
+      if (chapterTitle) {
+        fields.push(`  title = {${escapeLatex(chapterTitle)}}`);
+      } else if (item.name) {
+        // Fallback to name if chapterTitle missing
+        fields.push(`  title = {${escapeLatex(item.name)}}`);
+      }
+    } else if (item.name) {
       fields.push(`  title = {${escapeLatex(item.name)}}`);
     }
 
@@ -140,8 +149,11 @@ export function generateBibTeX(options: BibTeXExportOptions): string {
         break;
 
       case 'incollection': // Book chapter
-        if (item.secondName) {
-          fields.push(`  booktitle = {${escapeLatex(item.secondName)}}`);
+        {
+          const bookTitle = item.secondName || item.name || '';
+          if (bookTitle) {
+            fields.push(`  booktitle = {${escapeLatex(bookTitle)}}`);
+          }
         }
         if (item.editors && item.editors.length > 0) {
           fields.push(`  editor = {${formatEditors(item.editors)}}`);
