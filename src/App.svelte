@@ -21,6 +21,8 @@
   import AnnouncementModal from "$lib/components/announcements/AnnouncementModal.svelte";
   import { announcementStore } from "$lib/stores/AnnouncementStore";
   import { initializeFullStory } from "$lib/services/fullstory";
+  import ProcessingTray from "$lib/components/custom-ui/literature/ProcessingTray.svelte";
+  import { initializeTheme } from "$lib/utils/mode-watcher";
 
   const props = $props<{ url: string }>();
 
@@ -28,6 +30,9 @@
   let isCheckingAuth = $state(true);
 
   onMount(async () => {
+    // Initialize theme early so auth-check respects dark mode
+    initializeTheme();
+
     // Initialize FullStory
     initializeFullStory();
 
@@ -129,7 +134,7 @@
 </script>
 
 {#if isCheckingAuth}
-  <div class="fixed inset-0 flex flex-col items-center justify-center">
+  <div class="fixed inset-0 flex flex-col items-center justify-center bg-background text-foreground">
     <div
       class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-4"
     ></div>
@@ -167,6 +172,8 @@
         <!-- Announcement Modal - Available across all authenticated routes -->
         <AnnouncementModal />
         <ProtectedLayout>
+          <!-- Persistent document processing tray -->
+          <ProcessingTray />
           <Route path="/">
             {#if auth.isAuthenticated}
               <Dashboard />

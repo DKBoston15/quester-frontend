@@ -18,8 +18,10 @@
     AlertCircle,
     BookOpen,
     Plus,
+    Upload,
   } from "lucide-svelte";
   import { api } from "$lib/services/api-client";
+  import DocumentUploadPanel from "./DocumentUploadPanel.svelte";
 
   const dispatch = createEventDispatcher();
 
@@ -402,6 +404,16 @@
   onDestroy(() => {
     stopProgressSimulation();
   });
+
+  // Bubble upload events to parent (Literature route)
+  function onUploadStarted(e: CustomEvent<{ jobId: string }>) {
+    dispatch("upload-started", e.detail);
+    // Close the Add Literature dialog once upload kicks off
+    onOpenChange?.(false);
+  }
+  function onDocumentsProcessed(e: CustomEvent<{ jobId: string; files: any[] }>) {
+    dispatch("documents-processed", e.detail);
+  }
 </script>
 
 <Dialog.Root open={isOpen} onOpenChange={(o) => onOpenChange?.(o)}>
@@ -426,6 +438,10 @@
           <Tabs.Trigger value="manual" class="flex-1">
             <Plus class="h-4 w-4 mr-2" />
             Manual Entry
+          </Tabs.Trigger>
+          <Tabs.Trigger value="upload" class="flex-1">
+            <Upload class="h-4 w-4 mr-2" />
+            Upload Documents
           </Tabs.Trigger>
         </Tabs.List>
 
@@ -750,6 +766,17 @@
                     </div>
                   {/if}
                 </div>
+              </div>
+            </Tabs.Content>
+
+            <Tabs.Content value="upload" class="space-y-4">
+              <div class="space-y-4">
+                <Label.Root>Upload your files</Label.Root>
+                <DocumentUploadPanel
+                  projectId={urlProjectId || ''}
+                  on:upload-started={onUploadStarted}
+                  on:documents-processed={onDocumentsProcessed}
+                />
               </div>
             </Tabs.Content>
           </div>
