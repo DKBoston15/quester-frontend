@@ -70,7 +70,8 @@
 
     async deleteLiterature(id: string) {
       try {
-        await api.delete(`/literature/${id}`);
+        // Deletion can take longer (R2 + embeddings cleanup). Increase timeout.
+        await api.delete(`/literature/${id}`, { timeout: 120000, retries: 0 });
         literatureData = literatureData.filter((item) => item.id !== id);
       } catch (err) {
         console.error("Error deleting literature:", err);
@@ -84,4 +85,3 @@
       isLoading = false;
     },
   };
-

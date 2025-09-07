@@ -16,12 +16,15 @@
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
   import { GraduationCap } from "lucide-svelte";
+  import * as AlertDialog from "$lib/components/ui/alert-dialog";
 
   const { literatureId } = $props<{ literatureId: string }>();
   let selectedTab = $state("details");
   let literature = $state<Literature | null>(null);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
+  let showDeleteDialog = $state(false);
+  let isDeleting = $state(false);
 
   $effect(() => {
     const projectId = projectStore.currentProject?.id;
@@ -60,6 +63,7 @@
     if (!literature?.id) return;
 
     try {
+      isDeleting = true;
       await literatureStore.deleteLiterature(literature.id);
       const projectId = projectStore.currentProject?.id;
       if (projectId) {
@@ -67,10 +71,24 @@
       }
     } catch (err) {
       console.error("Error deleting literature:", err);
+    } finally {
+      isDeleting = false;
     }
   }
 
-  async function previewDocument() {
+  let citedPage: number | null = null;
+
+  // Read cited page from query (e.g., ?p=3)
+  $effect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const p = params.get('p');
+      citedPage = p ? Number(p) : null;
+      if (Number.isNaN(citedPage)) citedPage = null;
+    } catch {}
+  });
+
+  async function previewDocument(page?: number) {
     if (!literature?.sourceFileId) return;
     
     try {
@@ -99,8 +117,9 @@
       const typedBlob = new Blob([pdfBlob], { type: 'application/pdf' });
       const blobUrl = URL.createObjectURL(typedBlob);
       
-      // Open blob URL (no CORS issues)
-      window.open(blobUrl, '_blank');
+      // Open blob URL (no CORS issues). If a page was provided, append #page=
+      const urlWithAnchor = page ? `${blobUrl}#page=${page}` : blobUrl;
+      window.open(urlWithAnchor, '_blank');
       
       // Clean up blob URL after a delay
       setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
@@ -293,15 +312,38 @@
                 Download
               </Button>
             {/if}
-            <Button
-              id="lit-view-delete-button"
-              variant="destructive"
-              size="sm"
-              onclick={handleDelete}
-            >
-              <Trash2 class="h-4 w-4 mr-2" />
-              Delete Literature
-            </Button>
+            <AlertDialog.Root bind:open={showDeleteDialog}>
+              <AlertDialog.Trigger asChild>
+                <Button
+                  id="lit-view-delete-button"
+                  variant="destructive"
+                  size="sm"
+                >
+                  <Trash2 class="h-4 w-4 mr-2" />
+                  Delete Literature
+                </Button>
+              </AlertDialog.Trigger>
+              <AlertDialog.Content class="border-2 dark:border-dark-border">
+                <AlertDialog.Header>
+                  <AlertDialog.Title>Delete Literature</AlertDialog.Title>
+                  <AlertDialog.Description>
+                    Are you sure you want to delete "{literature?.name}"? This action cannot be undone.
+                  </AlertDialog.Description>
+                </AlertDialog.Header>
+                <AlertDialog.Footer>
+                  <div class="flex justify-end gap-2">
+                    <Button variant="outline" onclick={() => (showDeleteDialog = false)} class="border-2 dark:border-dark-border" disabled={isDeleting}>Cancel</Button>
+                    <Button variant="destructive" onclick={handleDelete} class="border-2 border-destructive dark:border-destructive" disabled={isDeleting}>
+                      {#if isDeleting}
+                        Deleting...
+                      {:else}
+                        Delete
+                      {/if}
+                    </Button>
+                  </div>
+                </AlertDialog.Footer>
+              </AlertDialog.Content>
+            </AlertDialog.Root>
             <Button
               variant="outline"
               onclick={() => driverObj.drive()}
@@ -313,6 +355,21 @@
           </div>
         {/if}
       </div>
+
+      {#if citedPage}
+        <div class="mb-4 p-3 rounded-md border bg-muted/40 text-sm flex items-center justify-between">
+          <div>
+            This item was cited from page {citedPage}.
+          </div>
+          {#if literature?.sourceFileId}
+            <div class="flex items-center gap-2">
+              <Button variant="outline" size="sm" onclick={() => previewDocument(citedPage || undefined)}>
+                <Eye class="h-4 w-4 mr-2" /> Open document at page {citedPage}
+              </Button>
+            </div>
+          {/if}
+        </div>
+      {/if}
 
       {#if literature}
         <div id="lit-view-header">

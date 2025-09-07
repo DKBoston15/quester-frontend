@@ -8,7 +8,7 @@
   import { Button } from "$lib/components/ui/button";
   import * as Card from "$lib/components/ui/card";
   import * as Tooltip from "$lib/components/ui/tooltip";
-  import { Plus, GraduationCap, Info, Download, Upload } from "lucide-svelte";
+  import { Plus, GraduationCap, Info, Download } from "lucide-svelte";
   import { EmptyState } from "$lib/components/ui/empty-state";
   import type { Literature } from "$lib/types/literature";
   import type { GridApi } from "@ag-grid-community/core";
@@ -16,7 +16,6 @@
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
   import ExportReferences from "$lib/components/custom-ui/literature/export/ExportReferences.svelte";
-  import DocumentUpload from "$lib/components/custom-ui/literature/DocumentUpload.svelte";
   import ProcessingStatus from "$lib/components/custom-ui/literature/ProcessingStatus.svelte";
 
   let searchQuery = $state("");
@@ -24,7 +23,6 @@
   let isAddLiteratureOpen = $state(false);
   let selectedLiteratureItems = $state<Literature[]>([]);
   let isExportDialogOpen = $state(false);
-  let isDocumentUploadOpen = $state(false);
   let activeProcessingJobs = $state<string[]>([]);
 
   const driverObj = driver({
@@ -215,9 +213,6 @@
     isExportDialogOpen = true;
   }
 
-  function handleDocumentUpload() {
-    isDocumentUploadOpen = true;
-  }
 
   function handleDocumentsProcessed(event: CustomEvent<{ jobId: string; files: any[] }>) {
     console.log('Documents processed:', event.detail);
@@ -288,14 +283,6 @@
                 {selectedLiteratureItems.length}
               </span>
             {/if}
-          </Button>
-          <Button
-            onclick={handleDocumentUpload}
-            variant="outline"
-            class="border-2 dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
-          >
-            <Upload class="h-4 w-4 mr-2" />
-            Upload Documents
           </Button>
           <Button
             onclick={handleAddLiterature}
@@ -386,6 +373,8 @@
   isOpen={isAddLiteratureOpen}
   onOpenChange={(open: boolean) => (isAddLiteratureOpen = open)}
   projectId={projectStore.currentProject?.id}
+  on:documents-processed={handleDocumentsProcessed}
+  on:upload-started={handleDocumentUploadStart}
 />
 
 <ExportReferences
@@ -394,15 +383,6 @@
   projectTitle={projectStore.currentProject?.name}
   userName={auth.user ? `${auth.user.firstName} ${auth.user.lastName}`.trim() || auth.user.email : undefined}
   onOpenChange={(open: boolean) => (isExportDialogOpen = open)}
-/>
-
-<!-- Document Upload Modal -->
-<DocumentUpload
-  projectId={projectStore.currentProject?.id || ''}
-  isOpen={isDocumentUploadOpen}
-  onOpenChange={(open: boolean) => (isDocumentUploadOpen = open)}
-  on:documents-processed={handleDocumentsProcessed}
-  on:upload-started={handleDocumentUploadStart}
 />
 
 <!-- Processing Status Cards -->

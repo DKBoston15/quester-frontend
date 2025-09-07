@@ -21,7 +21,7 @@
   const dispatch = createEventDispatcher();
 
   const { jobId, autoRefresh = true, showDetails = true } = $props<{
-    jobId: string;
+    jobId: string | undefined | null;
     autoRefresh?: boolean;
     showDetails?: boolean;
   }>();
@@ -68,6 +68,10 @@
       isLoading = true;
       error = null;
 
+      if (!jobId) {
+        isLoading = false;
+        return; // nothing to fetch
+      }
       const response = await fetch(`${API_BASE_URL}/processing-jobs/${jobId}`, {
         credentials: 'include',
       });
@@ -100,6 +104,7 @@
   }
 
   function startAutoRefresh() {
+    if (!jobId) return;
     if (refreshInterval) clearInterval(refreshInterval);
     
     refreshInterval = setInterval(() => {
@@ -219,7 +224,11 @@
 
   // Reactive effect to handle auto-refresh changes
   $effect(() => {
-    if (autoRefresh && status?.job.status && ['pending', 'processing'].includes(status.job.status)) {
+    if (!jobId) {
+      stopAutoRefresh();
+      return;
+    }
+    if (autoRefresh && status?.job?.status && ['pending', 'processing'].includes(status.job.status)) {
       startAutoRefresh();
     } else {
       stopAutoRefresh();

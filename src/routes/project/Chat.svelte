@@ -10,6 +10,7 @@
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import Loader2 from "lucide-svelte/icons/loader-2";
   import { api, processSSEStream } from "$lib/services/api-client";
+  import { API_BASE_URL } from "$lib/config";
   import MarkdownIt from "markdown-it";
   import { navigate } from "svelte-routing";
   
@@ -39,6 +40,7 @@
     title: string;
     similarity: number;
     snippet?: string;
+    metadata?: any;
   }
 
   interface Message {
@@ -508,6 +510,15 @@
     }
   }
 
+  function getTypeLabel(type: string): string {
+    switch (type) {
+      case 'document_chunk':
+        return 'Literature Page';
+      default:
+        return type.charAt(0).toUpperCase() + type.slice(1);
+    }
+  }
+
   // Transform tool names to friendly display names
   function getFriendlyToolName(toolName: string): string {
     const toolNames: Record<string, string> = {
@@ -534,10 +545,16 @@
         path = `/project/${projectId}/literature/${source.id}`;
         break;
       case 'document_chunk':
-        // For document chunks, navigate to the literature page since chunks are part of literature
-        // We'll extract the literature ID from the source if available
-        // For now, navigate to literature list - could be enhanced to navigate to specific literature
-        path = `/project/${projectId}/literature`;
+        // Prefer deep linking to the literature item that was created for this document
+        if (source.metadata?.literature_id) {
+          const qp = new URLSearchParams();
+          if (source.metadata?.start_page) qp.set('p', String(source.metadata.start_page));
+          path = `/project/${projectId}/literature/${source.metadata.literature_id}?${qp.toString()}`;
+        } else if (source.metadata?.document_file_id) {
+          path = `/project/${projectId}/literature`;
+        } else {
+          path = `/project/${projectId}/literature`;
+        }
         break;
       case 'note':
         // Notes don't have detail views, navigate to notes list
@@ -557,6 +574,20 @@
     
     if (path) {
       navigate(path);
+    }
+  }
+
+  async function openDocumentPreview(fileId: string, page?: number) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/documents/${fileId}/download?preview=true`, {
+        credentials: 'include',
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const url = page ? `${data.downloadUrl}#page=${page}` : data.downloadUrl;
+      window.open(url, '_blank');
+    } catch (e) {
+      console.error('Preview open failed', e);
     }
   }
 
@@ -862,8 +893,8 @@
                                               <div class="text-xs text-muted-foreground mt-1 line-clamp-2">{source.snippet}</div>
                                             {/if}
                                             <div class="flex items-center gap-2 mt-1">
-                                              <Badge variant="outline" class="text-xs capitalize">
-                                                {source.type}
+                                              <Badge variant="outline" class="text-xs">
+                                                {getTypeLabel(source.type)}
                                               </Badge>
                                               {#if source.similarity}
                                                 <span class="text-xs text-muted-foreground">
@@ -872,7 +903,12 @@
                                               {/if}
                                             </div>
                                           </div>
-                                          <ExternalLink class="size-3 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground" />
+                                          {#if source.type === 'document_chunk' && source.metadata?.document_file_id}
+                                            <ExternalLink 
+                                              class="size-3 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground"
+                                              onclick={(e) => { e.stopPropagation(); openDocumentPreview(source.metadata.document_file_id, source.metadata?.start_page); }}
+                                            />
+                                          {/if}
                                         </div>
                                       </button>
                                     {/each}
