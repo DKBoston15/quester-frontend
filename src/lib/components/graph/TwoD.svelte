@@ -44,7 +44,8 @@
     [key: string]: boolean;
   }
 
-  const projectId = projectStore.currentProject?.id;
+  // Track which project's graph is currently loaded
+  let lastLoadedProjectId: string | null = null;
 
   let graph: HTMLDivElement;
   let ForceGraph: any;
@@ -52,12 +53,71 @@
   let showIcons = false;
   let stickNodes = false;
   let Graph: any;
+  let isGraphReady = $state(false);
   let selectedNodes = new Set<GraphNode>();
   let selectedNode: GraphNode | null = null;
   let originalGraphData: GraphData;
   let timelapseInterval: NodeJS.Timeout;
   let currentNodeIndex = 0;
   let selectedNodesForRendering = new Set<string>();
+
+  async function loadGraphForProject(projectId: string) {
+    isGraphReady = false;
+    try {
+      const graphData = await createGraphData(projectId);
+      originalGraphData = graphData;
+      // Initialize with both literature and keyword nodes visible
+      const initialNodes = graphData.nodes.filter(
+        (node) => node.icon === "keyword" || node.icon === "literature"
+      );
+
+      const visibleNodeIds = new Set(initialNodes.map((node) => node.id));
+
+      // Filter links and ensure they reference the correct nodes
+      const initialLinks = graphData.links
+        .filter(
+          (link) =>
+            visibleNodeIds.has(typeof link.source === 'string' ? link.source : (link.source as any).id) && 
+            visibleNodeIds.has(typeof link.target === 'string' ? link.target : (link.target as any).id)
+        )
+        .map((link) => {
+          // Find the actual node objects from our filtered nodes
+          const sourceId = typeof link.source === 'string' ? link.source : (link.source as any).id;
+          const targetId = typeof link.target === 'string' ? link.target : (link.target as any).id;
+          const sourceNode = initialNodes.find(
+            (node) => node.id === sourceId
+          );
+          const targetNode = initialNodes.find(
+            (node) => node.id === targetId
+          );
+
+          return {
+            ...link,
+            source: sourceNode!,
+            target: targetNode!,
+          };
+        });
+
+      Graph.graphData({
+        nodes: initialNodes,
+        links: initialLinks,
+      });
+      isGraphReady = true;
+
+      // Reset local UI state on project change
+      selectedNodes.clear();
+      selectedNodesForRendering.clear();
+      selectedNode = null;
+      typeVisibility = nodeTypes.reduce((acc, type) => {
+        acc[type] = type === "keyword" || type === "literature";
+        return acc;
+      }, {} as TypeVisibility);
+
+      lastLoadedProjectId = projectId;
+    } catch (error) {
+      console.error("Error fetching graph data:", error);
+    }
+  }
 
   onMount(async () => {
     if (typeof window !== "undefined") {
@@ -121,52 +181,22 @@
           }
         });
 
-      try {
-        Graph.d3Force("charge").strength(-30);
-        Graph.d3Force("link").strength();
+      Graph.d3Force("charge").strength(-30);
+      Graph.d3Force("link").strength();
 
-        const graphData = await createGraphData(projectId!);
-        originalGraphData = graphData;
-        // Initialize with both literature and keyword nodes visible
-        const initialNodes = graphData.nodes.filter(
-          (node) => node.icon === "keyword" || node.icon === "literature"
-        );
-
-        const visibleNodeIds = new Set(initialNodes.map((node) => node.id));
-
-        // Filter links and ensure they reference the correct nodes
-        const initialLinks = graphData.links
-          .filter(
-            (link) =>
-              visibleNodeIds.has(typeof link.source === 'string' ? link.source : (link.source as any).id) && 
-              visibleNodeIds.has(typeof link.target === 'string' ? link.target : (link.target as any).id)
-          )
-          .map((link) => {
-            // Find the actual node objects from our filtered nodes
-            const sourceId = typeof link.source === 'string' ? link.source : (link.source as any).id;
-            const targetId = typeof link.target === 'string' ? link.target : (link.target as any).id;
-            const sourceNode = initialNodes.find(
-              (node) => node.id === sourceId
-            );
-            const targetNode = initialNodes.find(
-              (node) => node.id === targetId
-            );
-
-            return {
-              ...link,
-              source: sourceNode!,
-              target: targetNode!,
-            };
-          });
-
-        Graph.graphData({
-          nodes: initialNodes,
-          links: initialLinks,
-        });
-      } catch (error) {
-        console.error("Error fetching graph data:", error);
+      const pid = projectStore.currentProject?.id;
+      if (pid) {
+        await loadGraphForProject(pid);
       }
     }
+  });
+
+  // React to project changes while staying on the Connections view
+  $effect(async () => {
+    const pid = projectStore.currentProject?.id;
+    if (!pid || !Graph) return;
+    if (pid === lastLoadedProjectId) return;
+    await loadGraphForProject(pid);
   });
 
   function addParticleEffects(node: GraphNode) {
@@ -208,10 +238,12 @@
     }
   }
 
-  let typeVisibility: TypeVisibility = nodeTypes.reduce((acc, type) => {
-    acc[type] = type === "keyword" || type === "literature"; // Show both keyword and literature by default
-    return acc;
-  }, {} as TypeVisibility);
+  let typeVisibility = $state<TypeVisibility>(
+    nodeTypes.reduce((acc, type) => {
+      acc[type] = type === "keyword" || type === "literature"; // Show both keyword and literature by default
+      return acc;
+    }, {} as TypeVisibility)
+  );
 
   function renderIcons() {
     const imgCache = new Map();
@@ -304,7 +336,6 @@
 
   function toggleTypeVisibility(type: string) {
     typeVisibility[type] = !typeVisibility[type];
-    typeVisibility = typeVisibility;
     updateGraphData(type);
     Graph.d3ReheatSimulation();
   }
@@ -472,108 +503,112 @@
   }
 </script>
 
-<div class="container">
+<div class="container relative h-full">
+  <!-- Overlay controls always visible (disabled until graph ready) -->
+  <div class="absolute inset-x-0 top-0 z-50 pointer-events-none mt-2">
+    <div class="flex w-full justify-between">
+      <div class="flex items-center space-x-1 ml-4 pointer-events-auto">
+          <Popover.Root>
+            <Popover.Trigger>
+               <Button
+                 variant="outline"
+                 class="w-[6rem] border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                disabled={!isGraphReady}
+                 >Settings</Button
+               >
+            </Popover.Trigger>
+            <Popover.Content
+              class="w-60 max-h-[650px] bg-transparent border-none shadow-none"
+            >
+              <Card.Root>
+                <Card.Content class="flex flex-col space-y-2">
+                  <Button
+                    onclick={() => {
+                      if (!showIcons) {
+                        labels = !labels;
+                        addLabels();
+                        if (labels) {
+                          showIcons = false;
+                        }
+                      }
+                    }}
+                    disabled={showIcons}
+                    class="w-full"
+                  >
+                    {!labels ? "Labels On" : "Labels Off"}
+                  </Button>
+                  <Button
+                    onclick={() => {
+                      if (!labels) {
+                        showIcons = !showIcons;
+                        renderIcons();
+                        if (showIcons) {
+                          labels = false;
+                        }
+                      }
+                    }}
+                    disabled={labels}
+                    class="w-full"
+                  >
+                    {!showIcons ? "Icons On" : "Icons Off"}
+                  </Button>
+                  <Button
+                    onclick={() => (stickNodes = !stickNodes)}
+                    class="w-full"
+                  >
+                    {!stickNodes ? "Stick Nodes" : "Unstick Nodes"}
+                  </Button>
+                  <Button onclick={startTimelapse} class="w-full"
+                    >Timelapse</Button
+                  >
+                </Card.Content>
+              </Card.Root>
+            </Popover.Content>
+          </Popover.Root>
+          <Popover.Root>
+            <Popover.Trigger>
+               <Button
+                 variant="outline"
+                 class="w-[6rem] border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                disabled={!isGraphReady}
+                 >Filter</Button
+               >
+            </Popover.Trigger>
+            <Popover.Content
+              class="bg-transparent last:border-none shadow-none"
+            >
+              <Card.Root>
+                <Card.Header>
+                  <Card.Title>Filter</Card.Title>
+                  <Card.Description>
+                    Toggle visibility of different node types
+                  </Card.Description>
+                </Card.Header>
+                <Card.Content
+                  class="grid grid-cols-1 gap-4 dark:bg-[#1F2024]"
+                >
+                  <div class="space-y-4 dark:bg-[#1F2024]">
+                    {#each nodeTypes as type}
+                      <div class="flex items-center space-x-2 bg-[#1F2024]">
+                        <TypeCheckbox
+                          type={type as keyof typeof colorCheckboxMap}
+                          color={colorCheckboxMap[type as keyof typeof colorCheckboxMap]}
+                          bind:checked={typeVisibility[type]}
+                          onToggle={toggleTypeVisibility}
+                        />
+                      </div>
+                    {/each}
+                  </div>
+                </Card.Content>
+              </Card.Root>
+            </Popover.Content>
+          </Popover.Root>
+      </div>
+    </div>
+  </div>
   {#if originalGraphData}
     {#if originalGraphData.nodes.length != 0 && originalGraphData.nodes.length != 0}
-      <div class="absolute z-40">
-        <div class="flex w-full justify-between">
-          <div class="flex items-center space-x-1 ml-4">
-            <Popover.Root>
-              <Popover.Trigger>
-                <Button
-                  variant="outline"
-                  class="w-[6rem] border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                  >Settings</Button
-                >
-              </Popover.Trigger>
-              <Popover.Content
-                class="w-60 max-h-[650px] bg-transparent border-none shadow-none"
-              >
-                <Card.Root>
-                  <Card.Content class="flex flex-col space-y-2">
-                    <Button
-                      onclick={() => {
-                        if (!showIcons) {
-                          labels = !labels;
-                          addLabels();
-                          if (labels) {
-                            showIcons = false;
-                          }
-                        }
-                      }}
-                      disabled={showIcons}
-                      class="w-full"
-                    >
-                      {!labels ? "Labels On" : "Labels Off"}
-                    </Button>
-                    <Button
-                      onclick={() => {
-                        if (!labels) {
-                          showIcons = !showIcons;
-                          renderIcons();
-                          if (showIcons) {
-                            labels = false;
-                          }
-                        }
-                      }}
-                      disabled={labels}
-                      class="w-full"
-                    >
-                      {!showIcons ? "Icons On" : "Icons Off"}
-                    </Button>
-                    <Button
-                      onclick={() => (stickNodes = !stickNodes)}
-                      class="w-full"
-                    >
-                      {!stickNodes ? "Stick Nodes" : "Unstick Nodes"}
-                    </Button>
-                    <Button onclick={startTimelapse} class="w-full"
-                      >Timelapse</Button
-                    >
-                  </Card.Content>
-                </Card.Root>
-              </Popover.Content>
-            </Popover.Root>
-            <Popover.Root>
-              <Popover.Trigger>
-                <Button
-                  variant="outline"
-                  class="w-[6rem] border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                  >Filter</Button
-                >
-              </Popover.Trigger>
-              <Popover.Content
-                class="bg-transparent last:border-none shadow-none"
-              >
-                <Card.Root>
-                  <Card.Header>
-                    <Card.Title>Filter</Card.Title>
-                    <Card.Description>
-                      Toggle visibility of different node types
-                    </Card.Description>
-                  </Card.Header>
-                  <Card.Content
-                    class="grid grid-cols-1 gap-4 dark:bg-[#1F2024]"
-                  >
-                    <div class="space-y-4 dark:bg-[#1F2024]">
-                      {#each nodeTypes as type}
-                        <div class="flex items-center space-x-2 bg-[#1F2024]">
-                          <TypeCheckbox
-                            type={type as keyof typeof colorCheckboxMap}
-                            color={colorCheckboxMap[type as keyof typeof colorCheckboxMap]}
-                            bind:checked={typeVisibility[type]}
-                            onToggle={toggleTypeVisibility}
-                          />
-                        </div>
-                      {/each}
-                    </div>
-                  </Card.Content>
-                </Card.Root>
-              </Popover.Content>
-            </Popover.Root>
-          </div>
-        </div>
-      </div>
+      
     {:else}
       <div class="h-[60vh]">
         <EmptyState
@@ -585,8 +620,9 @@
       </div>
     {/if}
   {/if}
+  <!-- Graph host fills the container -->
+  <div bind:this={graph} class="absolute inset-0"></div>
 </div>
-<div bind:this={graph}></div>
 
 <style>
   div {
@@ -597,7 +633,7 @@
   .container {
     width: 100%;
     overflow-x: hidden;
-    overflow-y: hidden;
+    /* allow overlay to render; graph handles its own rendering area */
     padding: 0 !important;
     margin: 0 !important;
   }

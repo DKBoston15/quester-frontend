@@ -3,12 +3,17 @@
   import type { Literature } from "../types/literature";
 
   let literatureData = $state<Literature[]>([]);
+  // Track which project the literature is loaded for
+  let loadedProjectId = $state<string | null>(null);
   let isLoading = $state(false);
   let error = $state<string | null>(null);
 
   export const literatureStore = {
     get data() {
       return literatureData;
+    },
+    get loadedProjectId() {
+      return loadedProjectId;
     },
     get isLoading() {
       return isLoading;
@@ -32,10 +37,12 @@
           `/literature/project/${projectId}`
         );
         literatureData = data;
+        loadedProjectId = projectId;
       } catch (err) {
         console.error("Error loading literature:", err);
         error = err instanceof Error ? err.message : "An error occurred";
         literatureData = [];
+        loadedProjectId = null;
       } finally {
         isLoading = false;
       }
@@ -82,6 +89,6 @@
       literatureData = [];
       error = null;
       isLoading = false;
+      loadedProjectId = null;
     },
   };
-

@@ -49,11 +49,13 @@
     [key: string]: boolean;
   }
 
-  const projectId = projectStore.currentProject?.id;
+  // Track which project's graph is currently loaded
+  let lastLoadedProjectId: string | null = null;
 
   let showIcons = false;
   let elem: HTMLDivElement;
   let Graph: ForceGraph3DInstance<GraphNode, GraphLink>;
+  let isGraphReady = $state(false);
   let selectedNodes = new Set<GraphNode>();
   let selectedNode: GraphNode | null = null;
   let stickNodes = false;
@@ -63,9 +65,9 @@
   let currentNodeIndex = 0;
   let selectedNodesForRendering = new Set<string>();
 
-  onMount(async () => {
-    const ForceGraph3D = (await import("3d-force-graph")).default;
-    const graphData = await createGraphData(projectId!);
+  async function loadGraphForProject(projectId: string) {
+    isGraphReady = false;
+    const graphData = await createGraphData(projectId);
     originalGraphData = graphData;
 
     const initialNodes = graphData.nodes.filter(
@@ -95,78 +97,116 @@
         };
       });
 
-    Graph = (ForceGraph3D as any)()(elem)
-      .graphData({
+    if (!Graph) {
+      const ForceGraph3D = (await import("3d-force-graph")).default;
+      Graph = (ForceGraph3D as any)()(elem)
+        .graphData({
+          nodes: initialNodes,
+          links: initialLinks,
+        })
+        .nodeId("id")
+        .nodeVal("val")
+        .nodeLabel("id")
+        .backgroundColor(
+          document.documentElement.classList.contains("dark") ? "#1A1A1A" : "#fff"
+        )
+        .nodeColor((node: GraphNode) =>
+          node === selectedNode ? "purple" : groupColorMap[node.group as keyof typeof groupColorMap]
+        )
+        .linkColor((link: GraphLink) =>
+          link.source === selectedNode || link.target === selectedNode
+            ? "#0d52f5"
+            : document.documentElement.classList.contains("dark")
+              ? "#757575"
+              : "#000"
+        )
+        .linkOpacity(0.6)
+        .linkWidth((link: GraphLink) =>
+          link.source === selectedNode || link.target === selectedNode ? 4 : 1
+        )
+        .linkSource("source")
+        .linkTarget("target")
+        .linkDirectionalParticleColor(() => "#0d52f5")
+        .onNodeClick((node: GraphNode, event: MouseEvent) => {
+          handleNodeClick(node, event);
+        })
+        .onNodeDrag((node: GraphNode, translate: { x: number; y: number; z: number }) => {
+          if (selectedNodes.has(node)) {
+            [...selectedNodes]
+              .filter((selNode) => selNode !== node)
+              .forEach((dragNode) =>
+                ["x", "y", "z"].forEach(
+                  (coord) => {
+                    const coordKey = coord as 'x' | 'y' | 'z';
+                    const fCoordKey = `f${coord}` as 'fx' | 'fy' | 'fz';
+                    dragNode[fCoordKey] = (dragNode[coordKey] || 0) + translate[coordKey];
+                  }
+                )
+              );
+          }
+        })
+        .onNodeDragEnd((node: GraphNode) => {
+          if (selectedNodes.has(node)) {
+            [...selectedNodes].forEach((selNode) => {
+              if (stickNodes) {
+                selNode.fx = selNode.x;
+                selNode.fy = selNode.y;
+                selNode.fz = selNode.z;
+              } else {
+                selNode.fx = undefined;
+                selNode.fy = undefined;
+                selNode.fz = undefined;
+              }
+            });
+          } else {
+            if (stickNodes) {
+              node.fx = node.x;
+              node.fy = node.y;
+              node.fz = node.z;
+            } else {
+              node.fx = undefined;
+              node.fy = undefined;
+              node.fz = undefined;
+            }
+          }
+        });
+    } else {
+      // Update existing graph data
+      Graph.graphData({
         nodes: initialNodes,
         links: initialLinks,
-      })
-      .nodeId("id")
-      .nodeVal("val")
-      .nodeLabel("id")
-      .backgroundColor(
-        document.documentElement.classList.contains("dark") ? "#1A1A1A" : "#fff"
-      )
-      .nodeColor((node: GraphNode) =>
-        node === selectedNode ? "purple" : groupColorMap[node.group as keyof typeof groupColorMap]
-      )
-      .linkColor((link: GraphLink) =>
-        link.source === selectedNode || link.target === selectedNode
-          ? "#0d52f5"
-          : document.documentElement.classList.contains("dark")
-            ? "#757575"
-            : "#000"
-      )
-      .linkOpacity(0.6)
-      .linkWidth((link: GraphLink) =>
-        link.source === selectedNode || link.target === selectedNode ? 4 : 1
-      )
-      .linkSource("source")
-      .linkTarget("target")
-      .linkDirectionalParticleColor(() => "#0d52f5")
-      .onNodeClick((node: GraphNode, event: MouseEvent) => {
-        handleNodeClick(node, event);
-      })
-      .onNodeDrag((node: GraphNode, translate: { x: number; y: number; z: number }) => {
-        if (selectedNodes.has(node)) {
-          [...selectedNodes]
-            .filter((selNode) => selNode !== node)
-            .forEach((dragNode) =>
-              ["x", "y", "z"].forEach(
-                (coord) => {
-                  const coordKey = coord as 'x' | 'y' | 'z';
-                  const fCoordKey = `f${coord}` as 'fx' | 'fy' | 'fz';
-                  dragNode[fCoordKey] = (dragNode[coordKey] || 0) + translate[coordKey];
-                }
-              )
-            );
-        }
-      })
-      .onNodeDragEnd((node: GraphNode) => {
-        if (selectedNodes.has(node)) {
-          [...selectedNodes].forEach((selNode) => {
-            if (stickNodes) {
-              selNode.fx = selNode.x;
-              selNode.fy = selNode.y;
-              selNode.fz = selNode.z;
-            } else {
-              selNode.fx = undefined;
-              selNode.fy = undefined;
-              selNode.fz = undefined;
-            }
-          });
-        } else {
-          if (stickNodes) {
-            node.fx = node.x;
-            node.fy = node.y;
-            node.fz = node.z;
-          } else {
-            node.fx = undefined;
-            node.fy = undefined;
-            node.fz = undefined;
-          }
-        }
       });
+    }
+
+    // Reset local state on project change
+    selectedNodes.clear();
+    selectedNodesForRendering.clear();
+    selectedNode = null;
+    typeVisibility = nodeTypes.reduce((acc, type) => {
+      acc[type] = type === "keyword" || type === "literature";
+      return acc;
+    }, {} as TypeVisibility);
+
+    lastLoadedProjectId = projectId;
+    isGraphReady = true;
+  }
+
+  onMount(async () => {
+    // Initialize graph on mount for current project
+    const pid = projectStore.currentProject?.id;
+    if (pid) {
+      await loadGraphForProject(pid);
+    }
   });
+
+  // React to project changes while staying on the Connections view
+  $effect(async () => {
+    const pid = projectStore.currentProject?.id;
+    if (!pid) return;
+    if (pid === lastLoadedProjectId) return;
+    await loadGraphForProject(pid);
+  });
+  
 
   function handleNodeClick(node: GraphNode, event: MouseEvent) {
     selectedNode = node;
@@ -213,10 +253,12 @@
     }
   }
 
-  let typeVisibility: TypeVisibility = nodeTypes.reduce((acc, type) => {
-    acc[type] = type === "keyword" || type === "literature"; // Show both keyword and literature by default
-    return acc;
-  }, {} as TypeVisibility);
+  let typeVisibility = $state<TypeVisibility>(
+    nodeTypes.reduce((acc, type) => {
+      acc[type] = type === "keyword" || type === "literature"; // Show both keyword and literature by default
+      return acc;
+    }, {} as TypeVisibility)
+  );
 
   function toggleTypeVisibility(type: string) {
     typeVisibility[type] = !typeVisibility[type];
@@ -456,13 +498,13 @@
     }, 500);
   }
 
-  $: {
+  $effect(() => {
     if (selectedNodesForRendering.size > 0) {
       updateGraphDataWithFilter();
     }
-  }
+  });
 
-  $: {
+  $effect(() => {
     if (Graph) {
       Graph.backgroundColor($isDarkMode ? "#1A1A1A" : "#fff").linkColor(
         (link: GraphLink) =>
@@ -473,7 +515,7 @@
               : "#000"
       );
     }
-  }
+  });
 
   function updateGraphDataWithFilter() {
     let filteredNodes: GraphNode[] | undefined;
@@ -503,112 +545,112 @@
   }
 </script>
 
-<div class="container">
-  {#if originalGraphData}
-    {#if originalGraphData.nodes.length != 0 && originalGraphData.nodes.length != 0}
-      <div class="absolute z-40 w-full">
-        <div class="flex w-full justify-between">
-          <div class="flex items-center space-x-1 ml-4">
-            <Popover.Root>
-              <Popover.Trigger>
+<div class="container relative h-full">
+  <!-- Overlay controls always visible (disabled until graph ready) -->
+  <div class="absolute inset-x-0 top-0 z-50 pointer-events-none mt-2">
+    <div class="flex w-full justify-between">
+      <div class="flex items-center space-x-1 ml-4 pointer-events-auto">
+        <Popover.Root>
+          <Popover.Trigger>
+            <Button
+              variant="outline"
+              class="w-[6rem] border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+              disabled={!isGraphReady}
+              >Settings</Button
+            >
+          </Popover.Trigger>
+          <Popover.Content
+            class="w-60 max-h-[650px] bg-transparent border-none shadow-none"
+          >
+            <Card.Root>
+              <Card.Content class="flex flex-col space-y-2">
                 <Button
-                  variant="outline"
-                  class="w-[6rem] border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                  >Settings</Button
+                  onclick={() => {
+                    if (!showIcons) {
+                      labels = !labels;
+                      addLabels();
+                      if (labels) {
+                        showIcons = false;
+                      }
+                    }
+                  }}
+                  disabled={showIcons}
                 >
-              </Popover.Trigger>
-              <Popover.Content
-                class="w-60 max-h-[650px] bg-transparent border-none shadow-none"
-              >
-                <Card.Root>
-                  <Card.Content class="flex flex-col space-y-2">
-                    <Button
-                      onclick={() => {
-                        if (!showIcons) {
-                          labels = !labels;
-                          addLabels();
-                          if (labels) {
-                            showIcons = false;
-                          }
-                        }
-                      }}
-                      disabled={showIcons}
-                    >
-                      {!labels ? "Labels On" : "Labels Off"}
-                    </Button>
-                    <Button
-                      onclick={() => {
-                        if (!labels) {
-                          showIcons = !showIcons;
-                          renderIcons();
-                          if (showIcons) {
-                            labels = false;
-                          }
-                        }
-                      }}
-                      disabled={labels}
-                    >
-                      {!showIcons ? "Show Icons" : "Hide Icons"}
-                    </Button>
-                    <Button
-                      onclick={() => {
-                        stickNodes = !stickNodes;
-                        if (!stickNodes) {
-                          unstickAllNodes();
-                        }
-                      }}
-                    >
-                      {!stickNodes ? "Stick Nodes" : "Unstick Nodes"}
-                    </Button>
-                    <Button onclick={startTimelapse}>Start Timelapse</Button>
-                  </Card.Content>
-                </Card.Root>
-              </Popover.Content>
-            </Popover.Root>
-            <Popover.Root>
-              <Popover.Trigger>
+                  {!labels ? "Labels On" : "Labels Off"}
+                </Button>
                 <Button
-                  variant="outline"
-                  class="w-[6rem] border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                  >Filter</Button
+                  onclick={() => {
+                    if (!labels) {
+                      showIcons = !showIcons;
+                      renderIcons();
+                      if (showIcons) {
+                        labels = false;
+                      }
+                    }
+                  }}
+                  disabled={labels}
                 >
-              </Popover.Trigger>
-              <Popover.Content
-                class="bg-transparent last:border-none shadow-none"
-              >
-                <Card.Root>
-                  <Card.Header>
-                    <Card.Title>Filter</Card.Title>
-                    <Card.Description>
-                      Toggle visibility of different node types
-                    </Card.Description>
-                  </Card.Header>
-                  <Card.Content class="grid grid-cols-1 gap-4">
-                    <div class="space-y-4 dark:bg-[#1F2024]">
-                      {#each nodeTypes as type}
-                        <div
-                          class="flex items-center space-x-2 dark:bg-red-400"
-                        >
-                          <TypeCheckbox
-                            type={type as keyof typeof colorCheckboxMap}
-                            color={colorCheckboxMap[type as keyof typeof colorCheckboxMap]}
-                            bind:checked={typeVisibility[type]}
-                            onToggle={toggleTypeVisibility}
-                          />
-                        </div>
-                      {/each}
+                  {!showIcons ? "Show Icons" : "Hide Icons"}
+                </Button>
+                <Button
+                  onclick={() => {
+                    stickNodes = !stickNodes;
+                    if (!stickNodes) {
+                      unstickAllNodes();
+                    }
+                  }}
+                >
+                  {!stickNodes ? "Stick Nodes" : "Unstick Nodes"}
+                </Button>
+                <Button onclick={startTimelapse}>Start Timelapse</Button>
+              </Card.Content>
+            </Card.Root>
+          </Popover.Content>
+        </Popover.Root>
+        <Popover.Root>
+          <Popover.Trigger>
+            <Button
+              variant="outline"
+              class="w-[6rem] border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+              disabled={!isGraphReady}
+              >Filter</Button
+            >
+          </Popover.Trigger>
+          <Popover.Content
+            class="bg-transparent last:border-none shadow-none"
+          >
+            <Card.Root>
+              <Card.Header>
+                <Card.Title>Filter</Card.Title>
+                <Card.Description>
+                  Toggle visibility of different node types
+                </Card.Description>
+              </Card.Header>
+              <Card.Content class="grid grid-cols-1 gap-4">
+                <div class="space-y-4 dark:bg-[#1F2024]">
+                  {#each nodeTypes as type}
+                    <div
+                      class="flex items-center space-x-2 dark:bg-red-400"
+                    >
+                      <TypeCheckbox
+                        type={type as keyof typeof colorCheckboxMap}
+                        color={colorCheckboxMap[type as keyof typeof colorCheckboxMap]}
+                        bind:checked={typeVisibility[type]}
+                        onToggle={toggleTypeVisibility}
+                      />
                     </div>
-                  </Card.Content>
-                </Card.Root>
-              </Popover.Content>
-            </Popover.Root>
-          </div>
-        </div>
+                  {/each}
+                </div>
+              </Card.Content>
+            </Card.Root>
+          </Popover.Content>
+        </Popover.Root>
       </div>
-    {:else}
-      <div
-        class="flex flex-col items-center justify-center h-[60vh] text-center"
-      >
+    </div>
+  </div>
+  {#if originalGraphData}
+    {#if originalGraphData.nodes.length == 0}
+      <div class="flex flex-col items-center justify-center h-[60vh] text-center">
         <h3 class="text-2xl font-semibold mb-4">No data to display yet!</h3>
         <p class="text-lg text-muted-foreground">
           Add literature to see your graph start to populate.
@@ -616,8 +658,9 @@
       </div>
     {/if}
   {/if}
+  <!-- Graph host fills the container -->
+  <div bind:this={elem} id="3d-graph" class="absolute inset-0"></div>
 </div>
-<div bind:this={elem} id="3d-graph"></div>
 
 <style>
   div {
@@ -630,6 +673,5 @@
     overflow-x: hidden;
     padding: 0 !important;
     margin: 0 !important;
-    background-color: red;
   }
 </style>

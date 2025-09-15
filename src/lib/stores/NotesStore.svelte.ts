@@ -10,6 +10,8 @@
   };
 
   let notes = $state<Note[]>([]);
+  // Track which project the current notes are loaded for
+  let loadedProjectId = $state<string | null>(null);
   let activeNoteId = $state<string | null>(null);
   let isLoading = $state(false);
   let error = $state<string | null>(null);
@@ -378,6 +380,9 @@
     get notes() {
       return notes;
     },
+    get loadedProjectId() {
+      return loadedProjectId;
+    },
     get activeNoteId() {
       return activeNoteId;
     },
@@ -432,6 +437,7 @@
         });
 
         notes = processedNotes;
+        loadedProjectId = projectId;
 
         // If there's an active search query, update highlighted notes
         if (searchQuery) {
@@ -446,6 +452,7 @@
         console.error("Error loading notes:", err);
         error = err instanceof Error ? err.message : "An error occurred";
         notes = [];
+        loadedProjectId = null;
       } finally {
         isLoading = false;
       }
@@ -787,6 +794,7 @@
       searchQuery = "";
       filter = { type: "literature" };
       highlightedNotes = [];
+      loadedProjectId = null;
     },
   };
 
@@ -856,4 +864,3 @@
 
     return processedNote as Note;
   }
-
