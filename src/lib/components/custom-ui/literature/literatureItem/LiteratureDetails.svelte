@@ -362,7 +362,7 @@
     {/if}
   </div>
 
-  {#if selectedType === "Book Chapter"}
+  {#if selectedType === "Book Chapter" || selectedType === "Book"}
     <div class="grid gap-3">
       <Label for="editors">Editors</Label>
       {#if editMode.details}
@@ -370,7 +370,7 @@
           tags={(Array.isArray(editingLiterature.editors)
             ? editingLiterature.editors
             : []) as string[]}
-          on:change={(e) => (editingLiterature.editors = e.detail.tags)}
+        on:change={(e) => (editingLiterature.editors = e.detail.tags)}
           placeholder="Editors"
         />
       {:else}
