@@ -156,6 +156,26 @@
       formattedAuthors = "";
     }
 
+    // If Book with editors but no authors, use editors as author-equivalent (APA)
+    const isBookType = citation.type.value === "Book";
+    const hasNoAuthors = !citation.authors || citation.authors.length === 0;
+    const hasEditors = citation.editors && citation.editors.length > 0;
+
+    if (isBookType && hasNoAuthors && hasEditors) {
+      if (citation.editors.length === 1) {
+        formattedAuthors = `${formatEditorName(citation.editors[0])} (Ed.)`;
+      } else {
+        const editorsList = citation.editors
+          .slice(0, -1)
+          .map(formatEditorName)
+          .join(", ");
+        const lastEditor = formatEditorName(
+          citation.editors[citation.editors.length - 1]
+        );
+        formattedAuthors = `${editorsList}, & ${lastEditor} (Eds.)`;
+      }
+    }
+
     let formattedDate = citation.publicationYear
       ? `(${citation.publicationYear}).`
       : "(n.d.).";
@@ -318,9 +338,12 @@
 
     let components: string[] = [];
 
-    // Authors
+    // Authors or editors for Book when no authors
     if (citation.authors.length > 0) {
       components.push(formatMLAAuthors(citation.authors));
+    } else if (citation.type.value === "Book" && citation.editors.length > 0) {
+      // For editor-only books, MLA places editors after title; we also show here if no authors
+      // We'll add the explicit 'edited by' later after title to match MLA
     }
 
     // Title
@@ -352,6 +375,11 @@
     // Additional information for specific types
     switch (citation.type.value) {
       case "Book Chapter":
+        if (citation.editors && citation.editors.length > 0) {
+          components.push(`edited by ${formatMLAAuthors(citation.editors)},`);
+        }
+        break;
+      case "Book":
         if (citation.editors && citation.editors.length > 0) {
           components.push(`edited by ${formatMLAAuthors(citation.editors)},`);
         }
@@ -419,15 +447,24 @@
 
     let components: string[] = [];
 
-    components.push(`${formatChicagoAuthors(citation.authors)}. `);
+    // Use authors if present; otherwise, for Books with editors only, use editors with ed./eds.
+    if (citation.authors && citation.authors.length > 0) {
+      components.push(`${formatChicagoAuthors(citation.authors)}. `);
+    } else if (citation.type.value === "Book" && citation.editors && citation.editors.length > 0) {
+      const edLabel = citation.editors.length > 1 ? "eds." : "ed.";
+      components.push(`${formatChicagoAuthors(citation.editors)}, ${edLabel}. `);
+    }
 
     switch (citation.type.value) {
-      case "Book":
-        components.push(`<i>${citation.title}</i>. `);
-        components.push(
-          `${citation.city}: ${citation.journalName}, ${citation.publicationYear}.`
-        );
-        break;
+    case "Book":
+      components.push(`<i>${citation.title}</i>. `);
+      if (citation.editors && citation.editors.length > 0 && citation.authors && citation.authors.length > 0) {
+        components.push(`Edited by ${formatChicagoAuthors(citation.editors)}. `);
+      }
+      components.push(
+        `${citation.city}: ${citation.journalName}, ${citation.publicationYear}.`
+      );
+      break;
 
       case "Journal Article":
         components.push(`"${citation.title}." `);
@@ -511,6 +548,9 @@
 
     if (citation.authors && citation.authors.length > 0) {
       components.push(`${formatHarvardAuthors(citation.authors)}`);
+    } else if (citation.type.value === "Book" && citation.editors && citation.editors.length > 0) {
+      const edLabel = citation.editors.length > 1 ? "(eds.)" : "(ed.)";
+      components.push(`${formatHarvardAuthors(citation.editors)} ${edLabel}`);
     }
 
     components.push(`(${citation.publicationYear})`);
@@ -519,6 +559,10 @@
       case "Book":
       case "Conference Proceedings":
         components.push(`<i>${citation.title}</i>,`);
+        if (citation.type.value === "Book" && citation.editors && citation.editors.length > 0) {
+          const edLabel = citation.editors.length > 1 ? "(eds.)," : "(ed.),";
+          components.push(`${formatHarvardAuthors(citation.editors)} ${edLabel}`);
+        }
         break;
       default:
         components.push(`'${citation.title}',`);
@@ -614,6 +658,8 @@
 
     if (citation.authors && citation.authors.length > 0) {
       components.push(formatIEEEAuthors(citation.authors) + ",");
+    } else if (citation.type.value === "Book" && citation.editors && citation.editors.length > 0) {
+      components.push(formatIEEEAuthors(citation.editors) + ", Ed.,");
     }
 
     components.push(`"${citation.title},"`);
@@ -697,6 +743,9 @@
     // 1. Authors
     if (citation.authors.length > 0) {
       components.push(formatASAAuthors(citation.authors) + ".");
+    } else if (citation.type.value === "Book" && citation.editors && citation.editors.length > 0) {
+      const edLabel = citation.editors.length > 1 ? "eds." : "ed.";
+      components.push(`${formatASAAuthors(citation.editors)}, ${edLabel}.`);
     }
 
     // 2. Year

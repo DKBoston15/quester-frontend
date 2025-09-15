@@ -143,6 +143,17 @@
     return () => notesStore.reset();
   });
 
+  // Reload notes when switching projects without a full page refresh
+  $effect(() => {
+    const pid = projectStore.currentProject?.id;
+    if (!pid) return;
+    if (notesStore.loadedProjectId !== pid) {
+      // Clear stale notes immediately, then load for the new project
+      notesStore.reset();
+      loadNotes();
+    }
+  });
+
   // Handle note selection
   function handleNoteSelect(note: Note, targetPanel = "left") {
     // Handle selection based on target panel

@@ -108,6 +108,26 @@ export function formatAPACitation(citation: Citation): string {
     formattedAuthors = "";
   }
 
+  // If Book has editors but no authors, use editors as author-equivalent (APA)
+  if (
+    citation.type === "Book" &&
+    (!citation.authors || citation.authors.length === 0) &&
+    citation.editors && citation.editors.length > 0
+  ) {
+    if (citation.editors.length === 1) {
+      formattedAuthors = `${formatAuthorName(citation.editors[0])} (Ed.)`;
+    } else if (citation.editors.length === 2) {
+      formattedAuthors = `${formatAuthorName(citation.editors[0])} & ${formatAuthorName(citation.editors[1])} (Eds.)`;
+    } else {
+      const list = citation.editors
+        .slice(0, -1)
+        .map(formatAuthorName)
+        .join(", ");
+      const last = formatAuthorName(citation.editors[citation.editors.length - 1]);
+      formattedAuthors = `${list}, & ${last} (Eds.)`;
+    }
+  }
+
   let formattedDate = citation.publicationYear
     ? `(${citation.publicationYear}).`
     : "(n.d.).";
@@ -287,6 +307,11 @@ export function formatMLACitation(citation: Citation): string {
         components.push(`edited by ${formatMLAAuthors(citation.editors)},`);
       }
       break;
+    case "Book":
+      if (citation.editors && citation.editors.length > 0) {
+        components.push(`edited by ${formatMLAAuthors(citation.editors)},`);
+      }
+      break;
     case "Conference Presentation":
       components.push("Conference Presentation,");
       break;
@@ -348,11 +373,25 @@ export function formatChicagoCitation(citation: Citation): string {
 
   let components: string[] = [];
 
-  components.push(`${formatChicagoAuthors(citation.authors)}. `);
+  // Authors or editors for Book when no authors
+  if (citation.authors && citation.authors.length > 0) {
+  if (citation.authors && citation.authors.length > 0) {
+    components.push(`${formatChicagoAuthors(citation.authors)}. `);
+  } else if (citation.type === "Book" && citation.editors && citation.editors.length > 0) {
+    const edLabel = citation.editors.length > 1 ? "eds." : "ed.";
+    components.push(`${formatChicagoAuthors(citation.editors)}, ${edLabel}. `);
+  }
+  } else if (citation.type === "Book" && citation.editors && citation.editors.length > 0) {
+    const edLabel = citation.editors.length > 1 ? "eds." : "ed.";
+    components.push(`${formatChicagoAuthors(citation.editors)}, ${edLabel}. `);
+  }
 
   switch (citation.type) {
     case "Book":
       components.push(`<i>${citation.title}</i>. `);
+      if (citation.editors && citation.editors.length > 0 && citation.authors && citation.authors.length > 0) {
+        components.push(`Edited by ${formatChicagoAuthors(citation.editors)}. `);
+      }
       components.push(
         `${citation.city}: ${citation.journalName}, ${citation.publicationYear}.`
       );
@@ -440,6 +479,9 @@ export function formatHarvardCitation(citation: Citation): string {
 
   if (citation.authors && citation.authors.length > 0) {
     components.push(`${formatHarvardAuthors(citation.authors)}`);
+  } else if (citation.type === "Book" && citation.editors && citation.editors.length > 0) {
+    const edLabel = citation.editors.length > 1 ? "(eds.)" : "(ed.)";
+    components.push(`${formatHarvardAuthors(citation.editors)} ${edLabel}`);
   }
 
   components.push(`(${citation.publicationYear})`);
@@ -448,6 +490,10 @@ export function formatHarvardCitation(citation: Citation): string {
     case "Book":
     case "Conference Proceedings":
       components.push(`<i>${citation.title}</i>,`);
+      if (citation.type === "Book" && citation.editors && citation.editors.length > 0) {
+        const edLabel = citation.editors.length > 1 ? "(eds.)," : "(ed.),";
+        components.push(`${formatHarvardAuthors(citation.editors)} ${edLabel}`);
+      }
       break;
     default:
       components.push(`'${citation.title}',`);
@@ -543,6 +589,8 @@ export function formatIEEECitation(citation: Citation): string {
 
   if (citation.authors && citation.authors.length > 0) {
     components.push(formatIEEEAuthors(citation.authors) + ",");
+  } else if (citation.type === "Book" && citation.editors && citation.editors.length > 0) {
+    components.push(formatIEEEAuthors(citation.editors) + ", Ed.,");
   }
 
   components.push(`"${citation.title},"`);
@@ -623,9 +671,12 @@ export function formatASACitation(citation: Citation): string {
 
   let components: string[] = [];
 
-  // 1. Authors
+  // 1. Authors (or editors for Books when no authors)
   if (citation.authors.length > 0) {
     components.push(formatASAAuthors(citation.authors) + ".");
+  } else if (citation.type === "Book" && citation.editors && citation.editors.length > 0) {
+    const edLabel = citation.editors.length > 1 ? "eds." : "ed.";
+    components.push(`${formatASAAuthors(citation.editors)}, ${edLabel}.`);
   }
 
   // 2. Year

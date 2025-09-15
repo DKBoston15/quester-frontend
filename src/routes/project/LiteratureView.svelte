@@ -217,35 +217,55 @@
             let authorList: string[] = [];
 
             if (Array.isArray(authors)) {
-              // Already an array
               authorList = authors;
             } else if (typeof authors === "string") {
-              // Try parsing if it's a string
               try {
                 const parsed = JSON.parse(authors);
-                if (Array.isArray(parsed)) {
-                  authorList = parsed;
-                } else {
-                  // Parsed but not an array, treat original string as single author if non-empty
-                  if (authors.trim()) {
-                    authorList = [authors];
-                  }
-                }
+                if (Array.isArray(parsed)) authorList = parsed;
+                else if (authors.trim()) authorList = [authors];
               } catch (e) {
-                // Parsing failed, treat original string as single author if non-empty
-                if (authors.trim()) {
-                  authorList = [authors];
-                }
+                if (authors.trim()) authorList = [authors];
               }
             }
-            // If after all checks, authorList is empty, return fallback
-            if (authorList.length === 0) {
-              return "No authors listed";
-            }
-            // Join the valid author list
-            return authorList.join(", ");
+            return authorList.length > 0
+              ? authorList.join(", ")
+              : "No authors listed";
           })()}
         </p>
+        {#if (() => {
+          const ed = literature.editors;
+          if (Array.isArray(ed)) return ed.length > 0;
+          if (typeof ed === "string") {
+            try {
+              const parsed = JSON.parse(ed);
+              return Array.isArray(parsed) ? parsed.length > 0 : !!ed.trim();
+            } catch (e) {
+              return !!ed.trim();
+            }
+          }
+          return false;
+        })()}
+          <p class="text-muted-foreground mt-1">
+            Editors: {(() => {
+              const editors = literature.editors;
+              let list: string[] = [];
+              if (Array.isArray(editors)) list = editors;
+              else if (typeof editors === "string") {
+                try {
+                  const parsed = JSON.parse(editors);
+                  list = Array.isArray(parsed)
+                    ? parsed
+                    : editors.trim()
+                      ? [editors]
+                      : [];
+                } catch (e) {
+                  list = editors.trim() ? [editors] : [];
+                }
+              }
+              return list.join(", ");
+            })()}
+          </p>
+        {/if}
 
         <!-- Status Card -->
         <div class="mt-4 mb-6">

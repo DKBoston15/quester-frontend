@@ -227,10 +227,28 @@
       });
 
       // Map the references and add status
-      extractedReferences = data.map((ref: any) => ({
-        ...ref,
-        status: ref.name && ref.authors ? "success" : "failure",
-      }));
+      extractedReferences = data.map((ref: any) => {
+        // Normalize type for checks
+        const typeValue = ref?.type?.value ? ref.type.value : ref?.type;
+        const hasAuthors = Array.isArray(ref?.authors)
+          ? ref.authors.length > 0
+          : !!ref?.authors;
+        const hasEditors = Array.isArray(ref?.editors)
+          ? ref.editors.length > 0
+          : !!ref?.editors;
+        const isBook = typeValue === "Book";
+
+        return {
+          ...ref,
+          // Success criteria: must have a title AND
+          // - authors for most types
+          // - authors OR editors for Book
+          status:
+            ref?.name && (hasAuthors || (isBook && hasEditors))
+              ? "success"
+              : "failure",
+        };
+      });
 
       stopProgressSimulation();
       processingProgress = 100;
@@ -375,8 +393,13 @@
   // Fix button bindings
   async function handleSaveLiterature() {
     try {
-      if (!name || authors.length === 0) {
-        processingError = "Title and at least one author are required";
+      const isBook = type?.value === "Book";
+      const hasAuthors = authors.length > 0;
+      const hasEditors = editors.length > 0;
+      if (!name || (!hasAuthors && !(isBook && hasEditors))) {
+        processingError = isBook
+          ? "Title and at least one author or editor are required"
+          : "Title and at least one author are required";
         return;
       }
       processingError = null;
@@ -589,8 +612,10 @@
                         placeholder="Enter chapter title"
                       />
                     </div>
+                  {/if}
 
-                    <!-- Editors for Book Chapter -->
+                  {#if type.value === "Book Chapter" || type.value === "Book"}
+                    <!-- Editors for Book and Book Chapter -->
                     <div class="space-y-2">
                       <Label.Root>Editors</Label.Root>
                       <TagInput
@@ -842,7 +867,7 @@
               />
             </div>
 
-            {#if selectedReference.type?.value === "Book Chapter"}
+            {#if selectedReference.type?.value === "Book Chapter" || selectedReference.type?.value === "Book"}
               <div class="space-y-2">
                 <Label.Root>Editors</Label.Root>
                 <TagInput
@@ -961,9 +986,20 @@
             onclick={() => {
               // Update the status based on required fields
               if (selectedReference) {
+                const typeValue = selectedReference?.type?.value
+                  ? selectedReference.type.value
+                  : selectedReference?.type;
+                const isBook = typeValue === "Book";
+                const hasAuthors = Array.isArray(selectedReference.authors)
+                  ? selectedReference.authors.length > 0
+                  : !!selectedReference.authors;
+                const hasEditors = Array.isArray(selectedReference.editors)
+                  ? selectedReference.editors.length > 0
+                  : !!selectedReference.editors;
+
                 selectedReference.status =
                   selectedReference.name &&
-                  selectedReference.authors?.length > 0
+                  (hasAuthors || (isBook && hasEditors))
                     ? "success"
                     : "failure";
               }

@@ -65,8 +65,11 @@ async function retrieveGraphData(urlProjectId: string) {
     project:
       projectStore.currentProject &&
       projectStore.currentProject.id === urlProjectId,
-    literature: literatureStore.data.length > 0,
-    notes: notesStore.notes.length > 0,
+    // Ensure literature and notes are loaded for this specific project
+    literature:
+      literatureStore.loadedProjectId === urlProjectId,
+    notes:
+      notesStore.loadedProjectId === urlProjectId,
   };
 
   // Load any missing data from stores
