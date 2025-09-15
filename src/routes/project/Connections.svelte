@@ -271,7 +271,7 @@
         </Button>
       </div>
     </div>
-    <div id="graph-container" class="flex-1 relative">
+    <div id="graph-container" class="flex-1 relative overflow-hidden">
       {#if value === "3D"}
         <ThreeD />
       {:else if value === "2D"}
