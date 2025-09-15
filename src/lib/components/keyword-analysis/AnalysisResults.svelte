@@ -361,7 +361,7 @@
               <ClipboardCopyIcon class="h-4 w-4 mr-2" /> Copy Text
             </Button>
           </div>
-          <div bind:this={summaryElement} class="mt-2 report-content">
+          <div bind:this={summaryElement} class="report-content">
             {@html report.report}
           </div>
         </AccordionContent>
@@ -395,7 +395,7 @@
       >
         <AccordionTrigger>Frequency Distribution</AccordionTrigger>
         <AccordionContent>
-          <div class="flex justify-between items-center mt-4 mb-2">
+          <div class="flex justify-between items-center mb-2">
             <div class="flex items-baseline gap-2">
               <h2 class="font-bold italic">Table 1</h2>
               <Tooltip.Root>
@@ -469,7 +469,7 @@
       <AccordionItem value="cross-distribution" id="cross-table-accordion">
         <AccordionTrigger>Cross Distribution</AccordionTrigger>
         <AccordionContent>
-          <div class="flex justify-between items-center mt-4 mb-2">
+          <div class="flex justify-between items-center mb-2">
             <div class="flex items-baseline gap-2">
               <h2 class="font-bold italic">Table 2</h2>
               <Tooltip.Root>
@@ -537,7 +537,7 @@
         <AccordionItem value="triple-distribution" id="triple-table-accordion">
           <AccordionTrigger>Three-way Distribution</AccordionTrigger>
           <AccordionContent>
-            <div class="flex justify-between items-center mt-4 mb-2">
+            <div class="flex justify-between items-center mb-2">
               <div class="flex items-baseline gap-2">
                 <h2 class="font-bold italic">Table 3</h2>
                 <Tooltip.Root>
