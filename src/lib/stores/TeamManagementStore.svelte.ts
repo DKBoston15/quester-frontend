@@ -144,8 +144,13 @@
           projects: data.projects,
           projectStats: data.projectStats,
         };
-        userLoginStatsMap = data.userLoginStatsMap || null;
-        loginStatUsers = data.loginStatUsers || null;
+        // Preserve previously loaded analytics if this response doesn't include them
+        if (Object.prototype.hasOwnProperty.call(data, "userLoginStatsMap")) {
+          userLoginStatsMap = data.userLoginStatsMap || null;
+        }
+        if (Object.prototype.hasOwnProperty.call(data, "loginStatUsers")) {
+          loginStatUsers = data.loginStatUsers || null;
+        }
 
         // If no resource is selected and we have organizations, select the first one
         if (!selectedResourceId && data.organizations?.length > 0) {

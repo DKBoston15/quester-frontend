@@ -142,54 +142,47 @@
     const orgId = auth.currentOrganization?.id;
     const resources = teamManagement.userResources;
 
-    if (!userId || !orgId || !resources) {
-      accessChecked = true;
-      return false;
-    }
+    let hasAdmin = false;
 
-    const ADMIN_ROLES = new Set(["admin", "owner", "manager"]);
+    if (userId && orgId && resources) {
+      const ADMIN_ROLES = new Set(["admin", "owner", "manager"]);
 
-    // Check organization roles
-    const currentOrg = resources.organizations?.find(
-      (org: any) => org.id === orgId
-    );
-
-    if (currentOrg) {
-      const hasOrgAdminRole = currentOrg.organizationRoles?.some(
-        (roleInfo: any) =>
-          roleInfo.userId === userId &&
-          ADMIN_ROLES.has(roleInfo.role?.name?.toLowerCase())
+      // Check organization roles
+      const currentOrg = resources.organizations?.find(
+        (org: any) => org.id === orgId
       );
 
-      if (hasOrgAdminRole) {
-        isCheckingAccess = false;
-        accessChecked = true;
-        return true;
+      if (!hasAdmin && currentOrg) {
+        hasAdmin = Boolean(
+          currentOrg.organizationRoles?.some(
+            (roleInfo: any) =>
+              (roleInfo.userId === userId || !("userId" in roleInfo)) &&
+              ADMIN_ROLES.has(roleInfo.role?.name?.toLowerCase())
+          )
+        );
+      }
+
+      // Check department roles (within the same organization)
+      if (!hasAdmin) {
+        const relevantDepartments = resources.departments?.filter(
+          (dept: any) => dept.organizationId === orgId
+        );
+        if (relevantDepartments?.length > 0) {
+          hasAdmin = relevantDepartments.some((dept: any) =>
+            dept.departmentRoles?.some(
+              (roleInfo: any) =>
+                (roleInfo.userId === userId || !("userId" in roleInfo)) &&
+                ADMIN_ROLES.has(roleInfo.role?.name?.toLowerCase())
+            )
+          );
+        }
       }
     }
 
-    // Check department roles
-    const relevantDepartments = resources.departments?.filter(
-      (dept: any) => dept.organizationId === orgId
-    );
-
-    if (relevantDepartments?.length > 0) {
-      const hasDeptAdminRole = relevantDepartments.some((dept: any) =>
-        dept.departmentRoles?.some(
-          (roleInfo: any) =>
-            roleInfo.userId === userId &&
-            ADMIN_ROLES.has(roleInfo.role?.name?.toLowerCase())
-        )
-      );
-
-      if (hasDeptAdminRole) {
-        isCheckingAccess = false;
-        accessChecked = true;
-        return true;
-      }
-    }
-
-    return false;
+    // Always finalize flags so UI doesn't get stuck
+    isCheckingAccess = false;
+    accessChecked = true;
+    return hasAdmin;
   }
 
   // Effect to monitor when data becomes available after access is granted
@@ -228,7 +221,8 @@
 
     const hasProjectData = teamManagement.userResources?.projects;
 
-    return !hasUserLoginData && !hasProjectData;
+    // Reload if either user login data or project data is missing
+    return !hasUserLoginData || !hasProjectData;
   }
 
   // Effect to check for missing data when page becomes visible (navigation back)
@@ -319,6 +313,16 @@
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
+  });
+
+  // Re-check access reactively when auth/org/resources change
+  $effect(() => {
+    const _userId = auth.user?.id;
+    const _orgId = auth.currentOrganization?.id;
+    const _resources = teamManagement.userResources;
+    const _loading = teamManagement.isLoading;
+    // Only attempt check when user/org are defined; checkAdminAccess handles all cases
+    hasAccess = checkAdminAccess();
   });
 
   // Helper function to safely clone reactive objects
