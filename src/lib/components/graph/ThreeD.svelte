@@ -663,14 +663,14 @@
 </div>
 
 <style>
-  div {
-    width: 100%;
+  /* Remove global div styles that affect all divs */
+  .container {
     background-color: var(--background-color);
   }
 
   .container {
     width: 100%;
-    overflow-x: hidden;
+    overflow: hidden;
     padding: 0 !important;
     margin: 0 !important;
   }
