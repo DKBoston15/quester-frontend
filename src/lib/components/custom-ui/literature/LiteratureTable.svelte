@@ -229,17 +229,20 @@
       sortable: false,
       filter: false,
       suppressMenu: true,
+      // Ensure content in this cell is vertically centered
+      cellStyle: { display: 'flex', alignItems: 'center', justifyContent: 'center' },
       cellRenderer: (params: ICellRendererParams<Literature>) => {
         if (!params.value) {
           return '';
         }
         
         const container = document.createElement('div');
-        container.className = 'flex items-center justify-center gap-1';
+        // Fill the full cell height and center icons
+        container.className = 'h-full flex items-center justify-center gap-1';
         
         // Preview button
         const previewButton = document.createElement('button');
-        previewButton.className = 'p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors';
+        previewButton.className = 'inline-flex items-center justify-center p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors leading-none';
         previewButton.innerHTML = `
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
@@ -255,7 +258,7 @@
         
         // Download button
         const downloadButton = document.createElement('button');
-        downloadButton.className = 'p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors';
+        downloadButton.className = 'inline-flex items-center justify-center p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors leading-none';
         downloadButton.innerHTML = `
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
