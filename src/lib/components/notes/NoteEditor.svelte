@@ -534,7 +534,17 @@
         </div>
       {:else}
         <div class="flex-1 min-w-0">
-          <h1 class="text-2xl font-semibold truncate" title={title}>{title || "Untitled note"}</h1>
+          <h1
+            class="text-2xl font-semibold truncate cursor-text"
+            title={title}
+            aria-label="Note title. Click to edit"
+            onclick={() => {
+              isEditingTitle = true;
+              setTimeout(() => titleInputRef?.focus(), 0);
+            }}
+          >
+            {title || "Untitled note"}
+          </h1>
         </div>
       {/if}
       <div class="flex items-center gap-2 shrink-0">
@@ -555,6 +565,9 @@
             <Pencil class="h-4 w-4 mr-1" /> Rename
           </Button>
         {/if}
+        <Button variant="destructive" size="sm" class="min-w-[96px] justify-center" onclick={() => confirmDelete()} aria-label="Delete note">
+          <Trash2 class="h-4 w-4 mr-1" /> Delete
+        </Button>
       </div>
     </div>
 
@@ -583,11 +596,7 @@
           </div>
         {/if}
       </div>
-      <div class="flex items-center gap-2">
-        <Button variant="destructive" size="sm" class="min-w-[96px] justify-center" onclick={() => confirmDelete()} aria-label="Delete note">
-          <Trash2 class="h-4 w-4 mr-1" /> Delete
-        </Button>
-      </div>
+      <div class="flex items-center gap-2"></div>
     </div>
   </header>
 

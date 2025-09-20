@@ -21,6 +21,7 @@
   import Clock from "lucide-svelte/icons/clock";
   import ExternalLink from "lucide-svelte/icons/external-link";
   import FileText from "lucide-svelte/icons/file-text";
+  import FilePlus from "lucide-svelte/icons/file-plus";
   import BookOpen from "lucide-svelte/icons/book-open";
   import Folder from "lucide-svelte/icons/folder";
   import Target from "lucide-svelte/icons/target";
@@ -30,6 +31,9 @@
   import History from "lucide-svelte/icons/history";
   import RefreshCcw from "lucide-svelte/icons/refresh-ccw";
   import Trash2 from "lucide-svelte/icons/trash-2";
+  import { notesStore } from "$lib/stores/NotesStore";
+  import { navigate } from "svelte-routing";
+  import * as Tooltip from "$lib/components/ui/tooltip";
 
   // Types
   interface Source {
@@ -116,6 +120,58 @@
   // Render markdown content for AI messages
   function renderMarkdown(content: string): string {
     return md.render(content);
+  }
+
+  // Convert message markdown to plain text for note content/title
+  function toPlainText(markdown: string): string {
+    try {
+      const html = renderMarkdown(markdown || "");
+      const div = document.createElement("div");
+      div.innerHTML = html;
+      return (div.textContent || div.innerText || "").trim();
+    } catch {
+      return (markdown || "").trim();
+    }
+  }
+
+  async function createNoteFromMessage(message: Message) {
+    if (!projectStore.currentProject?.id) return;
+
+    try {
+      const plain = toPlainText(message.content || "");
+      const title = "Chat Note";
+
+      const tiptapDoc = {
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: plain
+              ? [{ type: "text", text: plain }]
+              : [],
+          },
+        ],
+      } as const;
+
+      const newNote = await notesStore.createNote({
+        name: title,
+        content: JSON.stringify(tiptapDoc),
+        projectId: projectStore.currentProject.id,
+        type: "RESEARCH",
+        section_type: { value: "Other", label: "Other" },
+      });
+
+      if (newNote) {
+        navigate(
+          `/project/${projectStore.currentProject.id}/notes?tab=research&noteId=${newNote.id}`
+        );
+      }
+    } catch (e) {
+      console.error("Failed to create note from message:", e);
+      alert(
+        `Failed to create note: ${e instanceof Error ? e.message : "Unknown error"}`
+      );
+    }
   }
 
   // Auto-scroll to bottom when new messages arrive
@@ -751,7 +807,7 @@
                       </div>
 
                       <!-- Message Content -->
-                      <div class="flex-1 max-w-[85%] {isUser ? 'text-right' : 'text-left'}">
+                      <div class="flex-1 max-w-[85%] {isUser ? 'text-right' : 'text-left'} group">
                         <div class="inline-block rounded-2xl px-4 py-3 {
                           isUser 
                             ? 'bg-primary text-primary-foreground' 
@@ -853,6 +909,24 @@
                               {/if}
                             </div>
                           {/if}
+                        </div>
+
+                        <!-- Hover Actions Below Message -->
+                        <div class="mt-1 {isUser ? 'text-right' : 'text-left'} opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Tooltip.Root>
+                            <Tooltip.Trigger>
+                              <button
+                                class="inline-flex h-8 w-8 items-center justify-center rounded-md border bg-background text-muted-foreground hover:bg-muted"
+                                onclick={() => createNoteFromMessage(message)}
+                                aria-label="Create as note"
+                              >
+                                <FilePlus class="h-4 w-4" />
+                              </button>
+                            </Tooltip.Trigger>
+                            <Tooltip.Content>
+                              Create as note
+                            </Tooltip.Content>
+                          </Tooltip.Root>
                         </div>
 
                         <!-- Message Timestamp -->
