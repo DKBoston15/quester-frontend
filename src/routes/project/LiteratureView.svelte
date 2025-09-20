@@ -8,7 +8,8 @@
   import LiteratureDesigns from "$lib/components/custom-ui/literature/literatureItem/LiteratureDesigns.svelte";
   import Keywords from "$lib/components/custom-ui/literature/literatureItem/Keywords.svelte";
   import LiteratureInsights from "$lib/components/custom-ui/literature/literatureItem/LiteratureInsights.svelte";
-  import { ArrowLeft, Trash2, Eye, Download } from "lucide-svelte";
+  import { ArrowLeft, Trash2, Eye, Download, Upload } from "lucide-svelte";
+  import * as Dialog from "$lib/components/ui/dialog";
   import { navigate } from "svelte-routing";
   import type { Literature } from "$lib/types/literature";
   import { API_BASE_URL } from '$lib/config';
@@ -17,6 +18,7 @@
   import "driver.js/dist/driver.css";
   import { GraduationCap } from "lucide-svelte";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
+  import DocumentUploadPanel from "$lib/components/custom-ui/literature/DocumentUploadPanel.svelte";
 
   const { literatureId } = $props<{ literatureId: string }>();
   let selectedTab = $state("details");
@@ -25,6 +27,7 @@
   let error = $state<string | null>(null);
   let showDeleteDialog = $state(false);
   let isDeleting = $state(false);
+  let showAttachDialog = $state(false);
 
   $effect(() => {
     const projectId = projectStore.currentProject?.id;
@@ -37,12 +40,27 @@
     loadLiterature(literatureId);
   });
 
+  // Refresh this literature when processing completes for an attach action
+  $effect.root(() => {
+    const handler = async (e: Event) => {
+      const detail = (e as CustomEvent).detail as { literatureId?: string } | undefined;
+      if (detail?.literatureId && literature?.id === detail.literatureId) {
+        // Force reload the literature data from the server
+        await loadLiterature(detail.literatureId);
+      }
+    };
+    window.addEventListener('quester:literature-updated', handler as EventListener);
+    return () => window.removeEventListener('quester:literature-updated', handler as EventListener);
+  });
+
   async function loadLiterature(id: string) {
     try {
       isLoading = true;
+      // Force reload the literature data from the server
       await literatureStore.loadLiterature(
         projectStore.currentProject?.id || ""
       );
+      // Find the updated literature item
       literature = literatureStore.data.find((lit) => lit.id === id) || null;
     } catch (err) {
       error = err instanceof Error ? err.message : "Failed to load literature";
@@ -311,6 +329,15 @@
                 <Download class="h-4 w-4 mr-2" />
                 Download
               </Button>
+            {:else}
+              <Button
+                variant="outline"
+                size="sm"
+                onclick={() => (showAttachDialog = true)}
+              >
+                <Upload class="h-4 w-4 mr-2" />
+                Attach Document
+              </Button>
             {/if}
             <AlertDialog.Root bind:open={showDeleteDialog}>
               <AlertDialog.Trigger asChild>
@@ -422,6 +449,29 @@
             </Card.Content>
           </Card.Root>
         </div>
+
+        <!-- Attach Document Dialog -->
+        <Dialog.Root bind:open={showAttachDialog}>
+          <Dialog.Content class="max-w-2xl">
+            <Dialog.Header>
+              <Dialog.Title>Attach Document to "{literature.name}"</Dialog.Title>
+              <Dialog.Description>
+                Upload a PDF, DOCX, DOC, or TXT. We will extract text and metadata.
+              </Dialog.Description>
+            </Dialog.Header>
+            <div class="py-2">
+              <DocumentUploadPanel
+                projectId={projectStore.currentProject?.id || ''}
+                attachLiteratureId={literature.id}
+                on:upload-started={() => (showAttachDialog = false)}
+                on:upload-complete={() => (showAttachDialog = false)}
+              />
+            </div>
+            <Dialog.Footer class="justify-end">
+              <Button variant="outline" onclick={() => (showAttachDialog = false)}>Close</Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Root>
       {/if}
     </div>
 

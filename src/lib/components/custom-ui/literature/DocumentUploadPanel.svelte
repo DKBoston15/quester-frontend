@@ -17,7 +17,10 @@
 
   const dispatch = createEventDispatcher();
 
-  const { projectId } = $props<{ projectId: string }>();
+  const { projectId, attachLiteratureId = undefined } = $props<{
+    projectId: string;
+    attachLiteratureId?: string;
+  }>();
 
   // Upload state
   let dragOver = $state(false);
@@ -26,11 +29,9 @@
   let uploadedFiles = $state<UploadedFile[]>([]);
   let processingJobId = $state<string | null>(null);
   let uploadError = $state<string | null>(null);
+  let mergeMode = $state<'fill-empty' | 'override'>('fill-empty');
 
-  // Processing state
-  let isPollingStatus = $state(false);
-  let processingStatus = $state<ProcessingStatus | null>(null);
-  let statusPollingInterval: NodeJS.Timeout | null = null;
+  // We no longer need processing state here - it's handled by ProcessingStatus component
 
   interface UploadedFile {
     id: string;
@@ -41,24 +42,9 @@
     error?: string;
   }
 
-  interface ProcessingStatus {
-    job: {
-      id: string;
-      status: "pending" | "processing" | "completed" | "failed";
-      progress: number;
-      totalItems: number;
-      errorMessage?: string;
-    };
-    files: Array<{
-      id: string;
-      filename: string;
-      status: "pending" | "processing" | "completed" | "failed";
-      extractionErrors?: string[];
-    }>;
-  }
 
   // File validation
-  const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+  const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
   const ALLOWED_TYPES = [
     "application/pdf",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -113,8 +99,8 @@
       return;
     }
 
-    if (validFiles.length > 10) {
-      uploadError = "Maximum 10 files allowed per upload";
+    if (validFiles.length > 5) {
+      uploadError = "You can upload up to 5 files at once";
       return;
     }
 
@@ -123,7 +109,7 @@
 
   function validateFile(file: File): { valid: boolean; error?: string } {
     if (file.size > MAX_FILE_SIZE) {
-      return { valid: false, error: "File size exceeds 50MB" };
+      return { valid: false, error: "File size exceeds 25MB limit" };
     }
     if (!ALLOWED_TYPES.includes(file.type)) {
       // Fallback to extension check if type is empty or unrecognized
@@ -141,29 +127,21 @@
     uploadProgress = 0;
 
     try {
-      // Initialize uploaded files state
-      uploadedFiles = files.map((file, index) => ({
-        id: `${Date.now()}-${index}-${file.name}`,
+      // Store files info for the processing modal
+      const filesInfo = files.map((file) => ({
         filename: file.name,
         size: file.size,
-        status: "uploading",
-        progress: 0,
       }));
 
-      // Simulate progress to 85% while uploading
-      const progressInterval = setInterval(() => {
-        uploadProgress = Math.min(uploadProgress + Math.random() * 7, 85);
-        uploadedFiles = uploadedFiles.map((f) => ({
-          ...f,
-          progress: uploadProgress,
-          status: f.status === "uploading" ? "uploading" : f.status,
-        }));
-      }, 200);
+      // Immediately notify that upload is starting and close dialog
+      dispatch("upload-starting", { files: filesInfo });
 
       const formData = new FormData();
       files.forEach((file) => formData.append("files", file));
       // Backend validator requires projectId in body even when present in route
       if (projectId) formData.append('projectId', projectId);
+      if (attachLiteratureId) formData.append('literatureId', attachLiteratureId);
+      if (attachLiteratureId) formData.append('mergeMode', mergeMode);
       auth.csrfToken && formData.append("_csrf", auth.csrfToken);
 
       const response = await fetch(
@@ -175,31 +153,22 @@
         }
       );
 
-      clearInterval(progressInterval);
-
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || "Upload failed");
       }
 
       const result = await response.json();
-
-      // Update uploaded files with server response
-      uploadedFiles = result.uploadedFiles.map((file: any) => ({
-        id: file.id,
-        filename: file.filename,
-        size: file.size,
-        status: "uploaded",
-        progress: 100,
-      }));
-
       processingJobId = result.jobId;
-      uploadProgress = 100;
 
       // Notify and persist globally
       if (processingJobId) {
         dispatch("upload-started", { jobId: processingJobId });
-        processingJobsStore.add(processingJobId);
+        processingJobsStore.add(processingJobId, filesInfo, attachLiteratureId);
+        
+        // Close the upload dialog after successful upload
+        // The ProcessingStatus modal will handle showing progress
+        dispatch("upload-complete", { jobId: processingJobId });
       }
 
     } catch (error) {
@@ -217,93 +186,15 @@
     }
   }
 
-  async function startStatusPolling() {
-    if (!processingJobId) return;
-
-    isPollingStatus = true;
-
-    const pollStatus = async () => {
-      try {
-        const response = await fetch(
-          `${API_BASE_URL}/processing-jobs/${processingJobId}`,
-          {
-            credentials: "include",
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to get processing status");
-        }
-
-        const status = await response.json();
-        processingStatus = status;
-
-        // Update file statuses
-        uploadedFiles = uploadedFiles.map((uploadedFile) => {
-          const serverFile = status.files.find(
-            (f: any) => f.id === uploadedFile.id
-          );
-          if (serverFile) {
-            return {
-              ...uploadedFile,
-              status: serverFile.status,
-              error: serverFile.extractionErrors?.join(", "),
-            };
-          }
-          return uploadedFile;
-        });
-
-        // Stop polling if job is complete
-        if (
-          status.job.status === "completed" ||
-          status.job.status === "failed"
-        ) {
-          clearInterval(statusPollingInterval!);
-          statusPollingInterval = null;
-          isPollingStatus = false;
-
-          // Dispatch event to refresh literature list
-          if (status.job.status === "completed") {
-            dispatch("documents-processed", {
-              jobId: processingJobId,
-              files: uploadedFiles.filter((f) => f.status === "completed"),
-            });
-          }
-        }
-      } catch (error) {
-        console.error("Status polling error:", error);
-        // Continue polling in case of temporary errors
-      }
-    };
-
-    // Poll immediately and then every 2 seconds
-    await pollStatus();
-    statusPollingInterval = setInterval(pollStatus, 2000);
-  }
+  // Status polling is now handled by ProcessingStatus component
 
   function resetUpload() {
     uploadedFiles = [];
     processingJobId = null;
     uploadError = null;
     uploadProgress = 0;
-    processingStatus = null;
-
-    if (statusPollingInterval) {
-      clearInterval(statusPollingInterval);
-      statusPollingInterval = null;
-    }
-
-    isPollingStatus = false;
   }
 
-  // Cleanup on component destroy
-  $effect(() => {
-    return () => {
-      if (statusPollingInterval) {
-        clearInterval(statusPollingInterval);
-      }
-    };
-  });
 
   function formatFileSize(bytes: number): string {
     if (bytes === 0) return "0 Bytes";
@@ -348,139 +239,50 @@
 
 <!-- Inline Upload UI for use inside Add Literature dialog -->
 <div class="space-y-6">
-  {#if uploadedFiles.length === 0}
-    <!-- Upload Zone -->
-    <div
-      class="border-2 border-dashed rounded-lg p-8 text-center transition-colors {dragOver ? 'border-primary bg-primary/5' : 'border-muted-foreground/25'}"
-      ondragover={handleDragOver}
-      ondragleave={handleDragLeave}
-      ondrop={handleDrop}
-    >
-      <Upload class="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-      <h3 class="text-lg font-medium mb-2">
-        Drop documents here or click to browse
-      </h3>
-      <p class="text-sm text-muted-foreground mb-4">
-        Supports PDF, DOCX, DOC, and TXT files (max 50MB each, 10 files per upload)
-      </p>
+  <!-- Upload Zone -->
+  <div
+    class="border-2 border-dashed rounded-lg p-8 text-center transition-colors {dragOver ? 'border-primary bg-primary/5' : 'border-muted-foreground/25'}"
+    ondragover={handleDragOver}
+    ondragleave={handleDragLeave}
+    ondrop={handleDrop}
+  >
+    <Upload class="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+    <h3 class="text-lg font-medium mb-2">
+      Drop documents here or click to browse
+    </h3>
+    <p class="text-sm text-muted-foreground mb-4">
+      Supports PDF, DOCX, DOC, and TXT files (max 25MB each, up to 5 files per upload)
+    </p>
 
-      <input
-        type="file"
-        multiple
-        accept=".pdf,.docx,.doc,.txt"
-        onchange={handleFileInput}
-        class="hidden"
-        id="file-input-inline"
-      />
-
-      <Button onclick={() => document.getElementById("file-input-inline")?.click()}>
-        Select Files
-      </Button>
-    </div>
-  {:else}
-    <!-- File List + Status -->
-    <div class="space-y-4">
-      {#if isUploading}
-        <div class="space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="text-sm font-medium">Uploading files...</span>
-            <span class="text-sm text-muted-foreground">{uploadProgress}%</span>
-          </div>
-          <Progress value={uploadProgress} class="w-full" />
+    {#if attachLiteratureId}
+      <div class="max-w-md mx-auto text-left mb-4">
+        <p class="text-sm font-medium mb-2">When metadata is extracted:</p>
+        <div class="space-y-2 text-sm">
+          <label class="flex items-center gap-2">
+            <input type="radio" name="merge-mode" value="fill-empty" bind:group={mergeMode} />
+            <span>Fill empty fields only (recommended)</span>
+          </label>
+          <label class="flex items-center gap-2">
+            <input type="radio" name="merge-mode" value="override" bind:group={mergeMode} />
+            <span>Override existing fields with extracted values</span>
+          </label>
         </div>
-      {/if}
-
-      {#if processingStatus}
-        <div class="bg-muted/50 rounded-lg p-4">
-          <div class="flex items-center justify-between mb-2">
-            <span class="font-medium">Processing Status</span>
-            <Badge
-              variant={processingStatus.job.status === "completed"
-                ? "default"
-                : "secondary"}
-            >
-              {processingStatus.job.status}
-            </Badge>
-          </div>
-
-          {#if processingStatus.job.status === "processing"}
-            <div class="space-y-2">
-              <div class="flex items-center justify-between text-sm">
-                <span>Extracting metadata and text...</span>
-                <span>{processingStatus.job.progress}%</span>
-              </div>
-              <Progress value={processingStatus.job.progress} class="w-full" />
-            </div>
-          {/if}
-
-          {#if processingStatus.job.errorMessage}
-            <div class="mt-2 p-2 bg-destructive/10 text-destructive text-sm rounded">
-              {processingStatus.job.errorMessage}
-            </div>
-          {/if}
-        </div>
-      {/if}
-
-      <!-- Individual Files -->
-      <div class="space-y-2">
-        {#each uploadedFiles as file (file.id)}
-          <div class="flex items-center justify-between p-3 border rounded-lg">
-            <div class="flex items-center space-x-3 flex-1 min-w-0">
-              <div class="flex-shrink-0">
-                {#if file.status === "uploading" || file.status === "processing"}
-                  <Loader2 class="h-5 w-5 {getStatusColor(file.status)} animate-spin" />
-                {:else}
-                  {#snippet statusIcon()}
-                    {@const StatusIcon = getStatusIcon(file.status)}
-                    <StatusIcon class="h-5 w-5 {getStatusColor(file.status)}" />
-                  {/snippet}
-                  {@render statusIcon()}
-                {/if}
-              </div>
-
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium truncate">{file.filename}</p>
-                <p class="text-xs text-muted-foreground">
-                  {formatFileSize(file.size)} • {file.status}
-                </p>
-
-                {#if file.error}
-                  <p class="text-xs text-destructive mt-1">{file.error}</p>
-                {/if}
-              </div>
-            </div>
-
-            <Badge
-              variant={file.status === "completed"
-                ? "default"
-                : file.status === "failed"
-                  ? "destructive"
-                  : "secondary"}
-            >
-              {file.status}
-            </Badge>
-          </div>
-        {/each}
       </div>
+    {/if}
 
-      <!-- Actions -->
-      <div class="flex items-center gap-2">
-        <Button
-          variant="outline"
-          onclick={resetUpload}
-          disabled={isUploading || isPollingStatus}
-        >
-          Upload More Documents
-        </Button>
-        <Button
-          onclick={startStatusPolling}
-          disabled={!processingJobId || isPollingStatus}
-        >
-          {isPollingStatus ? "Checking Status..." : "Check Processing Status"}
-        </Button>
-      </div>
-    </div>
-  {/if}
+    <input
+      type="file"
+      multiple
+      accept=".pdf,.docx,.doc,.txt"
+      onchange={handleFileInput}
+      class="hidden"
+      id="file-input-inline"
+    />
+
+    <Button onclick={() => document.getElementById("file-input-inline")?.click()}>
+      Select Files
+    </Button>
+  </div>
 
   {#if uploadError}
     <div class="mt-4 p-4 bg-destructive/10 text-destructive rounded-lg">

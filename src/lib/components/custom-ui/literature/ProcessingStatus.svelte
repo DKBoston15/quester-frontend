@@ -13,10 +13,14 @@
     RefreshCw,
     ChevronDown,
     FileText,
-    Download
+    Download,
+    Files,
+    CalendarClock,
+    Timer
   } from "lucide-svelte";
   import { API_BASE_URL } from "$lib/config";
   import { onMount, createEventDispatcher } from "svelte";
+  import { processingJobsStore } from "$lib/stores/ProcessingJobsStore.svelte";
 
   const dispatch = createEventDispatcher();
 
@@ -62,6 +66,8 @@
   let error = $state<string | null>(null);
   let isExpanded = $state(false);
   let refreshInterval: NodeJS.Timeout | null = null;
+  let isUploading = $state(false);
+  let uploadProgress = $state(0);
 
   async function fetchStatus() {
     try {
@@ -72,28 +78,117 @@
         isLoading = false;
         return; // nothing to fetch
       }
-      const response = await fetch(`${API_BASE_URL}/processing-jobs/${jobId}`, {
-        credentials: 'include',
-      });
+      
+      // Check if this job is still uploading
+      const jobInfo = processingJobsStore.getJob(jobId);
+      let shouldSimulateUpload = jobInfo?.isUploading || isUploading; // Keep simulating if already simulating
+      
+      // Always try to fetch real status from server, even while uploading
+      let serverData = null;
+      try {
+        const response = await fetch(`${API_BASE_URL}/processing-jobs/${jobId}`, {
+          credentials: 'include',
+        });
 
-      if (!response.ok) {
+        if (response.ok) {
+          serverData = await response.json();
+        }
+      } catch (fetchError) {
+        // Server data not available yet, that's okay if we're uploading
+        console.log('Server data not yet available:', fetchError);
+      }
+      
+      // Decide whether to show simulated or real progress
+      if (serverData) {
+        const serverProgress = serverData.job?.progress || 0;
+        
+        // Keep simulating if we're still in upload phase and server progress is less than our simulation
+        if (shouldSimulateUpload && serverProgress <= uploadProgress) {
+          // Continue upload simulation
+          isUploading = true;
+          uploadProgress = Math.min(uploadProgress + Math.random() * 15, 90);
+          
+          // Use server data but override progress with our simulation
+          status = {
+            ...serverData,
+            job: {
+              ...serverData.job,
+              progress: uploadProgress
+            }
+          };
+        } else {
+          // Server progress has caught up or exceeded simulation, use real data
+          if (isUploading) {
+            isUploading = false;
+            processingJobsStore.setUploaded(jobId);
+          }
+          status = serverData;
+        }
+      } else if (shouldSimulateUpload) {
+        // No server data yet, continue simulating
+        isUploading = true;
+        uploadProgress = Math.min(uploadProgress + Math.random() * 15, 90);
+        
+        // Create a mock status to show immediate feedback
+        status = {
+          job: {
+            id: jobId,
+            type: 'document_processing',
+            status: 'pending',
+            progress: uploadProgress, // Use simulated progress here too
+            totalItems: jobInfo.files?.length || 0,
+            createdAt: new Date().toISOString()
+          },
+          files: jobInfo.files?.map(f => ({
+            id: crypto.randomUUID(),
+            filename: f.filename,
+            fileType: f.filename.split('.').pop() || 'unknown',
+            size: f.size,
+            status: 'pending',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          })) || []
+        };
+      } else {
+        // No server data and not uploading - might be an error
         throw new Error('Failed to fetch processing status');
       }
 
-      const data = await response.json();
-      status = data;
+        // Stop auto-refresh if job is complete (only check if we have real server data)
+        if (status?.job && (status.job.status === 'completed' || status.job.status === 'failed')) {
+          stopAutoRefresh();
 
-      // Stop auto-refresh if job is complete
-      if (data.job.status === 'completed' || data.job.status === 'failed') {
-        stopAutoRefresh();
-        
-        // Dispatch completion event
-        dispatch('processing-complete', {
-          jobId: data.job.id,
-          status: data.job.status,
-          results: data.job.results,
-        });
-      }
+          // Force visual completion to 100% so users see completion before close
+          if (status.job.status === 'completed') {
+            status.job.progress = 100;
+          }
+
+          // Slightly delay closing so 100% is visible, then dispatch completion
+          setTimeout(() => {
+            // Capture target literature before the store entry is removed
+            let targetId: string | undefined
+            try {
+              const info = processingJobsStore.getJob(status.job!.id)
+              targetId = info?.targetLiteratureId
+            } catch {}
+
+            // Dispatch completion event (ProcessingTray will remove the card)
+            dispatch('processing-complete', {
+              jobId: status.job!.id,
+              status: status.job!.status,
+              results: status.job!.results,
+            })
+
+            // If this was an attach flow, always reload the page to reflect changes
+            if (targetId) {
+              try {
+                window.dispatchEvent(new CustomEvent('quester:literature-updated', { detail: { literatureId: targetId } }))
+              } catch {}
+              // Hard refresh to ensure UI reflects the new attachment
+              window.location.reload()
+            }
+          }, 1700) // keep the card visible at 100% a bit longer before closing + refresh
+        }
 
     } catch (err) {
       console.error('Error fetching processing status:', err);
@@ -157,7 +252,14 @@
 
   function formatDate(dateString: string): string {
     const date = new Date(dateString);
-    return date.toLocaleString();
+    return date.toLocaleString('en-US', {
+      month: 'numeric',
+      day: 'numeric', 
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
   }
 
   function formatDuration(startDate: string, endDate?: string): string {
@@ -236,7 +338,7 @@
   });
 </script>
 
-<Card class="w-full">
+<Card class="shadow-lg border-muted">
   <CardHeader>
     <div class="flex items-center justify-between">
       <CardTitle class="text-lg flex items-center space-x-2">
@@ -257,7 +359,7 @@
       
       <div class="flex items-center space-x-2">
         {#if status?.job}
-          <Badge variant={getStatusBadgeVariant(status.job.status)}>
+          <Badge variant={getStatusBadgeVariant(status.job.status)} class="capitalize">
             {status.job.status}
           </Badge>
         {/if}
@@ -274,7 +376,7 @@
     </div>
   </CardHeader>
 
-  <CardContent class="space-y-4">
+  <CardContent class="space-y-4 pt-4">
     {#if error}
       <div class="flex items-center space-x-2 p-3 bg-destructive/10 text-destructive rounded-lg">
         <AlertCircle class="h-5 w-5" />
@@ -284,33 +386,52 @@
 
     {#if status?.job}
       <!-- Progress Section -->
-      {#if status.job.status === 'processing'}
-        <div class="space-y-2">
+      {#if isUploading || status.job.status === 'pending' || status.job.status === 'processing'}
+        <div class="space-y-3">
           <div class="flex items-center justify-between text-sm">
-            <span>Processing {status.job.totalItems} documents...</span>
-            <span>{status.job.progress}%</span>
+            <span class="text-muted-foreground">
+              {#if isUploading}
+                Uploading {status.job.totalItems} {status.job.totalItems === 1 ? 'file' : 'files'}...
+              {:else}
+                Processing {status.job.totalItems} {status.job.totalItems === 1 ? 'document' : 'documents'}...
+              {/if}
+            </span>
+            <span class="font-semibold">{Math.round(status.job.progress || 0)}%</span>
           </div>
-          <Progress value={status.job.progress} class="w-full" />
+          <div class="relative">
+            <Progress value={status.job.progress || 0} class="h-2" />
+          </div>
         </div>
       {/if}
 
       <!-- Job Summary -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-        <div>
-          <span class="font-medium">Total Files:</span>
-          <span class="ml-2">{status.job.totalItems}</span>
+      <div class="flex items-center justify-between gap-4 p-3 pr-6 bg-muted/50 rounded-lg flex-wrap overflow-hidden">
+        <div class="flex items-center gap-2 text-sm min-w-0">
+          <Files class="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          <span class="text-muted-foreground">Total Files:</span>
+          <span class="font-medium truncate">{status.job.totalItems}</span>
         </div>
         
-        <div>
-          <span class="font-medium">Started:</span>
-          <span class="ml-2">
-            {status.job.startedAt ? formatDate(status.job.startedAt) : 'Pending'}
+        <div class="flex items-center gap-2 text-sm min-w-0">
+          <CalendarClock class="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          <span class="text-muted-foreground">Started:</span>
+          <span class="font-medium truncate">
+            {#if status.job.startedAt}
+              {new Date(status.job.startedAt).toLocaleTimeString('en-US', { 
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true 
+              })}
+            {:else}
+              Pending
+            {/if}
           </span>
         </div>
         
-        <div>
-          <span class="font-medium">Duration:</span>
-          <span class="ml-2">
+        <div class="flex items-center gap-2 text-sm min-w-0">
+          <Timer class="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          <span class="text-muted-foreground">Duration:</span>
+          <span class="font-medium truncate">
             {#if status.job.startedAt}
               {formatDuration(status.job.startedAt, status.job.completedAt)}
             {:else}
@@ -333,18 +454,20 @@
 
       <!-- Results Summary -->
       {#if status.job.results && status.job.status === 'completed'}
-        <div class="p-3 bg-muted rounded-lg">
-          <h4 class="font-medium mb-2">Processing Results</h4>
+        <div class="p-3 bg-muted/50 rounded-lg border border-muted">
+          <h4 class="font-medium mb-2 text-sm">Processing Complete</h4>
           <div class="grid grid-cols-2 gap-4 text-sm">
-            <div>
+            <div class="flex items-center gap-2">
+              <CheckCircle2 class="h-4 w-4 text-green-600" />
               <span class="text-muted-foreground">Successful:</span>
-              <span class="ml-2 font-medium text-green-600">
+              <span class="font-semibold text-green-600">
                 {status.job.results.successfulDocuments || 0}
               </span>
             </div>
-            <div>
+            <div class="flex items-center gap-2">
+              <AlertCircle class="h-4 w-4 text-destructive" />
               <span class="text-muted-foreground">Failed:</span>
-              <span class="ml-2 font-medium text-red-600">
+              <span class="font-semibold text-destructive">
                 {status.job.results.failedDocuments || 0}
               </span>
             </div>
