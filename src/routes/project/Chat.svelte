@@ -10,7 +10,9 @@
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import Loader2 from "lucide-svelte/icons/loader-2";
   import { api, processSSEStream } from "$lib/services/api-client";
+  import { API_BASE_URL } from "$lib/config";
   import MarkdownIt from "markdown-it";
+  import { navigate } from "svelte-routing";
   
   // Icons
   import Send from "lucide-svelte/icons/send";
@@ -38,6 +40,7 @@
     title: string;
     similarity: number;
     snippet?: string;
+    metadata?: any;
   }
 
   interface Message {
@@ -500,8 +503,19 @@
         return Folder;
       case "outcome":
         return Target;
+      case "document_chunk":
+        return FileText; // Use FileText icon for document chunks
       default:
         return FileText;
+    }
+  }
+
+  function getTypeLabel(type: string): string {
+    switch (type) {
+      case 'document_chunk':
+        return 'Literature Page';
+      default:
+        return type.charAt(0).toUpperCase() + type.slice(1);
     }
   }
 
@@ -517,6 +531,64 @@
       'compare_methodologies': 'Methodology Comparison'
     };
     return toolNames[toolName] || toolName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  }
+
+  // Handle source navigation based on type
+  function handleSourceClick(source: Source) {
+    const projectId = projectStore.currentProject?.id;
+    if (!projectId) return;
+
+    let path = '';
+    
+    switch (source.type) {
+      case 'literature':
+        path = `/project/${projectId}/literature/${source.id}`;
+        break;
+      case 'document_chunk':
+        // Prefer deep linking to the literature item that was created for this document
+        if (source.metadata?.literature_id) {
+          const qp = new URLSearchParams();
+          if (source.metadata?.start_page) qp.set('p', String(source.metadata.start_page));
+          path = `/project/${projectId}/literature/${source.metadata.literature_id}?${qp.toString()}`;
+        } else if (source.metadata?.document_file_id) {
+          path = `/project/${projectId}/literature`;
+        } else {
+          path = `/project/${projectId}/literature`;
+        }
+        break;
+      case 'note':
+        // Notes don't have detail views, navigate to notes list
+        path = `/project/${projectId}/notes`;
+        break;
+      case 'outcome':
+        path = `/project/${projectId}/outcomes/${source.id}`;
+        break;
+      case 'project':
+        path = `/project/${projectId}`;
+        break;
+      default:
+        // Fallback to project overview for unknown types
+        path = `/project/${projectId}`;
+        break;
+    }
+    
+    if (path) {
+      navigate(path);
+    }
+  }
+
+  async function openDocumentPreview(fileId: string, page?: number) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/documents/${fileId}/download?preview=true`, {
+        credentials: 'include',
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const url = page ? `${data.downloadUrl}#page=${page}` : data.downloadUrl;
+      window.open(url, '_blank');
+    } catch (e) {
+      console.error('Preview open failed', e);
+    }
   }
 
   // Parse source citations from AI responses
@@ -809,7 +881,10 @@
                                   <div class="space-y-2">
                                     {#each message.sources as source}
                                       {@const Icon = getResultIcon(source.type)}
-                                      <div class="border rounded-md p-2 bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer group">
+                                      <button 
+                                        class="w-full border rounded-md p-2 bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer group text-left"
+                                        onclick={() => handleSourceClick(source)}
+                                      >
                                         <div class="flex items-start gap-2">
                                           <Icon class="size-3 mt-0.5 text-muted-foreground" />
                                           <div class="flex-1 min-w-0">
@@ -818,8 +893,8 @@
                                               <div class="text-xs text-muted-foreground mt-1 line-clamp-2">{source.snippet}</div>
                                             {/if}
                                             <div class="flex items-center gap-2 mt-1">
-                                              <Badge variant="outline" class="text-xs capitalize">
-                                                {source.type}
+                                              <Badge variant="outline" class="text-xs">
+                                                {getTypeLabel(source.type)}
                                               </Badge>
                                               {#if source.similarity}
                                                 <span class="text-xs text-muted-foreground">
@@ -828,9 +903,14 @@
                                               {/if}
                                             </div>
                                           </div>
-                                          <ExternalLink class="size-3 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground" />
+                                          {#if source.type === 'document_chunk' && source.metadata?.document_file_id}
+                                            <ExternalLink 
+                                              class="size-3 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground"
+                                              onclick={(e) => { e.stopPropagation(); openDocumentPreview(source.metadata.document_file_id, source.metadata?.start_page); }}
+                                            />
+                                          {/if}
                                         </div>
-                                      </div>
+                                      </button>
                                     {/each}
                                   </div>
                                 </div>

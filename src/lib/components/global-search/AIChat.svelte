@@ -7,6 +7,8 @@
   import { Button } from "$lib/components/ui/button";
   import { Badge } from "$lib/components/ui/badge";
   import { ChatHistory } from "$lib/components/global-search";
+  import { navigate } from "svelte-routing";
+  import { API_BASE_URL } from "$lib/config";
   import MarkdownIt from "markdown-it";
 
   // Icons
@@ -197,6 +199,67 @@
       default:
         return FileText;
     }
+  }
+
+  // Source type used for clicks
+  interface Source {
+    type: string;
+    id: string;
+    title: string;
+    similarity: number;
+    snippet?: string;
+    metadata?: any;
+  }
+
+  function getTypeLabel(type: string): string {
+    return type === 'document_chunk' ? 'Literature Page' : (type?.[0]?.toUpperCase() + type?.slice(1));
+  }
+
+  async function openDocumentPreview(fileId: string, page?: number) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/documents/${fileId}/download?preview=true`, {
+        credentials: 'include',
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const url = page ? `${data.downloadUrl}#page=${page}` : data.downloadUrl;
+      window.open(url, '_blank');
+    } catch (e) {
+      console.error('Preview open failed', e);
+    }
+  }
+
+  function handleSourceClick(source: Source) {
+    const projectId = source?.metadata?.project_id;
+    if (!projectId) return;
+    let path = '';
+    switch (source.type) {
+      case 'literature':
+        path = `/project/${projectId}/literature/${source.id}`;
+        break;
+      case 'document_chunk':
+        if (source.metadata?.literature_id) {
+          const qp = new URLSearchParams();
+          if (source.metadata?.start_page) qp.set('p', String(source.metadata.start_page));
+          path = `/project/${projectId}/literature/${source.metadata.literature_id}?${qp.toString()}`;
+        } else {
+          path = `/project/${projectId}/literature`;
+        }
+        break;
+      case 'note':
+        path = `/project/${projectId}/notes`;
+        break;
+      case 'outcome':
+        path = `/project/${projectId}/outcomes/${source.id}`;
+        break;
+      case 'project':
+        path = `/project/${projectId}`;
+        break;
+      default:
+        path = `/project/${projectId}`;
+        break;
+    }
+    if (path) navigate(path);
   }
 
   // Transform tool names to friendly display names
@@ -615,8 +678,9 @@
                               <div class="space-y-2">
                                 {#each sources as source}
                                   {@const Icon = getResultIcon(source.type)}
-                                  <div
-                                    class="border rounded-md p-2 bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer group"
+                                  <button
+                                    class="w-full border rounded-md p-2 bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer group text-left"
+                                    onclick={() => handleSourceClick(source as unknown as Source)}
                                   >
                                     <div class="flex items-start gap-2">
                                       <Icon
@@ -638,12 +702,7 @@
                                         <div
                                           class="flex items-center gap-2 mt-1"
                                         >
-                                          <Badge
-                                            variant="outline"
-                                            class="text-xs capitalize"
-                                          >
-                                            {source.type}
-                                          </Badge>
+                                          <Badge variant="outline" class="text-xs">{getTypeLabel(source.type)}</Badge>
                                           {#if source.similarity}
                                             <span
                                               class="text-xs text-muted-foreground"
@@ -655,11 +714,14 @@
                                           {/if}
                                         </div>
                                       </div>
-                                      <ExternalLink
-                                        class="size-3 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground"
-                                      />
+                                      {#if source.type === 'document_chunk' && source.metadata?.document_file_id}
+                                        <ExternalLink
+                                          class="size-3 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground"
+                                          onclick={(e) => { e.stopPropagation(); openDocumentPreview(source.metadata.document_file_id, source.metadata?.start_page); }}
+                                        />
+                                      {/if}
                                     </div>
-                                  </div>
+                                  </button>
                                 {/each}
                               </div>
                             </div>
