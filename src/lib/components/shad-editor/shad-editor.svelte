@@ -57,6 +57,7 @@
   import { AudioExtention } from "./custom/Extentions/AudioExtended.js";
   import BubbleMenu from "./menus/bubble-menu.svelte";
   import { ParagraphIndent } from "./custom/Extentions/ParagraphIndent";
+  import TrailingNode from "./custom/Extentions/TrailingNode";
   // Tab handling is implemented via editorProps.handleKeyDown below
 
   const lowlight = createLowlight(all);
@@ -112,6 +113,7 @@
             let inListItem = false;
             let inList = false;
             let inCodeBlock = false;
+            let inTable = false;
 
             for (let i = fromPos.depth; i >= 0; i--) {
               const node = fromPos.node(i);
@@ -119,11 +121,22 @@
               if (name === "listItem") inListItem = true;
               if (name === "orderedList" || name === "bulletList") inList = true;
               if (name === "codeBlock") inCodeBlock = true;
+              if (name === "table" || name === "tableCell" || name === "tableHeader") inTable = true;
               if (inListItem && inList) break;
             }
 
             event.preventDefault();
             event.stopPropagation();
+
+            // Table cell navigation: Tab -> next cell, Shift+Tab -> previous cell
+            if (inTable) {
+              if ((event as KeyboardEvent).shiftKey) {
+                editor?.commands.goToPreviousCell?.();
+              } else {
+                editor?.commands.goToNextCell?.();
+              }
+              return true;
+            }
 
             if (inListItem && inList) {
               if ((event as KeyboardEvent).shiftKey) {
@@ -264,6 +277,8 @@
           indentStep: 1,
           indentUnit: '2em',
         }),
+        // Ensure there is always a paragraph after block nodes like tables
+        TrailingNode,
       ],
       autofocus: true,
       onUpdate: (transaction) => {
