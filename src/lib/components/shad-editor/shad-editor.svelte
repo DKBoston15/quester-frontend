@@ -56,6 +56,8 @@
   import { AudioPlaceholder } from "./custom/Extentions/AudioPlaceHolder.js";
   import { AudioExtention } from "./custom/Extentions/AudioExtended.js";
   import BubbleMenu from "./menus/bubble-menu.svelte";
+  import { ParagraphIndent } from "./custom/Extentions/ParagraphIndent";
+  // Tab handling is implemented via editorProps.handleKeyDown below
 
   const lowlight = createLowlight(all);
 
@@ -100,49 +102,73 @@
             "m-auto p-2 px-6 focus:outline-none flex-1 prose text-foreground min-w-full max-h-full overflow-auto dark:prose-invert *:my-2",
         },
         handleKeyDown: (view, event) => {
-          // Handle Tab key specifically to prevent browser focus change
-          if (event.key === 'Tab') {
-            const { state } = view;
-            const { selection } = state;
+          const key = event.key;
+
+          // Tab handling
+          if (key === "Tab") {
+            const { selection } = view.state as any;
             const fromPos = selection.$from;
 
-            // Check if we're in a list item
-            let depth = fromPos.depth;
-            let listItem = null;
-            let parentList = null;
-            
-            for (let i = depth; i > 0; i--) {
+            let inListItem = false;
+            let inList = false;
+            let inCodeBlock = false;
+
+            for (let i = fromPos.depth; i >= 0; i--) {
               const node = fromPos.node(i);
-              if (node.type.name === 'listItem' && !listItem) {
-                listItem = node;
-              }
-              if ((node.type.name === 'orderedList' || node.type.name === 'bulletList') && !parentList) {
-                parentList = node;
-                break;
-              }
+              const name = node.type.name;
+              if (name === "listItem") inListItem = true;
+              if (name === "orderedList" || name === "bulletList") inList = true;
+              if (name === "codeBlock") inCodeBlock = true;
+              if (inListItem && inList) break;
             }
-            
-            if (listItem && parentList) {
-              // Prevent the default tab behavior
-              event.preventDefault();
-              event.stopPropagation();
-              
-              if (event.shiftKey) {
-                // Shift+Tab: outdent
-                editor?.commands.liftListItem('listItem');
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (inListItem && inList) {
+              if ((event as KeyboardEvent).shiftKey) {
+                editor?.commands.liftListItem("listItem");
               } else {
-                // Tab: indent
-                editor?.commands.sinkListItem('listItem');
+                editor?.commands.sinkListItem("listItem");
               }
               return true;
             }
-            
-            // Even if not in a list, prevent tab from leaving the editor
-            event.preventDefault();
-            event.stopPropagation();
+
+            if (inCodeBlock) {
+              editor?.chain().focus().insertContent("\t").run();
+              return true;
+            }
+
+            // For non-list paragraphs: increase or decrease paragraph indent
+            if ((event as KeyboardEvent).shiftKey) {
+              editor?.commands.decreaseIndent();
+            } else {
+              editor?.commands.increaseIndent();
+            }
             return true;
           }
-          
+
+          // Backspace handling on empty, indented paragraph: decrease indent instead of deleting line
+          if (key === "Backspace") {
+            const { selection } = view.state as any;
+            if (!selection.empty) return false;
+            const fromPos = selection.$from;
+            const parent = fromPos.parent;
+            const atStart = fromPos.parentOffset === 0;
+            const isParagraph = parent.type?.name === "paragraph";
+            const isEmpty = parent.content?.size === 0;
+            const indentLevel = Number(parent.attrs?.indent || 0);
+
+            if (isParagraph && isEmpty && atStart && indentLevel > 0) {
+              event.preventDefault();
+              event.stopPropagation();
+              editor?.commands.decreaseIndent();
+              return true;
+            }
+
+            return false;
+          }
+
           return false;
         },
       },
@@ -232,6 +258,12 @@
         FontSize,
         AudioPlaceholder,
         AudioExtention,
+        ParagraphIndent.configure({
+          types: ['paragraph'],
+          maxIndent: 8,
+          indentStep: 1,
+          indentUnit: '2em',
+        }),
       ],
       autofocus: true,
       onUpdate: (transaction) => {
@@ -241,8 +273,10 @@
       },
     });
 
+    // Preserve existing editorProps (including handleKeyDown/attributes) when adding handlePaste
     editor.setOptions({
       editorProps: {
+        ...(editor.options.editorProps || {}),
         handlePaste: getHandlePaste(editor),
       },
     });

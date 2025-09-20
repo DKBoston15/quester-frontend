@@ -20,6 +20,7 @@ export const ListTabHandler = Extension.create({
         let depth = $from.depth;
         let listItem = null;
         let parentList = null;
+        let inCodeBlock = false;
         
         // Walk up the document tree to find list context
         for (let i = depth; i > 0; i--) {
@@ -31,11 +32,20 @@ export const ListTabHandler = Extension.create({
             parentList = node;
             break;
           }
+          if (node.type.name === 'codeBlock') {
+            inCodeBlock = true;
+          }
         }
         
         if (listItem && parentList) {
           // We're in a list, try to indent
           return editor.commands.sinkListItem('listItem');
+        }
+
+        // In code block: insert a tab character
+        if (inCodeBlock) {
+          editor.chain().focus().insertContent('\t').run();
+          return true;
         }
 
         // Not in a list, but still prevent browser tab navigation
@@ -52,6 +62,7 @@ export const ListTabHandler = Extension.create({
         let depth = $from.depth;
         let listItem = null;
         let parentList = null;
+        let inCodeBlock = false;
         
         // Walk up the document tree to find list context
         for (let i = depth; i > 0; i--) {
@@ -63,11 +74,20 @@ export const ListTabHandler = Extension.create({
             parentList = node;
             break;
           }
+          if (node.type.name === 'codeBlock') {
+            inCodeBlock = true;
+          }
         }
         
         if (listItem && parentList) {
           // We're in a list, try to outdent
           return editor.commands.liftListItem('listItem');
+        }
+
+        // In code block: insert a tab character as well (no outdent support)
+        if (inCodeBlock) {
+          editor.chain().focus().insertContent('\t').run();
+          return true;
         }
 
         // Not in a list, but still prevent browser behavior
@@ -96,6 +116,7 @@ export const ListTabHandler = Extension.create({
                 let depth = $from.depth;
                 let listItem = null;
                 let parentList = null;
+                let inCodeBlock = false;
                 
                 for (let i = depth; i > 0; i--) {
                   const node = $from.node(i);
@@ -105,6 +126,9 @@ export const ListTabHandler = Extension.create({
                   if ((node.type.name === 'orderedList' || node.type.name === 'bulletList') && !parentList) {
                     parentList = node;
                     break;
+                  }
+                  if (node.type.name === 'codeBlock') {
+                    inCodeBlock = true;
                   }
                 }
                 
@@ -118,6 +142,12 @@ export const ListTabHandler = Extension.create({
                     // Tab: indent
                     extension.editor.commands.sinkListItem('listItem');
                   }
+                  return true;
+                }
+                
+                if (inCodeBlock) {
+                  event.preventDefault();
+                  extension.editor.chain().focus().insertContent('\t').run();
                   return true;
                 }
                 
