@@ -12,7 +12,7 @@
   } from "lucide-svelte";
   import { createEventDispatcher } from "svelte";
   import { API_BASE_URL } from "$lib/config";
-  import { auth } from "$lib/stores/AuthStore.svelte";
+  import { auth } from "$lib/stores/AuthStore";
   import { processingJobsStore } from "$lib/stores/ProcessingJobsStore.svelte";
 
   const dispatch = createEventDispatcher();
@@ -142,7 +142,6 @@
       if (projectId) formData.append('projectId', projectId);
       if (attachLiteratureId) formData.append('literatureId', attachLiteratureId);
       if (attachLiteratureId) formData.append('mergeMode', mergeMode);
-      auth.csrfToken && formData.append("_csrf", auth.csrfToken);
 
       const response = await fetch(
         `${API_BASE_URL}/projects/${projectId}/documents/upload`,
@@ -242,6 +241,7 @@
   <!-- Upload Zone -->
   <div
     class="border-2 border-dashed rounded-lg p-8 text-center transition-colors {dragOver ? 'border-primary bg-primary/5' : 'border-muted-foreground/25'}"
+    role="button"
     ondragover={handleDragOver}
     ondragleave={handleDragLeave}
     ondrop={handleDrop}
@@ -296,7 +296,4 @@
 </div>
 
 <style>
-  .drag-over {
-    @apply border-primary bg-primary/5;
-  }
 </style>
