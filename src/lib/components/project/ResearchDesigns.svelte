@@ -7,10 +7,12 @@
     CardFooter,
   } from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
+  import { Input } from "$lib/components/ui/input";
   import * as Tabs from "$lib/components/ui/tabs";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { InfoIcon } from "lucide-svelte";
   import { projectStore } from "$lib/stores/ProjectStore";
+  import { toast } from "svelte-sonner";
 
   const designTypes = [
     "research",
@@ -19,15 +21,34 @@
     "analytic",
   ] as const;
 
+  type DesignType = (typeof designTypes)[number];
+  type DesignOption = { name: string };
+  type DesignSelection = Record<DesignType, string>;
+
+  const ADD_NEW_OPTION_VALUE = "__add_new__";
+
   let editMode = $state(false);
   let isPending = $state(false);
-  let currentTab = $state<(typeof designTypes)[number]>("research");
-  let localDesigns = $state<Record<string, string>>({
+  let currentTab = $state<DesignType>("research");
+  let localDesigns = $state<DesignSelection>({
     research: "",
     sampling: "",
     measurement: "",
     analytic: "",
   });
+  let addingDesign = $state<Record<DesignType, boolean>>({
+    research: false,
+    sampling: false,
+    measurement: false,
+    analytic: false,
+  });
+  let newDesignNames = $state<Record<DesignType, string>>({
+    research: "",
+    sampling: "",
+    measurement: "",
+    analytic: "",
+  });
+  let designCreationPending = $state<DesignType | null>(null);
 
   $effect(() => {
     const project = projectStore.currentProject;
@@ -42,14 +63,35 @@
   });
 
   function handleDesignChange(
-    type: (typeof designTypes)[number],
+    type: DesignType,
     value: string
   ) {
     localDesigns = { ...localDesigns, [type]: value };
   }
 
-  async function saveDesigns() {
-    if (!projectStore.currentProject?.id) return;
+  function handleSelectChange(type: DesignType, value: string) {
+    if (value === ADD_NEW_OPTION_VALUE) {
+      addingDesign = { ...addingDesign, [type]: true };
+      newDesignNames = { ...newDesignNames, [type]: "" };
+      return;
+    }
+
+    handleDesignChange(type, value);
+  }
+
+  function cancelAddDesign(type: DesignType) {
+    addingDesign = { ...addingDesign, [type]: false };
+    newDesignNames = { ...newDesignNames, [type]: "" };
+  }
+
+  function sortDesigns(designs: DesignOption[]): DesignOption[] {
+    return [...designs].sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  async function persistDesignSelections({ exitEditMode = false } = {}) {
+    if (!projectStore.currentProject?.id) {
+      throw new Error("Select a project before saving designs");
+    }
 
     isPending = true;
     try {
@@ -59,11 +101,107 @@
         measurementDesign: localDesigns.measurement,
         analyticDesign: localDesigns.analytic,
       });
-      editMode = false;
+
+      if (exitEditMode) {
+        editMode = false;
+      }
+
+      return true;
     } catch (error) {
       console.error("Failed to update designs:", error);
+      throw error;
     } finally {
       isPending = false;
+    }
+  }
+
+  function buildDesignPayload(
+    type: DesignType,
+    newDesignName: string
+  ): Record<DesignType, DesignOption[]> {
+    const existingDesigns = projectStore.designs;
+    return {
+      research:
+        type === "research"
+          ? sortDesigns([
+              ...(existingDesigns.research || []),
+              { name: newDesignName },
+            ])
+          : sortDesigns([...(existingDesigns.research || [])]),
+      sampling:
+        type === "sampling"
+          ? sortDesigns([
+              ...(existingDesigns.sampling || []),
+              { name: newDesignName },
+            ])
+          : sortDesigns([...(existingDesigns.sampling || [])]),
+      measurement:
+        type === "measurement"
+          ? sortDesigns([
+              ...(existingDesigns.measurement || []),
+              { name: newDesignName },
+            ])
+          : sortDesigns([...(existingDesigns.measurement || [])]),
+      analytic:
+        type === "analytic"
+          ? sortDesigns([
+              ...(existingDesigns.analytic || []),
+              { name: newDesignName },
+            ])
+          : sortDesigns([...(existingDesigns.analytic || [])]),
+    };
+  }
+
+  async function addDesignOption(type: DesignType) {
+    const projectId = projectStore.currentProject?.id;
+    const rawName = newDesignNames[type]?.trim() ?? "";
+
+    if (!projectId) {
+      toast.error("Select a project before adding designs");
+      return;
+    }
+
+    if (!rawName) {
+      toast.error("Design name cannot be empty");
+      return;
+    }
+
+    const existingTypeDesigns = projectStore.designs[type] || [];
+    if (
+      existingTypeDesigns.some(
+        (design) => design.name.toLowerCase() === rawName.toLowerCase()
+      )
+    ) {
+      toast.error("Design with this name already exists");
+      return;
+    }
+
+    designCreationPending = type;
+    try {
+      const payload = buildDesignPayload(type, rawName);
+      await projectStore.updateDesigns(projectId, payload);
+      localDesigns = { ...localDesigns, [type]: rawName };
+      await persistDesignSelections({ exitEditMode: true });
+      toast.success(`Added ${type} design`);
+      cancelAddDesign(type);
+    } catch (error) {
+      console.error("Failed to add design option:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to add design option"
+      );
+    } finally {
+      designCreationPending = null;
+    }
+  }
+
+  async function saveDesigns() {
+    if (!projectStore.currentProject?.id) return;
+    try {
+      await persistDesignSelections({ exitEditMode: true });
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update designs"
+      );
     }
   }
 </script>
@@ -108,16 +246,54 @@
       {#each designTypes as type}
         <Tabs.Content value={type} class="pt-4">
           {#if editMode}
-            <select
-              class="flex h-10 w-full items-center justify-between rounded-md border dark:border-dark-border bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              value={localDesigns[type]}
-              onchange={(e) => handleDesignChange(type, e.currentTarget.value)}
-            >
-              <option value="">Select {type} design</option>
-              {#each projectStore.designs[type] || [] as option}
-                <option value={option.name}>{option.name}</option>
-              {/each}
-            </select>
+            <div class="space-y-2">
+              <select
+                class="flex h-10 w-full items-center justify-between rounded-md border dark:border-dark-border bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={localDesigns[type]}
+                onchange={(e) =>
+                  handleSelectChange(type, e.currentTarget.value)}
+              >
+                <option value="">Select {type} design</option>
+                {#each projectStore.designs[type] || [] as option}
+                  <option value={option.name}>{option.name}</option>
+                {/each}
+                <option value={ADD_NEW_OPTION_VALUE}>
+                  Add new {type} design +
+                </option>
+              </select>
+
+              {#if addingDesign[type]}
+                <div class="flex flex-col gap-2 sm:flex-row">
+                  <Input
+                    type="text"
+                    placeholder={`New ${type} design name`}
+                    bind:value={newDesignNames[type]}
+                    onkeydown={(event) =>
+                      event.key === "Enter" &&
+                      designCreationPending !== type &&
+                      addDesignOption(type)}
+                    disabled={designCreationPending === type}
+                  />
+                  <div class="flex gap-2">
+                    <Button
+                      size="sm"
+                      onclick={() => addDesignOption(type)}
+                      disabled={designCreationPending === type}
+                    >
+                      {designCreationPending === type ? "Adding…" : "Add"}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onclick={() => cancelAddDesign(type)}
+                      disabled={designCreationPending === type}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              {/if}
+            </div>
           {:else}
             <p class="text-muted-foreground">
               {localDesigns[type] || `No ${type} design specified`}
