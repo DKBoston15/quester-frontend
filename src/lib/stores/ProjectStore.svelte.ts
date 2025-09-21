@@ -13,6 +13,8 @@
   let isLoading = $state(true);
   let error = $state<string | null>(null);
   let designs = $state<Record<string, { name: string }[]>>(createEmptyDesigns());
+  let pendingProjectId: string | null = null;
+  let pendingPromise: Promise<void> | null = null;
 
   export const projectStore = {
     get currentProject() {
@@ -28,11 +30,21 @@
       return designs;
     },
 
-    async loadProject(projectId: string) {
+    async loadProject(projectId: string, options: { force?: boolean } = {}) {
       if (!projectId) {
         error = "No project ID provided";
         isLoading = false;
         return;
+      }
+
+      if (!options.force) {
+        if (pendingProjectId === projectId && pendingPromise) {
+          return pendingPromise;
+        }
+
+        if (currentProject?.id === projectId) {
+          return pendingPromise ?? Promise.resolve();
+        }
       }
 
       if (currentProject?.id !== projectId) {
@@ -43,30 +55,41 @@
       isLoading = true;
       error = null;
 
-      try {
-        const [projectData, designsData] = await Promise.all([
-          api.get<Project>(`/projects/${projectId}`),
-          api.get(`/design/project/${projectId}`).catch(() => null),
-        ]);
+      pendingProjectId = projectId;
 
-        currentProject = projectData;
+      const loadPromise = (async () => {
+        try {
+          const [projectData, designsData] = await Promise.all([
+            api.get<Project>(`/projects/${projectId}`),
+            api.get(`/design/project/${projectId}`).catch(() => null),
+          ]);
 
-        if (designsData && designsData.length > 0 && designsData[0].designs) {
-          const designOptions = designsData[0].designs;
-          designs = {
-            research: designOptions.research || [],
-            sampling: designOptions.sampling || [],
-            measurement: designOptions.measurement || [],
-            analytic: designOptions.analytic || [],
-          };
+          currentProject = projectData;
+
+          if (designsData && designsData.length > 0 && designsData[0].designs) {
+            const designOptions = designsData[0].designs;
+            designs = {
+              research: designOptions.research || [],
+              sampling: designOptions.sampling || [],
+              measurement: designOptions.measurement || [],
+              analytic: designOptions.analytic || [],
+            };
+          }
+        } catch (err) {
+          console.error("Error loading project:", err);
+          error = err instanceof Error ? err.message : "An error occurred";
+          currentProject = null;
+        } finally {
+          if (pendingProjectId === projectId) {
+            pendingProjectId = null;
+            pendingPromise = null;
+          }
+          isLoading = false;
         }
-      } catch (err) {
-        console.error("Error loading project:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
-        currentProject = null;
-      } finally {
-        isLoading = false;
-      }
+      })();
+
+      pendingPromise = loadPromise;
+      return loadPromise;
     },
 
     async updateProject(projectId: string, updateData: Partial<Project>) {
