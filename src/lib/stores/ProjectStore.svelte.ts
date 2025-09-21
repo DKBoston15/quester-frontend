@@ -2,15 +2,17 @@
   import { api } from "../services/api-client";
   import type { Project } from "../types/auth";
 
+  const createEmptyDesigns = () => ({
+    research: [] as { name: string }[],
+    sampling: [] as { name: string }[],
+    measurement: [] as { name: string }[],
+    analytic: [] as { name: string }[],
+  });
+
   let currentProject = $state<Project | null>(null);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
-  let designs = $state<Record<string, { name: string }[]>>({
-    research: [],
-    sampling: [],
-    measurement: [],
-    analytic: [],
-  });
+  let designs = $state<Record<string, { name: string }[]>>(createEmptyDesigns());
 
   export const projectStore = {
     get currentProject() {
@@ -31,6 +33,11 @@
         error = "No project ID provided";
         isLoading = false;
         return;
+      }
+
+      if (currentProject?.id !== projectId) {
+        currentProject = null;
+        designs = createEmptyDesigns();
       }
 
       isLoading = true;
@@ -95,14 +102,8 @@
 
     clearProject() {
       currentProject = null;
-      designs = {
-        research: [],
-        sampling: [],
-        measurement: [],
-        analytic: [],
-      };
+      designs = createEmptyDesigns();
       error = null;
       isLoading = false;
     },
   };
-
