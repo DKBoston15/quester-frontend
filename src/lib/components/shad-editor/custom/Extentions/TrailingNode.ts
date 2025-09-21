@@ -1,5 +1,5 @@
 import { Extension } from '@tiptap/core'
-import { Plugin, Transaction } from 'prosemirror-state'
+import { Plugin, PluginKey, Transaction } from 'prosemirror-state'
 import type { Node as ProseMirrorNode } from 'prosemirror-model'
 
 export interface TrailingNodeOptions {
@@ -18,8 +18,10 @@ export const TrailingNode = Extension.create<TrailingNodeOptions>({
   },
 
   addProseMirrorPlugins() {
+    const key = new PluginKey('trailingNodePlugin')
     return [
       new Plugin({
+        key,
         appendTransaction: (_transactions: readonly Transaction[], _oldState, newState) => {
           const { doc, tr, schema } = newState
           const nodeType = schema.nodes[this.options.node]
@@ -41,4 +43,3 @@ export const TrailingNode = Extension.create<TrailingNodeOptions>({
 })
 
 export default TrailingNode
-

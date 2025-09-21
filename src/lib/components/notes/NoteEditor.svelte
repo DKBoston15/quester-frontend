@@ -46,6 +46,25 @@
   // Initialize to null to avoid passing undefined to bind:ref
   let titleInputRef: HTMLInputElement | null = null;
   let showDeleteDialog = $state(false);
+  // Avoid accidental click-to-edit immediately after switching notes
+  let enableTitleClickAt = $state(0);
+
+  // Sticky toolbar offset handling
+  let headerEl: HTMLElement | null = null;
+  let headerHeight = $state(0);
+  function updateHeaderHeight() {
+    headerHeight = headerEl?.offsetHeight ?? 0;
+  }
+  onMount(() => {
+    updateHeaderHeight();
+    const ro = new ResizeObserver(() => updateHeaderHeight());
+    if (headerEl) ro.observe(headerEl);
+    window.addEventListener('resize', updateHeaderHeight);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', updateHeaderHeight);
+    };
+  });
 
   // Track section type locally to avoid remounting
   let currentSectionType = $state(
@@ -75,6 +94,7 @@
 
   // Ensure literature data is loaded
   onMount(async () => {
+    enableTitleClickAt = Date.now() + 800;
     // For new notes, switch to edit mode and focus title to encourage renaming
     if (note.name === "Untitled Note" && title === "Untitled Note") {
       isEditingTitle = true;
@@ -235,6 +255,8 @@
     if (isNewNote) {
       contentChanged = false;
       titleChanged = false;
+      // Delay click-to-edit after switching notes to prevent accidental activation
+      enableTitleClickAt = Date.now() + 800;
     }
   });
 
@@ -473,7 +495,7 @@
 
 <div class="flex flex-col">
   <!-- Editor Header -->
-  <header class="sticky top-0 z-10 border-b p-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+  <header bind:this={headerEl} class="sticky top-0 z-10 border-b p-4 bg-background">
     <!-- Row 1: Title and save status -->
     <div class="flex items-center justify-between gap-3">
       {#if isEditingTitle}
@@ -539,6 +561,8 @@
             title={title}
             aria-label="Note title. Click to edit"
             onclick={() => {
+              // Guard against accidental click carried over from note selection
+              if (Date.now() < enableTitleClickAt) return;
               isEditingTitle = true;
               setTimeout(() => titleInputRef?.focus(), 0);
             }}
@@ -602,7 +626,7 @@
 
   <!-- Editor Content -->
   {#if note}
-    <div class="flex-1">
+    <div class="flex-1" style={`--note-header-offset: ${headerHeight}px`}>
       <ShadEditor
         {content}
 on:contentChange={(e) => {
