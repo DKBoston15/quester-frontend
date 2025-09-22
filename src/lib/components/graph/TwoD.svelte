@@ -44,6 +44,15 @@
     [key: string]: boolean;
   }
 
+  type GraphControls = {
+    zoomIn: () => void;
+    zoomOut: () => void;
+  };
+
+  const props = $props<{
+    registerControls?: (controls: GraphControls | null) => void;
+  }>();
+
   // Track which project's graph is currently loaded
   let lastLoadedProjectId: string | null = null;
 
@@ -60,6 +69,13 @@
   let timelapseInterval: NodeJS.Timeout;
   let currentNodeIndex = 0;
   let selectedNodesForRendering = new Set<string>();
+
+  const MIN_ZOOM = 0.2;
+  const MAX_ZOOM = 20;
+  const ZOOM_FACTOR = 1.25;
+
+  // Track zoom level since Graph.zoom() getter might not work
+  let currentZoom = $state(1);
 
   async function loadGraphForProject(projectId: string) {
     isGraphReady = false;
@@ -119,14 +135,21 @@
     }
   }
 
-  onMount(async () => {
-    if (typeof window !== "undefined") {
-      const module = await import("force-graph");
-      ForceGraph = module.default;
-      Graph = (ForceGraph as any)()(graph)
-        .nodeId("id")
-        .nodeVal("val")
-        .nodeLabel("id")
+  onMount(() => {
+    if (typeof window === "undefined") return () => {};
+
+    let disposed = false;
+
+    (async () => {
+      try {
+        const module = await import("force-graph");
+        if (disposed) return;
+
+        ForceGraph = module.default;
+        Graph = (ForceGraph as any)()(graph)
+          .nodeId("id")
+          .nodeVal("val")
+          .nodeLabel("id")
         .nodeColor((node: GraphNode) =>
           node === selectedNode ? "pink" : groupColorMap[node.group as keyof typeof groupColorMap]
         )
@@ -184,11 +207,23 @@
       Graph.d3Force("charge").strength(-30);
       Graph.d3Force("link").strength();
 
-      const pid = projectStore.currentProject?.id;
-      if (pid) {
-        await loadGraphForProject(pid);
+        const pid = projectStore.currentProject?.id;
+        if (pid) {
+          await loadGraphForProject(pid);
+        }
+      } catch (error) {
+        console.error("Failed to initialize 2D graph:", error);
+      } finally {
+        if (!disposed) {
+          props.registerControls?.({ zoomIn, zoomOut });
+        }
       }
-    }
+    })();
+
+    return () => {
+      disposed = true;
+      props.registerControls?.(null);
+    };
   });
 
   // React to project changes while staying on the Connections view
@@ -233,9 +268,37 @@
         );
       } else {
         Graph.centerAt(node.x, node.y, 1000);
+        currentZoom = 8;
         Graph.zoom(8, 2000);
       }
     }
+  }
+
+  function applyZoom(factor: number) {
+    if (!Graph) return;
+
+    // Try to get current zoom from Graph, fallback to our tracked value
+    let current = currentZoom;
+    try {
+      const graphZoom = Graph.zoom?.();
+      if (typeof graphZoom === 'number' && graphZoom > 0) {
+        current = graphZoom;
+      }
+    } catch (e) {
+      // Use tracked zoom level
+    }
+
+    const next = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, current * factor));
+    currentZoom = next;
+    Graph.zoom(next, 300);
+  }
+
+  function zoomIn() {
+    applyZoom(ZOOM_FACTOR);
+  }
+
+  function zoomOut() {
+    applyZoom(1 / ZOOM_FACTOR);
   }
 
   let typeVisibility = $state<TypeVisibility>(

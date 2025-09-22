@@ -12,11 +12,27 @@
   import { api } from "$lib/services/api-client";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
-  import { GraduationCap } from "lucide-svelte";
+  import { GraduationCap, ZoomIn, ZoomOut } from "lucide-svelte";
 
   let value = $state("2D");
   let isLoading = $state(true);
   let hasAccess = $state(false);
+
+  interface GraphControls {
+    zoomIn: () => void;
+    zoomOut: () => void;
+  }
+
+  let twoDControls = $state<GraphControls | null>(null);
+  let threeDControls = $state<GraphControls | null>(null);
+
+  function handleTwoDRegister(controls: GraphControls | null) {
+    twoDControls = controls;
+  }
+
+  function handleThreeDRegister(controls: GraphControls | null) {
+    threeDControls = controls;
+  }
 
   // Define the type for typeMap keys
   type TypeMapKey = keyof typeof typeMap;
@@ -119,6 +135,26 @@
       },
     ],
   });
+
+  function handleZoomIn() {
+    if (value === "2D") {
+      twoDControls?.zoomIn();
+    } else if (value === "3D") {
+      threeDControls?.zoomIn();
+    }
+  }
+
+  function handleZoomOut() {
+    if (value === "2D") {
+      twoDControls?.zoomOut();
+    } else if (value === "3D") {
+      threeDControls?.zoomOut();
+    }
+  }
+
+  function activeControlsReady() {
+    return value === "2D" ? !!twoDControls : value === "3D" ? !!threeDControls : false;
+  }
 </script>
 
 {#if isLoading}
@@ -161,6 +197,24 @@
         </ToggleGroup.Root>
       </div>
       <div class="flex space-x-2 items-center z-50">
+        <Button
+          aria-label="Zoom out"
+          variant="outline"
+          class="border-2 dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+          onclick={handleZoomOut}
+          disabled={!activeControlsReady()}
+        >
+          <ZoomOut class="h-4 w-4" />
+        </Button>
+        <Button
+          aria-label="Zoom in"
+          variant="outline"
+          class="border-2 dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+          onclick={handleZoomIn}
+          disabled={!activeControlsReady()}
+        >
+          <ZoomIn class="h-4 w-4" />
+        </Button>
         <Popover.Root>
           <Popover.Trigger>
             <Button
@@ -273,9 +327,9 @@
     </div>
     <div id="graph-container" class="flex-1 relative overflow-hidden">
       {#if value === "3D"}
-        <ThreeD />
+        <ThreeD registerControls={handleThreeDRegister} />
       {:else if value === "2D"}
-        <TwoD />
+        <TwoD registerControls={handleTwoDRegister} />
       {/if}
     </div>
   </div>

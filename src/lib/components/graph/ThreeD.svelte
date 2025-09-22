@@ -16,6 +16,7 @@
   import { projectStore } from "$lib/stores/ProjectStore";
   import { isDarkMode } from "$lib/utils/mode-watcher";
   import type { ForceGraph3DInstance } from "3d-force-graph";
+  import type { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
   // Types for graph data
   interface GraphNode {
@@ -49,6 +50,15 @@
     [key: string]: boolean;
   }
 
+  type GraphControls = {
+    zoomIn: () => void;
+    zoomOut: () => void;
+  };
+
+  const props = $props<{
+    registerControls?: (controls: GraphControls | null) => void;
+  }>();
+
   // Track which project's graph is currently loaded
   let lastLoadedProjectId: string | null = null;
 
@@ -64,6 +74,10 @@
   let timelapseInterval: NodeJS.Timeout;
   let currentNodeIndex = 0;
   let selectedNodesForRendering = new Set<string>();
+
+  const MIN_CAMERA_DISTANCE = 10;
+  const MAX_CAMERA_DISTANCE = 5000;
+  const ZOOM_FACTOR = 1.25;
 
   async function loadGraphForProject(projectId: string) {
     isGraphReady = false;
@@ -191,12 +205,28 @@
     isGraphReady = true;
   }
 
-  onMount(async () => {
-    // Initialize graph on mount for current project
-    const pid = projectStore.currentProject?.id;
-    if (pid) {
-      await loadGraphForProject(pid);
-    }
+  onMount(() => {
+    let disposed = false;
+
+    (async () => {
+      try {
+        const pid = projectStore.currentProject?.id;
+        if (pid) {
+          await loadGraphForProject(pid);
+        }
+      } catch (error) {
+        console.error("Failed to initialize 3D graph:", error);
+      } finally {
+        if (!disposed) {
+          props.registerControls?.({ zoomIn, zoomOut });
+        }
+      }
+    })();
+
+    return () => {
+      disposed = true;
+      props.registerControls?.(null);
+    };
   });
 
   // React to project changes while staying on the Connections view
@@ -237,6 +267,32 @@
         1000
       );
     }
+  }
+
+  function adjustCameraDistance(multiplier: number) {
+    if (!Graph) return;
+    const camera = Graph.camera?.() as THREE.PerspectiveCamera | undefined;
+    if (!camera) return;
+    const controls = Graph.controls?.() as OrbitControls | undefined;
+    const target = controls?.target ?? new THREE.Vector3(0, 0, 0);
+    const direction = new THREE.Vector3().subVectors(camera.position, target);
+    const currentDistance = direction.length();
+    if (currentDistance === 0) return;
+    const nextDistance = Math.min(
+      MAX_CAMERA_DISTANCE,
+      Math.max(MIN_CAMERA_DISTANCE, currentDistance * multiplier)
+    );
+    direction.setLength(nextDistance);
+    camera.position.copy(direction.add(target));
+    controls?.update();
+  }
+
+  function zoomIn() {
+    adjustCameraDistance(1 / ZOOM_FACTOR);
+  }
+
+  function zoomOut() {
+    adjustCameraDistance(ZOOM_FACTOR);
   }
 
   function addLabels() {

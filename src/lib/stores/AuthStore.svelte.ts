@@ -171,7 +171,6 @@ export const auth = {
 setGlobalLogoutHandler(() => auth.handleGlobalLogout());
 
 function syncPosthogIdentity() {
-  console.log("syncPosthogIdentity");
   if (typeof window === "undefined" || !user) {
     return;
   }
