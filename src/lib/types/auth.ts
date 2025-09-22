@@ -1,3 +1,5 @@
+import type { DesignDetail } from '$lib/utils/design'
+
 export type User = {
   id: number;
   email: string;
@@ -65,10 +67,10 @@ export interface Project {
   financialInstitution?: string | null;
   financialSupport?: string | null;
   product?: string | null;
-  researchDesign?: string | null;
-  analyticDesign?: string | null;
-  samplingDesign?: string | null;
-  measurementDesign?: string | null;
+  researchDesign?: DesignDetail | null;
+  analyticDesign?: DesignDetail | null;
+  samplingDesign?: DesignDetail | null;
+  measurementDesign?: DesignDetail | null;
   status?: string | null;
   settings?: Record<string, any>;
   metadata?: Record<string, any> | null;

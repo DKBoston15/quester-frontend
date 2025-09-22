@@ -17,6 +17,7 @@
   import { toast } from "svelte-sonner";
   import type { Project } from "$lib/types/auth";
   import type { Literature } from "$lib/types/literature";
+  import { normalizeDesignDetail } from "$lib/utils/design";
 
   // Design types that match our existing components
   const designTypes = [
@@ -303,34 +304,52 @@
 
     const updates: Promise<unknown>[] = [];
 
-    const currentProjectValue = projectStore.currentProject?.[
-      projectField
-    ] as string | null | undefined;
+    const currentProjectDetail = projectStore.currentProject?.[projectField];
+    const normalizedProjectDetail = normalizeDesignDetail(currentProjectDetail);
 
     if (
-      currentProjectValue &&
-      currentProjectValue.trim().length > 0 &&
-      currentProjectValue.toLowerCase() === details.oldName.toLowerCase()
+      normalizedProjectDetail.selections.some(
+        (selection) => selection.toLowerCase() === details.oldName.toLowerCase()
+      )
     ) {
+      const updatedSelections = normalizedProjectDetail.selections.map((selection) =>
+        selection.toLowerCase() === details.oldName.toLowerCase()
+          ? details.newName
+          : selection
+      );
+
       updates.push(
         projectStore.updateProject(projectId, {
-          [projectField]: details.newName,
+          [projectField]: {
+            selections: updatedSelections,
+            description: normalizedProjectDetail.description ?? null,
+          },
         } as Partial<Project>)
       );
     }
 
-    const matchingLiterature = literatureStore.data.filter((item) => {
-      const value = item[literatureField];
-      if (typeof value !== "string") return false;
-      return value.toLowerCase() === details.oldName.toLowerCase();
-    });
+    for (const literatureItem of literatureStore.data) {
+      const detail = normalizeDesignDetail(literatureItem[literatureField]);
+      if (
+        detail.selections.some(
+          (selection) => selection.toLowerCase() === details.oldName.toLowerCase()
+        )
+      ) {
+        const updatedSelections = detail.selections.map((selection) =>
+          selection.toLowerCase() === details.oldName.toLowerCase()
+            ? details.newName
+            : selection
+        );
 
-    for (const literature of matchingLiterature) {
-      updates.push(
-        literatureStore.updateLiterature(literature.id, {
-          [literatureField]: details.newName,
-        } as Partial<Literature>)
-      );
+        updates.push(
+          literatureStore.updateLiterature(literatureItem.id, {
+            [literatureField]: {
+              selections: updatedSelections,
+              description: detail.description ?? null,
+            },
+          } as Partial<Literature>)
+        );
+      }
     }
 
     if (updates.length === 0) return;

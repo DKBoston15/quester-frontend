@@ -1,6 +1,7 @@
 import { projectStore } from "$lib/stores/ProjectStore";
 import { literatureStore } from "$lib/stores/LiteratureStore";
 import { notesStore } from "$lib/stores/NotesStore";
+import { designSelections } from "$lib/utils/design";
 
 export const groupColorMap = {
   1: "#006eff",
@@ -248,49 +249,49 @@ export async function createGraphData(urlProjectId: string) {
       addLink(literature.name, literature.publisherName, 1);
     }
 
-    if (literature.researchDesign) {
+    designSelections(literature.researchDesign).forEach((design) => {
       addNode(
-        literature.researchDesign,
+        design,
         6,
         "research_design",
         getNodeSize("research_design"),
         literature.createdAt || ""
       );
-      addLink(literature.name, literature.researchDesign, 1);
-    }
+      addLink(literature.name, design, 1);
+    });
 
-    if (literature.analyticDesign) {
+    designSelections(literature.analyticDesign).forEach((design) => {
       addNode(
-        literature.analyticDesign,
+        design,
         7,
         "analytic_design",
         getNodeSize("analytic_design"),
         literature.createdAt || ""
       );
-      addLink(literature.name, literature.analyticDesign, 1);
-    }
+      addLink(literature.name, design, 1);
+    });
 
-    if (literature.samplingDesign) {
+    designSelections(literature.samplingDesign).forEach((design) => {
       addNode(
-        literature.samplingDesign,
+        design,
         7,
         "sampling_design",
         getNodeSize("sampling_design"),
         literature.createdAt || ""
       );
-      addLink(literature.name, literature.samplingDesign, 1);
-    }
+      addLink(literature.name, design, 1);
+    });
 
-    if (literature.measurementDesign) {
+    designSelections(literature.measurementDesign).forEach((design) => {
       addNode(
-        literature.measurementDesign,
+        design,
         7,
         "measurement_design",
         getNodeSize("measurement_design"),
         literature.createdAt || ""
       );
-      addLink(literature.name, literature.measurementDesign, 1);
-    }
+      addLink(literature.name, design, 1);
+    });
   });
 
   const getNodeLabel = (note: any) => {

@@ -11,6 +11,7 @@
   import { slide } from "svelte/transition";
   import { quintOut } from "svelte/easing";
   import type { Project } from "$lib/types/auth";
+  import { hasDesignContent } from "$lib/utils/design";
 
   type InsightRule = {
     field: keyof Project | string;
@@ -66,10 +67,10 @@
       description:
         "Add design concepts and visual representations to communicate your project effectively.",
       checkFn: (project) =>
-        !project.researchDesign?.trim() &&
-        !project.samplingDesign?.trim() &&
-        !project.measurementDesign?.trim() &&
-        !project.analyticDesign?.trim(),
+        !hasDesignContent(project.researchDesign) &&
+        !hasDesignContent(project.samplingDesign) &&
+        !hasDesignContent(project.measurementDesign) &&
+        !hasDesignContent(project.analyticDesign),
       // action: {
       //   label: "Add Designs",
       //   route: "project_settings",
