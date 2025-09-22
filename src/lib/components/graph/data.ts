@@ -140,6 +140,7 @@ export async function createGraphData(urlProjectId: string) {
     icon: string;
     val: number;
     createdAt: string;
+    literatureId?: string; // For literature nodes, store the actual ID for navigation
   }> = [];
   const links: Array<{ source: string; target: string; value: number }> = [];
 
@@ -148,10 +149,11 @@ export async function createGraphData(urlProjectId: string) {
     group: number,
     icon: string,
     val: number,
-    createdAt: string
+    createdAt: string,
+    literatureId?: string
   ) => {
     if (!nodes.find((node) => node.id === id)) {
-      nodes.push({ id, group, icon, val, createdAt });
+      nodes.push({ id, group, icon, val, createdAt, literatureId });
     }
   };
 
@@ -170,7 +172,8 @@ export async function createGraphData(urlProjectId: string) {
       3,
       "literature",
       getNodeSize("literature"),
-      literature.createdAt || ""
+      literature.createdAt || "",
+      literature.id // Store the actual literature ID for navigation
     );
 
     if (literature.authors) {

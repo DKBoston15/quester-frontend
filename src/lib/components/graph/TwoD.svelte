@@ -13,6 +13,8 @@
   import TypeCheckbox from "./TypeCheckbox.svelte";
   import * as Popover from "$lib/components/ui/popover";
   import { projectStore } from "$lib/stores/ProjectStore";
+  import GraphContextMenu from "./GraphContextMenu.svelte";
+  import { navigate } from "svelte-routing";
 
   // Types for graph data
   interface GraphNode {
@@ -21,6 +23,7 @@
     group: number;
     icon: string;
     createdAt: string;
+    literatureId?: string;
     x?: number;
     y?: number;
     fx?: number;
@@ -69,6 +72,11 @@
   let timelapseInterval: NodeJS.Timeout;
   let currentNodeIndex = 0;
   let selectedNodesForRendering = new Set<string>();
+
+  // Context menu state
+  let contextMenuOpen = $state(false);
+  let contextMenuNode = $state<GraphNode | null>(null);
+  let contextMenuPosition = $state({ x: 0, y: 0 });
 
   const MIN_ZOOM = 0.2;
   const MAX_ZOOM = 20;
@@ -207,6 +215,46 @@
       Graph.d3Force("charge").strength(-30);
       Graph.d3Force("link").strength();
 
+      // Add right-click event listener to the canvas
+      const canvas = graph.querySelector('canvas');
+      if (canvas) {
+        canvas.addEventListener('contextmenu', (event) => {
+          event.preventDefault();
+
+          // Get the mouse position relative to the canvas
+          const rect = canvas.getBoundingClientRect();
+          const mouseX = event.clientX - rect.left;
+          const mouseY = event.clientY - rect.top;
+
+          // Convert screen coordinates to graph coordinates using the library's built-in method
+          const graphCoords = Graph.screen2GraphCoords(mouseX, mouseY);
+          const graphX = graphCoords.x;
+          const graphY = graphCoords.y;
+
+          // Find the closest node to the mouse position
+          const nodes = Graph.graphData().nodes;
+          let closestNode = null;
+          let minDistance = Infinity;
+          const maxClickDistance = 20; // Fixed pixel distance threshold
+
+          nodes.forEach((node: GraphNode) => {
+            if (node.x !== undefined && node.y !== undefined) {
+              const distance = Math.sqrt(
+                Math.pow(node.x - graphX, 2) + Math.pow(node.y - graphY, 2)
+              );
+              if (distance < minDistance && distance < maxClickDistance) {
+                minDistance = distance;
+                closestNode = node;
+              }
+            }
+          });
+
+          if (closestNode && closestNode.icon === "literature") {
+            handleNodeRightClick(closestNode, event);
+          }
+        });
+      }
+
         const pid = projectStore.currentProject?.id;
         if (pid) {
           await loadGraphForProject(pid);
@@ -271,6 +319,39 @@
         currentZoom = 8;
         Graph.zoom(8, 2000);
       }
+    }
+  }
+
+  function handleNodeRightClick(node: GraphNode, event: MouseEvent) {
+    // Only show context menu for literature nodes
+    if (node.icon !== "literature") return;
+
+    // Prevent default browser context menu
+    event.preventDefault();
+
+    // Close any existing context menu
+    contextMenuOpen = false;
+
+    // Set up new context menu
+    contextMenuNode = node;
+    contextMenuPosition = { x: event.clientX, y: event.clientY };
+
+    // Open context menu with a small delay to ensure it renders properly
+    setTimeout(() => {
+      contextMenuOpen = true;
+    }, 10);
+  }
+
+  function handleContextMenuClose() {
+    contextMenuOpen = false;
+    contextMenuNode = null;
+  }
+
+  function handleContextMenuNavigate({ detail }: { detail: { nodeId: string } }) {
+    const projectId = projectStore.currentProject?.id;
+    if (projectId && contextMenuNode && contextMenuNode.literatureId) {
+      const url = `/project/${projectId}/literature/${contextMenuNode.literatureId}`;
+      window.open(url, '_blank');
     }
   }
 
@@ -685,6 +766,16 @@
   {/if}
   <!-- Graph host fills the container -->
   <div bind:this={graph} class="absolute inset-0"></div>
+
+  <!-- Context Menu -->
+  <GraphContextMenu
+    open={contextMenuOpen}
+    node={contextMenuNode}
+    position={contextMenuPosition}
+    onClose={handleContextMenuClose}
+    on:close={handleContextMenuClose}
+    on:navigate={handleContextMenuNavigate}
+  />
 </div>
 
 <style>

@@ -17,6 +17,8 @@
   import { isDarkMode } from "$lib/utils/mode-watcher";
   import type { ForceGraph3DInstance } from "3d-force-graph";
   import type { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+  import GraphContextMenu from "./GraphContextMenu.svelte";
+  import { navigate } from "svelte-routing";
 
   // Types for graph data
   interface GraphNode {
@@ -25,6 +27,7 @@
     group: number;
     icon: string;
     createdAt: string;
+    literatureId?: string;
     x?: number;
     y?: number;
     z?: number;
@@ -74,6 +77,11 @@
   let timelapseInterval: NodeJS.Timeout;
   let currentNodeIndex = 0;
   let selectedNodesForRendering = new Set<string>();
+
+  // Context menu state
+  let contextMenuOpen = $state(false);
+  let contextMenuNode = $state<GraphNode | null>(null);
+  let contextMenuPosition = $state({ x: 0, y: 0 });
 
   const MIN_CAMERA_DISTANCE = 10;
   const MAX_CAMERA_DISTANCE = 5000;
@@ -184,6 +192,52 @@
             }
           }
         });
+
+      // Add right-click event listener to the 3D graph canvas
+      const canvas = elem.querySelector('canvas');
+      if (canvas) {
+        canvas.addEventListener('contextmenu', (event) => {
+          event.preventDefault();
+
+          // Get the mouse position relative to the canvas
+          const rect = canvas.getBoundingClientRect();
+          const mouseX = event.clientX - rect.left;
+          const mouseY = event.clientY - rect.top;
+
+          // For 3D graphs, we need to project 3D coordinates to screen coordinates
+          const camera = Graph.camera();
+          const nodes = Graph.graphData().nodes;
+          let closestNode = null;
+          let minDistance = Infinity;
+          const maxClickDistance = 30; // Pixel distance threshold
+
+          nodes.forEach((node: GraphNode) => {
+            if (node.x !== undefined && node.y !== undefined && node.z !== undefined) {
+              // Project 3D node position to screen coordinates
+              const vector = new THREE.Vector3(node.x, node.y, node.z);
+              vector.project(camera);
+
+              // Convert normalized device coordinates to screen coordinates
+              const screenX = (vector.x + 1) * rect.width / 2;
+              const screenY = (-vector.y + 1) * rect.height / 2;
+
+              // Calculate distance from mouse to projected node position
+              const distance = Math.sqrt(
+                Math.pow(screenX - mouseX, 2) + Math.pow(screenY - mouseY, 2)
+              );
+
+              if (distance < minDistance && distance < maxClickDistance) {
+                minDistance = distance;
+                closestNode = node;
+              }
+            }
+          });
+
+          if (closestNode && closestNode.icon === "literature") {
+            handleNodeRightClick(closestNode, event);
+          }
+        });
+      }
     } else {
       // Update existing graph data
       Graph.graphData({
@@ -266,6 +320,39 @@
         { x: node.x || 0, y: node.y || 0, z: node.z || 0 },
         1000
       );
+    }
+  }
+
+  function handleNodeRightClick(node: GraphNode, event: MouseEvent) {
+    // Only show context menu for literature nodes
+    if (node.icon !== "literature") return;
+
+    // Prevent default browser context menu
+    event.preventDefault();
+
+    // Close any existing context menu
+    contextMenuOpen = false;
+
+    // Set up new context menu
+    contextMenuNode = node;
+    contextMenuPosition = { x: event.clientX, y: event.clientY };
+
+    // Open context menu with a small delay to ensure it renders properly
+    setTimeout(() => {
+      contextMenuOpen = true;
+    }, 10);
+  }
+
+  function handleContextMenuClose() {
+    contextMenuOpen = false;
+    contextMenuNode = null;
+  }
+
+  function handleContextMenuNavigate({ detail }: { detail: { nodeId: string } }) {
+    const projectId = projectStore.currentProject?.id;
+    if (projectId && contextMenuNode && contextMenuNode.literatureId) {
+      const url = `/project/${projectId}/literature/${contextMenuNode.literatureId}`;
+      window.open(url, '_blank');
     }
   }
 
@@ -716,6 +803,16 @@
   {/if}
   <!-- Graph host fills the container -->
   <div bind:this={elem} id="3d-graph" class="absolute inset-0"></div>
+
+  <!-- Context Menu -->
+  <GraphContextMenu
+    open={contextMenuOpen}
+    node={contextMenuNode}
+    position={contextMenuPosition}
+    onClose={handleContextMenuClose}
+    on:close={handleContextMenuClose}
+    on:navigate={handleContextMenuNavigate}
+  />
 </div>
 
 <style>

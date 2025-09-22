@@ -126,6 +126,16 @@
       {
         element: "#connections-header",
         popover: {
+          title: "Navigate to Literature",
+          description:
+            "Right-click on any literature node (book icons) to open a context menu with quick navigation options. You can instantly jump to the full literature details in a new tab without losing your place in the graph.",
+          side: "bottom",
+          align: "center",
+        },
+      },
+      {
+        element: "#connections-header",
+        popover: {
           title: "Discover Insights",
           description:
             "Use this visualization to see how ideas connect, identify clusters of related work, spot potential research gaps, and gain a deeper understanding of your research landscape.",
@@ -298,6 +308,9 @@
                         <li>
                           <strong>Left Click + Shift:</strong> Select multiple nodes
                         </li>
+                        <li>
+                          <strong>Right Click (Literature):</strong> Navigate to details
+                        </li>
                       </ul>
                     </div>
                   {:else if value === "3D"}
@@ -306,7 +319,8 @@
                       <ul class="text-xs space-y-1 text-muted-foreground">
                         <li><strong>Left Click:</strong> Rotate view</li>
                         <li><strong>Scroll Wheel:</strong> Zoom in/out</li>
-                        <li><strong>Right Click:</strong> Pan view</li>
+                        <li><strong>Right Click (Empty):</strong> Pan view</li>
+                        <li><strong>Right Click (Literature):</strong> Navigate to details</li>
                       </ul>
                     </div>
                   {/if}
