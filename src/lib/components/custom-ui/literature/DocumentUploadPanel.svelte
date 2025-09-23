@@ -29,7 +29,7 @@
   let uploadedFiles = $state<UploadedFile[]>([]);
   let processingJobId = $state<string | null>(null);
   let uploadError = $state<string | null>(null);
-  let mergeMode = $state<'fill-empty' | 'override'>('fill-empty');
+  let mergeMode = $state<"fill-empty" | "override">("fill-empty");
 
   // We no longer need processing state here - it's handled by ProcessingStatus component
 
@@ -41,7 +41,6 @@
     progress: number;
     error?: string;
   }
-
 
   // File validation
   const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
@@ -139,9 +138,10 @@
       const formData = new FormData();
       files.forEach((file) => formData.append("files", file));
       // Backend validator requires projectId in body even when present in route
-      if (projectId) formData.append('projectId', projectId);
-      if (attachLiteratureId) formData.append('literatureId', attachLiteratureId);
-      if (attachLiteratureId) formData.append('mergeMode', mergeMode);
+      if (projectId) formData.append("projectId", projectId);
+      if (attachLiteratureId)
+        formData.append("literatureId", attachLiteratureId);
+      if (attachLiteratureId) formData.append("mergeMode", mergeMode);
 
       const response = await fetch(
         `${API_BASE_URL}/projects/${projectId}/documents/upload`,
@@ -164,12 +164,11 @@
       if (processingJobId) {
         dispatch("upload-started", { jobId: processingJobId });
         processingJobsStore.add(processingJobId, filesInfo, attachLiteratureId);
-        
+
         // Close the upload dialog after successful upload
         // The ProcessingStatus modal will handle showing progress
         dispatch("upload-complete", { jobId: processingJobId });
       }
-
     } catch (error) {
       console.error("Upload error:", error);
       uploadError = error instanceof Error ? error.message : "Upload failed";
@@ -193,7 +192,6 @@
     uploadError = null;
     uploadProgress = 0;
   }
-
 
   function formatFileSize(bytes: number): string {
     if (bytes === 0) return "0 Bytes";
@@ -240,7 +238,9 @@
 <div class="space-y-6">
   <!-- Upload Zone -->
   <div
-    class="border-2 border-dashed rounded-lg p-8 text-center transition-colors {dragOver ? 'border-primary bg-primary/5' : 'border-muted-foreground/25'}"
+    class="border-2 border-dashed rounded-lg p-8 text-center transition-colors {dragOver
+      ? 'border-primary bg-primary/5'
+      : 'border-muted-foreground/25'}"
     role="button"
     ondragover={handleDragOver}
     ondragleave={handleDragLeave}
@@ -251,7 +251,8 @@
       Drop documents here or click to browse
     </h3>
     <p class="text-sm text-muted-foreground mb-4">
-      Supports PDF, DOCX, DOC, and TXT files (max 25MB each, up to 5 files per upload)
+      Supports PDF, DOCX, DOC, and TXT files (max 25MB each, up to 5 files per
+      upload)
     </p>
 
     {#if attachLiteratureId}
@@ -259,11 +260,21 @@
         <p class="text-sm font-medium mb-2">When metadata is extracted:</p>
         <div class="space-y-2 text-sm">
           <label class="flex items-center gap-2">
-            <input type="radio" name="merge-mode" value="fill-empty" bind:group={mergeMode} />
+            <input
+              type="radio"
+              name="merge-mode"
+              value="fill-empty"
+              bind:group={mergeMode}
+            />
             <span>Fill empty fields only (recommended)</span>
           </label>
           <label class="flex items-center gap-2">
-            <input type="radio" name="merge-mode" value="override" bind:group={mergeMode} />
+            <input
+              type="radio"
+              name="merge-mode"
+              value="override"
+              bind:group={mergeMode}
+            />
             <span>Override existing fields with extracted values</span>
           </label>
         </div>
@@ -279,7 +290,9 @@
       id="file-input-inline"
     />
 
-    <Button onclick={() => document.getElementById("file-input-inline")?.click()}>
+    <Button
+      onclick={() => document.getElementById("file-input-inline")?.click()}
+    >
       Select Files
     </Button>
   </div>
@@ -293,6 +306,19 @@
       <p class="mt-1 text-sm whitespace-pre-line">{uploadError}</p>
     </div>
   {/if}
+
+  <!-- Processing Feedback Callout -->
+  <div
+    class="mt-4 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-lg"
+  >
+    <p class="text-sm text-amber-900 dark:text-amber-100">
+      <span class="font-medium"
+        >We're always improving our document processing.</span
+      > If you notice that something about your document was processed incorrectly
+      after upload, please hit the red flag button within the literature so we can
+      take a look and improve our process.
+    </p>
+  </div>
 </div>
 
 <style>
