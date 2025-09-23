@@ -30,4 +30,5 @@ export interface Literature {
   createdAt: string;
   updatedAt: string;
   doi?: string;
+  sourceFileId?: string;
 }
