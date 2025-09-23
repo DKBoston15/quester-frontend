@@ -69,6 +69,8 @@
         ...metadata,
       });
     }
+    // Close modal after tracking the action
+    announcementStore.closeModal();
   }
 
   // Determine which component to render based on announcement metadata
@@ -153,9 +155,11 @@
                 {currentAnnouncement.metadata.primaryAction.label || "Continue"}
               </Button>
             {/if}
-            <Button variant="outline" onclick={handleDismiss}>
-              {currentAnnouncement.metadata?.dismissLabel || "Dismiss"}
-            </Button>
+            {#if currentAnnouncement.metadata?.dismissLabel}
+              <Button variant="outline" onclick={handleDismiss}>
+                {currentAnnouncement.metadata.dismissLabel}
+              </Button>
+            {/if}
           </div>
         </div>
       </DialogFooter>

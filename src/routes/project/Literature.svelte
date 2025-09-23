@@ -16,12 +16,14 @@
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
   import ExportReferences from "$lib/components/custom-ui/literature/export/ExportReferences.svelte";
+  import ProcessingStatus from "$lib/components/custom-ui/literature/ProcessingStatus.svelte";
 
   let searchQuery = $state("");
   let gridApi = $state<GridApi<Literature>>();
   let isAddLiteratureOpen = $state(false);
   let selectedLiteratureItems = $state<Literature[]>([]);
   let isExportDialogOpen = $state(false);
+  let activeProcessingJobs = $state<string[]>([]);
 
   const driverObj = driver({
     showProgress: true,
@@ -210,6 +212,40 @@
     }
     isExportDialogOpen = true;
   }
+
+
+  function handleDocumentsProcessed(event: CustomEvent<{ jobId: string; files: any[] }>) {
+    console.log('Documents processed:', event.detail);
+    
+    // Remove job from active list
+    activeProcessingJobs = activeProcessingJobs.filter(id => id !== event.detail.jobId);
+    
+    // Refresh literature list
+    literatureStore.loadLiterature(projectStore.currentProject?.id);
+    
+    // Could show a success toast here
+  }
+
+  function handleDocumentUploadStart(event: CustomEvent<{ jobId: string }>) {
+    console.log('Document upload started:', event.detail);
+    
+    // Add job to active processing list
+    if (!activeProcessingJobs.includes(event.detail.jobId)) {
+      activeProcessingJobs = [...activeProcessingJobs, event.detail.jobId];
+    }
+  }
+
+  function handleProcessingComplete(event: CustomEvent<{ jobId: string; status: string }>) {
+    console.log('Processing complete:', event.detail);
+    
+    // Remove from active jobs
+    activeProcessingJobs = activeProcessingJobs.filter(id => id !== event.detail.jobId);
+    
+    // Refresh literature if successful
+    if (event.detail.status === 'completed') {
+      literatureStore.loadLiterature(projectStore.currentProject?.id);
+    }
+  }
 </script>
 
 <div class="flex-1 w-full">
@@ -337,6 +373,8 @@
   isOpen={isAddLiteratureOpen}
   onOpenChange={(open: boolean) => (isAddLiteratureOpen = open)}
   projectId={projectStore.currentProject?.id}
+  on:documents-processed={handleDocumentsProcessed}
+  on:upload-started={handleDocumentUploadStart}
 />
 
 <ExportReferences
@@ -346,6 +384,20 @@
   userName={auth.user ? `${auth.user.firstName} ${auth.user.lastName}`.trim() || auth.user.email : undefined}
   onOpenChange={(open: boolean) => (isExportDialogOpen = open)}
 />
+
+<!-- Processing Status Cards -->
+{#if activeProcessingJobs.length > 0}
+  <div class="fixed bottom-4 right-4 space-y-2 z-50 max-w-md">
+    {#each activeProcessingJobs as jobId (jobId)}
+      <ProcessingStatus
+        {jobId}
+        autoRefresh={true}
+        showDetails={false}
+        on:processing-complete={handleProcessingComplete}
+      />
+    {/each}
+  </div>
+{/if}
 
 <style>
   :global(.ag-theme-alpine) {

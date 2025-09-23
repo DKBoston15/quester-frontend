@@ -174,7 +174,7 @@
 
     let path = "";
 
-    switch (result.type) {
+  switch (result.type) {
       case "literature":
         path = `/project/${projectId}/literature/${result.id}`;
         break;
@@ -190,6 +190,15 @@
         break;
       case "model":
         path = `/project/${projectId}/models/${result.id}`;
+        break;
+      case "document_chunk":
+        if (result.metadata?.literature_id) {
+          const qp = new URLSearchParams();
+          if (result.metadata?.start_page) qp.set('p', String(result.metadata.start_page));
+          path = `/project/${projectId}/literature/${result.metadata.literature_id}?${qp.toString()}`;
+        } else {
+          path = `/project/${projectId}/literature`;
+        }
         break;
       case "keyword_analysis":
         // Navigate to insights page - keyword analyses don't have individual detail views
