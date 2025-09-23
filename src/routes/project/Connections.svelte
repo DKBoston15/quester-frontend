@@ -136,6 +136,16 @@
       {
         element: "#connections-header",
         popover: {
+          title: "Filter Connected Nodes",
+          description:
+            "Use the context menu to filter the graph and show only nodes connected to a specific literature item. This helps you focus on the immediate connections of a particular research piece. Use 'Reset Filter' to return to the full view.",
+          side: "bottom",
+          align: "center",
+        },
+      },
+      {
+        element: "#connections-header",
+        popover: {
           title: "Discover Insights",
           description:
             "Use this visualization to see how ideas connect, identify clusters of related work, spot potential research gaps, and gain a deeper understanding of your research landscape.",
@@ -309,7 +319,7 @@
                           <strong>Left Click + Shift:</strong> Select multiple nodes
                         </li>
                         <li>
-                          <strong>Right Click (Literature):</strong> Navigate to details
+                          <strong>Right Click (Literature):</strong> Context menu (navigate, filter)
                         </li>
                       </ul>
                     </div>
@@ -320,7 +330,7 @@
                         <li><strong>Left Click:</strong> Rotate view</li>
                         <li><strong>Scroll Wheel:</strong> Zoom in/out</li>
                         <li><strong>Right Click (Empty):</strong> Pan view</li>
-                        <li><strong>Right Click (Literature):</strong> Navigate to details</li>
+                        <li><strong>Right Click (Literature):</strong> Context menu (navigate, filter)</li>
                       </ul>
                     </div>
                   {/if}

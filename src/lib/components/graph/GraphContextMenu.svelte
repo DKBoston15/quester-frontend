@@ -4,7 +4,7 @@
   import { quintOut } from "svelte/easing";
   import { Button } from "$lib/components/ui/button";
   import { Separator } from "$lib/components/ui/separator";
-  import { ExternalLink } from "lucide-svelte";
+  import { ExternalLink, Filter, RotateCcw } from "lucide-svelte";
 
   interface GraphNode {
     id: string;
@@ -21,6 +21,8 @@
   const dispatch = createEventDispatcher<{
     close: void;
     navigate: { nodeId: string };
+    filter: { nodeId: string };
+    reset: void;
   }>();
 
   // Props
@@ -29,20 +31,25 @@
     node = null,
     position = { x: 0, y: 0 },
     onClose = () => {},
+    isFiltered = false,
   } = $props<{
     open?: boolean;
     node?: GraphNode | null;
     position?: MenuPosition;
     onClose?: () => void;
+    isFiltered?: boolean;
   }>();
 
   // Local state
   let menuElement: HTMLDivElement;
   let focusedIndex = $state(0);
 
-  // Derived values - only show menu for literature nodes
   let shouldShowMenu = $derived(
-    open && node && node.icon === "literature"
+    open && node
+  );
+
+  let canNavigate = $derived(
+    node && node.icon === "literature" && node.literatureId
   );
 
   let menuStyle = $derived(() => {
@@ -79,6 +86,18 @@
     if (node) {
       dispatch("navigate", { nodeId: node.id });
     }
+    handleClose();
+  }
+
+  function handleFilter() {
+    if (node) {
+      dispatch("filter", { nodeId: node.id });
+    }
+    handleClose();
+  }
+
+  function handleReset() {
+    dispatch("reset");
     handleClose();
   }
 
@@ -160,9 +179,9 @@
       <!-- Menu header -->
       <div class="menu-header">
         <div class="node-info">
-          <div class="node-title">{node?.id || 'Literature'}</div>
+          <div class="node-title">{node?.id || 'Node'}</div>
           <div class="node-meta">
-            <span class="node-type">Literature</span>
+            <span class="node-type">{node?.icon ? node.icon.charAt(0).toUpperCase() + node.icon.slice(1).replace('_', ' ') : 'Node'}</span>
           </div>
         </div>
       </div>
@@ -171,18 +190,48 @@
 
       <!-- Menu options -->
       <div class="menu-options">
-        <button
-          type="button"
-          class="menu-option"
-          onclick={handleNavigate}
-          role="menuitem"
-          aria-label="Navigate to literature details"
-        >
-          <div class="option-icon">
-            <ExternalLink class="w-4 h-4" />
-          </div>
-          <span class="option-label">Navigate to Literature</span>
-        </button>
+        {#if canNavigate}
+          <button
+            type="button"
+            class="menu-option"
+            onclick={handleNavigate}
+            role="menuitem"
+            aria-label="Navigate to literature details"
+          >
+            <div class="option-icon">
+              <ExternalLink class="w-4 h-4" />
+            </div>
+            <span class="option-label">Navigate to Literature</span>
+          </button>
+        {/if}
+
+        {#if !isFiltered}
+          <button
+            type="button"
+            class="menu-option"
+            onclick={handleFilter}
+            role="menuitem"
+            aria-label="Filter to show only connected nodes"
+          >
+            <div class="option-icon">
+              <Filter class="w-4 h-4" />
+            </div>
+            <span class="option-label">Filter Connected Nodes</span>
+          </button>
+        {:else}
+          <button
+            type="button"
+            class="menu-option"
+            onclick={handleReset}
+            role="menuitem"
+            aria-label="Reset filter to show all nodes"
+          >
+            <div class="option-icon">
+              <RotateCcw class="w-4 h-4" />
+            </div>
+            <span class="option-label">Reset Filter</span>
+          </button>
+        {/if}
       </div>
     </div>
   </div>
