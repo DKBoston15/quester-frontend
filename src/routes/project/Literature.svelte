@@ -227,8 +227,6 @@
   }
 
   function handleDocumentUploadStart(event: CustomEvent<{ jobId: string }>) {
-    console.log('Document upload started:', event.detail);
-    
     // Add job to active processing list
     if (!activeProcessingJobs.includes(event.detail.jobId)) {
       activeProcessingJobs = [...activeProcessingJobs, event.detail.jobId];
@@ -236,8 +234,6 @@
   }
 
   function handleProcessingComplete(event: CustomEvent<{ jobId: string; status: string }>) {
-    console.log('Processing complete:', event.detail);
-    
     // Remove from active jobs
     activeProcessingJobs = activeProcessingJobs.filter(id => id !== event.detail.jobId);
     
