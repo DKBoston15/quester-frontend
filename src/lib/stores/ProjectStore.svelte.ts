@@ -111,7 +111,7 @@
 
         for (const field of designFields) {
           if (field in payload && payload[field] !== undefined) {
-            payload[field] = normalizeDesignDetail(payload[field]);
+            (payload as any)[field] = normalizeDesignDetail(payload[field]);
           }
         }
 
