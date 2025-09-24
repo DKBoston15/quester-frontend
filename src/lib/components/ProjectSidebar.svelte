@@ -2,11 +2,12 @@
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import { DarkmodeToggle } from "$lib/components/ui/darkmode-toggle";
   import { auth } from "$lib/stores/AuthStore";
-  import { navigate, Link } from "svelte-routing";
+  import { navigate, Link, useLocation } from "svelte-routing";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import * as Tooltip from "$lib/components/ui/tooltip/index.js";
   import { Button } from "$lib/components/ui/button";
   import { globalSearchStore } from "$lib/stores/GlobalSearchStore";
+  import TimerWidget from "$lib/components/timer/TimerWidget.svelte";
   import {
     LogOut,
     Users,
@@ -39,6 +40,7 @@
   };
 
   const props = $props<{ project: any }>();
+  const location = useLocation();
 
   let primaryRoutes = $state<Route[]>([]);
   let secondaryRoutes = $state<Route[]>([]);
@@ -437,6 +439,18 @@
               </Button>
             </Sidebar.MenuItem>
           </Sidebar.Menu>
+        </Sidebar.GroupContent>
+      </Sidebar.Group>
+
+      <Sidebar.Separator />
+
+      <!-- Timer Widget -->
+      <Sidebar.Group>
+        <Sidebar.GroupContent>
+          <TimerWidget
+            currentRoute={$location.pathname}
+            projectId={props.project?.id || ''}
+          />
         </Sidebar.GroupContent>
       </Sidebar.Group>
 
