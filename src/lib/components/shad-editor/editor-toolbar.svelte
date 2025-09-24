@@ -34,7 +34,7 @@
   let { editor }: Props = $props();
 </script>
 
-<div class="flex w-full items-center overflow-auto border-b p-1 *:mx-[0.75]">
+<div class="sticky z-10 flex w-full items-center overflow-auto border-b p-1 *:mx-[0.75] bg-background" style="top: var(--note-header-offset, 0px)">
   <Undo {editor} />
   <Redo {editor} />
   <Separator orientation="vertical" class="h-fit" />

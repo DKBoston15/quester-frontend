@@ -13,7 +13,11 @@
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { InfoIcon, Plus, X, Edit, Check, Save } from "lucide-svelte";
   import { projectStore } from "$lib/stores/ProjectStore";
+  import { literatureStore } from "$lib/stores/LiteratureStore";
   import { toast } from "svelte-sonner";
+  import type { Project } from "$lib/types/auth";
+  import type { Literature } from "$lib/types/literature";
+  import { normalizeDesignDetail } from "$lib/utils/design";
 
   // Design types that match our existing components
   const designTypes = [
@@ -25,6 +29,20 @@
 
   type DesignType = (typeof designTypes)[number];
   type DesignOption = { name: string };
+
+  const projectFieldByType: Record<DesignType, keyof Project> = {
+    research: "researchDesign",
+    sampling: "samplingDesign",
+    measurement: "measurementDesign",
+    analytic: "analyticDesign",
+  };
+
+  const literatureFieldByType: Record<DesignType, keyof Literature> = {
+    research: "researchDesign",
+    sampling: "samplingDesign",
+    measurement: "measurementDesign",
+    analytic: "analyticDesign",
+  };
 
   let currentTab = $state<DesignType>("research");
   let isPending = $state(false);
@@ -45,8 +63,14 @@
     index: number;
     originalName: string;
     newName: string;
+    type: DesignType;
   } | null>(null);
   let initialized = $state(false);
+  let renameContext = $state<{
+    type: DesignType;
+    oldName: string;
+    newName: string;
+  } | null>(null);
 
   // Function to sort design options alphabetically
   function sortDesigns(designs: DesignOption[]): DesignOption[] {
@@ -126,37 +150,52 @@
       index,
       originalName: design.name,
       newName: design.name,
+      type: currentTab,
     };
+  }
+
+  function commitEditingDesign(): number | null {
+    if (!editingDesign) return null;
+
+    const { type, index, originalName } = editingDesign;
+    const trimmedName = editingDesign.newName.trim();
+
+    if (!trimmedName) {
+      toast.error("Design name cannot be empty");
+      return null;
+    }
+
+    // Check for duplicates, excluding the current one being edited
+    const hasDuplicate = localDesigns[type].some((design, idx) => {
+      if (idx === index) return false;
+      return design.name.toLowerCase() === trimmedName.toLowerCase();
+    });
+
+    if (hasDuplicate) {
+      toast.error("Design with this name already exists");
+      return null;
+    }
+
+    const updatedDesigns = [...localDesigns[type]];
+    updatedDesigns[index] = { name: trimmedName };
+    localDesigns[type] = sortDesigns(updatedDesigns);
+
+    if (originalName !== trimmedName) {
+      renameContext = {
+        type,
+        oldName: originalName,
+        newName: trimmedName,
+      };
+    }
+
+    editingDesign = null;
+    return index;
   }
 
   // Function to save an edited design option
   async function saveEdit() {
-    if (!editingDesign) return;
-
-    if (!editingDesign.newName.trim()) {
-      toast.error("Design name cannot be empty");
-      return;
-    }
-
-    // Check for duplicates, excluding the current one being edited
-    if (
-      localDesigns[currentTab].some(
-        (design, idx) =>
-          idx !== editingDesign!.index &&
-          design.name.toLowerCase() === editingDesign!.newName.toLowerCase()
-      )
-    ) {
-      toast.error("Design with this name already exists");
-      return;
-    }
-
-    // Update the design and sort alphabetically
-    const updatedDesigns = [...localDesigns[currentTab]];
-    updatedDesigns[editingDesign.index] = { name: editingDesign.newName };
-    localDesigns[currentTab] = sortDesigns(updatedDesigns);
-
-    const index = editingDesign.index;
-    editingDesign = null;
+    const index = commitEditingDesign();
+    if (index === null) return;
 
     // Save changes immediately
     pendingOperation = "edit";
@@ -206,10 +245,25 @@
       };
 
       // Use the ProjectStore's built-in method for updating designs
-      const result = await projectStore.updateDesigns(projectId, sortedDesigns);
+      await projectStore.updateDesigns(projectId, sortedDesigns);
 
       // Update local designs with sorted versions
       localDesigns = sortedDesigns;
+
+      if (renameContext) {
+        try {
+          await syncRenamedDesign(renameContext);
+        } catch (syncError) {
+          console.error("Failed to sync renamed design across records:", syncError);
+          toast.error(
+            syncError instanceof Error
+              ? syncError.message
+              : "Design renamed, but related records could not be updated"
+          );
+        } finally {
+          renameContext = null;
+        }
+      }
 
       toast.success("Designs updated successfully");
     } catch (error) {
@@ -226,8 +280,88 @@
 
   // Function to save all changes to the backend
   async function saveDesigns() {
+    if (editingDesign) {
+      const appliedIndex = commitEditingDesign();
+      if (appliedIndex === null) {
+        return;
+      }
+    }
+
     pendingOperation = "save";
     await saveToDatabase();
+  }
+
+  async function syncRenamedDesign(details: {
+    type: DesignType;
+    oldName: string;
+    newName: string;
+  }) {
+    const projectId = projectStore.currentProject?.id;
+    if (!projectId) return;
+
+    const projectField = projectFieldByType[details.type];
+    const literatureField = literatureFieldByType[details.type];
+
+    const updates: Promise<unknown>[] = [];
+
+    const currentProjectDetail = projectStore.currentProject?.[projectField];
+    const normalizedProjectDetail = normalizeDesignDetail(currentProjectDetail);
+
+    if (
+      normalizedProjectDetail.selections.some(
+        (selection) => selection.toLowerCase() === details.oldName.toLowerCase()
+      )
+    ) {
+      const updatedSelections = normalizedProjectDetail.selections.map((selection) =>
+        selection.toLowerCase() === details.oldName.toLowerCase()
+          ? details.newName
+          : selection
+      );
+
+      updates.push(
+        projectStore.updateProject(projectId, {
+          [projectField]: {
+            selections: updatedSelections,
+            description: normalizedProjectDetail.description ?? null,
+          },
+        } as Partial<Project>)
+      );
+    }
+
+    for (const literatureItem of literatureStore.data) {
+      const detail = normalizeDesignDetail(literatureItem[literatureField]);
+      if (
+        detail.selections.some(
+          (selection) => selection.toLowerCase() === details.oldName.toLowerCase()
+        )
+      ) {
+        const updatedSelections = detail.selections.map((selection) =>
+          selection.toLowerCase() === details.oldName.toLowerCase()
+            ? details.newName
+            : selection
+        );
+
+        updates.push(
+          literatureStore.updateLiterature(literatureItem.id, {
+            [literatureField]: {
+              selections: updatedSelections,
+              description: detail.description ?? null,
+            },
+          } as Partial<Literature>)
+        );
+      }
+    }
+
+    if (updates.length === 0) return;
+
+    const results = await Promise.allSettled(updates);
+    const failed = results.filter((result) => result.status === "rejected");
+
+    if (failed.length > 0) {
+      throw new Error(
+        "Design renamed, but some associated records could not be updated"
+      );
+    }
   }
 </script>
 
@@ -326,7 +460,7 @@
                 <div class="divide-y divide-black dark:divide-dark-border">
                   {#each localDesigns[type] as design, index}
                     <div class="p-3 flex justify-between items-center">
-                      {#if editingDesign && editingDesign.index === index && currentTab === type}
+                      {#if editingDesign && editingDesign.type === type && editingDesign.index === index}
                         <div class="flex items-center gap-2 flex-grow">
                           <Input
                             type="text"

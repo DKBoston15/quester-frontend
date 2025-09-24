@@ -1,6 +1,7 @@
 
   import { api } from "../services/api-client";
   import type { Literature } from "../types/literature";
+  import { normalizeDesignDetail } from "$lib/utils/design";
 
   let literatureData = $state<Literature[]>([]);
   // Track which project the literature is loaded for
@@ -36,7 +37,13 @@
         const data = await api.get<Literature[]>(
           `/literature/project/${projectId}`
         );
-        literatureData = data;
+        literatureData = data.map((item) => ({
+          ...item,
+          researchDesign: normalizeDesignDetail(item.researchDesign),
+          analyticDesign: normalizeDesignDetail(item.analyticDesign),
+          samplingDesign: normalizeDesignDetail(item.samplingDesign),
+          measurementDesign: normalizeDesignDetail(item.measurementDesign),
+        }));
         loadedProjectId = projectId;
       } catch (err) {
         console.error("Error loading literature:", err);
@@ -50,8 +57,29 @@
 
     async addLiterature(literature: Partial<Literature>) {
       try {
-        const newLiterature = await api.post(`/literature`, literature);
-        literatureData = [newLiterature.literature, ...literatureData];
+        const payload: Partial<Literature> = { ...literature };
+        const designFields: Array<keyof Literature> = [
+          "researchDesign",
+          "analyticDesign",
+          "samplingDesign",
+          "measurementDesign",
+        ];
+
+        for (const field of designFields) {
+          if (field in payload && payload[field] !== undefined) {
+            payload[field] = normalizeDesignDetail(payload[field]);
+          }
+        }
+
+        const newLiterature = await api.post(`/literature`, payload);
+        const normalized = {
+          ...newLiterature.literature,
+          researchDesign: normalizeDesignDetail(newLiterature.literature.researchDesign),
+          analyticDesign: normalizeDesignDetail(newLiterature.literature.analyticDesign),
+          samplingDesign: normalizeDesignDetail(newLiterature.literature.samplingDesign),
+          measurementDesign: normalizeDesignDetail(newLiterature.literature.measurementDesign),
+        };
+        literatureData = [normalized, ...literatureData];
         return newLiterature;
       } catch (err) {
         console.error("Error adding literature:", err);
@@ -61,12 +89,33 @@
 
     async updateLiterature(id: string, updateData: Partial<Literature>) {
       try {
+        const payload: Partial<Literature> = { ...updateData };
+        const designFields: Array<keyof Literature> = [
+          "researchDesign",
+          "analyticDesign",
+          "samplingDesign",
+          "measurementDesign",
+        ];
+
+        for (const field of designFields) {
+          if (field in payload && payload[field] !== undefined) {
+            payload[field] = normalizeDesignDetail(payload[field]);
+          }
+        }
+
         const updatedLiterature = await api.put(
           `/literature/${id}`,
-          updateData
+          payload
         );
+        const normalized = {
+          ...updatedLiterature.literature,
+          researchDesign: normalizeDesignDetail(updatedLiterature.literature.researchDesign),
+          analyticDesign: normalizeDesignDetail(updatedLiterature.literature.analyticDesign),
+          samplingDesign: normalizeDesignDetail(updatedLiterature.literature.samplingDesign),
+          measurementDesign: normalizeDesignDetail(updatedLiterature.literature.measurementDesign),
+        };
         literatureData = literatureData.map((item) =>
-          item.id === id ? updatedLiterature.literature : item
+          item.id === id ? normalized : item
         );
         return updatedLiterature;
       } catch (err) {

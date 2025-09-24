@@ -1,6 +1,7 @@
 
   import { api } from "../services/api-client";
   import type { Project } from "../types/auth";
+  import { normalizeDesignDetail } from "$lib/utils/design";
 
   const createEmptyDesigns = () => ({
     research: [] as { name: string }[],
@@ -64,7 +65,13 @@
             api.get(`/design/project/${projectId}`).catch(() => null),
           ]);
 
-          currentProject = projectData;
+          currentProject = {
+            ...projectData,
+            researchDesign: normalizeDesignDetail(projectData.researchDesign),
+            analyticDesign: normalizeDesignDetail(projectData.analyticDesign),
+            samplingDesign: normalizeDesignDetail(projectData.samplingDesign),
+            measurementDesign: normalizeDesignDetail(projectData.measurementDesign),
+          };
 
           if (designsData && designsData.length > 0 && designsData[0].designs) {
             const designOptions = designsData[0].designs;
@@ -94,11 +101,31 @@
 
     async updateProject(projectId: string, updateData: Partial<Project>) {
       try {
+        const payload: Partial<Project> = { ...updateData };
+        const designFields: Array<keyof Project> = [
+          "researchDesign",
+          "analyticDesign",
+          "samplingDesign",
+          "measurementDesign",
+        ];
+
+        for (const field of designFields) {
+          if (field in payload && payload[field] !== undefined) {
+            (payload as any)[field] = normalizeDesignDetail(payload[field]);
+          }
+        }
+
         const updatedProject = await api.put<Project>(
           `/projects/${projectId}`,
-          updateData
+          payload
         );
-        currentProject = updatedProject;
+        currentProject = {
+          ...updatedProject,
+          researchDesign: normalizeDesignDetail(updatedProject.researchDesign),
+          analyticDesign: normalizeDesignDetail(updatedProject.analyticDesign),
+          samplingDesign: normalizeDesignDetail(updatedProject.samplingDesign),
+          measurementDesign: normalizeDesignDetail(updatedProject.measurementDesign),
+        };
         return updatedProject;
       } catch (err) {
         console.error("Error updating project:", err);

@@ -5,6 +5,7 @@
   import { cn } from "$lib/utils.js";
   import { Table, ChevronDown } from "lucide-svelte";
   import type { ToolBarIconProps } from "./types.js";
+  import { Input } from "$lib/components/ui/input/index.js";
 
   let {
     editor,
@@ -156,9 +157,53 @@
           </div>
         {/each}
       </div>
-      <span class="text-xs">
-        Rows: {rows}, Columns: {cols}
-      </span>
+      <span class="text-xs">Rows: {rows}, Columns: {cols}</span>
+
+      <!-- Advanced: direct rows x cols input for larger tables -->
+      <div class="mt-2 flex items-center gap-2 px-1">
+        <label class="text-xs" for="table-rows">Rows</label>
+        <Input
+          id="table-rows"
+          type="number"
+          class="h-8 w-16"
+          min="1"
+          max="50"
+          value={rows}
+          oninput={(e) => {
+            const v = Number((e.target as HTMLInputElement).value);
+            rows = Number.isFinite(v) ? Math.min(50, Math.max(1, Math.floor(v))) : rows;
+          }}
+        />
+        <label class="text-xs" for="table-cols">Cols</label>
+        <Input
+          id="table-cols"
+          type="number"
+          class="h-8 w-16"
+          min="1"
+          max="50"
+          value={cols}
+          oninput={(e) => {
+            const v = Number((e.target as HTMLInputElement).value);
+            cols = Number.isFinite(v) ? Math.min(50, Math.max(1, Math.floor(v))) : cols;
+          }}
+        />
+        <Button
+          size="sm"
+          class="h-8"
+          onclick={() => {
+            editor
+              .chain()
+              .focus()
+              .insertTable({ rows, cols, withHeaderRow: false })
+              .run();
+            open = false;
+          }}
+          aria-label="Insert table with specified rows and columns"
+        >
+          Insert
+        </Button>
+      </div>
+      <div class="px-1 pt-1 text-[10px] text-muted-foreground">Max 50×50</div>
     {/if}
   </DropdownMenu.Content>
 </DropdownMenu.Root>
