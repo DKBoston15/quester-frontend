@@ -4,7 +4,7 @@
   import { countdownTimerStore } from '$lib/stores/CountdownTimerStore.svelte'
   import { Button } from '$lib/components/ui/button'
   import * as Tooltip from '$lib/components/ui/tooltip'
-  import * as Collapsible from '$lib/components/ui/collapsible'
+  import { Collapsible as CollapsiblePrimitive } from 'bits-ui'
   import {
     Timer,
     Play,
@@ -34,6 +34,8 @@
   let timeInterval: number | null = null
 
   function formatDuration(ms: number): string {
+    if (ms == null || isNaN(ms) || ms < 0) return '0:00'
+
     const totalSeconds = Math.floor(ms / 1000)
     const hours = Math.floor(totalSeconds / 3600)
     const minutes = Math.floor((totalSeconds % 3600) / 60)
@@ -46,6 +48,8 @@
   }
 
   function formatTimeAgo(ms: number): string {
+    if (ms == null || isNaN(ms) || ms < 0) return '0m'
+
     const minutes = Math.floor(ms / (1000 * 60))
     const hours = Math.floor(minutes / 60)
     const days = Math.floor(hours / 24)
@@ -76,9 +80,13 @@
   }
 
   onMount(() => {
-    // Load initial data
-    activitySessionStore.loadSummary(currentRoute)
-    countdownTimerStore.loadTimers()
+    // Load initial data (gracefully handle failures)
+    activitySessionStore.loadSummary(currentRoute).catch(err =>
+      console.warn('Failed to load activity summary, using offline mode:', err)
+    )
+    countdownTimerStore.loadTimers().catch(err =>
+      console.warn('Failed to load countdown timers, using offline mode:', err)
+    )
 
     // Start time update interval
     timeInterval = window.setInterval(() => {
@@ -94,8 +102,8 @@
 </script>
 
 <div class="timer-widget border-b border-border/50 pb-2">
-  <Collapsible.Root bind:open={isExpanded}>
-    <Collapsible.Trigger
+  <CollapsiblePrimitive.Root bind:open={isExpanded}>
+    <CollapsiblePrimitive.Trigger
       class="flex items-center justify-between w-full p-2 hover:bg-accent/50 rounded-sm transition-colors"
     >
       <div class="flex items-center gap-2">
@@ -112,9 +120,9 @@
           <ChevronRight class="h-3 w-3" />
         {/if}
       </div>
-    </Collapsible.Trigger>
+    </CollapsiblePrimitive.Trigger>
 
-    <Collapsible.Content class="px-2 pb-2 space-y-3">
+    <CollapsiblePrimitive.Content class="px-2 pb-2 space-y-3">
       <!-- Current Session -->
       <div class="space-y-2">
         <div class="text-xs text-muted-foreground">Current Session</div>
@@ -123,23 +131,30 @@
             {formatDuration(activitySessionStore.currentSessionDuration)}
           </span>
           {#if activitySessionStore.isSessionActive}
-            <div class="flex items-center gap-1 text-xs text-green-600">
-              <div class="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse"></div>
-              Live
-            </div>
+            {#if activitySessionStore.isSessionPaused}
+              <div class="flex items-center gap-1 text-xs text-yellow-600">
+                <div class="h-1.5 w-1.5 bg-yellow-500 rounded-full"></div>
+                Paused
+              </div>
+            {:else}
+              <div class="flex items-center gap-1 text-xs text-green-600">
+                <div class="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                Live
+              </div>
+            {/if}
           {/if}
         </div>
       </div>
 
       <!-- Page Stats -->
-      {#if activitySessionStore.currentPageSummary}
+      {#if activitySessionStore.currentPageSummary || activitySessionStore.isSessionActive}
         <div class="space-y-2">
           <div class="text-xs text-muted-foreground">This Page</div>
-          <div class="text-sm">
-            {formatTimeAgo(activitySessionStore.currentPageSummary.totalDurationMs)} total
-          </div>
-          <div class="text-xs text-muted-foreground">
-            {activitySessionStore.currentPageSummary.sessionCount} sessions
+          <div class="text-sm flex items-center gap-1">
+            {formatTimeAgo(activitySessionStore.liveCurrentPageTotal)} total
+            {#if activitySessionStore.isSessionActive}
+              <div class="h-1 w-1 bg-blue-400 rounded-full animate-pulse" title="Including current session"></div>
+            {/if}
           </div>
         </div>
       {/if}
@@ -147,8 +162,16 @@
       <!-- Project Total -->
       <div class="space-y-2">
         <div class="text-xs text-muted-foreground">Project Total</div>
-        <div class="text-sm font-medium">
-          {formatTimeAgo(activitySessionStore.totalProjectTime)}
+        <div class="text-sm font-medium flex items-center gap-1">
+          {formatTimeAgo(activitySessionStore.liveProjectTotal)}
+          {#if activitySessionStore.isSessionActive}
+            <div class="h-1 w-1 bg-blue-400 rounded-full animate-pulse" title="Including current session"></div>
+          {/if}
+          {#if activitySessionStore.error}
+            <div class="text-xs text-amber-600 mt-1">
+              ⚠️ Offline mode
+            </div>
+          {/if}
         </div>
       </div>
 
@@ -217,8 +240,8 @@
           </div>
         {/if}
       </div>
-    </Collapsible.Content>
-  </Collapsible.Root>
+    </CollapsiblePrimitive.Content>
+  </CollapsiblePrimitive.Root>
 
   <!-- Collapsed View - Show minimal info when sidebar is collapsed -->
   <div class="group-data-[collapsible=icon]:block hidden">
@@ -227,7 +250,11 @@
         <div class="p-2 flex flex-col items-center gap-1">
           <Timer class="h-4 w-4" />
           {#if activitySessionStore.isSessionActive}
-            <div class="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse"></div>
+            {#if activitySessionStore.isSessionPaused}
+              <div class="h-1.5 w-1.5 bg-yellow-500 rounded-full"></div>
+            {:else}
+              <div class="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse"></div>
+            {/if}
           {/if}
           <div class="text-xs">
             {formatDuration(activitySessionStore.currentSessionDuration).split(':').slice(-2).join(':')}
@@ -237,10 +264,8 @@
       <Tooltip.Content side="right" sideOffset={10} class="w-64">
         <div class="space-y-2">
           <div><strong>Current Session:</strong> {formatDuration(activitySessionStore.currentSessionDuration)}</div>
-          {#if activitySessionStore.currentPageSummary}
-            <div><strong>Page Total:</strong> {formatTimeAgo(activitySessionStore.currentPageSummary.totalDurationMs)}</div>
-          {/if}
-          <div><strong>Project Total:</strong> {formatTimeAgo(activitySessionStore.totalProjectTime)}</div>
+          <div><strong>Page Total:</strong> {formatTimeAgo(activitySessionStore.liveCurrentPageTotal)}</div>
+          <div><strong>Project Total:</strong> {formatTimeAgo(activitySessionStore.liveProjectTotal)}</div>
           {#if countdownTimerStore.hasActiveCountdown}
             <div><strong>Active Timer:</strong> Running</div>
           {/if}

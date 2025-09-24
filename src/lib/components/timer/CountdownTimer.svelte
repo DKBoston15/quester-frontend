@@ -99,14 +99,14 @@
   }
 
   function playNotificationSound() {
-    // Play default browser notification sound or custom sound
+    // Play custom sound if available, otherwise use default browser notification sound
     if (event.countdownTimer?.soundAsset) {
       const audio = new Audio(event.countdownTimer.soundAsset)
-      audio.play().catch(e => console.warn('Could not play sound:', e))
+      audio.play().catch(e => console.warn('Could not play custom sound:', e))
     } else {
-      // Use browser's default notification sound
-      const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+Do1W0gBT2O2/DCeSsFKHvN8dyLPAkSZLjq45hIEg5MpePr1W0gBTuU2PK7fDKJLHfM8N+OPwsSZLTl6aNIDA9MonDr7W4gBT+N3PA9fSKKKXrN8OKLOwkSZ7nq4ZhMEQ5NpuTn1m8gBTqQ2/HKejKJLXbN8OCPPAkSZbPl66NICg9MpeTp1W0gBTuN3PDCfS2HKHrL8OGKPQsTY7Tm555KGQ5Op+Tq1GMgBTqQ2POKezCHKHfM8N+ePAsNY7Lm55xJGwxLneTo2W0gBTyN3PC6gCKOJnvK8OKEOwqTXrbj7HQ3NTO/1V4jTZKfmJhAE1IwgqJJGQdLIOPr7m4gBjmX2PDGdTOHLnrL8OCKPAoUYrjj7pMKGg1MpOTu1mkgBzCV2/DHdzCGKHrL8N6KNAsVY7Pk6ZhNEwtOouPo129cEQyOWXPj6mR5H1Mwf6VNHQtYOUdGXqPj5rOSLm5bA9ivgGJfG1m4zNw0D1lvWqPj5rdVGUNJhXGOKztyHgctjHXj5pWDBhK8ZFhqQbvS8Tv1V5KJcl6p4dkP');
-      audio.play().catch(e => console.warn('Could not play sound:', e))
+      // Use browser's default notification sound for quick timers or timers without custom sounds
+      const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+Do1W0gBT2O2/DCeSsFKHvN8dyLPAkSZLjq45hIEg5MpePr1W0gBTuU2PK7fDKJLHfM8N+OPwsSZLTl6aNIDA9MonDr7W4gBT+N3PA9fSKKKXrN8OKLOwkSZ7nq4ZhMEQ5NpuTn1m8gBTqQ2/HKejKJLXbN8OCPPAkSZbPl66NICg9MpeTp1W0gBTuN3PDCfS2HKHrL8OGKPQsTY7Tm555KGQ5Op+Tq1GMgBTqQ2POKezCHKHfM8N+ePAsNY7Lm55xJGwxLneTo2W0gBTyN3PC6gCKOJnvK8OKEOwqTXrbj7HQ3NTO/1V4jTZKfmJhAE1IwgqJJGQdLIOPr7m4gBjmX2PDGdTOHLnrL8OCKPAoUYrjj7pMKGg1MpOTu1mkgBzCV2/DHdzCGKHrL8N6KNAsVY7Pk6ZhNEwtOouPo129cEQyOWXPj6mR5H1Mwf6VNHQtYOUdGXqPj5rOSLm5bA9ivgGJfG1m4zNw0D1lvWqPj5rdVGUNJhXGOKztyHgctjHXj5pWDBhK8ZFhqQbvS8Tv1V5KJcl6p4dkP')
+      audio.play().catch(e => console.warn('Could not play default sound:', e))
     }
   }
 
@@ -135,7 +135,7 @@
   })
 
   // Progress calculation
-  $: progress = ((event.targetDurationMs - remainingMs) / event.targetDurationMs) * 100
+  const progress = $derived(((event.targetDurationMs - remainingMs) / event.targetDurationMs) * 100)
 </script>
 
 <div class="countdown-timer space-y-3">

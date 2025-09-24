@@ -54,6 +54,7 @@
   ];
 
   let projects = $state<any[]>([]);
+  let currentRoute = $state('');
   let isProjectsOpen = $state<string | undefined>("projects");
 
   let canViewOrgAnalytics = $state(false);
@@ -148,6 +149,22 @@
     if (teamManagement.userResources) {
       canViewOrgAnalytics = checkAdminRoles();
     }
+  });
+
+  // Track current route for timer
+  $effect(() => {
+    function updateRoute() {
+      currentRoute = window.location.pathname;
+    }
+
+    updateRoute();
+
+    // Listen for navigation changes
+    window.addEventListener('popstate', updateRoute);
+
+    return () => {
+      window.removeEventListener('popstate', updateRoute);
+    };
   });
 
   async function loadProjects() {
@@ -359,6 +376,7 @@
         </Sidebar.Menu>
       </Sidebar.GroupContent>
     </Sidebar.Group>
+
   </Sidebar.Content>
 
   <Sidebar.Footer class="border-t-2 border-black dark:border-dark-border">

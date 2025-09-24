@@ -34,7 +34,6 @@
   import RefreshCcw from "lucide-svelte/icons/refresh-ccw";
   import Trash2 from "lucide-svelte/icons/trash-2";
   import { notesStore } from "$lib/stores/NotesStore";
-  import { navigate } from "svelte-routing";
   import * as Tooltip from "$lib/components/ui/tooltip";
 
   // Types

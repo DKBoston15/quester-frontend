@@ -26,12 +26,14 @@
     if (!autoStart) return
 
     try {
-      // Stop any existing session
+      // Stop any existing session (don't await if backend is down)
       if (activitySessionStore.isSessionActive) {
-        await activitySessionStore.stopCurrentSession('route_change')
+        activitySessionStore.stopCurrentSession('route_change').catch(err =>
+          console.warn('Failed to stop previous session:', err)
+        )
       }
 
-      // Start new session for the new route
+      // Start new session for the new route (graceful failure)
       await activitySessionStore.startSession(newRoute, {
         projectId,
         autoStarted: true,
@@ -39,9 +41,10 @@
         timestamp: new Date().toISOString()
       })
 
-      console.log(`Started activity session for route: ${newRoute}`)
+      console.log(`Activity session tracking started for route: ${newRoute}`)
     } catch (error) {
-      console.error('Failed to handle route change:', error)
+      console.warn('Failed to handle route change, continuing with local tracking:', error)
+      // Don't throw error - let the app continue functioning even if backend is unavailable
     }
   }
 

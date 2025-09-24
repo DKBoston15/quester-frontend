@@ -38,6 +38,9 @@ function createCountdownTimerStore() {
     } catch (error) {
       state.error = `Failed to load timers: ${error instanceof Error ? error.message : 'Unknown error'}`
       console.error('Error loading timers:', error)
+
+      // Provide default empty timers array if backend is unavailable
+      state.timers = []
     } finally {
       state.isLoading = false
     }
@@ -51,6 +54,9 @@ function createCountdownTimerStore() {
     } catch (error) {
       state.error = `Failed to load events: ${error instanceof Error ? error.message : 'Unknown error'}`
       console.error('Error loading events:', error)
+
+      // Provide default empty events array if backend is unavailable
+      state.events = []
     } finally {
       state.isLoading = false
     }
@@ -165,9 +171,9 @@ function createCountdownTimerStore() {
     get error() { return state.error },
 
     // Derived values
-    defaultTimer,
-    hasActiveCountdown,
-    isTimerRunning,
+    get defaultTimer() { return defaultTimer },
+    get hasActiveCountdown() { return hasActiveCountdown },
+    get isTimerRunning() { return isTimerRunning },
 
     // Actions
     loadTimers,

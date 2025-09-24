@@ -5,7 +5,6 @@
   import { Input } from '$lib/components/ui/input'
   import * as Card from '$lib/components/ui/card'
   import * as Dialog from '$lib/components/ui/dialog'
-  import * as Form from '$lib/components/ui/form'
   import { Label } from '$lib/components/ui/label'
   import { Switch } from '$lib/components/ui/switch'
   import {
@@ -205,7 +204,7 @@
         </Dialog.Description>
       </Dialog.Header>
 
-      <form onsubmit|preventDefault={handleSubmit} class="space-y-4">
+      <form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="space-y-4">
         <div class="space-y-2">
           <Label for="label">Timer Name</Label>
           <Input
