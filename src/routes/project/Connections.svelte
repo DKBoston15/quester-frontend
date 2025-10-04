@@ -40,7 +40,7 @@
   // Check if user has access to graph visualization features
   async function checkGraphAccessCapability() {
     try {
-      const data = await api.get('/capabilities/graph_access');
+      const data = await api.get("/capabilities/graph_access");
       hasAccess = data.allowed;
 
       // If user doesn't have access, redirect to overview
@@ -173,7 +173,11 @@
   }
 
   function activeControlsReady() {
-    return value === "2D" ? !!twoDControls : value === "3D" ? !!threeDControls : false;
+    return value === "2D"
+      ? !!twoDControls
+      : value === "3D"
+        ? !!threeDControls
+        : false;
   }
 </script>
 
@@ -319,7 +323,8 @@
                           <strong>Left Click + Shift:</strong> Select multiple nodes
                         </li>
                         <li>
-                          <strong>Right Click (Literature):</strong> Context menu (navigate, filter)
+                          <strong>Right Click (Literature):</strong> Context menu
+                          (navigate, filter)
                         </li>
                       </ul>
                     </div>
@@ -330,7 +335,10 @@
                         <li><strong>Left Click:</strong> Rotate view</li>
                         <li><strong>Scroll Wheel:</strong> Zoom in/out</li>
                         <li><strong>Right Click (Empty):</strong> Pan view</li>
-                        <li><strong>Right Click (Literature):</strong> Context menu (navigate, filter)</li>
+                        <li>
+                          <strong>Right Click (Literature):</strong> Context menu
+                          (navigate, filter)
+                        </li>
                       </ul>
                     </div>
                   {/if}

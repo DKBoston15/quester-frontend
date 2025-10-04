@@ -1295,10 +1295,7 @@
 
 <div class="container mx-auto py-8 space-y-8" id="progress-header">
   <!-- Research Level Card -->
-  <Card
-    class="research-level-card border-0 shadow-xl shadow-black/10 dark:shadow-black/20"
-    id="research-level-card"
-  >
+  <Card class="research-level-card" id="research-level-card">
     <CardHeader class="pb-4 relative overflow-hidden">
       <div
         class="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5"
@@ -1426,7 +1423,7 @@
     </Tabs.List>
 
     <Tabs.Content value="timeline" class="space-y-4" id="timeline-content">
-      <Card class="border-2">
+      <Card>
         <CardHeader>
           <CardTitle>Project Timeline</CardTitle>
         </CardHeader>
@@ -1476,7 +1473,7 @@
       {:else}
         {#each Object.entries(achievementGroups).sort( ([, a], [, b]) => a.name.localeCompare(b.name) ) as [category, { name, icon: Icon, achievements, color }]}
           {#if achievements.length > 0}
-            <div class="achievement-group" in:fade={{ duration: 300 }}>
+            <Card class="achievement-group p-4">
               <div class="flex items-center gap-3 mb-4">
                 <div
                   class={`h-8 w-8 rounded-lg bg-gradient-to-br ${color} text-white flex items-center justify-center shadow-lg`}
@@ -1547,7 +1544,7 @@
                   </div>
                 {/each}
               </div>
-            </div>
+            </Card>
           {/if}
         {/each}
       {/if}

@@ -85,7 +85,9 @@
   }
 
   function sortSelections(type: DesignType, selections: string[]): string[] {
-    const availableNames = (projectStore.designs[type] || []).map((option) => option.name);
+    const availableNames = (projectStore.designs[type] || []).map(
+      (option) => option.name
+    );
     return [...new Set(selections)].sort((a, b) => {
       const indexA = availableNames.indexOf(a);
       const indexB = availableNames.indexOf(b);
@@ -265,9 +267,7 @@
   }
 </script>
 
-<Card
-  class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
->
+<Card>
   <CardHeader>
     <div class="flex justify-between items-center">
       <CardTitle class="flex items-center gap-2">
@@ -292,12 +292,12 @@
     <Tabs.Root value={currentTab}>
       <Tabs.List
         id="lit-design-tabs"
-        class="grid grid-cols-4 border dark:bg-background  dark:border-dark-border rounded-lg overflow-hidden"
+        class="grid grid-cols-4 border dark:bg-background  dark:border rounded-lg overflow-hidden"
       >
         {#each designTypes as type}
           <Tabs.Trigger
             value={type}
-            class="capitalize px-4 data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]: dark:data-[state=active]:border-dark-border data-[state=active]:font-medium"
+            class="capitalize px-4 data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]:font-medium"
             onclick={() => (currentTab = type)}
           >
             {type}
@@ -318,9 +318,12 @@
                   onValueChange={(value) =>
                     updateSelections(
                       type,
-                      Array.isArray(value) ? (value as string[]) : value ? [value as string] : []
-                    )
-                  }
+                      Array.isArray(value)
+                        ? (value as string[])
+                        : value
+                          ? [value as string]
+                          : []
+                    )}
                   items={(projectStore.designs[type] || []).map((option) => ({
                     value: option.name,
                     label: option.name,
@@ -330,7 +333,9 @@
                     class="flex min-h-10 w-full items-center justify-between gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                     aria-label={`Select ${type} designs`}
                   >
-                    <span class="truncate text-left">{getTriggerLabel(type)}</span>
+                    <span class="truncate text-left"
+                      >{getTriggerLabel(type)}</span
+                    >
                   </Select.Trigger>
                   <Select.Content
                     class="z-50 max-h-64 w-[var(--bits-select-anchor-width)] select-none overflow-y-auto overflow-x-hidden rounded-md border bg-background p-1 shadow-lg"
@@ -338,10 +343,7 @@
                   >
                     {#if (projectStore.designs[type] || []).length > 0}
                       {#each projectStore.designs[type] || [] as option}
-                        <Select.Item
-                          value={option.name}
-                          label={option.name}
-                        />
+                        <Select.Item value={option.name} label={option.name} />
                       {/each}
                     {:else}
                       <div class="px-3 py-2 text-sm text-muted-foreground">
@@ -402,11 +404,14 @@
 
               <div class="border-t pt-6 space-y-3">
                 <div>
-                  <label class="text-sm font-semibold capitalize text-foreground">
+                  <label
+                    class="text-sm font-semibold capitalize text-foreground"
+                  >
                     {type} Design Description
                   </label>
                   <p class="text-xs text-muted-foreground mt-1">
-                    Capture important context like sample characteristics, setting, or methodological notes.
+                    Capture important context like sample characteristics,
+                    setting, or methodological notes.
                   </p>
                 </div>
                 <Textarea.Textarea
@@ -420,7 +425,9 @@
           {:else}
             <div class="space-y-4">
               <div>
-                <h4 class="text-sm font-medium mb-2 capitalize">{type} Designs</h4>
+                <h4 class="text-sm font-medium mb-2 capitalize">
+                  {type} Designs
+                </h4>
                 {#if localDesigns[type].selections.length > 0}
                   <div class="flex flex-wrap gap-2">
                     {#each localDesigns[type].selections as selection}
@@ -435,7 +442,9 @@
               </div>
               {#if localDesigns[type].description.trim().length > 0}
                 <div class="border-t pt-4">
-                  <h4 class="text-sm font-medium mb-2 capitalize">{type} Design Description</h4>
+                  <h4 class="text-sm font-medium mb-2 capitalize">
+                    {type} Design Description
+                  </h4>
                   <p class="text-sm text-muted-foreground whitespace-pre-wrap">
                     {localDesigns[type].description}
                   </p>

@@ -151,9 +151,7 @@
   });
 </script>
 
-<Card.Root
-  class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] min-w-0"
->
+<Card.Root>
   <Card.Header class="space-y-1.5 p-4 sm:p-6">
     <div
       class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
@@ -246,17 +244,17 @@
     onValueChange={(value: any) => (activeTab = value)}
   >
     <Tabs.List
-      class="grid grid-cols-2 mx-8 border dark:bg-background  dark:border-dark-border rounded-lg overflow-hidden"
+      class="grid grid-cols-2 mx-8 border dark:bg-background dark:border rounded-lg overflow-hidden"
     >
       <Tabs.Trigger
         value="needs-attention"
-        class="capitalize px-4 data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]: dark:data-[state=active]:border-dark-border data-[state=active]:font-medium"
+        class="capitalize px-4 data-[state=active]:bg-background data-[state=active]:border-b-2 rounded-none data-[state=active]:font-medium"
       >
         Needs Attention
       </Tabs.Trigger>
       <Tabs.Trigger
         value="recent"
-        class="capitalize px-4 data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]: dark:data-[state=active]:border-dark-border data-[state=active]:font-medium"
+        class="capitalize px-4 data-[state=active]:bg-background data-[state=active]:border-b-2 rounded-none data-[state=active]:font-medium"
       >
         Recently Updated
       </Tabs.Trigger>

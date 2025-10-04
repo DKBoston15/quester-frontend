@@ -137,9 +137,7 @@
     isLoading={isDeleting}
   />
 {:else}
-  <Card.Root
-    class="border-2 dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
-  >
+  <Card.Root>
     <Card.Header class="pb-4">
       <div class="flex justify-between items-start gap-4">
         <div class="flex-1 min-w-0">

@@ -190,9 +190,7 @@
   }
 </script>
 
-<Card
-  class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] w-full"
->
+<Card>
   <CardHeader>
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">
@@ -422,9 +420,7 @@
     {:else if products.length > 0}
       <div class="space-y-4">
         {#each products as product (product.id)}
-          <div
-            class="p-5 bg-background rounded-xl border border-gray-200 dark:border-gray-700"
-          >
+          <div class="p-5 bg-background rounded-xl border">
             <div class="flex items-start justify-between">
               <div class="flex items-center gap-3 flex-wrap max-w-[75%]">
                 <h4 class=" font-bold text-lg">{product.name}</h4>

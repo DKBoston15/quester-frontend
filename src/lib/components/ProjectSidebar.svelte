@@ -444,18 +444,6 @@
 
       <Sidebar.Separator />
 
-      <!-- Timer Widget -->
-      <Sidebar.Group>
-        <Sidebar.GroupContent>
-          <TimerWidget
-            currentRoute={$location.pathname}
-            projectId={props.project?.id || ''}
-          />
-        </Sidebar.GroupContent>
-      </Sidebar.Group>
-
-      <Sidebar.Separator />
-
       <!-- Primary Navigation -->
       <Sidebar.Group>
         <Sidebar.GroupContent>
@@ -686,7 +674,20 @@
       </Sidebar.Group>
     </Sidebar.Content>
 
-    <div class="mt-auto">
+    <div class="mt-auto flex flex-col gap-3 pt-3">
+      <Sidebar.Separator />
+
+      <Sidebar.Group>
+        <Sidebar.GroupContent>
+          <TimerWidget
+            currentRoute={$location.pathname}
+            projectId={props.project?.id || ''}
+          />
+        </Sidebar.GroupContent>
+      </Sidebar.Group>
+
+      <Sidebar.Separator />
+
       <Sidebar.Group>
         <Sidebar.GroupContent>
           <Sidebar.Menu>

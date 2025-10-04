@@ -345,10 +345,7 @@
           </div>
           <!-- Workspace Overview -->
           {#if currentOrg}
-            <Card
-              id="organization-structure-card"
-              class="mt-6 border dark:border-dark-border shadow-md dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-lg dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
-            >
+            <Card id="organization-structure-card" class="mt-6">
               <CardHeader>
                 <div class="flex items-center gap-2">
                   <FolderTree class="h-5 w-5" />

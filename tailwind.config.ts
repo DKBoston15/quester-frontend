@@ -6,7 +6,7 @@ import typography from "@tailwindcss/typography";
 const config: Config = {
   darkMode: ["class"],
   content: ["./src/**/*.{html,js,svelte,ts}"],
-  safelist: ["dark"],
+  safelist: ["dark", "shadow-s", "shadow-m", "shadow-l"],
   theme: {
     container: {
       center: true,
@@ -74,6 +74,11 @@ const config: Config = {
             blue: "#9CCAFF",
           },
         },
+      },
+      boxShadow: {
+        s: "var(--shadow-s)",
+        m: "var(--shadow-m)",
+        l: "var(--shadow-l)",
       },
       borderRadius: {
         xl: "calc(var(--radius) + 4px)",
