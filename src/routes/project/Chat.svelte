@@ -13,6 +13,9 @@
   import { API_BASE_URL } from "$lib/config";
   import MarkdownIt from "markdown-it";
   import { navigate } from "svelte-routing";
+  import ContextSelector from "$lib/components/ai/ContextSelector.svelte";
+  import type { ContextSelectionItem } from "$lib/types/context";
+  import type { MouseEvent } from "svelte/elements";
   
   // Icons
   import Send from "lucide-svelte/icons/send";
@@ -33,6 +36,7 @@
   import History from "lucide-svelte/icons/history";
   import RefreshCcw from "lucide-svelte/icons/refresh-ccw";
   import Trash2 from "lucide-svelte/icons/trash-2";
+  import ChevronDown from "lucide-svelte/icons/chevron-down";
   import { notesStore } from "$lib/stores/NotesStore";
   import * as Tooltip from "$lib/components/ui/tooltip";
 
@@ -53,7 +57,13 @@
     sources?: Source[];
     timestamp: Date;
     streaming?: boolean;
-    metadata?: any;
+    metadata?: {
+      sources?: Source[];
+      tools_used?: string[];
+      project_context?: boolean;
+      context_selection?: ContextSelectionItem[];
+      [key: string]: any;
+    };
   }
 
   interface ChatSession {
@@ -61,6 +71,8 @@
     createdAt: string;
     messages?: Message[];
   }
+
+  type MessageMetadata = NonNullable<Message["metadata"]>;
 
   // State
   let messages = $state<Message[]>([]);
@@ -82,6 +94,7 @@
   let isDeleting = $state(false);
   let showDeleteDialog = $state(false);
   let sessionToDelete = $state<string | null>(null);
+  let selectedContextItems = $state<ContextSelectionItem[]>([]);
 
   // Research question suggestions
   const researchSuggestions = [
@@ -289,6 +302,7 @@
       if (currentChatSession === sessionToDelete) {
         messages = [];
         currentChatSession = undefined;
+        selectedContextItems = [];
       }
 
       showDeleteDialog = false;
@@ -309,11 +323,13 @@
       const data = await api.get(
         `/chat/history/${projectStore.currentProject.id}?sessionId=${sessionId}`
       );
-      messages = data.messages.map((msg: any) => ({
+      const mappedMessages = data.messages.map((msg: any) => ({
         ...msg,
         timestamp: new Date(msg.createdAt),
         sources: msg.metadata?.sources || msg.sources,
       }));
+      messages = mappedMessages;
+      selectedContextItems = deriveLatestContextSelection(mappedMessages);
       currentChatSession = sessionId;
       showHistory = false;
     } catch (e) {
@@ -329,6 +345,7 @@
     currentChatSession = undefined;
     showHistory = false;
     error = null;
+    selectedContextItems = [];
   }
 
   // Handle typing indicator
@@ -375,10 +392,15 @@
 
     try {
       // Add user message immediately to local state
+      const userMetadata =
+        selectedContextItems.length > 0
+          ? { context_selection: selectedContextItems }
+          : undefined;
       const userMsg: Message = {
         role: "user" as const,
         content: userMessage,
         timestamp: new Date(),
+        ...(userMetadata ? { metadata: userMetadata } : {}),
       };
       messages = [...messages, userMsg];
 
@@ -390,6 +412,15 @@
             projectId: projectStore.currentProject.id,
             message: userMessage,
             provider: "openai",
+            contextSelection: selectedContextItems.map(
+              ({ id, type, title, subtitle, projectId }) => ({
+                id,
+                type,
+                ...(title ? { title } : {}),
+                ...(subtitle ? { subtitle } : {}),
+                ...(projectId ? { projectId } : {}),
+              })
+            ),
           },
           signal: currentAbortController.signal, // Add abort signal
         }
@@ -407,6 +438,12 @@
           content: "",
           timestamp: new Date(),
           streaming: true,
+          metadata: {
+            project_context: true,
+            ...(selectedContextItems.length > 0
+              ? { context_selection: selectedContextItems }
+              : {}),
+          },
         },
       ];
 
@@ -424,19 +461,39 @@
                 receivedSessionId = true;
               }
               
-              // Attach sources to the last message (assistant message)
-              if (data.sources && data.sources.length > 0) {
-                messages = messages.map((msg, i) => {
-                  if (i === messages.length - 1) {
-                    return {
-                      ...msg,
-                      sources: data.sources,
-                      metadata: { ...msg.metadata, sources: data.sources }
-                    };
-                  }
+              messages = messages.map((msg, i) => {
+                if (i !== messages.length - 1) {
                   return msg;
-                });
-              }
+                }
+
+                const existingMetadata = msg.metadata || {};
+                const mergedSelection = mergeContextSelections(
+                  existingMetadata.context_selection,
+                  data.context_selection
+                );
+
+                const nextMetadata: MessageMetadata = {
+                  ...existingMetadata,
+                  ...(data.sources ? { sources: data.sources } : {}),
+                  ...(Array.isArray(data.tools_used)
+                    ? { tools_used: data.tools_used }
+                    : {}),
+                };
+
+                if (data.project_context !== undefined) {
+                  nextMetadata.project_context = data.project_context;
+                }
+
+                if (mergedSelection.length > 0) {
+                  nextMetadata.context_selection = mergedSelection;
+                }
+
+                return {
+                  ...msg,
+                  sources: data.sources ?? msg.sources,
+                  metadata: nextMetadata,
+                };
+              });
             } else if (data.type === "content") {
               streamingContent += data.content;
 
@@ -506,6 +563,75 @@
     }
   }
 
+  function addContextItem(item: ContextSelectionItem) {
+    const exists = selectedContextItems.some(
+      (existing) => existing.id === item.id && existing.type === item.type
+    );
+    if (exists) return;
+    selectedContextItems = [...selectedContextItems, item];
+  }
+
+  function removeContextItem(item: ContextSelectionItem) {
+    selectedContextItems = selectedContextItems.filter(
+      (existing) => !(existing.id === item.id && existing.type === item.type)
+    );
+  }
+
+  function clearContextItems() {
+    selectedContextItems = [];
+  }
+
+  function deriveLatestContextSelection(
+    items: Message[] | undefined | null
+  ): ContextSelectionItem[] {
+    if (!Array.isArray(items) || items.length === 0) {
+      return [];
+    }
+
+    for (let index = items.length - 1; index >= 0; index -= 1) {
+      const selection = items[index]?.metadata?.context_selection;
+      if (Array.isArray(selection) && selection.length > 0) {
+        return selection;
+      }
+    }
+
+    return [];
+  }
+
+  function mergeContextSelections(
+    existing?: ContextSelectionItem[],
+    incoming?: ContextSelectionItem[]
+  ): ContextSelectionItem[] {
+    const merged = new Map<string, ContextSelectionItem>();
+
+    if (Array.isArray(existing)) {
+      for (const item of existing) {
+        if (!item?.id || !item?.type) continue;
+        merged.set(`${item.type}:${item.id}`, { ...item });
+      }
+    }
+
+    if (Array.isArray(incoming)) {
+      for (const item of incoming) {
+        if (!item?.id || !item?.type) continue;
+        const key = `${item.type}:${item.id}`;
+        const current = merged.get(key);
+        if (current) {
+          merged.set(key, {
+            ...current,
+            ...item,
+            title: item.title || current.title,
+            subtitle: item.subtitle || current.subtitle,
+          });
+        } else {
+          merged.set(key, { ...item });
+        }
+      }
+    }
+
+    return Array.from(merged.values());
+  }
+
 
   function formatDate(dateStr: string): string {
     return new Intl.DateTimeFormat("en", {
@@ -572,6 +698,15 @@
       default:
         return type.charAt(0).toUpperCase() + type.slice(1);
     }
+  }
+
+  function formatContextItemLabel(item: ContextSelectionItem): string {
+    if (item.title && item.title.trim().length > 0) {
+      return item.title;
+    }
+    const shortId = item.id ? `${item.id.slice(0, 6)}…` : '';
+    const typeLabel = getTypeLabel(item.type);
+    return shortId ? `${typeLabel} (${shortId})` : typeLabel;
   }
 
   // Transform tool names to friendly display names
@@ -846,6 +981,13 @@
                   {@const isAssistant = message.role === "assistant"}
                   {@const sources = message.sources || message.metadata?.sources || []}
                   {@const content = message.content}
+                  {@const toolsUsed = message.metadata?.tools_used ?? []}
+                  {@const hasTools = toolsUsed.length > 0}
+                  {@const focusedItems = message.metadata?.context_selection ?? []}
+                  {@const focusCount = focusedItems.length}
+                  {@const hasContextFocus = focusCount > 0}
+                  {@const hasSources = sources.length > 0}
+                  {@const hasProjectContext = Boolean(message.metadata?.project_context)}
                   
                   <div
                     class="message-container"
@@ -907,36 +1049,67 @@
                             </div>
                           {/if}
 
-                          <!-- Enhanced Source Citations & Context -->
-                          {#if sources.length > 0 || (message.sources && message.sources.length > 0) || message.metadata?.tools_used}
-                            <div class="mt-3 pt-3 border-t border-border/50" transition:slide|local>
-                              <!-- Tools Used -->
-                              {#if message.metadata?.tools_used && message.metadata.tools_used.length > 0}
-                                <div class="mb-3">
-                                  <div class="text-xs text-muted-foreground mb-2 font-medium flex items-center gap-1">
-                                    <Sparkles class="size-3" />
-                                    AI Analysis Tools Used:
+                          {#if hasSources || hasTools || hasContextFocus || hasProjectContext}
+                            <details
+                              class="mt-3 border border-border/50 rounded-md bg-muted/30 references-panel"
+                              transition:slide|local
+                            >
+                              <summary class="flex items-center justify-between gap-2 text-xs font-medium text-muted-foreground cursor-pointer px-3 py-2">
+                                <span class="flex items-center gap-2">
+                                  <BookOpen class="size-3" />
+                                  <span>Referenced context</span>
+                                  <span class="text-[10px] uppercase tracking-wide text-muted-foreground/80">
+                                    {#if hasSources}
+                                      {sources.length} source{sources.length !== 1 ? "s" : ""}
+                                    {/if}
+                                    {#if hasContextFocus}
+                                      {#if hasSources} • {/if}
+                                      focus {focusCount}
+                                    {/if}
+                                    {#if hasProjectContext && !hasSources && !hasContextFocus}
+                                      project context
+                                    {/if}
+                                  </span>
+                                </span>
+                                <ChevronDown class="size-4 references-chevron" aria-hidden="true" />
+                              </summary>
+                              <div class="px-3 pb-3 pt-2 space-y-3">
+                                {#if hasContextFocus}
+                                  <div>
+                                    <div class="text-xs text-muted-foreground mb-2 font-medium">
+                                      Focused context:
+                                    </div>
+                                    <div class="flex flex-wrap gap-2">
+                                      {#each focusedItems as item (item.type + item.id)}
+                                        <Badge variant="outline" class="text-xs">
+                                          {formatContextItemLabel(item)}
+                                        </Badge>
+                                      {/each}
+                                    </div>
                                   </div>
-                                  <div class="flex flex-wrap gap-2">
-                                    {#each message.metadata.tools_used as tool}
-                                      <Badge variant="secondary" class="text-xs">
-                                        {getFriendlyToolName(tool)}
-                                      </Badge>
-                                    {/each}
-                                  </div>
-                                </div>
-                              {/if}
+                                {/if}
 
-                              <!-- Referenced sources -->
-                              {#if message.sources && message.sources.length > 0}
-                                <div class="mb-2">
-                                  <div class="text-xs text-muted-foreground mb-2 font-medium">
-                                    Referenced sources:
+                                {#if hasTools}
+                                  <div>
+                                    <div class="text-xs text-muted-foreground mb-2 font-medium flex items-center gap-1">
+                                      <Sparkles class="size-3" />
+                                      AI Analysis Tools Used:
+                                    </div>
+                                    <div class="flex flex-wrap gap-2">
+                                      {#each toolsUsed as tool}
+                                        <Badge variant="secondary" class="text-xs">
+                                          {getFriendlyToolName(tool)}
+                                        </Badge>
+                                      {/each}
+                                    </div>
                                   </div>
+                                {/if}
+
+                                {#if hasSources}
                                   <div class="space-y-2">
-                                    {#each message.sources as source}
+                                    {#each sources as source}
                                       {@const Icon = getResultIcon(source.type)}
-                                      <button 
+                                      <button
                                         class="w-full border rounded-md p-2 bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer group text-left"
                                         onclick={() => handleSourceClick(source)}
                                       >
@@ -959,34 +1132,32 @@
                                             </div>
                                           </div>
                                           {#if source.type === 'document_chunk' && source.metadata?.document_file_id}
-                                            <ExternalLink 
+                                            <ExternalLink
                                               class="size-3 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground"
-                                              onclick={(e) => { e.stopPropagation(); openDocumentPreview(source.metadata.document_file_id, source.metadata?.start_page); }}
+                                              onclick={(e) => {
+                                                e.stopPropagation();
+                                                openDocumentPreview(source.metadata.document_file_id, source.metadata?.start_page);
+                                              }}
                                             />
                                           {/if}
                                         </div>
                                       </button>
                                     {/each}
                                   </div>
-                                </div>
-                              {/if}
+                                  <div class="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <Search class="size-3" />
+                                    <span>Used {sources.length} source{sources.length !== 1 ? "s" : ""} from your research</span>
+                                  </div>
+                                {/if}
 
-                              <!-- Search Context Indicator -->
-                              {#if message.sources && message.sources.length > 0}
-                                <div class="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-                                  <Search class="size-3" />
-                                  <span>Used {message.sources.length} sources from your research</span>
-                                </div>
-                              {/if}
-
-                              <!-- Project Context Indicator -->
-                              {#if message.metadata?.project_context}
-                                <div class="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-                                  <Folder class="size-3" />
-                                  <span>Using current project context</span>
-                                </div>
-                              {/if}
-                            </div>
+                                {#if hasProjectContext}
+                                  <div class="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <Folder class="size-3" />
+                                    <span>Using current project context</span>
+                                  </div>
+                                {/if}
+                              </div>
+                            </details>
                           {/if}
                         </div>
 
@@ -1050,7 +1221,17 @@
 
         <!-- Input Area -->
         <Card.Footer class="p-0 border-t border-border bg-card">
-          <div class="p-4 w-full">
+          <div class="p-4 w-full space-y-4">
+            <ContextSelector
+              selectedItems={selectedContextItems}
+              projectId={projectStore.currentProject?.id || null}
+              scope="current"
+              disabled={isStreaming}
+              on:select={(event) => addContextItem(event.detail)}
+              on:remove={(event) => removeContextItem(event.detail)}
+              on:clear={clearContextItems}
+            />
+
             <div class="relative">
               <!-- Typing Indicator -->
               {#if isTyping}
@@ -1260,5 +1441,17 @@
   .message-container:hover .group {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  details.references-panel summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .references-panel .references-chevron {
+    transition: transform 0.2s ease;
+  }
+
+  .references-panel[open] .references-chevron {
+    transform: rotate(180deg);
   }
 </style>
