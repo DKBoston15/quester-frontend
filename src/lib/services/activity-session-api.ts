@@ -5,8 +5,8 @@ import type {
   StartActivitySessionRequest,
   HeartbeatActivitySessionRequest,
   StopActivitySessionRequest,
-  ActivitySummaryRequest
-} from '$lib/types/timer'
+  ActivitySummaryRequest,
+} from '$lib/types/activity'
 
 // Activity Session API Service
 export class ActivitySessionAPI {

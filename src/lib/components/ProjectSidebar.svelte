@@ -7,7 +7,6 @@
   import * as Tooltip from "$lib/components/ui/tooltip/index.js";
   import { Button } from "$lib/components/ui/button";
   import { globalSearchStore } from "$lib/stores/GlobalSearchStore";
-  import TimerWidget from "$lib/components/timer/TimerWidget.svelte";
   import {
     LogOut,
     Users,
@@ -675,17 +674,6 @@
     </Sidebar.Content>
 
     <div class="mt-auto flex flex-col gap-3 pt-3">
-      <Sidebar.Separator />
-
-      <Sidebar.Group>
-        <Sidebar.GroupContent>
-          <TimerWidget
-            currentRoute={$location.pathname}
-            projectId={props.project?.id || ''}
-          />
-        </Sidebar.GroupContent>
-      </Sidebar.Group>
-
       <Sidebar.Separator />
 
       <Sidebar.Group>

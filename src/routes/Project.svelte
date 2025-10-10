@@ -18,7 +18,7 @@
   import OutcomeView from "./project/OutcomeView.svelte";
   import Chat from "./project/Chat.svelte";
   import { trackPageView } from "$lib/services/fullstory";
-  import ActivityTracker from "$lib/components/timer/ActivityTracker.svelte";
+  import ActivityTracker from "$lib/components/activity/ActivityTracker.svelte";
 
   type SectionKey =
     | "overview"

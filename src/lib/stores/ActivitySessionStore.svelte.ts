@@ -5,7 +5,7 @@ import type {
   StartActivitySessionRequest,
   HeartbeatActivitySessionRequest,
   StopActivitySessionRequest
-} from '$lib/types/timer'
+} from '$lib/types/activity'
 
 interface ActivitySessionState {
   currentSession: ActivitySession | null
@@ -122,7 +122,7 @@ function createActivitySessionStore() {
       console.error('Error starting session:', error)
 
       // Don't throw error, just log it and continue with local tracking
-      // This allows the timer widget to still show session time even if backend is unavailable
+      // This keeps local session tracking available even if the backend is unavailable
       return null
     } finally {
       state.isLoading = false
