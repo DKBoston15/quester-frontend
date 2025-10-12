@@ -74,7 +74,7 @@
   let stickNodes = false;
   let labels = false;
   let originalGraphData: GraphData;
-  let timelapseInterval: NodeJS.Timeout;
+  let timelapseInterval: ReturnType<typeof setInterval> | null = null;
   let currentNodeIndex = 0;
   let selectedNodesForRendering = $state(new Set<string>());
 
@@ -251,7 +251,7 @@
 
     // Reset local state on project change
     selectedNodes.clear();
-    selectedNodesForRendering.clear();
+    selectedNodesForRendering = new Set<string>();
     selectedNode = null;
     typeVisibility = nodeTypes.reduce((acc, type) => {
       acc[type] = type === "keyword" || type === "literature";
@@ -283,15 +283,25 @@
     return () => {
       disposed = true;
       props.registerControls?.(null);
+      if (timelapseInterval) {
+        clearInterval(timelapseInterval);
+        timelapseInterval = null;
+      }
     };
   });
 
   // React to project changes while staying on the Connections view
-  $effect(async () => {
-    const pid = projectStore.currentProject?.id;
-    if (!pid) return;
-    if (pid === lastLoadedProjectId) return;
-    await loadGraphForProject(pid);
+  $effect(() => {
+    void (async () => {
+      const pid = projectStore.currentProject?.id;
+      if (!pid) {
+        return;
+      }
+      if (pid === lastLoadedProjectId) {
+        return;
+      }
+      await loadGraphForProject(pid);
+    })();
   });
   
 
@@ -653,7 +663,9 @@
     const validSortedNodes = sortedNodes.filter(Boolean) as GraphNode[];
     validSortedNodes.sort((a: GraphNode, b: GraphNode) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
-    clearInterval(timelapseInterval);
+    if (timelapseInterval) {
+      clearInterval(timelapseInterval);
+    }
     currentNodeIndex = 0;
     Graph.graphData({ nodes: [], links: [] });
 
@@ -733,7 +745,10 @@
 
         currentNodeIndex++;
       } else {
-        clearInterval(timelapseInterval);
+        if (timelapseInterval) {
+          clearInterval(timelapseInterval);
+          timelapseInterval = null;
+        }
       }
     }, 500);
   }

@@ -68,26 +68,28 @@
     }
   });
 
-  onMount(async () => {
-    // Initialize user profile data from auth store
-    firstName = auth.user?.firstName || "";
-    lastName = auth.user?.lastName || "";
-    email = auth.user?.email || "";
-    orcidUrl = auth.user?.orcidUrl || "";
+  onMount(() => {
+    void (async () => {
+      // Initialize user profile data from auth store
+      firstName = auth.user?.firstName || "";
+      lastName = auth.user?.lastName || "";
+      email = auth.user?.email || "";
+      orcidUrl = auth.user?.orcidUrl || "";
 
-    // Check if user can access organization settings
-    await checkOrgSettingsCapability();
+      // Check if user can access organization settings
+      await checkOrgSettingsCapability();
 
-    // Initialize team management store for organization settings
-    if (auth.currentOrgId) {
-      await teamManagement.setSelectedResource(
-        "organization",
-        auth.currentOrgId
-      );
-      await teamManagement.refreshCurrentResource();
-    }
+      // Initialize team management store for organization settings
+      if (auth.currentOrgId) {
+        await teamManagement.setSelectedResource(
+          "organization",
+          auth.currentOrgId
+        );
+        await teamManagement.refreshCurrentResource();
+      }
 
-    checkingCapabilities = false;
+      checkingCapabilities = false;
+    })();
   });
 
   // Check if user has access to organization settings based on subscription

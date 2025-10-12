@@ -278,11 +278,17 @@
   });
 
   // React to project changes while staying on the Connections view
-  $effect(async () => {
-    const pid = projectStore.currentProject?.id;
-    if (!pid || !Graph) return;
-    if (pid === lastLoadedProjectId) return;
-    await loadGraphForProject(pid);
+  $effect(() => {
+    void (async () => {
+      const pid = projectStore.currentProject?.id;
+      if (!pid || !Graph) {
+        return;
+      }
+      if (pid === lastLoadedProjectId) {
+        return;
+      }
+      await loadGraphForProject(pid);
+    })();
   });
 
   function addParticleEffects(node: GraphNode) {

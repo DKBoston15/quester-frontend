@@ -3,12 +3,46 @@
   import type { Literature } from "../types/literature";
   import { normalizeDesignDetail } from "$lib/utils/design";
 
-  const DESIGN_FIELDS: Array<keyof Literature> = [
+  const DESIGN_FIELDS = [
     "researchDesign",
     "analyticDesign",
     "samplingDesign",
     "measurementDesign",
-  ];
+  ] as const;
+
+  type DesignFieldKey = (typeof DESIGN_FIELDS)[number];
+
+function normalizeLiteratureDesignFields<T extends Partial<Literature>>(
+  literature: T
+): T {
+  const normalized: Partial<Literature> = { ...literature };
+
+  for (const field of DESIGN_FIELDS) {
+    const value = normalized[field];
+    if (value !== undefined) {
+      normalized[field] = normalizeDesignDetail(
+        value
+      ) as Literature[DesignFieldKey];
+    }
+  }
+
+  return normalized as T;
+}
+
+function applyNormalizedDesignFields<T extends Partial<Literature>>(
+  target: T,
+  normalized: Partial<Literature>
+): T {
+  const result: Partial<Literature> = { ...target };
+
+  for (const field of DESIGN_FIELDS) {
+    if (field in normalized) {
+      result[field] = normalized[field] as Literature[DesignFieldKey];
+    }
+  }
+
+  return result as T;
+}
 
   let literatureData = $state<Literature[]>([]);
   // Track which project the literature is loaded for
@@ -44,13 +78,9 @@
         const data = await api.get<Literature[]>(
           `/literature/project/${projectId}`
         );
-        literatureData = data.map((item) => ({
-          ...item,
-          researchDesign: normalizeDesignDetail(item.researchDesign),
-          analyticDesign: normalizeDesignDetail(item.analyticDesign),
-          samplingDesign: normalizeDesignDetail(item.samplingDesign),
-          measurementDesign: normalizeDesignDetail(item.measurementDesign),
-        }));
+        literatureData = data.map((item) =>
+          normalizeLiteratureDesignFields(item)
+        );
         loadedProjectId = projectId;
       } catch (err) {
         console.error("Error loading literature:", err);
@@ -64,23 +94,17 @@
 
     async addLiterature(literature: Partial<Literature>) {
       try {
-        const payload: Partial<Literature> = { ...literature };
-
-        for (const field of DESIGN_FIELDS) {
-          if (field in payload && payload[field] !== undefined) {
-            payload[field] = normalizeDesignDetail(payload[field]);
-          }
-        }
-
+        const payload = normalizeLiteratureDesignFields({
+          ...literature,
+        });
         const newLiterature = await api.post(`/literature`, payload);
-        const normalized = {
-          ...newLiterature.literature,
-          researchDesign: normalizeDesignDetail(newLiterature.literature.researchDesign),
-          analyticDesign: normalizeDesignDetail(newLiterature.literature.analyticDesign),
-          samplingDesign: normalizeDesignDetail(newLiterature.literature.samplingDesign),
-          measurementDesign: normalizeDesignDetail(newLiterature.literature.measurementDesign),
-        };
-        literatureData = [normalized, ...literatureData];
+        literatureData = [
+          applyNormalizedDesignFields(
+            newLiterature.literature,
+            payload
+          ),
+          ...literatureData,
+        ];
         return newLiterature;
       } catch (err) {
         console.error("Error adding literature:", err);
@@ -90,27 +114,20 @@
 
     async updateLiterature(id: string, updateData: Partial<Literature>) {
       try {
-        const payload: Partial<Literature> = { ...updateData };
-
-        for (const field of DESIGN_FIELDS) {
-          if (field in payload && payload[field] !== undefined) {
-            payload[field] = normalizeDesignDetail(payload[field]);
-          }
-        }
-
+        const payload = normalizeLiteratureDesignFields({
+          ...updateData,
+        });
         const updatedLiterature = await api.put(
           `/literature/${id}`,
           payload
         );
-        const normalized = {
-          ...updatedLiterature.literature,
-          researchDesign: normalizeDesignDetail(updatedLiterature.literature.researchDesign),
-          analyticDesign: normalizeDesignDetail(updatedLiterature.literature.analyticDesign),
-          samplingDesign: normalizeDesignDetail(updatedLiterature.literature.samplingDesign),
-          measurementDesign: normalizeDesignDetail(updatedLiterature.literature.measurementDesign),
-        };
         literatureData = literatureData.map((item) =>
-          item.id === id ? normalized : item
+          item.id === id
+            ? applyNormalizedDesignFields(
+                updatedLiterature.literature,
+                payload
+              )
+            : item
         );
         return updatedLiterature;
       } catch (err) {

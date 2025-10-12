@@ -116,27 +116,29 @@
     ],
   });
 
-  onMount(async () => {
-    try {
-      // Wait for auth store to finish loading
-      if (auth.isLoading) {
-        // Wait for auth to complete loading
-      }
+  onMount(() => {
+    void (async () => {
+      try {
+        // Wait for auth store to finish loading
+        if (auth.isLoading) {
+          // Wait for auth to complete loading
+        }
 
-      if (!auth.isAuthenticated) {
-        navigate("/");
-        return;
-      }
+        if (!auth.isAuthenticated) {
+          navigate("/");
+          return;
+        }
 
-      await loadOrganizations();
-    } catch (error) {
-      error =
-        error instanceof Error
-          ? error.message
-          : "Failed to initialize dashboard";
-    } finally {
-      isLoading = false;
-    }
+        await loadOrganizations();
+      } catch (err) {
+        error =
+          err instanceof Error
+            ? err.message
+            : "Failed to initialize dashboard";
+      } finally {
+        isLoading = false;
+      }
+    })();
   });
 
   async function loadOrganizations() {

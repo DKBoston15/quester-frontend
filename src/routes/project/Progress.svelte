@@ -168,6 +168,21 @@
     achievements: Achievement[];
   };
 
+  const hoverShadowMap: Record<string, string> = {
+    "from-blue-500": "hover:shadow-[0_12px_24px_rgba(37,99,235,0.35)]",
+    "from-purple-500": "hover:shadow-[0_12px_24px_rgba(168,85,247,0.35)]",
+    "from-green-500": "hover:shadow-[0_12px_24px_rgba(34,197,94,0.35)]",
+    "from-amber-500": "hover:shadow-[0_12px_24px_rgba(245,158,11,0.35)]",
+    "from-rose-500": "hover:shadow-[0_12px_24px_rgba(244,63,94,0.35)]",
+    "from-indigo-500": "hover:shadow-[0_12px_24px_rgba(99,102,241,0.35)]",
+    "from-cyan-500": "hover:shadow-[0_12px_24px_rgba(34,211,238,0.35)]",
+  };
+
+  function getHoverShadowClass(color: string) {
+    const baseColor = color.split(" ")[0];
+    return hoverShadowMap[baseColor] || "";
+  }
+
   // Achievement categories for grouping with colors
   const achievementGroups: Record<
     string,
@@ -178,49 +193,49 @@
       icon: PenTool,
       achievements: [],
       color: "from-blue-500 to-blue-600",
-      hoverShadowClass: "hover:shadow-[0_12px_24px_rgba(37,99,235,0.35)]",
+      hoverShadowClass: getHoverShadowClass("from-blue-500 to-blue-600"),
     },
     Collector: {
       name: "Literature Collection",
       icon: Book,
       achievements: [],
       color: "from-purple-500 to-purple-600",
-      hoverShadowClass: "hover:shadow-[0_12px_24px_rgba(168,85,247,0.35)]",
+      hoverShadowClass: getHoverShadowClass("from-purple-500 to-purple-600"),
     },
     Consistency: {
       name: "Consistency",
       icon: Calendar,
       achievements: [],
       color: "from-green-500 to-green-600",
-      hoverShadowClass: "hover:shadow-[0_12px_24px_rgba(34,197,94,0.35)]",
+      hoverShadowClass: getHoverShadowClass("from-green-500 to-green-600"),
     },
     "Keyword Researcher": {
       name: "Keyword Research",
       icon: Search,
       achievements: [],
       color: "from-amber-500 to-amber-600",
-      hoverShadowClass: "hover:shadow-[0_12px_24px_rgba(245,158,11,0.35)]",
+      hoverShadowClass: getHoverShadowClass("from-amber-500 to-amber-600"),
     },
     Explorer: {
       name: "Research Design",
       icon: Expand,
       achievements: [],
       color: "from-rose-500 to-rose-600",
-      hoverShadowClass: "hover:shadow-[0_12px_24px_rgba(244,63,94,0.35)]",
+      hoverShadowClass: getHoverShadowClass("from-rose-500 to-rose-600"),
     },
     "Expanding Horizons": {
       name: "Custom Designs",
       icon: Star,
       achievements: [],
       color: "from-indigo-500 to-indigo-600",
-      hoverShadowClass: "hover:shadow-[0_12px_24px_rgba(99,102,241,0.35)]",
+      hoverShadowClass: getHoverShadowClass("from-indigo-500 to-indigo-600"),
     },
     "Visualization Expert": {
       name: "Visualization",
       icon: Network,
       achievements: [],
       color: "from-cyan-500 to-cyan-600",
-      hoverShadowClass: "hover:shadow-[0_12px_24px_rgba(34,211,238,0.35)]",
+      hoverShadowClass: getHoverShadowClass("from-cyan-500 to-cyan-600"),
     },
   };
 
@@ -347,9 +362,11 @@
     return filtered;
   });
 
-  onMount(async () => {
-    await loadTimelineData();
-    await loadAchievements();
+  onMount(() => {
+    void (async () => {
+      await loadTimelineData();
+      await loadAchievements();
+    })();
   });
 
   onDestroy(() => {

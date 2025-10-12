@@ -93,7 +93,7 @@
   ];
 
   // Ensure literature data is loaded
-  onMount(async () => {
+  onMount(() => {
     enableTitleClickAt = Date.now() + 800;
     // For new notes, switch to edit mode and focus title to encourage renaming
     if (note.name === "Untitled Note" && title === "Untitled Note") {
@@ -102,9 +102,11 @@
     }
 
     // Load literature data if needed
-    if (literatureStore.data.length === 0 && note.projectId) {
-      await literatureStore.loadLiterature(note.projectId);
-    }
+    void (async () => {
+      if (literatureStore.data.length === 0 && note.projectId) {
+        await literatureStore.loadLiterature(note.projectId);
+      }
+    })();
   });
 
   // Keyboard shortcut: Cmd/Ctrl + S to force save

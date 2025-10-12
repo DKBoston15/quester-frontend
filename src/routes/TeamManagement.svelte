@@ -87,44 +87,48 @@
   });
 
   // Load data on mount
-  onMount(async () => {
-    try {
-      // Check URL parameters for resource selection
-      const urlParams = new URLSearchParams(window.location.search);
-      const resourceType = urlParams.get("type");
-      const resourceId = urlParams.get("id");
+  onMount(() => {
+    void (async () => {
+      try {
+        // Check URL parameters for resource selection
+        const urlParams = new URLSearchParams(window.location.search);
+        const resourceType = urlParams.get("type");
+        const resourceId = urlParams.get("id");
 
-      // Initialize team management store
-      await teamManagement.initialize();
+        // Initialize team management store
+        await teamManagement.initialize();
 
-      // Check subscription limits
-      await checkSubscriptionLimits();
+        // Check subscription limits
+        await checkSubscriptionLimits();
 
-      // If URL contains valid resource parameters, select that resource
-      if (
-        resourceType &&
-        ["organization", "department", "project"].includes(resourceType) &&
-        resourceId
-      ) {
-        teamManagement.setSelectedResource(
-          resourceType as "organization" | "department" | "project",
+        // If URL contains valid resource parameters, select that resource
+        if (
+          resourceType &&
+          ["organization", "department", "project"].includes(resourceType) &&
           resourceId
+        ) {
+          teamManagement.setSelectedResource(
+            resourceType as "organization" | "department" | "project",
+            resourceId
+          );
+        }
+
+        // Check if user should see tour prompt (first time or no resource selected)
+        const hasSeenTour = localStorage.getItem(
+          "teamManagement-tour-completed"
         );
-      }
+        if (!hasSeenTour && !teamManagement.selectedResourceId) {
+          showTourPrompt = true;
+        }
 
-      // Check if user should see tour prompt (first time or no resource selected)
-      const hasSeenTour = localStorage.getItem("teamManagement-tour-completed");
-      if (!hasSeenTour && !teamManagement.selectedResourceId) {
-        showTourPrompt = true;
+        // Build simplified tour steps
+        buildTourSteps();
+      } catch (err) {
+        console.error("Error initializing team management:", err);
+      } finally {
+        isLoading = false;
       }
-
-      // Build simplified tour steps
-      buildTourSteps();
-    } catch (error) {
-      console.error("Error initializing team management:", error);
-    } finally {
-      isLoading = false;
-    }
+    })();
   });
 
   // Rebuild tour when resource selection changes (with guard to prevent infinite loops)

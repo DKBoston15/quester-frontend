@@ -219,7 +219,7 @@
     // Try to scroll the active note into view once it exists in DOM
     queueMicrotask(() => {
       try {
-        const el = document.querySelector<HTMLElement>(`[data-note-id="${activeId}"]`);
+        const el = document.querySelector<HTMLElement>(`[data-note-id="${CSS.escape(activeId)}"]`);
         el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
       } catch {}
     });

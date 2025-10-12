@@ -484,7 +484,13 @@
                   nextMetadata.project_context = data.project_context;
                 }
 
-                if (data.context_selection !== undefined) {
+                if (Array.isArray(data.context_selection)) {
+                  if (data.context_selection.length === 0) {
+                    delete nextMetadata.context_selection;
+                  } else {
+                    nextMetadata.context_selection = mergedSelection;
+                  }
+                } else if (mergedSelection.length > 0) {
                   nextMetadata.context_selection = mergedSelection;
                 }
 

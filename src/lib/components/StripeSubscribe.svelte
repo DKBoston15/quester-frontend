@@ -13,8 +13,10 @@
   let stripe: Stripe | null = null;
   let isLoading = false;
 
-  onMount(async () => {
-    stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+  onMount(() => {
+    void (async () => {
+      stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+    })();
   });
 
   async function handleSubscribe() {

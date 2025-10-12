@@ -26,6 +26,9 @@
   let detach: (() => void) | null = null;
 
   function attachListeners() {
+    // Clean up any existing listener before attaching a new one
+    detach?.();
+    detach = null;
     const currentEditor = editor;
     if (!currentEditor) return;
     // Run after current tick to avoid state mutation during template evaluation
