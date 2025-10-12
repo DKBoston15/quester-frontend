@@ -26,11 +26,15 @@
   let detach: (() => void) | null = null;
 
   function attachListeners() {
-    if (!editor) return;
+    const currentEditor = editor;
+    if (!currentEditor) return;
     // Run after current tick to avoid state mutation during template evaluation
     queueMicrotask(() => updateDisabledState());
-    editor.on("transaction", updateDisabledState);
-    detach = () => editor?.off("transaction", updateDisabledState);
+    currentEditor.on("transaction", updateDisabledState);
+    detach = () => {
+      currentEditor.off("transaction", updateDisabledState);
+      detach = null;
+    };
   }
 
   onMount(() => {

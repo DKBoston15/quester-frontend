@@ -121,11 +121,6 @@
         handleClose();
         break;
 
-      case "Enter":
-      case " ":
-        keyboardEvent.preventDefault();
-        handleNavigate();
-        break;
     }
   }
 

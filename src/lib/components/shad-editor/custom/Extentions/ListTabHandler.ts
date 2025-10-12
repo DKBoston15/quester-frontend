@@ -25,6 +25,9 @@ export const ListTabHandler = Extension.create({
         // Walk up the document tree to find list context
         for (let i = depth; i > 0; i--) {
           const node = $from.node(i);
+          if (node.type.name === 'codeBlock') {
+            inCodeBlock = true;
+          }
           if (node.type.name === 'listItem' && !listItem) {
             listItem = node;
           }
@@ -32,20 +35,16 @@ export const ListTabHandler = Extension.create({
             parentList = node;
             break;
           }
-          if (node.type.name === 'codeBlock') {
-            inCodeBlock = true;
-          }
         }
         
-        if (listItem && parentList) {
-          // We're in a list, try to indent
-          return editor.commands.sinkListItem('listItem');
-        }
-
-        // In code block: insert a tab character
         if (inCodeBlock) {
           editor.chain().focus().insertContent('\t').run();
           return true;
+        }
+
+        if (!inCodeBlock && listItem && parentList) {
+          // We're in a list, try to indent
+          return editor.commands.sinkListItem('listItem');
         }
 
         // Not in a list, but still prevent browser tab navigation
@@ -67,6 +66,9 @@ export const ListTabHandler = Extension.create({
         // Walk up the document tree to find list context
         for (let i = depth; i > 0; i--) {
           const node = $from.node(i);
+          if (node.type.name === 'codeBlock') {
+            inCodeBlock = true;
+          }
           if (node.type.name === 'listItem' && !listItem) {
             listItem = node;
           }
@@ -74,20 +76,17 @@ export const ListTabHandler = Extension.create({
             parentList = node;
             break;
           }
-          if (node.type.name === 'codeBlock') {
-            inCodeBlock = true;
-          }
         }
         
-        if (listItem && parentList) {
-          // We're in a list, try to outdent
-          return editor.commands.liftListItem('listItem');
-        }
-
         // In code block: insert a tab character as well (no outdent support)
         if (inCodeBlock) {
           editor.chain().focus().insertContent('\t').run();
           return true;
+        }
+
+        if (!inCodeBlock && listItem && parentList) {
+          // We're in a list, try to outdent
+          return editor.commands.liftListItem('listItem');
         }
 
         // Not in a list, but still prevent browser behavior
@@ -120,6 +119,9 @@ export const ListTabHandler = Extension.create({
                 
                 for (let i = depth; i > 0; i--) {
                   const node = $from.node(i);
+                  if (node.type.name === 'codeBlock') {
+                    inCodeBlock = true;
+                  }
                   if (node.type.name === 'listItem' && !listItem) {
                     listItem = node;
                   }
@@ -127,12 +129,15 @@ export const ListTabHandler = Extension.create({
                     parentList = node;
                     break;
                   }
-                  if (node.type.name === 'codeBlock') {
-                    inCodeBlock = true;
-                  }
                 }
                 
-                if (listItem && parentList) {
+                if (inCodeBlock) {
+                  event.preventDefault();
+                  extension.editor.chain().focus().insertContent('\t').run();
+                  return true;
+                }
+
+                if (!inCodeBlock && listItem && parentList) {
                   event.preventDefault();
                   
                   if (event.shiftKey) {
@@ -142,12 +147,6 @@ export const ListTabHandler = Extension.create({
                     // Tab: indent
                     extension.editor.commands.sinkListItem('listItem');
                   }
-                  return true;
-                }
-                
-                if (inCodeBlock) {
-                  event.preventDefault();
-                  extension.editor.chain().focus().insertContent('\t').run();
                   return true;
                 }
                 

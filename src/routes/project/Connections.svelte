@@ -201,7 +201,13 @@
           type="single"
           class=""
           onValueChange={(val) => {
-            if (val) value = val;
+            if (!val) return;
+            value = val;
+            if (val === "2D") {
+              threeDControls = null;
+            } else if (val === "3D") {
+              twoDControls = null;
+            }
           }}
         >
           <ToggleGroup.Item

@@ -171,49 +171,56 @@
   // Achievement categories for grouping with colors
   const achievementGroups: Record<
     string,
-    AchievementGroup & { color: string }
+    AchievementGroup & { color: string; hoverShadowClass: string }
   > = {
     "Note-Taking Master": {
       name: "Note Taking",
       icon: PenTool,
       achievements: [],
       color: "from-blue-500 to-blue-600",
+      hoverShadowClass: "hover:shadow-[0_12px_24px_rgba(37,99,235,0.35)]",
     },
     Collector: {
       name: "Literature Collection",
       icon: Book,
       achievements: [],
       color: "from-purple-500 to-purple-600",
+      hoverShadowClass: "hover:shadow-[0_12px_24px_rgba(168,85,247,0.35)]",
     },
     Consistency: {
       name: "Consistency",
       icon: Calendar,
       achievements: [],
       color: "from-green-500 to-green-600",
+      hoverShadowClass: "hover:shadow-[0_12px_24px_rgba(34,197,94,0.35)]",
     },
     "Keyword Researcher": {
       name: "Keyword Research",
       icon: Search,
       achievements: [],
       color: "from-amber-500 to-amber-600",
+      hoverShadowClass: "hover:shadow-[0_12px_24px_rgba(245,158,11,0.35)]",
     },
     Explorer: {
       name: "Research Design",
       icon: Expand,
       achievements: [],
       color: "from-rose-500 to-rose-600",
+      hoverShadowClass: "hover:shadow-[0_12px_24px_rgba(244,63,94,0.35)]",
     },
     "Expanding Horizons": {
       name: "Custom Designs",
       icon: Star,
       achievements: [],
       color: "from-indigo-500 to-indigo-600",
+      hoverShadowClass: "hover:shadow-[0_12px_24px_rgba(99,102,241,0.35)]",
     },
     "Visualization Expert": {
       name: "Visualization",
       icon: Network,
       achievements: [],
       color: "from-cyan-500 to-cyan-600",
+      hoverShadowClass: "hover:shadow-[0_12px_24px_rgba(34,211,238,0.35)]",
     },
   };
 
@@ -1471,7 +1478,7 @@
           </CardContent>
         </Card>
       {:else}
-        {#each Object.entries(achievementGroups).sort( ([, a], [, b]) => a.name.localeCompare(b.name) ) as [category, { name, icon: Icon, achievements, color }]}
+        {#each Object.entries(achievementGroups).sort( ([, a], [, b]) => a.name.localeCompare(b.name) ) as [category, { name, icon: Icon, achievements, color, hoverShadowClass }]}
           {#if achievements.length > 0}
             <Card class="achievement-group p-4">
               <div class="flex items-center gap-3 mb-4">
@@ -1491,7 +1498,7 @@
                 {#each achievements as achievement (achievement.id)}
                   <div in:fade={{ duration: 300 }}>
                     <Card
-                      class={`achievement-card ${achievement.completed ? "completed" : ""} hover:shadow-${color.split("-")[1]}/20`}
+                      class={`achievement-card ${achievement.completed ? "completed" : ""} ${hoverShadowClass}`}
                     >
                       {#if achievement.completed}
                         <div

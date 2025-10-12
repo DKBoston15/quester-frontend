@@ -88,7 +88,7 @@ export const auth = {
   async fetchUserOrganizations() {
     try {
       // Use centralized API client with skip auth check to prevent loops
-      const { data } = await api.get(
+      const data = await api.get(
         `/organizations/by-user?userId=${user?.id}`,
         { skipAuthCheck: true }
       );

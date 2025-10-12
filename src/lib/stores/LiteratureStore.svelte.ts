@@ -3,6 +3,13 @@
   import type { Literature } from "../types/literature";
   import { normalizeDesignDetail } from "$lib/utils/design";
 
+  const DESIGN_FIELDS: Array<keyof Literature> = [
+    "researchDesign",
+    "analyticDesign",
+    "samplingDesign",
+    "measurementDesign",
+  ];
+
   let literatureData = $state<Literature[]>([]);
   // Track which project the literature is loaded for
   let loadedProjectId = $state<string | null>(null);
@@ -58,14 +65,8 @@
     async addLiterature(literature: Partial<Literature>) {
       try {
         const payload: Partial<Literature> = { ...literature };
-        const designFields: Array<keyof Literature> = [
-          "researchDesign",
-          "analyticDesign",
-          "samplingDesign",
-          "measurementDesign",
-        ];
 
-        for (const field of designFields) {
+        for (const field of DESIGN_FIELDS) {
           if (field in payload && payload[field] !== undefined) {
             payload[field] = normalizeDesignDetail(payload[field]);
           }
@@ -90,14 +91,8 @@
     async updateLiterature(id: string, updateData: Partial<Literature>) {
       try {
         const payload: Partial<Literature> = { ...updateData };
-        const designFields: Array<keyof Literature> = [
-          "researchDesign",
-          "analyticDesign",
-          "samplingDesign",
-          "measurementDesign",
-        ];
 
-        for (const field of designFields) {
+        for (const field of DESIGN_FIELDS) {
           if (field in payload && payload[field] !== undefined) {
             payload[field] = normalizeDesignDetail(payload[field]);
           }

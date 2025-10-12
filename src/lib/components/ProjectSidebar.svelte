@@ -2,7 +2,7 @@
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import { DarkmodeToggle } from "$lib/components/ui/darkmode-toggle";
   import { auth } from "$lib/stores/AuthStore";
-  import { navigate, Link, useLocation } from "svelte-routing";
+  import { navigate, Link } from "svelte-routing";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import * as Tooltip from "$lib/components/ui/tooltip/index.js";
   import { Button } from "$lib/components/ui/button";
@@ -39,7 +39,6 @@
   };
 
   const props = $props<{ project: any }>();
-  const location = useLocation();
 
   let primaryRoutes = $state<Route[]>([]);
   let secondaryRoutes = $state<Route[]>([]);

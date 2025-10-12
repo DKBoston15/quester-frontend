@@ -647,14 +647,14 @@
                   <div class="p-3">
                     <div class="flex items-start justify-between">
                       <div class="space-y-1 flex-1 mr-2 min-w-0">
-                        <h4 class="font-medium leading-none break-words break-all break-anywhere">
+                        <h4 class="font-medium leading-none break-words break-anywhere">
                           {#if isSearchActive && "highlightedName" in note}
                             {@html note.highlightedName}
                           {:else}
                             {note.name || "Untitled Note"}
                           {/if}
                         </h4>
-                        <p class="text-sm text-muted-foreground line-clamp-2 break-words break-all break-anywhere">
+                        <p class="text-sm text-muted-foreground line-clamp-2 break-words break-anywhere">
                           {#if isSearchActive && "contentSnippet" in note}
                             {@html note.contentSnippet}
                           {:else}
@@ -807,6 +807,5 @@
   /* Ensure extremely long, unbroken strings or &nbsp; sequences wrap within the card */
   .break-anywhere {
     overflow-wrap: anywhere;
-    word-break: break-word;
   }
 </style>

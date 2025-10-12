@@ -255,6 +255,7 @@
     role="button"
     tabindex="0"
     onkeydown={handleUploadZoneKeydown}
+    onclick={triggerFileInput}
     ondragover={handleDragOver}
     ondragleave={handleDragLeave}
     ondrop={handleDrop}

@@ -758,30 +758,7 @@
   });
 
   function updateGraphDataWithFilter() {
-    let filteredNodes: GraphNode[] | undefined;
-
-    if (selectedNodesForRendering.size > 0 && filteredNodes) {
-      filteredNodes = filteredNodes.filter((node) =>
-        selectedNodesForRendering.has(node.id)
-      );
-    }
-
-    if (!filteredNodes) return;
-
-    const filteredLinks = originalGraphData.links.filter(
-      (link) => {
-        const sourceId = typeof link.source === 'string' ? link.source : (link.source as any).id;
-        const targetId = typeof link.target === 'string' ? link.target : (link.target as any).id;
-        return filteredNodes!.some((node) => node.id === sourceId) &&
-               filteredNodes!.some((node) => node.id === targetId);
-      }
-    );
-
-    Graph.graphData({
-      nodes: filteredNodes,
-      links: filteredLinks,
-    });
-    Graph.d3ReheatSimulation();
+    rebuildGraphWithCurrentFilters();
   }
 </script>
 

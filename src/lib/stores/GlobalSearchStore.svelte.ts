@@ -828,7 +828,16 @@ async function sendChatMessage(message: string): Promise<void> {
                   assistantMessage.metadata.project_context = data.project_context;
                 }
 
-                if (mergedSelection.length > 0) {
+                if (data.context_selection !== undefined) {
+                  if (
+                    Array.isArray(data.context_selection) &&
+                    data.context_selection.length > 0
+                  ) {
+                    assistantMessage.metadata.context_selection = data.context_selection;
+                  } else {
+                    delete assistantMessage.metadata.context_selection;
+                  }
+                } else if (mergedSelection.length > 0) {
                   assistantMessage.metadata.context_selection = mergedSelection;
                 }
 

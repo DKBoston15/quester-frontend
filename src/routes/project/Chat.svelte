@@ -484,7 +484,7 @@
                   nextMetadata.project_context = data.project_context;
                 }
 
-                if (mergedSelection.length > 0) {
+                if (data.context_selection !== undefined) {
                   nextMetadata.context_selection = mergedSelection;
                 }
 
