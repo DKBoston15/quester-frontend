@@ -41,7 +41,6 @@
   }
 
   onMount(() => {
-    attachListeners();
     return () => {
       detach?.();
       detach = null;

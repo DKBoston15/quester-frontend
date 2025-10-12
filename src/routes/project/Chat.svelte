@@ -15,7 +15,7 @@
   import { navigate } from "svelte-routing";
   import ContextSelector from "$lib/components/ai/ContextSelector.svelte";
   import type { ContextSelectionItem } from "$lib/types/context";
-  import type { MouseEvent } from "svelte/elements";
+  import { toast } from "svelte-sonner";
   
   // Icons
   import Send from "lucide-svelte/icons/send";
@@ -125,10 +125,14 @@
     html: true,
     linkify: true,
     typographer: true,
-    breaks: true,
-    highlight: function (str, lang) {
+    breaks: true
+  });
+
+  md.set({
+    highlight(str: string, lang: string): string {
+      const language = lang || "plaintext";
       // Basic code highlighting - you can enhance this later
-      return `<pre class="language-${lang}"><code>${md.utils.escapeHtml(str)}</code></pre>`;
+      return `<pre class="language-${language}"><code>${md.utils.escapeHtml(str)}</code></pre>`;
     }
   });
 
@@ -183,9 +187,9 @@
       }
     } catch (e) {
       console.error("Failed to create note from message:", e);
-      alert(
-        `Failed to create note: ${e instanceof Error ? e.message : "Unknown error"}`
-      );
+      toast.error("Failed to create note", {
+        description: e instanceof Error ? e.message : "Unknown error",
+      });
     }
   }
 
@@ -280,7 +284,7 @@
   }
 
   // Delete session functions
-  function handleDeleteSession(sessionId: string, event: Event) {
+  function handleDeleteSession(sessionId: string, event: MouseEvent) {
     event.stopPropagation();
     sessionToDelete = sessionId;
     showDeleteDialog = true;
@@ -309,7 +313,9 @@
       sessionToDelete = null;
     } catch (error) {
       console.error('Failed to delete session:', error);
-      alert('Failed to delete session: ' + (error as Error).message);
+      toast.error('Failed to delete session', {
+        description: (error as Error).message ?? 'Unknown error',
+      });
     } finally {
       isDeleting = false;
     }
@@ -778,6 +784,13 @@
     }
   }
 
+  function handleSourceKeydown(event: KeyboardEvent, handler: () => void) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handler();
+    }
+  }
+
   async function openDocumentPreview(fileId: string, page?: number) {
     try {
       const res = await fetch(`${API_BASE_URL}/documents/${fileId}/download?preview=true`, {
@@ -927,7 +940,7 @@
                         <Button
                           variant="ghost"
                           size="sm"
-                          onclick={(e) => handleDeleteSession(session.chatSessionId, e)}
+                          onclick={(e: MouseEvent) => handleDeleteSession(session.chatSessionId, e)}
                           class="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
                         >
                           <Trash2 class="size-3" />
@@ -1082,7 +1095,9 @@
                                     {/if}
                                   </span>
                                 </span>
-                                <ChevronDown class="size-4 references-chevron" aria-hidden="true" />
+                                <span class="references-chevron">
+                                  <ChevronDown class="size-4" aria-hidden="true" />
+                                </span>
                               </summary>
                               <div class="px-3 pb-3 pt-2 space-y-3">
                                 {#if hasContextFocus}
@@ -1120,9 +1135,14 @@
                                   <div class="space-y-2">
                                     {#each sources as source}
                                       {@const Icon = getResultIcon(source.type)}
-                                      <button
+                                      <div
+                                        role="button"
+                                        tabindex="0"
                                         class="w-full border rounded-md p-2 bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer group text-left"
                                         onclick={() => handleSourceClick(source)}
+                                        onkeydown={(event) =>
+                                          handleSourceKeydown(event, () => handleSourceClick(source))
+                                        }
                                       >
                                         <div class="flex items-start gap-2">
                                           <Icon class="size-3 mt-0.5 text-muted-foreground" />
@@ -1143,16 +1163,20 @@
                                             </div>
                                           </div>
                                           {#if source.type === 'document_chunk' && source.metadata?.document_file_id}
-                                            <ExternalLink
-                                              class="size-3 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground"
-                                              onclick={(e) => {
+                                            <button
+                                              type="button"
+                                              class="opacity-0 group-hover:opacity-100 transition-opacity"
+                                              onclick={(e: MouseEvent) => {
                                                 e.stopPropagation();
                                                 openDocumentPreview(source.metadata.document_file_id, source.metadata?.start_page);
                                               }}
-                                            />
+                                              aria-label="Preview document"
+                                            >
+                                              <ExternalLink class="size-3 text-muted-foreground" />
+                                            </button>
                                           {/if}
                                         </div>
-                                      </button>
+                                      </div>
                                     {/each}
                                   </div>
                                   <div class="flex items-center gap-2 text-xs text-muted-foreground">
@@ -1459,6 +1483,8 @@
   }
 
   .references-panel .references-chevron {
+    display: inline-flex;
+    align-items: center;
     transition: transform 0.2s ease;
   }
 

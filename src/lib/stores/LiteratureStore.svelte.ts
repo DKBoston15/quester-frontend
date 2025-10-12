@@ -29,22 +29,6 @@ function normalizeLiteratureDesignFields<T extends Partial<Literature>>(
   return normalized as T;
 }
 
-function applyNormalizedDesignFields<T extends Partial<Literature>>(
-  target: T,
-  normalized: Partial<Literature>
-): T {
-  const result: Partial<Literature> = { ...target };
-
-  for (const field of DESIGN_FIELDS) {
-    const value = normalized[field];
-    if (value !== undefined) {
-      result[field] = value as Literature[DesignFieldKey];
-    }
-  }
-
-  return result as T;
-}
-
   let literatureData = $state<Literature[]>([]);
   // Track which project the literature is loaded for
   let loadedProjectId = $state<string | null>(null);
@@ -99,11 +83,11 @@ function applyNormalizedDesignFields<T extends Partial<Literature>>(
           ...literature,
         });
         const newLiterature = await api.post(`/literature`, payload);
+        const created = normalizeLiteratureDesignFields(
+          newLiterature.literature
+        );
         literatureData = [
-          applyNormalizedDesignFields(
-            newLiterature.literature,
-            payload
-          ),
+          created,
           ...literatureData,
         ];
         return newLiterature;
@@ -122,13 +106,11 @@ function applyNormalizedDesignFields<T extends Partial<Literature>>(
           `/literature/${id}`,
           payload
         );
+        const updated = normalizeLiteratureDesignFields(
+          updatedLiterature.literature
+        );
         literatureData = literatureData.map((item) =>
-          item.id === id
-            ? applyNormalizedDesignFields(
-                updatedLiterature.literature,
-                payload
-              )
-            : item
+          item.id === id ? updated : item
         );
         return updatedLiterature;
       } catch (err) {
