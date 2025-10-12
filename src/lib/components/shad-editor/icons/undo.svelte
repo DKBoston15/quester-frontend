@@ -30,9 +30,9 @@
     detach?.();
     detach = null;
     const currentEditor = editor;
-    if (!currentEditor) return;
     // Run after current tick to avoid state mutation during template evaluation
     queueMicrotask(() => updateDisabledState());
+    if (!currentEditor) return;
     currentEditor.on("transaction", updateDisabledState);
     detach = () => {
       currentEditor.off("transaction", updateDisabledState);

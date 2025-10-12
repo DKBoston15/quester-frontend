@@ -466,7 +466,10 @@
                 }
                 receivedSessionId = true;
               }
-              
+
+              let nextSelectedItems: ContextSelectionItem[] | undefined;
+              let shouldClearSelection = false;
+
               messages = messages.map((msg, i) => {
                 if (i !== messages.length - 1) {
                   return msg;
@@ -493,8 +496,11 @@
                 if (Array.isArray(data.context_selection)) {
                   if (data.context_selection.length === 0) {
                     delete nextMetadata.context_selection;
+                    shouldClearSelection = true;
+                    nextSelectedItems = [];
                   } else {
                     nextMetadata.context_selection = mergedSelection;
+                    nextSelectedItems = mergedSelection;
                   }
                 } else if (mergedSelection.length > 0) {
                   nextMetadata.context_selection = mergedSelection;
@@ -506,6 +512,12 @@
                   metadata: nextMetadata,
                 };
               });
+
+              if (shouldClearSelection) {
+                selectedContextItems = [];
+              } else if (nextSelectedItems) {
+                selectedContextItems = nextSelectedItems;
+              }
             } else if (data.type === "content") {
               streamingContent += data.content;
 
