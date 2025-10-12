@@ -1556,14 +1556,12 @@
   <Dialog.Content class="sm:max-w-[600px] max-h-[85vh] overflow-hidden">
     {#if selectedEvent}
       {@const eventStyling = getEventStyling(selectedEvent)}
+      {@const EventIcon = eventStyling.icon}
       <!-- Enhanced Header -->
       <div class="event-modal-header">
         <div class="header-content">
           <div class="event-icon-container {eventStyling.colors.icon}">
-            <svelte:component
-              this={eventStyling.icon}
-              class="w-5 h-5 text-white"
-            />
+            <EventIcon class="w-5 h-5 text-white" />
           </div>
           <div class="header-text">
             <div class="title-and-badges">
@@ -1593,7 +1591,7 @@
           {#if selectedEvent.isCustom && selectedEvent.data}
             <div class="custom-event-details">
               <h4 class="custom-event-section-title">
-                <svelte:component this={eventStyling.icon} class="w-4 h-4" />
+                <EventIcon class="w-4 h-4" />
                 Event Details
               </h4>
 
@@ -1912,7 +1910,7 @@
   </Dialog.Content>
 </Dialog.Root>
 
-<style>
+<style lang="postcss">
   .achievement-group {
     @apply bg-card/50 backdrop-blur-sm rounded-lg p-6 border-2;
     border-image: linear-gradient(
@@ -1953,7 +1951,12 @@
   }
 
   .tab-button {
-    @apply inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-muted-foreground hover:text-foreground data-[state=active]:text-foreground data-[state=active]:font-semibold;
+    @apply inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-muted-foreground hover:text-foreground;
+  }
+
+  /* @svelte-ignore css-unused-selector */
+  :global(.tab-button[data-state="active"]) {
+    @apply text-foreground font-semibold;
   }
 
   :global([role="dialog"]) {
@@ -2308,7 +2311,7 @@
 
   /* No Details State */
   .no-details {
-    @apply flex flex-col items-center justify-center py-8 text-center space-y-3;
+    @apply flex flex-col items-center justify-center py-8 text-center gap-3;
   }
 
   /* Data Section */
@@ -2375,7 +2378,7 @@
     }
 
     .header-text {
-      @apply space-y-2;
+      @apply flex flex-col gap-2;
     }
   }
 

@@ -213,6 +213,15 @@
     isExportDialogOpen = true;
   }
 
+  function refreshCurrentProjectLiterature() {
+    const projectId = projectStore.currentProject?.id;
+    if (!projectId) {
+      return;
+    }
+
+    literatureStore.loadLiterature(projectId);
+  }
+
   function handleDocumentsProcessed(
     event: CustomEvent<{ jobId: string; files: any[] }>
   ) {
@@ -224,7 +233,7 @@
     );
 
     // Refresh literature list
-    literatureStore.loadLiterature(projectStore.currentProject?.id);
+    refreshCurrentProjectLiterature();
 
     // Could show a success toast here
   }
@@ -246,7 +255,7 @@
 
     // Refresh literature if successful
     if (event.detail.status === "completed") {
-      literatureStore.loadLiterature(projectStore.currentProject?.id);
+      refreshCurrentProjectLiterature();
     }
   }
 </script>

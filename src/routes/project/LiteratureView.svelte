@@ -117,7 +117,7 @@
     }
   }
 
-  let citedPage: number | null = null;
+  let citedPage = $state<number | null>(null);
 
   // Read cited page from query (e.g., ?p=3)
   $effect(() => {
@@ -386,7 +386,7 @@
                 View Document
               </Button>
               <DropdownMenu.Root>
-                <DropdownMenu.Trigger asChild>
+                <DropdownMenu.Trigger>
                   {#snippet child({ props })}
                     <Button variant="outline" size="sm" {...props}>
                       Actions
@@ -419,15 +419,18 @@
               </Button>
             {/if}
             <AlertDialog.Root bind:open={showDeleteDialog}>
-              <AlertDialog.Trigger asChild>
-                <Button
-                  id="lit-view-delete-button"
-                  variant="destructive"
-                  size="sm"
-                >
-                  <Trash2 class="h-4 w-4 mr-2" />
-                  Delete Literature
-                </Button>
+              <AlertDialog.Trigger>
+                {#snippet child({ props })}
+                  <Button
+                    id="lit-view-delete-button"
+                    variant="destructive"
+                    size="sm"
+                    {...props}
+                  >
+                    <Trash2 class="h-4 w-4 mr-2" />
+                    Delete Literature
+                  </Button>
+                {/snippet}
               </AlertDialog.Trigger>
               <AlertDialog.Content class="border-2 dark:border-dark-border">
                 <AlertDialog.Header>

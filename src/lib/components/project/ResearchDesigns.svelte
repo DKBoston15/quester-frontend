@@ -124,6 +124,10 @@
     return selections.join(", ");
   }
 
+  function getFieldId(type: DesignType, suffix: string): string {
+    return `${type}-${suffix}`.replace(/[^a-z0-9-_]/gi, "-");
+  }
+
   function cancelAddDesign(type: DesignType) {
     addingDesign = { ...addingDesign, [type]: false };
     newDesignNames = { ...newDesignNames, [type]: "" };
@@ -300,15 +304,35 @@
       {#each designTypes as type}
         <Tabs.Content value={type} class="pt-4">
           {#if editMode}
+            {@const designsControlId = getFieldId(type, "designs-select")}
+            {@const designsLabelId = getFieldId(type, "designs-label")}
+            {@const designsDescriptionId = getFieldId(type, "designs-help")}
+            {@const descriptionControlId = getFieldId(
+              type,
+              "design-description"
+            )}
+            {@const descriptionLabelId = getFieldId(
+              type,
+              "design-description-label"
+            )}
+            {@const descriptionHelpId = getFieldId(
+              type,
+              "design-description-help"
+            )}
             <div class="space-y-6">
               <div class="space-y-3">
                 <div>
                   <label
+                    id={designsLabelId}
+                    for={designsControlId}
                     class="text-sm font-semibold capitalize text-foreground"
                   >
                     {type} Designs
                   </label>
-                  <p class="text-xs text-muted-foreground mt-1">
+                  <p
+                    id={designsDescriptionId}
+                    class="text-xs text-muted-foreground mt-1"
+                  >
                     Select all {type} designs that apply to this project.
                   </p>
                 </div>
@@ -330,8 +354,10 @@
                   }))}
                 >
                   <Select.Trigger
+                    id={designsControlId}
                     class="flex min-h-11 w-full items-center justify-between gap-3 rounded-md border border-input bg-background px-3 py-2.5 text-sm shadow-sm transition-colors hover:bg-accent/5 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                    aria-label={`Select ${type} designs`}
+                    aria-labelledby={designsLabelId}
+                    aria-describedby={designsDescriptionId}
                   >
                     <span class="truncate text-left flex-1"
                       >{getTriggerLabel(type)}</span
@@ -405,20 +431,27 @@
               <div class="border-t pt-6 space-y-3">
                 <div>
                   <label
+                    id={descriptionLabelId}
+                    for={descriptionControlId}
                     class="text-sm font-semibold capitalize text-foreground"
                   >
                     {type} Design Description
                   </label>
-                  <p class="text-xs text-muted-foreground mt-1">
+                  <p
+                    id={descriptionHelpId}
+                    class="text-xs text-muted-foreground mt-1"
+                  >
                     Use this space to capture context, assumptions, or rationale
                     for the selected designs.
                   </p>
                 </div>
                 <Textarea.Textarea
+                  id={descriptionControlId}
                   rows={4}
                   placeholder={`Describe the ${type} design approach for this project...`}
                   bind:value={localDesigns[type].description}
                   class="resize-none"
+                  aria-describedby={descriptionHelpId}
                 />
               </div>
             </div>

@@ -309,7 +309,10 @@
           {#if editMode}
             <div class="space-y-4">
               <div class="space-y-2">
-                <label class="text-sm font-medium capitalize">
+                <label
+                  class="text-sm font-medium capitalize"
+                  for={`design-select-${type}`}
+                >
                   {type} designs
                 </label>
                 <Select.Root
@@ -330,6 +333,7 @@
                   }))}
                 >
                   <Select.Trigger
+                    id={`design-select-${type}`}
                     class="flex min-h-10 w-full items-center justify-between gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                     aria-label={`Select ${type} designs`}
                   >
@@ -406,6 +410,7 @@
                 <div>
                   <label
                     class="text-sm font-semibold capitalize text-foreground"
+                    for={`design-description-${type}`}
                   >
                     {type} Design Description
                   </label>
@@ -418,6 +423,7 @@
                   rows={3}
                   placeholder={`Note any specifics of the ${type} design in this literature`}
                   bind:value={localDesigns[type].description}
+                  id={`design-description-${type}`}
                   class="resize-none"
                 />
               </div>

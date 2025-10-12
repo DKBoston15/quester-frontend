@@ -18,7 +18,6 @@
   import OutcomeView from "./project/OutcomeView.svelte";
   import Chat from "./project/Chat.svelte";
   import { trackPageView } from "$lib/services/fullstory";
-  import ActivityTracker from "$lib/components/activity/ActivityTracker.svelte";
 
   type SectionKey =
     | "overview"
@@ -88,12 +87,6 @@
 </script>
 
 <Sidebar.Provider>
-  <!-- Activity Tracker - automatically manages session tracking for route changes -->
-  <ActivityTracker
-    currentRoute={$location.pathname}
-    projectId={props.params.projectId}
-  />
-
   <div class="flex h-screen bg-background w-full">
     <ProjectSidebar project={projectStore.currentProject} />
     <main

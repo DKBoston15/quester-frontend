@@ -50,7 +50,7 @@
   }>();
 
   // Local state
-  let menuElement: HTMLDivElement;
+  let menuElement: HTMLDivElement | null = $state(null);
   let focusedIndex = $state(0);
   let menuOptions = $state<CustomEventMenuOption[]>([]);
   let showDeleteDialog = $state(false);
@@ -182,12 +182,6 @@
 
   function handleClose() {
     dispatch("close");
-  }
-
-  function handleBackdropClick(event: MouseEvent) {
-    if (event.target === event.currentTarget) {
-      handleClose();
-    }
   }
 
   function handleKeydown(keyboardEvent: KeyboardEvent) {
@@ -350,11 +344,7 @@
 
 <!-- Context Menu -->
 {#if open && event}
-  <div
-    class="context-menu-backdrop"
-    transition:fade={{ duration: 150 }}
-    onclick={handleBackdropClick}
-  >
+  <div class="context-menu-backdrop" transition:fade={{ duration: 150 }}>
     <div
       bind:this={menuElement}
       class="context-menu"
@@ -455,7 +445,7 @@
   </AlertDialog.Content>
 </AlertDialog.Root>
 
-<style>
+<style lang="postcss">
   .context-menu-backdrop {
     @apply fixed inset-0 z-[60] bg-transparent;
   }

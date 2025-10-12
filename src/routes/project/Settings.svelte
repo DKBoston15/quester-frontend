@@ -215,7 +215,7 @@
         <CardTitle class="">General Settings</CardTitle>
       </CardHeader>
       <CardContent>
-        <form class="space-y-4" on:submit={updateProjectName}>
+        <form class="space-y-4" onsubmit={updateProjectName}>
           <div class="space-y-2">
             <Label for="projectName">Project Name</Label>
             <Input
@@ -312,15 +312,17 @@
       class="bg-white dark:bg-gray-800 p-8 rounded-lg max-w-md w-full shadow-xl"
     >
       <h2 class="text-2xl font-bold mb-4">Delete Project</h2>
-      <p class="text-base mb-6">
-        Are you sure you want to delete this project? This action cannot be
-        undone.
+      <div class="text-base mb-6">
+        <p>
+          Are you sure you want to delete this project? This action cannot be
+          undone.
+        </p>
         {#if projectStore.currentProject}
           <p class="font-medium mt-2">
             Project: {projectStore.currentProject.name}
           </p>
         {/if}
-      </p>
+      </div>
       <div class="flex justify-end space-x-2">
         <Button
           type="button"

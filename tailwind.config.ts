@@ -17,6 +17,14 @@ const config: Config = {
     },
     extend: {
       colors: {
+        bg: "#0B0E13",
+        surface: "#121721",
+        surfaceAlt: "#161C26",
+        textPrimary: "#E7ECF3",
+        textSecondary: "#9AA7B2",
+        stroke: "rgba(231,236,243,0.12)",
+        brand: "#4C8CF5",
+        success: "#7BE0B8",
         border: "hsl(var(--border) / <alpha-value>)",
         input: "hsl(var(--input) / <alpha-value>)",
         ring: "hsl(var(--ring) / <alpha-value>)",
@@ -76,6 +84,8 @@ const config: Config = {
         },
       },
       boxShadow: {
+        card: "0 1px 0 rgba(255,255,255,0.03), 0 12px 40px rgba(0,0,0,0.45)",
+        hover: "0 14px 44px rgba(0,0,0,0.55)",
         s: "var(--shadow-s)",
         m: "var(--shadow-m)",
         l: "var(--shadow-l)",
@@ -90,6 +100,10 @@ const config: Config = {
         sans: [...fontFamily.sans],
       },
       keyframes: {
+        "fade-in": {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
         "accordion-down": {
           from: { height: "0" },
           to: { height: "var(--bits-accordion-content-height)" },
@@ -116,6 +130,7 @@ const config: Config = {
         },
       },
       animation: {
+        "fade-in": "fade-in 0.18s ease-out forwards",
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "caret-blink": "caret-blink 1.25s ease-out infinite",
