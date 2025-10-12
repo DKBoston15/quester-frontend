@@ -596,8 +596,13 @@
 
     for (let index = items.length - 1; index >= 0; index -= 1) {
       const selection = items[index]?.metadata?.context_selection;
-      if (Array.isArray(selection) && selection.length > 0) {
-        return selection;
+      if (Array.isArray(selection)) {
+        if (selection.length === 0) {
+          return [];
+        }
+        if (selection.length > 0) {
+          return selection;
+        }
       }
     }
 

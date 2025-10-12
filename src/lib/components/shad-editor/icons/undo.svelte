@@ -14,7 +14,7 @@
 
   // Safely update disabled state (avoid synchronous state mutation during render)
   function updateDisabledState() {
-    const canUndo = editor?.can().undo() ?? false;
+    const canUndo = editor?.can()?.undo?.() ?? false;
     // Defer state change to avoid mutating during template/derived evaluation
     queueMicrotask(() => {
       isDisabled = !canUndo;

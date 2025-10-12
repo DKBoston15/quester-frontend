@@ -787,15 +787,6 @@
                   Manage team members and their roles for this {teamManagement.selectedResourceType}
                 </p>
               </div>
-              <!-- Error Display -->
-              {#if teamManagement.error && teamManagement.error !== teamManagement.settingsError}
-                <Alert variant="destructive" class="mb-6">
-                  <Info class="h-4 w-4" />
-                  <AlertTitle>Error</AlertTitle>
-                  <AlertDescription>{teamManagement.error}</AlertDescription>
-                </Alert>
-              {/if}
-
               <!-- Error Display - Only show errors that aren't settings-related -->
               {#if teamManagement.error && teamManagement.error !== teamManagement.settingsError}
                 <Alert variant="destructive" class="mb-6">

@@ -36,8 +36,9 @@ function applyNormalizedDesignFields<T extends Partial<Literature>>(
   const result: Partial<Literature> = { ...target };
 
   for (const field of DESIGN_FIELDS) {
-    if (field in normalized) {
-      result[field] = normalized[field] as Literature[DesignFieldKey];
+    const value = normalized[field];
+    if (value !== undefined) {
+      result[field] = value as Literature[DesignFieldKey];
     }
   }
 
