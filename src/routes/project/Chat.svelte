@@ -149,6 +149,7 @@
       div.innerHTML = html;
       return (div.textContent || div.innerText || "").trim();
     } catch {
+      console.warn("Failed to parse markdown to plain text:", markdown);
       return (markdown || "").trim();
     }
   }
@@ -160,16 +161,18 @@
       const plain = toPlainText(message.content || "");
       const title = "Chat Note";
 
+      const lines = (plain ?? "").split(/\r?\n/);
+      const paragraphs =
+        lines.length > 0
+          ? lines.map((line) => ({
+              type: "paragraph",
+              content: line ? [{ type: "text", text: line }] : [],
+            }))
+          : [{ type: "paragraph", content: [] }];
+
       const tiptapDoc = {
         type: "doc",
-        content: [
-          {
-            type: "paragraph",
-            content: plain
-              ? [{ type: "text", text: plain }]
-              : [],
-          },
-        ],
+        content: paragraphs,
       } as const;
 
       const newNote = await notesStore.createNote({
@@ -618,9 +621,7 @@
         if (selection.length === 0) {
           return [];
         }
-        if (selection.length > 0) {
-          return selection;
-        }
+        return selection;
       }
     }
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { Undo } from "lucide-svelte";
   import * as Tooltip from "$lib/components/ui/tooltip/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
@@ -22,7 +23,6 @@
   }
 
   // Attach listeners on mount and when editor changes
-  import { onMount } from "svelte";
   let detach: (() => void) | null = null;
 
   function attachListeners() {
@@ -51,9 +51,6 @@
   $effect(() => {
     // Access editor for dependency tracking
     const ed = editor;
-    // Detach previous listeners and reattach for new instance
-    detach?.();
-    detach = null;
     attachListeners();
   });
 </script>
