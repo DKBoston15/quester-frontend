@@ -262,11 +262,11 @@ body,
 }
 
 .prose-chat code {
-  @apply bg-muted px-1.5 py-0.5 rounded text-sm font-mono;
+  @apply bg-muted px-1.5 py-0.5 rounded text-sm font-mono dark:bg-slate-800/80;
 }
 
 .prose-chat pre {
-  @apply bg-muted p-3 rounded-md overflow-x-auto mb-2;
+  @apply bg-muted p-3 rounded-md overflow-x-auto mb-2 dark:bg-slate-900/80;
 }
 
 .prose-chat pre code {
@@ -278,7 +278,7 @@ body,
 }
 
 .prose-chat a {
-  @apply text-blue-500 hover:text-blue-600 underline;
+  @apply text-blue-500 hover:text-blue-600 underline dark:text-blue-400 dark:hover:text-blue-300;
 }
 
 .prose-chat strong {

@@ -562,14 +562,15 @@ async function performSearch(searchQuery: string = query): Promise<void> {
     const data = await response.json();
     // Filter results by similarity threshold (only show results with >30% similarity)
     const allResults = data.results || [];
-    results = allResults.filter(
+    const filteredResults = allResults.filter(
       (result: SearchResult) => result.similarity > 0.3
     );
+    results = filteredResults;
 
     // Cache the results
     searchCache.set(cacheKey, {
       query: searchQuery,
-      results: results,
+      results,
       timestamp: Date.now(),
       filters: { ...activeFilters },
     });

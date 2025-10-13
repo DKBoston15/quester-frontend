@@ -58,7 +58,11 @@
 
   function getDedupKey(item: ContextSelectionItem): string {
     const normalize = (value: unknown) =>
-      typeof value === "string" ? value.toLowerCase().trim() : value ? String(value) : "";
+      typeof value === "string"
+        ? value.toLowerCase().trim()
+        : value
+          ? String(value)
+          : "";
 
     // Helper function to clean titles by removing chunk count information
     const cleanTitle = (title: string): string => {
@@ -68,7 +72,10 @@
     if (item.type === "literature") {
       // For literature, ALWAYS use cleaned title for deduplication
       // This ensures same literature with different IDs gets merged
-      const title = item.metadata?.literature_name || item.metadata?.document_name || item.title;
+      const title =
+        item.metadata?.literature_name ||
+        item.metadata?.document_name ||
+        item.title;
       return `literature:${normalize(cleanTitle(String(title)))}`;
     }
 
@@ -103,7 +110,10 @@
     return null;
   }
 
-  function isInCurrentProject(item: ContextSelectionItem, currentProjectId: string) {
+  function isInCurrentProject(
+    item: ContextSelectionItem,
+    currentProjectId: string
+  ) {
     if (item.type === "project") {
       return item.id === currentProjectId;
     }
@@ -176,7 +186,10 @@
           // Extract chunk counts for aggregation
           const getChunkCount = (title: string, metadata: any): number => {
             // Try to get chunk count from metadata first
-            if (metadata?.chunkCount && typeof metadata.chunkCount === 'number') {
+            if (
+              metadata?.chunkCount &&
+              typeof metadata.chunkCount === "number"
+            ) {
               return metadata.chunkCount;
             }
             // Extract from title as fallback
@@ -184,17 +197,23 @@
             return match ? parseInt(match[1], 10) : 0;
           };
 
-          const existingChunks = getChunkCount(existing.title, existing.metadata);
+          const existingChunks = getChunkCount(
+            existing.title,
+            existing.metadata
+          );
           const newChunks = getChunkCount(item.title, item.metadata);
           const totalChunks = existingChunks + newChunks;
 
           // Get clean title for merging
           const cleanTitle = (title: string): string => {
-            return title.replace(/\s*\(\d+\s+(chunks?|sections?)\)\s*$/i, "").trim();
+            return title
+              .replace(/\s*\(\d+\s+(chunks?|sections?)\)\s*$/i, "")
+              .trim();
           };
 
-          const baseTitle = cleanTitle(existing.title) || cleanTitle(item.title);
-          const finalTitle = totalChunks > 0 ? `${baseTitle} (${totalChunks} chunks)` : baseTitle;
+          const baseTitle =
+            cleanTitle(existing.title) || cleanTitle(item.title);
+          const finalTitle = totalChunks > 0 ? `${baseTitle}` : baseTitle;
 
           // Merge items intelligently
           const merged: ContextSelectionItem = {
@@ -205,16 +224,20 @@
             metadata: {
               ...existing.metadata,
               ...item.metadata,
-              chunkCount: totalChunks || item.metadata?.chunkCount || existing.metadata?.chunkCount,
+              chunkCount:
+                totalChunks ||
+                item.metadata?.chunkCount ||
+                existing.metadata?.chunkCount,
               // Preserve citation from whichever item has it
               citation: item.metadata?.citation || existing.metadata?.citation,
             },
             // Use the better subtitle (prefer the one with citation info)
-            subtitle: (item.subtitle && item.subtitle.includes('('))
-              ? item.subtitle
-              : existing.subtitle
-              ? existing.subtitle
-              : item.subtitle,
+            subtitle:
+              item.subtitle && item.subtitle.includes("(")
+                ? item.subtitle
+                : existing.subtitle
+                  ? existing.subtitle
+                  : item.subtitle,
             // Keep the first valid ID encountered
             id: existing.id || item.id,
           };
@@ -268,13 +291,10 @@
     switch (result.type) {
       case "literature":
         // Check if this is a grouped document result
-        const chunkInfo = result.metadata?.chunkCount
-          ? ` (${result.metadata.chunkCount} chunks)`
-          : "";
         return {
           id: result.id,
           type: "literature",
-          title: result.title + chunkInfo,
+          title: result.title,
           subtitle: result.metadata?.citation || result.snippet,
           projectId: result.projectInfo?.id,
           metadata: baseMetadata,
@@ -319,7 +339,8 @@
         const rawMetadata = result.metadata || {};
         const rawContent = result.content || {};
 
-        const literatureId = rawMetadata.literature_id || rawContent.literatureId;
+        const literatureId =
+          rawMetadata.literature_id || rawContent.literatureId;
         if (literatureId) {
           return {
             id: literatureId,
@@ -419,8 +440,8 @@
     <div>
       <p class="text-sm font-semibold">Context Focus</p>
       <p class="text-xs text-muted-foreground">
-        Select specific items to anchor the assistant's context. The assistant will
-        still keep lightweight project metadata.
+        Select specific items to anchor the assistant's context. The assistant
+        will still keep lightweight project metadata.
       </p>
     </div>
     {#if selectedItems.length > 0}
@@ -429,7 +450,7 @@
         size="sm"
         class="text-xs"
         onclick={handleClear}
-        disabled={disabled}
+        {disabled}
       >
         Clear
       </Button>
@@ -439,19 +460,18 @@
   <div class="flex flex-wrap gap-2">
     {#if selectedItems.length === 0}
       <span class="text-xs text-muted-foreground">
-        No context items selected. The assistant will consider the broader project content.
+        No context items selected. The assistant will consider the broader
+        project content.
       </span>
     {:else}
       {#each selectedItems as item (item.type + item.id)}
-        <Badge
-          variant="secondary"
-          class="flex items-center gap-1 text-xs">
+        <Badge variant="secondary" class="flex items-center gap-1 text-xs">
           <span class="font-medium">{item.title}</span>
           <span class="text-muted-foreground">· {getTypeLabel(item.type)}</span>
           <button
             class="ml-1 inline-flex items-center"
             onclick={() => handleRemove(item)}
-            disabled={disabled}
+            {disabled}
             aria-label={`Remove ${item.title} from context`}
           >
             <XCircle class="size-3" />
@@ -473,7 +493,9 @@
     />
 
     {#if scope === "current" && !projectId}
-      <div class="flex items-center gap-2 rounded border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
+      <div
+        class="flex items-center gap-2 rounded border border-dashed border-border px-3 py-2 text-xs text-muted-foreground"
+      >
         <AlertCircle class="size-3" />
         Choose a project to target context selections.
       </div>
@@ -485,7 +507,9 @@
         Searching…
       </div>
     {:else if searchError}
-      <div class="flex items-center gap-2 rounded border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+      <div
+        class="flex items-center gap-2 rounded border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive"
+      >
         <AlertCircle class="size-3" />
         {searchError}
       </div>
@@ -513,7 +537,8 @@
                   {getTypeLabel(item.type)}
                 </Badge>
                 {#if isSelected(item)}
-                  <Badge variant="secondary" class="text-[10px]">Selected</Badge>
+                  <Badge variant="secondary" class="text-[10px]">Selected</Badge
+                  >
                 {:else}
                   <PlusCircle class="size-4 text-muted-foreground" />
                 {/if}

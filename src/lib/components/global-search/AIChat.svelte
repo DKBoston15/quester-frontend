@@ -230,56 +230,62 @@
   }
 
   function getTypeLabel(type: string): string {
-    return type === 'document_chunk' ? 'Literature Page' : (type?.[0]?.toUpperCase() + type?.slice(1));
+    return type === "document_chunk"
+      ? "Literature Page"
+      : type?.[0]?.toUpperCase() + type?.slice(1);
   }
 
   function formatContextItemLabel(item: ContextSelectionItem): string {
     if (item.title && item.title.trim().length > 0) {
       return item.title;
     }
-    const shortId = item.id ? `${item.id.slice(0, 6)}…` : '';
+    const shortId = item.id ? `${item.id.slice(0, 6)}…` : "";
     const typeLabel = getTypeLabel(item.type);
     return shortId ? `${typeLabel} (${shortId})` : typeLabel;
   }
 
   async function openDocumentPreview(fileId: string, page?: number) {
     try {
-      const res = await fetch(`${API_BASE_URL}/documents/${fileId}/download?preview=true`, {
-        credentials: 'include',
-      });
+      const res = await fetch(
+        `${API_BASE_URL}/documents/${fileId}/download?preview=true`,
+        {
+          credentials: "include",
+        }
+      );
       if (!res.ok) return;
       const data = await res.json();
       const url = page ? `${data.downloadUrl}#page=${page}` : data.downloadUrl;
-      window.open(url, '_blank');
+      window.open(url, "_blank");
     } catch (e) {
-      console.error('Preview open failed', e);
+      console.error("Preview open failed", e);
     }
   }
 
   function handleSourceClick(source: Source) {
     const projectId = source?.metadata?.project_id;
     if (!projectId) return;
-    let path = '';
+    let path = "";
     switch (source.type) {
-      case 'literature':
+      case "literature":
         path = `/project/${projectId}/literature/${source.id}`;
         break;
-      case 'document_chunk':
+      case "document_chunk":
         if (source.metadata?.literature_id) {
           const qp = new URLSearchParams();
-          if (source.metadata?.start_page) qp.set('p', String(source.metadata.start_page));
+          if (source.metadata?.start_page)
+            qp.set("p", String(source.metadata.start_page));
           path = `/project/${projectId}/literature/${source.metadata.literature_id}?${qp.toString()}`;
         } else {
           path = `/project/${projectId}/literature`;
         }
         break;
-      case 'note':
+      case "note":
         path = `/project/${projectId}/notes`;
         break;
-      case 'outcome':
+      case "outcome":
         path = `/project/${projectId}/outcomes/${source.id}`;
         break;
-      case 'project':
+      case "project":
         path = `/project/${projectId}`;
         break;
       default:
@@ -590,7 +596,9 @@
               {@const focusCount = focusedItems.length}
               {@const hasContextFocus = focusCount > 0}
               {@const hasSources = sources.length > 0}
-              {@const hasProjectContext = Boolean(message.metadata?.project_context)}
+              {@const hasProjectContext = Boolean(
+                message.metadata?.project_context
+              )}
 
               <div
                 class="message-container"
@@ -636,9 +644,7 @@
                       : 'text-left'}"
                   >
                     <div
-                      class="inline-block rounded-2xl px-4 py-3 {isUser
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted border border-border'} relative group"
+                      class="inline-block rounded-2xl px-4 py-3 bg-muted border border-border relative group dark:bg-muted/60 dark:border-border/70"
                     >
                       <!-- Message Content -->
                       {#if isAssistant}
@@ -647,7 +653,7 @@
                         </div>
                       {:else}
                         <div
-                          class="whitespace-pre-wrap text-sm leading-relaxed"
+                          class="prose-chat text-sm leading-relaxed whitespace-pre-wrap"
                         >
                           {content || message.content}
                         </div>
@@ -678,34 +684,39 @@
 
                       {#if hasSources || hasTools || hasContextFocus || hasProjectContext}
                         <details
-                          class="mt-3 border border-border/50 rounded-md bg-muted/30 references-panel"
+                          class="mt-3 border border-border/50 dark:border-border/70 rounded-md bg-muted/30 dark:bg-muted/50 references-panel"
                           transition:slide|local
                         >
-                          <summary class="flex items-center justify-between gap-2 text-xs font-medium text-muted-foreground cursor-pointer px-3 py-2">
+                          <summary
+                            class="flex items-center justify-between gap-2 text-xs font-medium text-muted-foreground cursor-pointer px-3 py-2"
+                          >
                             <span class="flex items-center gap-2">
                               <BookOpen class="size-3" />
                               <span>Referenced context</span>
-                              <span class="text-[10px] uppercase tracking-wide text-muted-foreground/80">
+                              <span
+                                class="text-[10px] uppercase tracking-wide text-muted-foreground/80"
+                              >
                                 {#if hasSources}
-                                  {sources.length} source{sources.length !== 1 ? "s" : ""}
-                                {/if}
-                                {#if hasContextFocus}
-                                  {#if hasSources}
-                                    •
-                                  {/if}
-                                  focus {focusCount}
+                                  {sources.length} source{sources.length !== 1
+                                    ? "s"
+                                    : ""}
                                 {/if}
                                 {#if hasProjectContext && !hasSources && !hasContextFocus}
                                   project context
                                 {/if}
                               </span>
                             </span>
-                            <ChevronDown class="size-4 references-chevron" aria-hidden="true" />
+                            <ChevronDown
+                              class="size-4 references-chevron"
+                              aria-hidden="true"
+                            />
                           </summary>
                           <div class="px-3 pb-3 pt-2 space-y-3">
                             {#if hasContextFocus}
                               <div>
-                                <div class="text-xs text-muted-foreground mb-2 font-medium">
+                                <div
+                                  class="text-xs text-muted-foreground mb-2 font-medium"
+                                >
                                   Focused context:
                                 </div>
                                 <div class="flex flex-wrap gap-2">
@@ -742,7 +753,10 @@
                                   {@const Icon = getResultIcon(source.type)}
                                   <button
                                     class="w-full border rounded-md p-2 bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer group text-left"
-                                    onclick={() => handleSourceClick(source as unknown as Source)}
+                                    onclick={() =>
+                                      handleSourceClick(
+                                        source as unknown as Source
+                                      )}
                                   >
                                     <div class="flex items-start gap-2">
                                       <Icon
@@ -764,7 +778,11 @@
                                         <div
                                           class="flex items-center gap-2 mt-1"
                                         >
-                                          <Badge variant="outline" class="text-xs">{getTypeLabel(source.type)}</Badge>
+                                          <Badge
+                                            variant="outline"
+                                            class="text-xs"
+                                            >{getTypeLabel(source.type)}</Badge
+                                          >
                                           {#if source.similarity}
                                             <span
                                               class="text-xs text-muted-foreground"
@@ -776,10 +794,16 @@
                                           {/if}
                                         </div>
                                       </div>
-                                      {#if source.type === 'document_chunk' && source.metadata?.document_file_id}
+                                      {#if source.type === "document_chunk" && source.metadata?.document_file_id}
                                         <ExternalLink
                                           class="size-3 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground"
-                                          onclick={(e) => { e.stopPropagation(); openDocumentPreview(source.metadata.document_file_id, source.metadata?.start_page); }}
+                                          onclick={(e) => {
+                                            e.stopPropagation();
+                                            openDocumentPreview(
+                                              source.metadata.document_file_id,
+                                              source.metadata?.start_page
+                                            );
+                                          }}
                                         />
                                       {/if}
                                     </div>
@@ -791,13 +815,18 @@
                               >
                                 <Search class="size-3" />
                                 <span
-                                  >Used {sources.length} source{sources.length !== 1 ? "s" : ""} from your research</span
+                                  >Used {sources.length} source{sources.length !==
+                                  1
+                                    ? "s"
+                                    : ""} from your research</span
                                 >
                               </div>
                             {/if}
 
                             {#if hasProjectContext}
-                              <div class="flex items-center gap-2 text-xs text-muted-foreground">
+                              <div
+                                class="flex items-center gap-2 text-xs text-muted-foreground"
+                              >
                                 <Folder class="size-3" />
                                 <span>Using current project context</span>
                               </div>
