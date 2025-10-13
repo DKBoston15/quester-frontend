@@ -159,9 +159,12 @@
 
     try {
       const plain = toPlainText(message.content || "");
-      const title = "Chat Note";
-
       const lines = (plain ?? "").split(/\r?\n/);
+      const firstLine =
+        lines.find((line) => line.trim().length > 0) || "Chat Note";
+      const title =
+        firstLine.length > 50 ? firstLine.slice(0, 47) + "..." : firstLine;
+
       const paragraphs =
         lines.length > 0
           ? lines.map((line) => ({
