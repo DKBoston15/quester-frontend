@@ -1416,16 +1416,6 @@
             />
 
             <div class="relative">
-              <!-- Typing Indicator -->
-              {#if isTyping}
-                <div
-                  class="absolute -top-8 left-0 text-xs text-muted-foreground"
-                  transition:fade={{ duration: 200 }}
-                >
-                  You are typing...
-                </div>
-              {/if}
-
               <!-- Input Container -->
               <div class="flex gap-3 items-center">
                 <!-- Text Area -->
