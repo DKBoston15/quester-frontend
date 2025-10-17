@@ -1417,7 +1417,7 @@
 
             <div class="relative">
               <!-- Input Container -->
-              <div class="flex gap-3 items-center">
+              <div class="flex gap-3">
                 <!-- Text Area -->
                 <div class="flex-1 relative">
                   <textarea
@@ -1428,7 +1428,7 @@
                     placeholder="Ask questions about your research, get insights, or explore your data..."
                     disabled={isLoading || isStreaming}
                     rows="1"
-                    class="w-full resize-none rounded-lg border-2 dark:border-dark-border bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:focus:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] max-h-32 overflow-y-auto transition-all duration-200"
+                    class="w-full resize-none rounded-lg border-2 dark:border-dark-border bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:focus:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] max-h-32 overflow-y-auto transition-all duration-200"
                     style="field-sizing: content;"
                   ></textarea>
 
@@ -1446,7 +1446,7 @@
                 <button
                   onclick={handleSubmit}
                   disabled={!chatInput.trim() || isLoading || isStreaming}
-                  class="flex items-center justify-center px-4 py-3 h-[44px] min-w-[44px] border-2 dark:border-dark-border bg-blue-500 text-white rounded-lg hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-none transition-all duration-200"
+                  class="flex items-center justify-center px-4 py-3 h-[48px] min-w-[48px] border-2 dark:border-dark-border bg-blue-500 text-white rounded-lg hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-none transition-all duration-200"
                   aria-label="Send message"
                 >
                   {#if isLoading || isStreaming}

@@ -116,8 +116,10 @@
 
     isPending = true;
     try {
+      const trimmedPurpose = currentPurpose?.trim() ?? null;
+      currentPurpose = trimmedPurpose;
       await projectStore.updateProject(projectStore.currentProject.id, {
-        purpose: currentPurpose,
+        purpose: trimmedPurpose,
         status: currentStatus,
       });
       editMode.purpose = false;

@@ -484,7 +484,7 @@
   <div class="space-y-2">
     <input
       type="text"
-      class="w-full rounded border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+      class="w-full h-[44px] rounded-lg border-2 border-border dark:border-dark-border bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:focus:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
       placeholder={scope === "all"
         ? "Search items across accessible projects"
         : "Search this project for notes, literature, outcomes..."}

@@ -886,7 +886,7 @@
 
         <div class="relative">
           <!-- Input Container -->
-          <div class="flex gap-3 items-end">
+          <div class="flex gap-3 items-stretch">
             <!-- Text Area -->
             <div class="flex-1 relative">
               <textarea
@@ -897,7 +897,7 @@
                 placeholder="Ask questions about your research, get insights, or explore your data..."
                 disabled={isStreaming}
                 rows="1"
-                class="w-full resize-none rounded-lg border bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] max-h-32 overflow-y-auto"
+                class="w-full resize-none rounded-lg border-2 dark:border-dark-border bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:focus:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] max-h-32 overflow-y-auto transition-all duration-200"
                 style="field-sizing: content;"
               ></textarea>
 
@@ -916,7 +916,7 @@
               onclick={handleSubmit}
               disabled={!chatInput.trim() || isStreaming}
               size="sm"
-              class="px-4 py-3 h-11 min-w-11"
+              class="px-4 py-3 h-full min-w-[48px] border-2 dark:border-dark-border"
               aria-label="Send message"
             >
               {#if isStreaming}
