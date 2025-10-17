@@ -672,7 +672,9 @@
       </Sidebar.Group>
     </Sidebar.Content>
 
-    <div class="mt-auto">
+    <div class="mt-auto flex flex-col gap-3 pt-3">
+      <Sidebar.Separator />
+
       <Sidebar.Group>
         <Sidebar.GroupContent>
           <Sidebar.Menu>

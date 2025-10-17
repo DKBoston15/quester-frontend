@@ -168,52 +168,74 @@
     achievements: Achievement[];
   };
 
+  const hoverShadowMap: Record<string, string> = {
+    "from-blue-500": "hover:shadow-[0_12px_24px_rgba(37,99,235,0.35)]",
+    "from-purple-500": "hover:shadow-[0_12px_24px_rgba(168,85,247,0.35)]",
+    "from-green-500": "hover:shadow-[0_12px_24px_rgba(34,197,94,0.35)]",
+    "from-amber-500": "hover:shadow-[0_12px_24px_rgba(245,158,11,0.35)]",
+    "from-rose-500": "hover:shadow-[0_12px_24px_rgba(244,63,94,0.35)]",
+    "from-indigo-500": "hover:shadow-[0_12px_24px_rgba(99,102,241,0.35)]",
+    "from-cyan-500": "hover:shadow-[0_12px_24px_rgba(34,211,238,0.35)]",
+  };
+
+  function getHoverShadowClass(color: string) {
+    const baseColor = color.split(" ")[0];
+    return hoverShadowMap[baseColor] || "";
+  }
+
   // Achievement categories for grouping with colors
   const achievementGroups: Record<
     string,
-    AchievementGroup & { color: string }
+    AchievementGroup & { color: string; hoverShadowClass: string }
   > = {
     "Note-Taking Master": {
       name: "Note Taking",
       icon: PenTool,
       achievements: [],
       color: "from-blue-500 to-blue-600",
+      hoverShadowClass: getHoverShadowClass("from-blue-500 to-blue-600"),
     },
     Collector: {
       name: "Literature Collection",
       icon: Book,
       achievements: [],
       color: "from-purple-500 to-purple-600",
+      hoverShadowClass: getHoverShadowClass("from-purple-500 to-purple-600"),
     },
     Consistency: {
       name: "Consistency",
       icon: Calendar,
       achievements: [],
       color: "from-green-500 to-green-600",
+      hoverShadowClass: getHoverShadowClass("from-green-500 to-green-600"),
     },
     "Keyword Researcher": {
       name: "Keyword Research",
       icon: Search,
       achievements: [],
       color: "from-amber-500 to-amber-600",
+      hoverShadowClass: getHoverShadowClass("from-amber-500 to-amber-600"),
     },
     Explorer: {
       name: "Research Design",
       icon: Expand,
       achievements: [],
       color: "from-rose-500 to-rose-600",
+      hoverShadowClass: getHoverShadowClass("from-rose-500 to-rose-600"),
     },
     "Expanding Horizons": {
       name: "Custom Designs",
       icon: Star,
       achievements: [],
       color: "from-indigo-500 to-indigo-600",
+      hoverShadowClass: getHoverShadowClass("from-indigo-500 to-indigo-600"),
     },
     "Visualization Expert": {
       name: "Visualization",
       icon: Network,
       achievements: [],
       color: "from-cyan-500 to-cyan-600",
+      hoverShadowClass: getHoverShadowClass("from-cyan-500 to-cyan-600"),
     },
   };
 
@@ -340,9 +362,11 @@
     return filtered;
   });
 
-  onMount(async () => {
-    await loadTimelineData();
-    await loadAchievements();
+  onMount(() => {
+    void (async () => {
+      await loadTimelineData();
+      await loadAchievements();
+    })();
   });
 
   onDestroy(() => {
@@ -1295,10 +1319,7 @@
 
 <div class="container mx-auto py-8 space-y-8" id="progress-header">
   <!-- Research Level Card -->
-  <Card
-    class="research-level-card border-0 shadow-xl shadow-black/10 dark:shadow-black/20"
-    id="research-level-card"
-  >
+  <Card class="research-level-card" id="research-level-card">
     <CardHeader class="pb-4 relative overflow-hidden">
       <div
         class="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5"
@@ -1426,7 +1447,7 @@
     </Tabs.List>
 
     <Tabs.Content value="timeline" class="space-y-4" id="timeline-content">
-      <Card class="border-2">
+      <Card>
         <CardHeader>
           <CardTitle>Project Timeline</CardTitle>
         </CardHeader>
@@ -1474,9 +1495,9 @@
           </CardContent>
         </Card>
       {:else}
-        {#each Object.entries(achievementGroups).sort( ([, a], [, b]) => a.name.localeCompare(b.name) ) as [category, { name, icon: Icon, achievements, color }]}
+        {#each Object.entries(achievementGroups).sort( ([, a], [, b]) => a.name.localeCompare(b.name) ) as [category, { name, icon: Icon, achievements, color, hoverShadowClass }]}
           {#if achievements.length > 0}
-            <div class="achievement-group" in:fade={{ duration: 300 }}>
+            <Card class="achievement-group p-4">
               <div class="flex items-center gap-3 mb-4">
                 <div
                   class={`h-8 w-8 rounded-lg bg-gradient-to-br ${color} text-white flex items-center justify-center shadow-lg`}
@@ -1494,7 +1515,7 @@
                 {#each achievements as achievement (achievement.id)}
                   <div in:fade={{ duration: 300 }}>
                     <Card
-                      class={`achievement-card ${achievement.completed ? "completed" : ""} hover:shadow-${color.split("-")[1]}/20`}
+                      class={`achievement-card ${achievement.completed ? "completed" : ""} ${hoverShadowClass}`}
                     >
                       {#if achievement.completed}
                         <div
@@ -1547,7 +1568,7 @@
                   </div>
                 {/each}
               </div>
-            </div>
+            </Card>
           {/if}
         {/each}
       {/if}
@@ -1559,14 +1580,12 @@
   <Dialog.Content class="sm:max-w-[600px] max-h-[85vh] overflow-hidden">
     {#if selectedEvent}
       {@const eventStyling = getEventStyling(selectedEvent)}
+      {@const EventIcon = eventStyling.icon}
       <!-- Enhanced Header -->
       <div class="event-modal-header">
         <div class="header-content">
           <div class="event-icon-container {eventStyling.colors.icon}">
-            <svelte:component
-              this={eventStyling.icon}
-              class="w-5 h-5 text-white"
-            />
+            <EventIcon class="w-5 h-5 text-white" />
           </div>
           <div class="header-text">
             <div class="title-and-badges">
@@ -1596,7 +1615,7 @@
           {#if selectedEvent.isCustom && selectedEvent.data}
             <div class="custom-event-details">
               <h4 class="custom-event-section-title">
-                <svelte:component this={eventStyling.icon} class="w-4 h-4" />
+                <EventIcon class="w-4 h-4" />
                 Event Details
               </h4>
 
@@ -1915,7 +1934,7 @@
   </Dialog.Content>
 </Dialog.Root>
 
-<style>
+<style lang="postcss">
   .achievement-group {
     @apply bg-card/50 backdrop-blur-sm rounded-lg p-6 border-2;
     border-image: linear-gradient(
@@ -1956,7 +1975,12 @@
   }
 
   .tab-button {
-    @apply inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-muted-foreground hover:text-foreground data-[state=active]:text-foreground data-[state=active]:font-semibold;
+    @apply inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-muted-foreground hover:text-foreground;
+  }
+
+  /* @svelte-ignore css-unused-selector */
+  :global(.tab-button[data-state="active"]) {
+    @apply text-foreground font-semibold;
   }
 
   :global([role="dialog"]) {
@@ -2311,7 +2335,7 @@
 
   /* No Details State */
   .no-details {
-    @apply flex flex-col items-center justify-center py-8 text-center space-y-3;
+    @apply flex flex-col items-center justify-center py-8 text-center gap-3;
   }
 
   /* Data Section */
@@ -2378,7 +2402,7 @@
     }
 
     .header-text {
-      @apply space-y-2;
+      @apply flex flex-col gap-2;
     }
   }
 

@@ -138,10 +138,7 @@
   });
 </script>
 
-<Card.Root
-  id="lit-insights-card"
-  class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
->
+<Card.Root id="lit-insights-card">
   <Accordion.Root value={accordionValue} type="multiple" class="w-full">
     <Accordion.Item value="insights">
       <div class="flex items-center justify-between px-6 pt-6">

@@ -5,6 +5,7 @@ import {
   chatHistoryAPI,
   type ChatSession,
 } from "$lib/services/chat-history-api";
+import type { ContextSelectionItem } from "$lib/types/context";
 
 export interface SearchResult {
   id: string;
@@ -45,6 +46,8 @@ export interface ChatMessage {
   metadata?: {
     tools_used?: string[];
     project_context?: boolean;
+    context_selection?: ContextSelectionItem[];
+    [key: string]: any;
   };
 }
 
@@ -153,6 +156,7 @@ let scope = $state<SearchScope>("current");
 let isOpen = $state(false);
 let results = $state<SearchResult[]>([]);
 let chatMessages = $state<ChatMessage[]>([]);
+let chatContextSelection = $state<ContextSelectionItem[]>([]);
 let isLoading = $state(false);
 let isStreaming = $state(false);
 let error = $state<string | null>(null);
@@ -227,6 +231,53 @@ function getCurrentProjectId(): string | null {
   }
 
   return null;
+}
+
+function getContextItemProjectId(item: ContextSelectionItem): string | null {
+  if (item.projectId) {
+    return String(item.projectId);
+  }
+
+  const metadata = item.metadata || {};
+  const direct = metadata.projectId ?? metadata.project_id;
+  if (direct) {
+    return String(direct);
+  }
+
+  const projectInfo = metadata.projectInfo ?? metadata.project_info ?? metadata.project;
+  if (projectInfo?.id) {
+    return String(projectInfo.id);
+  }
+
+  return null;
+}
+
+function isContextItemInProject(item: ContextSelectionItem, projectId: string): boolean {
+  if (!projectId) {
+    return false;
+  }
+
+  if (item.type === "project") {
+    return item.id === projectId;
+  }
+
+  const itemProjectId = getContextItemProjectId(item);
+  if (!itemProjectId) {
+    return true;
+  }
+
+  return itemProjectId === projectId;
+}
+
+function filterContextSelectionForProject(
+  items: ContextSelectionItem[],
+  projectId: string | null
+): ContextSelectionItem[] {
+  if (!projectId) {
+    return [];
+  }
+
+  return items.filter((item) => isContextItemInProject(item, projectId));
 }
 
 // Chat history helper functions
@@ -346,6 +397,7 @@ async function loadSession(sessionId: string): Promise<void> {
     const session = await chatHistoryAPI.getChatSession(sessionId);
     currentSession = session;
     chatMessages = session.messages || [];
+    chatContextSelection = extractLatestContextSelection(chatMessages);
 
     // Update the session in the history list to mark it as recently accessed
     const existingIndex = chatHistorySessions.findIndex(
@@ -370,6 +422,7 @@ async function createNewSession(): Promise<void> {
   chatMessages = [];
   currentSession = null;
   chatHistoryError = null;
+  chatContextSelection = [];
 
   // If there are any unsaved changes, they'll be lost
   // This is intentional for "New Chat" functionality
@@ -480,21 +533,26 @@ async function performSearch(searchQuery: string = query): Promise<void> {
   error = null;
 
   try {
+    const requestBody: Record<string, unknown> = {
+      query: searchQuery,
+      mode: "search",
+      scope,
+      contentTypes: activeFilters.content_types,
+      filters: {
+        authors: activeFilters.projects, // This might need adjustment based on actual filter structure
+        types: activeFilters.section_types,
+        // Map other filters as needed
+      },
+      limit: dynamicLimit,
+    };
+
+    if (projectId) {
+      requestBody.projectId = projectId;
+    }
+
     const response = await api.stream(`/search`, {
       method: "POST",
-      body: {
-        query: searchQuery,
-        mode: "search",
-        projectId: projectId || null, // Allow null for "All Projects" searches
-        scope: scope,
-        contentTypes: activeFilters.content_types,
-        filters: {
-          authors: activeFilters.projects, // This might need adjustment based on actual filter structure
-          types: activeFilters.section_types,
-          // Map other filters as needed
-        },
-        limit: dynamicLimit,
-      },
+      body: requestBody,
     });
 
     if (!response.ok) {
@@ -504,14 +562,15 @@ async function performSearch(searchQuery: string = query): Promise<void> {
     const data = await response.json();
     // Filter results by similarity threshold (only show results with >30% similarity)
     const allResults = data.results || [];
-    results = allResults.filter(
+    const filteredResults = allResults.filter(
       (result: SearchResult) => result.similarity > 0.3
     );
+    results = filteredResults;
 
     // Cache the results
     searchCache.set(cacheKey, {
       query: searchQuery,
-      results: results,
+      results,
       timestamp: Date.now(),
       filters: { ...activeFilters },
     });
@@ -534,22 +593,119 @@ async function performSearch(searchQuery: string = query): Promise<void> {
 const debouncedSearch = debounce(performSearch, 300);
 
 // Chat functions
+function mergeContextSelections(
+  existing?: ContextSelectionItem[],
+  incoming?: ContextSelectionItem[]
+): ContextSelectionItem[] {
+  const merged = new Map<string, ContextSelectionItem>();
+
+  if (Array.isArray(existing)) {
+    for (const item of existing) {
+      if (!item?.id || !item?.type) continue;
+      merged.set(`${item.type}:${item.id}`, { ...item });
+    }
+  }
+
+  if (Array.isArray(incoming)) {
+    for (const item of incoming) {
+      if (!item?.id || !item?.type) continue;
+      const key = `${item.type}:${item.id}`;
+      const current = merged.get(key);
+      if (current) {
+        merged.set(key, {
+          ...current,
+          ...item,
+          title: item.title || current.title,
+          subtitle: item.subtitle || current.subtitle,
+        });
+      } else {
+        merged.set(key, { ...item });
+      }
+    }
+  }
+
+  return Array.from(merged.values());
+}
+
+function extractLatestContextSelection(
+  messages: ChatMessage[] | undefined | null
+): ContextSelectionItem[] {
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return [];
+  }
+
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    const selection = messages[index]?.metadata?.context_selection;
+    if (Array.isArray(selection) && selection.length > 0) {
+      return selection;
+    }
+  }
+
+  return [];
+}
+
+function addContextSelection(item: ContextSelectionItem): void {
+  const projectId = getCurrentProjectId();
+  if (!projectId) {
+    return;
+  }
+
+  if (!isContextItemInProject(item, projectId)) {
+    return;
+  }
+
+  const exists = chatContextSelection.some(
+    (existing) => existing.id === item.id && existing.type === item.type
+  );
+  if (exists) return;
+
+  chatContextSelection = filterContextSelectionForProject(
+    [...chatContextSelection, item],
+    projectId
+  );
+}
+
+function removeContextSelection(item: ContextSelectionItem): void {
+  const projectId = getCurrentProjectId();
+  chatContextSelection = filterContextSelectionForProject(
+    chatContextSelection.filter(
+      (existing) => !(existing.id === item.id && existing.type === item.type)
+    ),
+    projectId
+  );
+}
+
+function clearContextSelection(): void {
+  chatContextSelection = [];
+}
+
 async function sendChatMessage(message: string): Promise<void> {
   if (!message.trim() || isStreaming) return;
 
   // Get current project ID - only required for current project scope
   const projectId = getCurrentProjectId();
-  if (scope === "current" && !projectId) {
-    error =
-      "Please navigate to a project to use AI chat in current project mode";
+  if (!projectId) {
+    error = "Please navigate to a project to use AI chat";
     return;
   }
+
+  chatContextSelection = filterContextSelectionForProject(
+    chatContextSelection,
+    projectId
+  );
+
+  const effectiveSelection = chatContextSelection;
+  const userMetadata =
+    effectiveSelection.length > 0
+      ? { context_selection: effectiveSelection }
+      : undefined;
 
   const userMessage: ChatMessage = {
     id: Date.now().toString(),
     role: "user",
     content: message,
     timestamp: new Date(),
+    ...(userMetadata ? { metadata: userMetadata } : {}),
   };
 
   chatMessages = [...chatMessages, userMessage];
@@ -562,8 +718,8 @@ async function sendChatMessage(message: string): Promise<void> {
       body: {
         query: message,
         mode: "chat",
-        projectId: projectId || null, // Allow null for "All Projects" chats
-        scope: scope,
+        projectId,
+        scope: "current",
         provider: "openai", // Default to OpenAI
         context: {
           ...(results.length > 0 ? { searchResults: results } : {}),
@@ -571,6 +727,15 @@ async function sendChatMessage(message: string): Promise<void> {
             ? { chatHistory: chatMessages.slice(-10) }
             : {}), // Include last 10 messages for context
         },
+        contextSelection: effectiveSelection.map(
+          ({ id, type, title, subtitle, projectId: itemProjectId }) => ({
+            id,
+            type,
+            ...(title ? { title } : {}),
+            ...(subtitle ? { subtitle } : {}),
+            ...(itemProjectId ? { projectId: itemProjectId } : {}),
+          })
+        ),
       },
     });
 
@@ -599,6 +764,12 @@ async function sendChatMessage(message: string): Promise<void> {
       content: "",
       timestamp: new Date(),
       streaming: true, // This shows "AI is thinking..." until content arrives
+      metadata: {
+        project_context: true,
+        ...(effectiveSelection.length > 0
+          ? { context_selection: effectiveSelection }
+          : {}),
+      },
     };
 
     chatMessages = [...chatMessages, assistantMessage];
@@ -628,30 +799,59 @@ async function sendChatMessage(message: string): Promise<void> {
 
             try {
               const data = JSON.parse(sseData);
+              let shouldSync = false;
+
               if (data.content) {
                 assistantMessage.content += data.content;
-                // Find the message in the array and update it
+                shouldSync = true;
+              }
+
+              if (data.sources) {
+                assistantMessage.sources = data.sources;
+                shouldSync = true;
+              }
+
+              if (data.type === "metadata") {
+                const existingMeta = assistantMessage.metadata || {};
+                const mergedSelection = mergeContextSelections(
+                  existingMeta.context_selection,
+                  data.context_selection
+                );
+
+                assistantMessage.metadata = {
+                  ...existingMeta,
+                  ...(Array.isArray(data.tools_used)
+                    ? { tools_used: data.tools_used }
+                    : {}),
+                };
+
+                if (data.project_context !== undefined) {
+                  assistantMessage.metadata.project_context = data.project_context;
+                }
+
+                if (data.context_selection !== undefined) {
+                  if (
+                    Array.isArray(data.context_selection) &&
+                    data.context_selection.length > 0
+                  ) {
+                    assistantMessage.metadata.context_selection = data.context_selection;
+                  } else {
+                    delete assistantMessage.metadata.context_selection;
+                  }
+                } else if (mergedSelection.length > 0) {
+                  assistantMessage.metadata.context_selection = mergedSelection;
+                }
+
+                shouldSync = true;
+              }
+
+              if (shouldSync) {
                 const messageIndex = chatMessages.findIndex(
                   (m) => m.id === assistantMessage.id
                 );
                 if (messageIndex >= 0) {
                   chatMessages[messageIndex] = { ...assistantMessage };
                   chatMessages = [...chatMessages];
-                }
-              }
-              if (data.sources) {
-                assistantMessage.sources = data.sources;
-              }
-              if (data.type === "metadata") {
-                if (data.sources) {
-                  assistantMessage.sources = data.sources;
-                }
-                if (data.tools_used) {
-                  assistantMessage.metadata = {
-                    ...assistantMessage.metadata,
-                    tools_used: data.tools_used,
-                    project_context: data.project_context,
-                  };
                 }
               }
             } catch (e) {
@@ -715,6 +915,9 @@ export const globalSearchStore = {
   },
   get chatMessages() {
     return chatMessages;
+  },
+  get contextSelection() {
+    return chatContextSelection;
   },
   get isLoading() {
     return isLoading;
@@ -830,6 +1033,10 @@ export const globalSearchStore = {
 
   sendChatMessage: sendChatMessage,
 
+  addContextSelection,
+  removeContextSelection,
+  clearContextSelection,
+
   setFilters(newFilters: Partial<SearchFilters>) {
     activeFilters = { ...activeFilters, ...newFilters };
     if (query.trim()) {
@@ -873,6 +1080,7 @@ export const globalSearchStore = {
 
   clearChatHistory() {
     chatMessages = [];
+    chatContextSelection = [];
   },
 
   // Chat history methods

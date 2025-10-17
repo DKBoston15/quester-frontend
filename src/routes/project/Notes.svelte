@@ -14,8 +14,13 @@
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
   import { GraduationCap } from "lucide-svelte";
+  import { useLocation } from "svelte-routing";
   // Props
   const { literatureId = undefined } = $props();
+  const location = useLocation();
+  // Track whether params from URL have already been applied to prevent re-applying
+  let appliedNoteId: string | null = null;
+  let appliedTabParam = false;
 
   // State
   let focusMode = $state(false);
@@ -141,6 +146,57 @@
   onMount(() => {
     loadNotes();
     return () => notesStore.reset();
+  });
+
+  // Respect URL query for tab and note selection, e.g. ?tab=research&noteId=abc
+  $effect(() => {
+    const search = $location.search || "";
+    const params = new URLSearchParams(search);
+    const tab = params.get("tab");
+    const pid = projectStore.currentProject?.id;
+    if (
+      !appliedTabParam &&
+      (tab === "research" || tab === "literature") &&
+      pid &&
+      notesStore.loadedProjectId === pid
+    ) {
+      if (selectedTab !== tab) {
+        selectedTab = tab as "literature" | "research";
+        // Update filter without clearing active note selection
+        notesStore.setFilter({ type: selectedTab });
+      }
+      appliedTabParam = true;
+      // Remove tab param after applying so it doesn't override user switching
+      if (typeof window !== "undefined") {
+        queueMicrotask(() => {
+          try {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("tab");
+            window.history.replaceState({}, "", url.toString());
+          } catch {}
+        });
+      }
+    }
+
+    const noteId = params.get("noteId");
+    if (noteId && pid && notesStore.loadedProjectId === pid && appliedNoteId !== noteId) {
+      // Set active note once the correct project's notes are loaded
+      if (notesStore.activeNoteId !== noteId) {
+        notesStore.setActiveNote(noteId);
+      }
+      // Mark as applied to avoid re-applying on future reactive passes
+      appliedNoteId = noteId;
+      // Remove noteId param so it only affects initial navigation
+      if (typeof window !== "undefined") {
+        queueMicrotask(() => {
+          try {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("noteId");
+            window.history.replaceState({}, "", url.toString());
+          } catch {}
+        });
+      }
+    }
   });
 
   // Reload notes when switching projects without a full page refresh

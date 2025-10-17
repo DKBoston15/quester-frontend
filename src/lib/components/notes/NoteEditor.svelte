@@ -46,6 +46,25 @@
   // Initialize to null to avoid passing undefined to bind:ref
   let titleInputRef: HTMLInputElement | null = null;
   let showDeleteDialog = $state(false);
+  // Avoid accidental click-to-edit immediately after switching notes
+  let enableTitleClickAt = $state(0);
+
+  // Sticky toolbar offset handling
+  let headerEl: HTMLElement | null = null;
+  let headerHeight = $state(0);
+  function updateHeaderHeight() {
+    headerHeight = headerEl?.offsetHeight ?? 0;
+  }
+  onMount(() => {
+    updateHeaderHeight();
+    const ro = new ResizeObserver(() => updateHeaderHeight());
+    if (headerEl) ro.observe(headerEl);
+    window.addEventListener('resize', updateHeaderHeight);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', updateHeaderHeight);
+    };
+  });
 
   // Track section type locally to avoid remounting
   let currentSectionType = $state(
@@ -74,7 +93,8 @@
   ];
 
   // Ensure literature data is loaded
-  onMount(async () => {
+  onMount(() => {
+    enableTitleClickAt = Date.now() + 800;
     // For new notes, switch to edit mode and focus title to encourage renaming
     if (note.name === "Untitled Note" && title === "Untitled Note") {
       isEditingTitle = true;
@@ -82,9 +102,11 @@
     }
 
     // Load literature data if needed
-    if (literatureStore.data.length === 0 && note.projectId) {
-      await literatureStore.loadLiterature(note.projectId);
-    }
+    void (async () => {
+      if (literatureStore.data.length === 0 && note.projectId) {
+        await literatureStore.loadLiterature(note.projectId);
+      }
+    })();
   });
 
   // Keyboard shortcut: Cmd/Ctrl + S to force save
@@ -235,6 +257,8 @@
     if (isNewNote) {
       contentChanged = false;
       titleChanged = false;
+      // Delay click-to-edit after switching notes to prevent accidental activation
+      enableTitleClickAt = Date.now() + 800;
     }
   });
 
@@ -473,7 +497,7 @@
 
 <div class="flex flex-col">
   <!-- Editor Header -->
-  <header class="sticky top-0 z-10 border-b p-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+  <header bind:this={headerEl} class="sticky top-0 z-10 border-b p-4 bg-background">
     <!-- Row 1: Title and save status -->
     <div class="flex items-center justify-between gap-3">
       {#if isEditingTitle}
@@ -534,7 +558,19 @@
         </div>
       {:else}
         <div class="flex-1 min-w-0">
-          <h1 class="text-2xl font-semibold truncate" title={title}>{title || "Untitled note"}</h1>
+          <h1
+            class="text-2xl font-semibold truncate cursor-text"
+            title={title}
+            aria-label="Note title. Click to edit"
+            onclick={() => {
+              // Guard against accidental click carried over from note selection
+              if (Date.now() < enableTitleClickAt) return;
+              isEditingTitle = true;
+              setTimeout(() => titleInputRef?.focus(), 0);
+            }}
+          >
+            {title || "Untitled note"}
+          </h1>
         </div>
       {/if}
       <div class="flex items-center gap-2 shrink-0">
@@ -555,6 +591,9 @@
             <Pencil class="h-4 w-4 mr-1" /> Rename
           </Button>
         {/if}
+        <Button variant="destructive" size="sm" class="min-w-[96px] justify-center" onclick={() => confirmDelete()} aria-label="Delete note">
+          <Trash2 class="h-4 w-4 mr-1" /> Delete
+        </Button>
       </div>
     </div>
 
@@ -583,17 +622,13 @@
           </div>
         {/if}
       </div>
-      <div class="flex items-center gap-2">
-        <Button variant="destructive" size="sm" class="min-w-[96px] justify-center" onclick={() => confirmDelete()} aria-label="Delete note">
-          <Trash2 class="h-4 w-4 mr-1" /> Delete
-        </Button>
-      </div>
+      <div class="flex items-center gap-2"></div>
     </div>
   </header>
 
   <!-- Editor Content -->
   {#if note}
-    <div class="flex-1">
+    <div class="flex-1" style={`--note-header-offset: ${headerHeight}px`}>
       <ShadEditor
         {content}
 on:contentChange={(e) => {

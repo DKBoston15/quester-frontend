@@ -13,6 +13,8 @@
   import TypeCheckbox from "./TypeCheckbox.svelte";
   import * as Popover from "$lib/components/ui/popover";
   import { projectStore } from "$lib/stores/ProjectStore";
+  import GraphContextMenu from "./GraphContextMenu.svelte";
+  import { navigate } from "svelte-routing";
 
   // Types for graph data
   interface GraphNode {
@@ -21,6 +23,7 @@
     group: number;
     icon: string;
     createdAt: string;
+    literatureId?: string;
     x?: number;
     y?: number;
     fx?: number;
@@ -44,6 +47,15 @@
     [key: string]: boolean;
   }
 
+  type GraphControls = {
+    zoomIn: () => void;
+    zoomOut: () => void;
+  };
+
+  const props = $props<{
+    registerControls?: (controls: GraphControls | null) => void;
+  }>();
+
   // Track which project's graph is currently loaded
   let lastLoadedProjectId: string | null = null;
 
@@ -59,7 +71,22 @@
   let originalGraphData: GraphData;
   let timelapseInterval: NodeJS.Timeout;
   let currentNodeIndex = 0;
-  let selectedNodesForRendering = new Set<string>();
+  let selectedNodesForRendering = $state(new Set<string>());
+
+  // Context menu state
+  let contextMenuOpen = $state(false);
+  let contextMenuNode = $state<GraphNode | null>(null);
+  let contextMenuPosition = $state({ x: 0, y: 0 });
+
+  // Filter state - check if we're in a filtered state
+  let isFiltered = $derived(selectedNodesForRendering.size > 0);
+
+  const MIN_ZOOM = 0.2;
+  const MAX_ZOOM = 20;
+  const ZOOM_FACTOR = 1.25;
+
+  // Track zoom level since Graph.zoom() getter might not work
+  let currentZoom = $state(1);
 
   async function loadGraphForProject(projectId: string) {
     isGraphReady = false;
@@ -119,14 +146,21 @@
     }
   }
 
-  onMount(async () => {
-    if (typeof window !== "undefined") {
-      const module = await import("force-graph");
-      ForceGraph = module.default;
-      Graph = (ForceGraph as any)()(graph)
-        .nodeId("id")
-        .nodeVal("val")
-        .nodeLabel("id")
+  onMount(() => {
+    if (typeof window === "undefined") return () => {};
+
+    let disposed = false;
+
+    (async () => {
+      try {
+        const module = await import("force-graph");
+        if (disposed) return;
+
+        ForceGraph = module.default;
+        Graph = (ForceGraph as any)()(graph)
+          .nodeId("id")
+          .nodeVal("val")
+          .nodeLabel("id")
         .nodeColor((node: GraphNode) =>
           node === selectedNode ? "pink" : groupColorMap[node.group as keyof typeof groupColorMap]
         )
@@ -184,19 +218,77 @@
       Graph.d3Force("charge").strength(-30);
       Graph.d3Force("link").strength();
 
-      const pid = projectStore.currentProject?.id;
-      if (pid) {
-        await loadGraphForProject(pid);
+      // Add right-click event listener to the canvas
+      const canvas = graph.querySelector('canvas');
+      if (canvas) {
+        canvas.addEventListener('contextmenu', (event) => {
+          event.preventDefault();
+
+          // Get the mouse position relative to the canvas
+          const rect = canvas.getBoundingClientRect();
+          const mouseX = event.clientX - rect.left;
+          const mouseY = event.clientY - rect.top;
+
+          // Convert screen coordinates to graph coordinates using the library's built-in method
+          const graphCoords = Graph.screen2GraphCoords(mouseX, mouseY);
+          const graphX = graphCoords.x;
+          const graphY = graphCoords.y;
+
+          // Find the closest node to the mouse position
+          const nodes = Graph.graphData().nodes;
+          let closestNode = null;
+          let minDistance = Infinity;
+          const maxClickDistance = 20; // Fixed pixel distance threshold
+
+          nodes.forEach((node: GraphNode) => {
+            if (node.x !== undefined && node.y !== undefined) {
+              const distance = Math.sqrt(
+                Math.pow(node.x - graphX, 2) + Math.pow(node.y - graphY, 2)
+              );
+              if (distance < minDistance && distance < maxClickDistance) {
+                minDistance = distance;
+                closestNode = node;
+              }
+            }
+          });
+
+          if (closestNode) {
+            handleNodeRightClick(closestNode, event);
+          }
+        });
       }
-    }
+
+        const pid = projectStore.currentProject?.id;
+        if (pid) {
+          await loadGraphForProject(pid);
+        }
+      } catch (error) {
+        console.error("Failed to initialize 2D graph:", error);
+      } finally {
+        if (!disposed) {
+          props.registerControls?.({ zoomIn, zoomOut });
+        }
+      }
+    })();
+
+    return () => {
+      disposed = true;
+      props.registerControls?.(null);
+    };
   });
 
   // React to project changes while staying on the Connections view
-  $effect(async () => {
-    const pid = projectStore.currentProject?.id;
-    if (!pid || !Graph) return;
-    if (pid === lastLoadedProjectId) return;
-    await loadGraphForProject(pid);
+  $effect(() => {
+    void (async () => {
+      const pid = projectStore.currentProject?.id;
+      if (!pid || !Graph) {
+        return;
+      }
+      if (pid === lastLoadedProjectId) {
+        return;
+      }
+      await loadGraphForProject(pid);
+    })();
   });
 
   function addParticleEffects(node: GraphNode) {
@@ -233,9 +325,158 @@
         );
       } else {
         Graph.centerAt(node.x, node.y, 1000);
+        currentZoom = 8;
         Graph.zoom(8, 2000);
       }
     }
+  }
+
+  function handleNodeRightClick(node: GraphNode, event: MouseEvent) {
+    // Prevent default browser context menu
+    event.preventDefault();
+
+    // Close any existing context menu
+    contextMenuOpen = false;
+
+    // Set up new context menu
+    contextMenuNode = node;
+    contextMenuPosition = { x: event.clientX, y: event.clientY };
+
+    // Open context menu with a small delay to ensure it renders properly
+    setTimeout(() => {
+      contextMenuOpen = true;
+    }, 10);
+  }
+
+  function handleContextMenuClose() {
+    contextMenuOpen = false;
+    contextMenuNode = null;
+  }
+
+  function handleContextMenuNavigate({ detail }: { detail: { nodeId: string } }) {
+    const projectId = projectStore.currentProject?.id;
+    if (projectId && contextMenuNode && contextMenuNode.literatureId) {
+      const url = `/project/${projectId}/literature/${contextMenuNode.literatureId}`;
+      window.open(url, '_blank');
+    }
+  }
+
+  function getConnectedNodeIds(targetNodeId: string): Set<string> {
+    const connectedNodes = new Set([targetNodeId]);
+
+    originalGraphData.links.forEach(link => {
+      const sourceId = typeof link.source === 'string' ? link.source : (link.source as any).id;
+      const targetId = typeof link.target === 'string' ? link.target : (link.target as any).id;
+
+      if (sourceId === targetNodeId) connectedNodes.add(targetId);
+      if (targetId === targetNodeId) connectedNodes.add(sourceId);
+    });
+
+    return connectedNodes;
+  }
+
+  function rebuildGraphWithCurrentFilters() {
+    if (!Graph || !originalGraphData) return;
+
+    const visibleNodes = originalGraphData.nodes.filter((node: GraphNode) => {
+      if (selectedNodesForRendering.size > 0 && !selectedNodesForRendering.has(node.id)) {
+        return false;
+      }
+      return isNodeTypeVisible(node.icon);
+    });
+
+    const nodeLookup = new Map<string, GraphNode>(visibleNodes.map((node) => [node.id, node]));
+
+    const visibleLinks = originalGraphData.links
+      .map((link) => {
+        const sourceId = typeof link.source === "string" ? link.source : (link.source as GraphNode).id;
+        const targetId = typeof link.target === "string" ? link.target : (link.target as GraphNode).id;
+
+        if (!nodeLookup.has(sourceId) || !nodeLookup.has(targetId)) {
+          return null;
+        }
+
+        return {
+          ...link,
+          source: nodeLookup.get(sourceId)!,
+          target: nodeLookup.get(targetId)!,
+        } as GraphLink;
+      })
+      .filter((link): link is GraphLink => link !== null);
+
+    Graph.graphData({
+      nodes: visibleNodes,
+      links: visibleLinks,
+    });
+
+    Graph.d3ReheatSimulation();
+  }
+
+  function handleContextMenuFilter({ detail }: { detail: { nodeId: string } }) {
+    const connectedNodeIds = getConnectedNodeIds(detail.nodeId);
+
+    const filteredNodes = originalGraphData.nodes.filter((node) => {
+      if (node.id === detail.nodeId) return true;
+      if (!connectedNodeIds.has(node.id)) return false;
+      return isNodeTypeVisible(node.icon);
+    });
+
+    const filteredNodeIds = new Set(filteredNodes.map(n => n.id));
+
+    const filteredLinks = originalGraphData.links.filter(link => {
+      const sourceId = typeof link.source === 'string' ? link.source : (link.source as any).id;
+      const targetId = typeof link.target === 'string' ? link.target : (link.target as any).id;
+      return filteredNodeIds.has(sourceId) && filteredNodeIds.has(targetId);
+    }).map(link => {
+      const sourceId = typeof link.source === 'string' ? link.source : (link.source as any).id;
+      const targetId = typeof link.target === 'string' ? link.target : (link.target as any).id;
+      const sourceNode = filteredNodes.find(node => node.id === sourceId);
+      const targetNode = filteredNodes.find(node => node.id === targetId);
+
+      if (!sourceNode || !targetNode) return null;
+      return { ...link, source: sourceNode, target: targetNode };
+    }).filter(link => link !== null);
+
+    Graph.graphData({ nodes: filteredNodes, links: filteredLinks });
+
+    selectedNodesForRendering = connectedNodeIds;
+
+    Graph.d3ReheatSimulation();
+  }
+
+  function handleContextMenuReset() {
+    // Replace with a fresh set so reactive dependencies update correctly
+    selectedNodesForRendering = new Set<string>();
+
+    // Restore graph with current checkbox visibility (don't change typeVisibility)
+    rebuildGraphWithCurrentFilters();
+  }
+
+  function applyZoom(factor: number) {
+    if (!Graph) return;
+
+    // Try to get current zoom from Graph, fallback to our tracked value
+    let current = currentZoom;
+    try {
+      const graphZoom = Graph.zoom?.();
+      if (typeof graphZoom === 'number' && graphZoom > 0) {
+        current = graphZoom;
+      }
+    } catch (e) {
+      // Use tracked zoom level
+    }
+
+    const next = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, current * factor));
+    currentZoom = next;
+    Graph.zoom(next, 300);
+  }
+
+  function zoomIn() {
+    applyZoom(ZOOM_FACTOR);
+  }
+
+  function zoomOut() {
+    applyZoom(1 / ZOOM_FACTOR);
   }
 
   let typeVisibility = $state<TypeVisibility>(
@@ -244,6 +485,11 @@
       return acc;
     }, {} as TypeVisibility)
   );
+
+  function isNodeTypeVisible(icon: string): boolean {
+    const visibility = typeVisibility[icon];
+    return visibility ?? true;
+  }
 
   function renderIcons() {
     const imgCache = new Map();
@@ -622,6 +868,19 @@
   {/if}
   <!-- Graph host fills the container -->
   <div bind:this={graph} class="absolute inset-0"></div>
+
+  <!-- Context Menu -->
+  <GraphContextMenu
+    open={contextMenuOpen}
+    node={contextMenuNode}
+    position={contextMenuPosition}
+    onClose={handleContextMenuClose}
+    isFiltered={isFiltered}
+    on:close={handleContextMenuClose}
+    on:navigate={handleContextMenuNavigate}
+    on:filter={handleContextMenuFilter}
+    on:reset={handleContextMenuReset}
+  />
 </div>
 
 <style>

@@ -27,6 +27,36 @@
     { value: "Archived", label: "Archived" },
   ] as const;
 
+  const aiRewritePresets = [
+    {
+      label: "Shorten",
+      tooltip: "Make this 20–40% shorter without losing meaning.",
+      instruction:
+        "Preset: Shorten — Make the statement 20–40% shorter and ≤240 characters while preserving key entities, methods, and outcomes. Output only the rewritten statement.",
+    },
+    {
+      label: "Plain-Language",
+      tooltip: "Swap jargon for everyday terms—keep the science.",
+      instruction:
+        "Preset: Plain-Language — Rewrite for non-experts (~9th–10th grade). Replace jargon with common terms, expand acronyms once, use active voice, and keep essential technical nouns. Output only the rewritten statement.",
+    },
+    {
+      label: "SMART",
+      tooltip: "Turn the goal into a measurable, time-bound objective.",
+      instruction:
+        "Preset: SMART — Reframe as Specific, Measurable, Achievable, Relevant, Time-bound using only details present. If metrics/timeframes are missing, use general measurable phrasing (e.g., 'within the study period') without inventing numbers. Output only the rewritten statement.",
+    },
+    {
+      label: "Journal-Ready",
+      tooltip: "Concise, neutral, manuscript-style objective.",
+      instruction:
+        "Preset: Journal-Ready — Rewrite in formal academic tone, concise (1–2 sentences), neutral, and outcome-focused. Include method keywords when present and avoid causal claims unless design supports them. Output only the rewritten statement.",
+    },
+  ] as const;
+
+  const PURPOSE_CHAR_MIN = 120;
+  const PURPOSE_CHAR_MAX = 280;
+
   let editMode = $state({
     purpose: false,
     status: false,
@@ -35,6 +65,9 @@
   let isPending = $state(false);
   let currentStatus = $state<string | null>(null);
   let currentPurpose = $state<string | null>(null);
+  let purposeCharCount = $state(0);
+  let purposeWithinRange = $state(false);
+  let previousPurpose = $state<string | null>(null);
 
   let isRewriting = $state(false);
   let customInstruction = $state("");
@@ -47,6 +80,12 @@
       currentStatus = project.status ?? null;
       currentPurpose = project.purpose ?? null;
     }
+  });
+
+  $effect(() => {
+    const count = currentPurpose ? currentPurpose.trim().length : 0;
+    purposeCharCount = count;
+    purposeWithinRange = count >= PURPOSE_CHAR_MIN && count <= PURPOSE_CHAR_MAX;
   });
 
   function getBadgeVariant(status: string) {
@@ -77,12 +116,17 @@
 
     isPending = true;
     try {
+      const trimmedPurpose = currentPurpose?.trim() ?? null;
+      currentPurpose = trimmedPurpose;
       await projectStore.updateProject(projectStore.currentProject.id, {
-        purpose: currentPurpose,
+        purpose: trimmedPurpose,
         status: currentStatus,
       });
       editMode.purpose = false;
       editMode.status = false;
+      if (!isRewriting) {
+        previousPurpose = null;
+      }
     } catch (error) {
       console.error("Failed to update project:", error);
     } finally {
@@ -90,10 +134,41 @@
     }
   }
 
-  async function startAiRewrite() {
-    if (!projectStore.currentProject?.id || !currentPurpose) return;
+  function runAiPreset(instruction: string) {
+    if (isRewriting) return;
+    customInstruction = instruction;
+    showCustomInstruction = false;
+    void startAiRewrite();
+  }
 
-    const toastId = toast.loading("Rewriting purpose...");
+  async function undoLastRewrite() {
+    if (!projectStore.currentProject?.id || !previousPurpose) return;
+
+    const restoreValue = previousPurpose;
+    isPending = true;
+    try {
+      currentPurpose = restoreValue;
+      await projectStore.updateProject(projectStore.currentProject.id, {
+        purpose: restoreValue,
+      });
+      toast.success("Restored the previous purpose.");
+      previousPurpose = null;
+    } catch (error) {
+      console.error("Failed to restore purpose:", error);
+      toast.error("Unable to restore the previous purpose.");
+    } finally {
+      isPending = false;
+    }
+  }
+
+  async function startAiRewrite() {
+    if (!projectStore.currentProject?.id || !currentPurpose || isRewriting)
+      return;
+
+    const toastId = toast.loading("Rewriting purpose...", {
+      duration: Infinity,
+    });
+    previousPurpose = currentPurpose;
     isRewriting = true;
     streamingContent = "";
 
@@ -159,9 +234,7 @@
 </script>
 
 <div class="space-y-6">
-  <Card
-    class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
-  >
+  <Card>
     <CardHeader>
       <div class="flex justify-between items-center">
         <CardTitle class="">Project Overview</CardTitle>
@@ -186,76 +259,100 @@
             </Tooltip.Trigger>
             <Tooltip.Content>
               <p class="text-sm max-w-xs">
-                A research purpose is a statement establishing the intent of the
-                study.
+                A research purpose succinctly explains why the study exists. Aim
+                for one or two sentences covering the reason for conducting the
+                research, the participants involved, the concepts studied, the
+                methods used, and the results expected.
               </p>
             </Tooltip.Content>
           </Tooltip.Root>
           <h3 class="text-sm font-bold">Purpose Statement</h3>
-          {#if !editMode.purpose && currentPurpose}
-            <div class="flex gap-2 ml-auto">
-              <Tooltip.Root>
-                <Tooltip.Trigger>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    class="gap-2"
-                    disabled={isRewriting}
-                    onclick={() =>
-                      (showCustomInstruction = !showCustomInstruction)}
-                  >
-                    <WandIcon class="h-4 w-4" />
-                    AI Rewrite
-                  </Button>
-                </Tooltip.Trigger>
-                <Tooltip.Content side="top" align="end">
-                  <p class="text-sm max-w-xs">
-                    Let AI help improve your purpose statement. You can provide
-                    specific instructions or let Quester enhance it
-                    automatically.
-                  </p>
-                </Tooltip.Content>
-              </Tooltip.Root>
-            </div>
-          {/if}
         </div>
 
-        {#if showCustomInstruction}
-          <div class="flex gap-2">
-            <Input
-              bind:value={customInstruction}
-              placeholder="Optional: Guide the rewrite (e.g. 'Make it more concise' or 'Emphasize methodology')"
-              class="flex-1"
-            />
-            <Button size="sm" onclick={startAiRewrite} disabled={isRewriting}>
-              {#if isRewriting}
-                <Loader2Icon class="h-4 w-4 animate-spin mr-2" />
-                Rewriting...
-              {:else}
-                Start
-              {/if}
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onclick={() => {
-                showCustomInstruction = false;
-                customInstruction = "";
-              }}
-              disabled={isRewriting}
-            >
-              Cancel
-            </Button>
-          </div>
-        {/if}
-
         {#if editMode.purpose}
-          <Textarea.Textarea
-            bind:value={currentPurpose}
-            rows={5}
-            placeholder="Enter project purpose"
-            class="w-full"
-          />
+          <div class="space-y-2">
+            <Textarea.Textarea
+              bind:value={currentPurpose}
+              rows={5}
+              placeholder="Ex: Evaluate whether weekly self-reflection prompts improve 10th-grade math performance by >= 5 points, using a randomized classroom design over eight weeks."
+              class="w-full"
+            />
+            <div class="flex items-center justify-between text-xs">
+              <span
+                class={purposeWithinRange
+                  ? "text-muted-foreground"
+                  : "text-amber-500"}
+              >
+                {purposeCharCount} characters {purposeWithinRange
+                  ? "✓"
+                  : `(aim for ${PURPOSE_CHAR_MIN}-${PURPOSE_CHAR_MAX})`}
+              </span>
+            </div>
+            <div class="flex flex-wrap gap-2 pt-1">
+              {#each aiRewritePresets as preset (preset.label)}
+                <Tooltip.Root>
+                  <Tooltip.Trigger asChild>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      class="gap-1 text-xs"
+                      disabled={isRewriting}
+                      onclick={() => runAiPreset(preset.instruction)}
+                    >
+                      <WandIcon class="h-4 w-4" />
+                      {preset.label}
+                    </Button>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>
+                    <p class="text-xs max-w-xs">{preset.tooltip}</p>
+                  </Tooltip.Content>
+                </Tooltip.Root>
+              {/each}
+              <Button
+                size="sm"
+                variant="ghost"
+                class="text-xs"
+                disabled={isRewriting}
+                onclick={() => (showCustomInstruction = !showCustomInstruction)}
+              >
+                Custom prompt
+              </Button>
+            </div>
+            {#if showCustomInstruction}
+              <div class="flex flex-wrap gap-2">
+                <Input
+                  bind:value={customInstruction}
+                  placeholder="e.g. highlight data sources and trim filler"
+                  class="flex-1 min-w-[220px]"
+                />
+                <div class="flex gap-2">
+                  <Button
+                    size="sm"
+                    onclick={startAiRewrite}
+                    disabled={isRewriting || !customInstruction.trim()}
+                  >
+                    {#if isRewriting}
+                      <Loader2Icon class="h-4 w-4 animate-spin mr-2" />
+                      Rewriting...
+                    {:else}
+                      Start
+                    {/if}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onclick={() => {
+                      showCustomInstruction = false;
+                      customInstruction = "";
+                    }}
+                    disabled={isRewriting}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            {/if}
+          </div>
         {:else if isRewriting}
           <div class="relative">
             <p class="text-muted-foreground whitespace-pre-wrap">
@@ -269,6 +366,20 @@
           <p class="text-muted-foreground whitespace-pre-wrap">
             {currentPurpose || "No purpose defined"}
           </p>
+        {/if}
+
+        {#if previousPurpose && !isRewriting}
+          <div class="text-xs text-muted-foreground">
+            Purpose updated with Quester.
+            <button
+              type="button"
+              class="ml-1 font-medium underline hover:text-foreground disabled:opacity-50"
+              onclick={undoLastRewrite}
+              disabled={isPending}
+            >
+              Undo
+            </button>
+          </div>
         {/if}
       </div>
 
@@ -316,7 +427,7 @@
           </div>
         {:else}
           <div class="space-y-2">
-            <div class="flex justify-between items-center">
+            <div class="flex items-center gap-3">
               <span class="text-muted-foreground">Status:</span>
               {#if currentStatus}
                 <Badge variant={getBadgeVariant(currentStatus)}
@@ -331,25 +442,18 @@
       </div>
     </CardContent>
     {#if editMode.purpose || editMode.status}
-      <CardFooter class="grid grid-cols-2 gap-2">
+      <CardFooter class="flex justify-end gap-3 border-t">
         <Button
-          variant="ghost"
-          size="sm"
+          variant="outline"
           onclick={() => {
             editMode.purpose = false;
             editMode.status = false;
           }}
           disabled={isPending}
-          class="w-full"
         >
           Cancel
         </Button>
-        <Button
-          size="sm"
-          onclick={saveProjectOverview}
-          disabled={isPending}
-          class="w-full"
-        >
+        <Button onclick={saveProjectOverview} disabled={isPending}>
           {isPending ? "Saving..." : "Save"}
         </Button>
       </CardFooter>

@@ -4,12 +4,15 @@
   import { flip } from "svelte/animate";
   import { quintOut } from "svelte/easing";
   import { globalSearchStore } from "$lib/stores/GlobalSearchStore";
+  import { projectStore } from "$lib/stores/ProjectStore";
   import { Button } from "$lib/components/ui/button";
   import { Badge } from "$lib/components/ui/badge";
   import { ChatHistory } from "$lib/components/global-search";
   import { navigate } from "svelte-routing";
   import { API_BASE_URL } from "$lib/config";
   import MarkdownIt from "markdown-it";
+  import ContextSelector from "$lib/components/ai/ContextSelector.svelte";
+  import type { ContextSelectionItem } from "$lib/types/context";
 
   // Icons
   import Send from "lucide-svelte/icons/send";
@@ -33,6 +36,7 @@
   import PanelLeftClose from "lucide-svelte/icons/panel-left-close";
   import Save from "lucide-svelte/icons/save";
   import CheckCircle from "lucide-svelte/icons/check-circle";
+  import ChevronDown from "lucide-svelte/icons/chevron-down";
 
   // Reactive bindings to store state
   let chatMessages = $derived(globalSearchStore.chatMessages);
@@ -40,6 +44,7 @@
   let error = $derived(globalSearchStore.error);
   let searchResults = $derived(globalSearchStore.results);
   let hasResults = $derived(globalSearchStore.hasResults);
+  let contextSelection = $derived(globalSearchStore.contextSelection);
 
   // Chat history reactive bindings
   let currentSession = $derived(globalSearchStore.currentSession);
@@ -48,6 +53,7 @@
   let hasUnsavedChanges = $derived(globalSearchStore.hasUnsavedChanges);
   let sessionTitle = $derived(globalSearchStore.sessionTitle);
   let lastSaveTime = $derived(globalSearchStore.lastSaveTime);
+  let currentProjectId = $derived(projectStore.currentProject?.id || null);
 
   // Local state for UI
   let chatInput = $state("");
@@ -185,6 +191,18 @@
     }
   }
 
+  function addContextItem(event: CustomEvent<ContextSelectionItem>) {
+    globalSearchStore.addContextSelection(event.detail);
+  }
+
+  function removeContextItem(event: CustomEvent<ContextSelectionItem>) {
+    globalSearchStore.removeContextSelection(event.detail);
+  }
+
+  function clearContextItems() {
+    globalSearchStore.clearContextSelection();
+  }
+
   // Get icon for result type
   function getResultIcon(type: string) {
     switch (type) {
@@ -212,47 +230,62 @@
   }
 
   function getTypeLabel(type: string): string {
-    return type === 'document_chunk' ? 'Literature Page' : (type?.[0]?.toUpperCase() + type?.slice(1));
+    return type === "document_chunk"
+      ? "Literature Page"
+      : type?.[0]?.toUpperCase() + type?.slice(1);
+  }
+
+  function formatContextItemLabel(item: ContextSelectionItem): string {
+    if (item.title && item.title.trim().length > 0) {
+      return item.title;
+    }
+    const shortId = item.id ? `${item.id.slice(0, 6)}…` : "";
+    const typeLabel = getTypeLabel(item.type);
+    return shortId ? `${typeLabel} (${shortId})` : typeLabel;
   }
 
   async function openDocumentPreview(fileId: string, page?: number) {
     try {
-      const res = await fetch(`${API_BASE_URL}/documents/${fileId}/download?preview=true`, {
-        credentials: 'include',
-      });
+      const res = await fetch(
+        `${API_BASE_URL}/documents/${fileId}/download?preview=true`,
+        {
+          credentials: "include",
+        }
+      );
       if (!res.ok) return;
       const data = await res.json();
       const url = page ? `${data.downloadUrl}#page=${page}` : data.downloadUrl;
-      window.open(url, '_blank');
+      window.open(url, "_blank");
     } catch (e) {
-      console.error('Preview open failed', e);
+      console.error("Preview open failed", e);
     }
   }
 
   function handleSourceClick(source: Source) {
     const projectId = source?.metadata?.project_id;
     if (!projectId) return;
-    let path = '';
+    let path = "";
     switch (source.type) {
-      case 'literature':
+      case "literature":
         path = `/project/${projectId}/literature/${source.id}`;
         break;
-      case 'document_chunk':
+      case "document_chunk":
         if (source.metadata?.literature_id) {
           const qp = new URLSearchParams();
-          if (source.metadata?.start_page) qp.set('p', String(source.metadata.start_page));
+          if (source.metadata?.start_page)
+            qp.set("p", String(source.metadata.start_page));
           path = `/project/${projectId}/literature/${source.metadata.literature_id}?${qp.toString()}`;
         } else {
           path = `/project/${projectId}/literature`;
         }
         break;
-      case 'note':
+      case "note":
         path = `/project/${projectId}/notes`;
         break;
-      case 'outcome':
+      case "outcome":
         path = `/project/${projectId}/outcomes/${source.id}`;
         break;
-      case 'project':
+      case "project":
         path = `/project/${projectId}`;
         break;
       default:
@@ -557,6 +590,15 @@
               {@const isAssistant = message.role === "assistant"}
               {@const sources = message.sources || []}
               {@const content = message.content}
+              {@const toolsUsed = message.metadata?.tools_used ?? []}
+              {@const hasTools = toolsUsed.length > 0}
+              {@const focusedItems = message.metadata?.context_selection ?? []}
+              {@const focusCount = focusedItems.length}
+              {@const hasContextFocus = focusCount > 0}
+              {@const hasSources = sources.length > 0}
+              {@const hasProjectContext = Boolean(
+                message.metadata?.project_context
+              )}
 
               <div
                 class="message-container"
@@ -602,9 +644,7 @@
                       : 'text-left'}"
                   >
                     <div
-                      class="inline-block rounded-2xl px-4 py-3 {isUser
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted border border-border'} relative group"
+                      class="inline-block rounded-2xl px-4 py-3 bg-muted border border-border relative group dark:bg-muted/60 dark:border-border/70"
                     >
                       <!-- Message Content -->
                       {#if isAssistant}
@@ -613,7 +653,7 @@
                         </div>
                       {:else}
                         <div
-                          class="whitespace-pre-wrap text-sm leading-relaxed"
+                          class="prose-chat text-sm leading-relaxed whitespace-pre-wrap"
                         >
                           {content || message.content}
                         </div>
@@ -642,45 +682,81 @@
                         </div>
                       {/if}
 
-                      <!-- Enhanced Source Citations & Context -->
-                      {#if sources.length > 0 || message.metadata?.tools_used}
-                        <div
-                          class="mt-3 pt-3 border-t border-border/50"
+                      {#if hasSources || hasTools || hasContextFocus || hasProjectContext}
+                        <details
+                          class="mt-3 border border-border/50 dark:border-border/70 rounded-md bg-muted/30 dark:bg-muted/50 references-panel"
                           transition:slide|local
                         >
-                          <!-- Tools Used -->
-                          {#if message.metadata?.tools_used && message.metadata.tools_used.length > 0}
-                            <div class="mb-3">
-                              <div
-                                class="text-xs text-muted-foreground mb-2 font-medium flex items-center gap-1"
+                          <summary
+                            class="flex items-center justify-between gap-2 text-xs font-medium text-muted-foreground cursor-pointer px-3 py-2"
+                          >
+                            <span class="flex items-center gap-2">
+                              <BookOpen class="size-3" />
+                              <span>Referenced context</span>
+                              <span
+                                class="text-[10px] uppercase tracking-wide text-muted-foreground/80"
                               >
-                                <Sparkles class="size-3" />
-                                AI Analysis Tools Used:
+                                {#if hasSources}
+                                  {sources.length} source{sources.length !== 1
+                                    ? "s"
+                                    : ""}
+                                {/if}
+                                {#if hasProjectContext && !hasSources && !hasContextFocus}
+                                  project context
+                                {/if}
+                              </span>
+                            </span>
+                            <ChevronDown
+                              class="size-4 references-chevron"
+                              aria-hidden="true"
+                            />
+                          </summary>
+                          <div class="px-3 pb-3 pt-2 space-y-3">
+                            {#if hasContextFocus}
+                              <div>
+                                <div
+                                  class="text-xs text-muted-foreground mb-2 font-medium"
+                                >
+                                  Focused context:
+                                </div>
+                                <div class="flex flex-wrap gap-2">
+                                  {#each focusedItems as item (item.type + item.id)}
+                                    <Badge variant="outline" class="text-xs">
+                                      {formatContextItemLabel(item)}
+                                    </Badge>
+                                  {/each}
+                                </div>
                               </div>
-                              <div class="flex flex-wrap gap-2">
-                                {#each message.metadata.tools_used as tool}
-                                  <Badge variant="secondary" class="text-xs">
-                                    {getFriendlyToolName(tool)}
-                                  </Badge>
-                                {/each}
-                              </div>
-                            </div>
-                          {/if}
+                            {/if}
 
-                          <!-- Referenced sources -->
-                          {#if sources.length > 0}
-                            <div class="mb-2">
-                              <div
-                                class="text-xs text-muted-foreground mb-2 font-medium"
-                              >
-                                Referenced sources:
+                            {#if hasTools}
+                              <div>
+                                <div
+                                  class="text-xs text-muted-foreground mb-2 font-medium flex items-center gap-1"
+                                >
+                                  <Sparkles class="size-3" />
+                                  AI Analysis Tools Used:
+                                </div>
+                                <div class="flex flex-wrap gap-2">
+                                  {#each toolsUsed as tool}
+                                    <Badge variant="secondary" class="text-xs">
+                                      {getFriendlyToolName(tool)}
+                                    </Badge>
+                                  {/each}
+                                </div>
                               </div>
+                            {/if}
+
+                            {#if hasSources}
                               <div class="space-y-2">
                                 {#each sources as source}
                                   {@const Icon = getResultIcon(source.type)}
                                   <button
                                     class="w-full border rounded-md p-2 bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer group text-left"
-                                    onclick={() => handleSourceClick(source as unknown as Source)}
+                                    onclick={() =>
+                                      handleSourceClick(
+                                        source as unknown as Source
+                                      )}
                                   >
                                     <div class="flex items-start gap-2">
                                       <Icon
@@ -702,7 +778,11 @@
                                         <div
                                           class="flex items-center gap-2 mt-1"
                                         >
-                                          <Badge variant="outline" class="text-xs">{getTypeLabel(source.type)}</Badge>
+                                          <Badge
+                                            variant="outline"
+                                            class="text-xs"
+                                            >{getTypeLabel(source.type)}</Badge
+                                          >
                                           {#if source.similarity}
                                             <span
                                               class="text-xs text-muted-foreground"
@@ -714,41 +794,45 @@
                                           {/if}
                                         </div>
                                       </div>
-                                      {#if source.type === 'document_chunk' && source.metadata?.document_file_id}
+                                      {#if source.type === "document_chunk" && source.metadata?.document_file_id}
                                         <ExternalLink
                                           class="size-3 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground"
-                                          onclick={(e) => { e.stopPropagation(); openDocumentPreview(source.metadata.document_file_id, source.metadata?.start_page); }}
+                                          onclick={(e) => {
+                                            e.stopPropagation();
+                                            openDocumentPreview(
+                                              source.metadata.document_file_id,
+                                              source.metadata?.start_page
+                                            );
+                                          }}
                                         />
                                       {/if}
                                     </div>
                                   </button>
                                 {/each}
                               </div>
-                            </div>
-                          {/if}
-
-                          <!-- Search Context Indicator -->
-                          {#if sources.length > 0}
-                            <div
-                              class="mt-2 flex items-center gap-2 text-xs text-muted-foreground"
-                            >
-                              <Search class="size-3" />
-                              <span
-                                >Used {sources.length} sources from your research</span
+                              <div
+                                class="flex items-center gap-2 text-xs text-muted-foreground"
                               >
-                            </div>
-                          {/if}
+                                <Search class="size-3" />
+                                <span
+                                  >Used {sources.length} source{sources.length !==
+                                  1
+                                    ? "s"
+                                    : ""} from your research</span
+                                >
+                              </div>
+                            {/if}
 
-                          <!-- Project Context Indicator -->
-                          {#if message.metadata?.project_context}
-                            <div
-                              class="mt-2 flex items-center gap-2 text-xs text-muted-foreground"
-                            >
-                              <Folder class="size-3" />
-                              <span>Using current project context</span>
-                            </div>
-                          {/if}
-                        </div>
+                            {#if hasProjectContext}
+                              <div
+                                class="flex items-center gap-2 text-xs text-muted-foreground"
+                              >
+                                <Folder class="size-3" />
+                                <span>Using current project context</span>
+                              </div>
+                            {/if}
+                          </div>
+                        </details>
                       {/if}
                     </div>
 
@@ -789,85 +873,87 @@
 
     <!-- Input Area -->
     <div class="border-t bg-background p-4">
-      <div class="relative">
-        <!-- Typing Indicator -->
-        {#if isTyping}
-          <div
-            class="absolute -top-8 left-0 text-xs text-muted-foreground"
-            transition:fade={{ duration: 200 }}
-          >
-            You are typing...
+      <div class="space-y-4">
+        <ContextSelector
+          selectedItems={contextSelection}
+          projectId={currentProjectId}
+          scope="current"
+          disabled={isStreaming}
+          on:select={addContextItem}
+          on:remove={removeContextItem}
+          on:clear={clearContextItems}
+        />
+
+        <div class="relative">
+          <!-- Input Container -->
+          <div class="flex gap-3 items-stretch">
+            <!-- Text Area -->
+            <div class="flex-1 relative">
+              <textarea
+                bind:this={chatInputRef}
+                bind:value={chatInput}
+                onkeydown={handleKeydown}
+                oninput={handleInput}
+                placeholder="Ask questions about your research, get insights, or explore your data..."
+                disabled={isStreaming}
+                rows="1"
+                class="w-full resize-none rounded-lg border-2 dark:border-dark-border bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:focus:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] max-h-32 overflow-y-auto transition-all duration-200"
+                style="field-sizing: content;"
+              ></textarea>
+
+              <!-- Character count for long messages -->
+              {#if chatInput.length > 200}
+                <div
+                  class="absolute -top-6 right-0 text-xs text-muted-foreground"
+                >
+                  {chatInput.length}/1000
+                </div>
+              {/if}
+            </div>
+
+            <!-- Send Button -->
+            <Button
+              onclick={handleSubmit}
+              disabled={!chatInput.trim() || isStreaming}
+              size="sm"
+              class="px-4 py-3 h-full min-w-[48px] border-2 dark:border-dark-border"
+              aria-label="Send message"
+            >
+              {#if isStreaming}
+                <Loader class="size-4 animate-spin" />
+              {:else}
+                <Send class="size-4" />
+              {/if}
+            </Button>
           </div>
-        {/if}
 
-        <!-- Input Container -->
-        <div class="flex gap-3 items-end">
-          <!-- Text Area -->
-          <div class="flex-1 relative">
-            <textarea
-              bind:this={chatInputRef}
-              bind:value={chatInput}
-              onkeydown={handleKeydown}
-              oninput={handleInput}
-              placeholder="Ask questions about your research, get insights, or explore your data..."
-              disabled={isStreaming}
-              rows="1"
-              class="w-full resize-none rounded-lg border bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] max-h-32 overflow-y-auto"
-              style="field-sizing: content;"
-            ></textarea>
-
-            <!-- Character count for long messages -->
-            {#if chatInput.length > 200}
-              <div
-                class="absolute -top-6 right-0 text-xs text-muted-foreground"
+          <!-- Input Help Text -->
+          <div
+            class="flex items-center justify-between mt-2 text-xs text-muted-foreground"
+          >
+            <div class="flex items-center gap-4">
+              <kbd
+                class="inline-flex items-center gap-1 rounded border bg-muted px-1.5 py-0.5 font-mono"
               >
-                {chatInput.length}/1000
+                Enter
+              </kbd>
+              <span>to send</span>
+              <kbd
+                class="inline-flex items-center gap-1 rounded border bg-muted px-1.5 py-0.5 font-mono"
+              >
+                Shift + Enter
+              </kbd>
+              <span>for new line</span>
+            </div>
+            {#if hasResults}
+              <div class="flex items-center gap-1">
+                <Search class="size-3" />
+                <span
+                  >{searchResults.length} search results available as context</span
+                >
               </div>
             {/if}
           </div>
-
-          <!-- Send Button -->
-          <Button
-            onclick={handleSubmit}
-            disabled={!chatInput.trim() || isStreaming}
-            size="sm"
-            class="px-4 py-3 h-11 min-w-11"
-            aria-label="Send message"
-          >
-            {#if isStreaming}
-              <Loader class="size-4 animate-spin" />
-            {:else}
-              <Send class="size-4" />
-            {/if}
-          </Button>
-        </div>
-
-        <!-- Input Help Text -->
-        <div
-          class="flex items-center justify-between mt-2 text-xs text-muted-foreground"
-        >
-          <div class="flex items-center gap-4">
-            <kbd
-              class="inline-flex items-center gap-1 rounded border bg-muted px-1.5 py-0.5 font-mono"
-            >
-              Enter
-            </kbd>
-            <span>to send</span>
-            <kbd
-              class="inline-flex items-center gap-1 rounded border bg-muted px-1.5 py-0.5 font-mono"
-            >
-              Shift + Enter
-            </kbd>
-            <span>for new line</span>
-          </div>
-          {#if hasResults}
-            <div class="flex items-center gap-1">
-              <Search class="size-3" />
-              <span
-                >{searchResults.length} search results available as context</span
-              >
-            </div>
-          {/if}
         </div>
       </div>
     </div>
@@ -952,5 +1038,17 @@
   .message-container:hover .group {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  details.references-panel summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .references-panel .references-chevron {
+    transition: transform 0.2s ease;
+  }
+
+  .references-panel[open] .references-chevron {
+    transform: rotate(180deg);
   }
 </style>

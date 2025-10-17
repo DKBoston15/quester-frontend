@@ -450,21 +450,34 @@
     // Use authors if present; otherwise, for Books with editors only, use editors with ed./eds.
     if (citation.authors && citation.authors.length > 0) {
       components.push(`${formatChicagoAuthors(citation.authors)}. `);
-    } else if (citation.type.value === "Book" && citation.editors && citation.editors.length > 0) {
+    } else if (
+      citation.type.value === "Book" &&
+      citation.editors &&
+      citation.editors.length > 0
+    ) {
       const edLabel = citation.editors.length > 1 ? "eds." : "ed.";
-      components.push(`${formatChicagoAuthors(citation.editors)}, ${edLabel}. `);
+      components.push(
+        `${formatChicagoAuthors(citation.editors)}, ${edLabel}. `
+      );
     }
 
     switch (citation.type.value) {
-    case "Book":
-      components.push(`<i>${citation.title}</i>. `);
-      if (citation.editors && citation.editors.length > 0 && citation.authors && citation.authors.length > 0) {
-        components.push(`Edited by ${formatChicagoAuthors(citation.editors)}. `);
-      }
-      components.push(
-        `${citation.city}: ${citation.journalName}, ${citation.publicationYear}.`
-      );
-      break;
+      case "Book":
+        components.push(`<i>${citation.title}</i>. `);
+        if (
+          citation.editors &&
+          citation.editors.length > 0 &&
+          citation.authors &&
+          citation.authors.length > 0
+        ) {
+          components.push(
+            `Edited by ${formatChicagoAuthors(citation.editors)}. `
+          );
+        }
+        components.push(
+          `${citation.city}: ${citation.journalName}, ${citation.publicationYear}.`
+        );
+        break;
 
       case "Journal Article":
         components.push(`"${citation.title}." `);
@@ -548,7 +561,11 @@
 
     if (citation.authors && citation.authors.length > 0) {
       components.push(`${formatHarvardAuthors(citation.authors)}`);
-    } else if (citation.type.value === "Book" && citation.editors && citation.editors.length > 0) {
+    } else if (
+      citation.type.value === "Book" &&
+      citation.editors &&
+      citation.editors.length > 0
+    ) {
       const edLabel = citation.editors.length > 1 ? "(eds.)" : "(ed.)";
       components.push(`${formatHarvardAuthors(citation.editors)} ${edLabel}`);
     }
@@ -559,9 +576,15 @@
       case "Book":
       case "Conference Proceedings":
         components.push(`<i>${citation.title}</i>,`);
-        if (citation.type.value === "Book" && citation.editors && citation.editors.length > 0) {
+        if (
+          citation.type.value === "Book" &&
+          citation.editors &&
+          citation.editors.length > 0
+        ) {
           const edLabel = citation.editors.length > 1 ? "(eds.)," : "(ed.),";
-          components.push(`${formatHarvardAuthors(citation.editors)} ${edLabel}`);
+          components.push(
+            `${formatHarvardAuthors(citation.editors)} ${edLabel}`
+          );
         }
         break;
       default:
@@ -658,7 +681,11 @@
 
     if (citation.authors && citation.authors.length > 0) {
       components.push(formatIEEEAuthors(citation.authors) + ",");
-    } else if (citation.type.value === "Book" && citation.editors && citation.editors.length > 0) {
+    } else if (
+      citation.type.value === "Book" &&
+      citation.editors &&
+      citation.editors.length > 0
+    ) {
       components.push(formatIEEEAuthors(citation.editors) + ", Ed.,");
     }
 
@@ -743,7 +770,11 @@
     // 1. Authors
     if (citation.authors.length > 0) {
       components.push(formatASAAuthors(citation.authors) + ".");
-    } else if (citation.type.value === "Book" && citation.editors && citation.editors.length > 0) {
+    } else if (
+      citation.type.value === "Book" &&
+      citation.editors &&
+      citation.editors.length > 0
+    ) {
       const edLabel = citation.editors.length > 1 ? "eds." : "ed.";
       components.push(`${formatASAAuthors(citation.editors)}, ${edLabel}.`);
     }
@@ -898,9 +929,7 @@
   }
 </script>
 
-<Card.Root
-  class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
->
+<Card.Root>
   <Card.Header>
     <Card.Title class="flex items-center justify-between">
       <span>Reference</span>
@@ -949,7 +978,10 @@
 
   <Card.Content>
     <div class="space-y-4">
-      <div id="lit-ref-text" class="prose dark:prose-invert max-w-none break-words">
+      <div
+        id="lit-ref-text"
+        class="prose dark:prose-invert max-w-none break-words"
+      >
         {@html formattedCitation}
       </div>
     </div>

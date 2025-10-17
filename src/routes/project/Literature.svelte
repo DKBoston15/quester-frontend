@@ -213,16 +213,28 @@
     isExportDialogOpen = true;
   }
 
+  function refreshCurrentProjectLiterature() {
+    const projectId = projectStore.currentProject?.id;
+    if (!projectId) {
+      return;
+    }
 
-  function handleDocumentsProcessed(event: CustomEvent<{ jobId: string; files: any[] }>) {
-    console.log('Documents processed:', event.detail);
-    
+    literatureStore.loadLiterature(projectId);
+  }
+
+  function handleDocumentsProcessed(
+    event: CustomEvent<{ jobId: string; files: any[] }>
+  ) {
+    console.log("Documents processed:", event.detail);
+
     // Remove job from active list
-    activeProcessingJobs = activeProcessingJobs.filter(id => id !== event.detail.jobId);
-    
+    activeProcessingJobs = activeProcessingJobs.filter(
+      (id) => id !== event.detail.jobId
+    );
+
     // Refresh literature list
-    literatureStore.loadLiterature(projectStore.currentProject?.id);
-    
+    refreshCurrentProjectLiterature();
+
     // Could show a success toast here
   }
 
@@ -233,13 +245,17 @@
     }
   }
 
-  function handleProcessingComplete(event: CustomEvent<{ jobId: string; status: string }>) {
+  function handleProcessingComplete(
+    event: CustomEvent<{ jobId: string; status: string }>
+  ) {
     // Remove from active jobs
-    activeProcessingJobs = activeProcessingJobs.filter(id => id !== event.detail.jobId);
-    
+    activeProcessingJobs = activeProcessingJobs.filter(
+      (id) => id !== event.detail.jobId
+    );
+
     // Refresh literature if successful
-    if (event.detail.status === 'completed') {
-      literatureStore.loadLiterature(projectStore.currentProject?.id);
+    if (event.detail.status === "completed") {
+      refreshCurrentProjectLiterature();
     }
   }
 </script>
@@ -268,7 +284,7 @@
             onclick={handleExportReferences}
             variant="outline"
             disabled={!literatureStore.data?.length}
-            class="border-2 dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
+            class="transition-all"
           >
             <Download class="h-4 w-4 mr-2" />
             Export References
@@ -377,7 +393,9 @@
   bind:open={isExportDialogOpen}
   selectedLiterature={selectedLiteratureItems}
   projectTitle={projectStore.currentProject?.name}
-  userName={auth.user ? `${auth.user.firstName} ${auth.user.lastName}`.trim() || auth.user.email : undefined}
+  userName={auth.user
+    ? `${auth.user.firstName} ${auth.user.lastName}`.trim() || auth.user.email
+    : undefined}
   onOpenChange={(open: boolean) => (isExportDialogOpen = open)}
 />
 

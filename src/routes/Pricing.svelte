@@ -51,84 +51,86 @@
     companyUniversity: "",
   });
 
-  onMount(async () => {
-    try {
-      const allPlans = await api.get(`/subscription-plans`);
+  onMount(() => {
+    void (async () => {
+      try {
+        const allPlans = await api.get(`/subscription-plans`);
 
-      if (!Array.isArray(allPlans)) {
-        throw new Error(
-          "Expected array of plans but received: " + typeof allPlans
-        );
-      }
-
-      // Add additional UI properties to plans and infer type from name
-      const enhancedPlans = allPlans.map((plan) => {
-        // Infer plan type from name
-        let type: "free" | "pro" | "team" | "enterprise";
-        if (plan.priceMonthly === "0.00") {
-          type = "free";
-        } else if (plan.name.toLowerCase().includes("pro")) {
-          type = "pro";
-        } else if (plan.name.toLowerCase().includes("team")) {
-          type = "team";
-        } else {
-          type = "enterprise";
+        if (!Array.isArray(allPlans)) {
+          throw new Error(
+            "Expected array of plans but received: " + typeof allPlans
+          );
         }
 
-        return {
-          ...plan,
-          type,
-          priceMonthly: parseFloat(plan.priceMonthly),
-          priceYearly: parseFloat(plan.priceYearly),
-          accentColor:
-            type === "free" || type === "team" ? "yellow-400" : "blue-400",
-          tag: getTagForPlan(type),
-          highlight: type === "pro" || type === "team",
-          description: getDescriptionForPlan(type),
-        };
-      });
+        // Add additional UI properties to plans and infer type from name
+        const enhancedPlans = allPlans.map((plan) => {
+          // Infer plan type from name
+          let type: "free" | "pro" | "team" | "enterprise";
+          if (plan.priceMonthly === "0.00") {
+            type = "free";
+          } else if (plan.name.toLowerCase().includes("pro")) {
+            type = "pro";
+          } else if (plan.name.toLowerCase().includes("team")) {
+            type = "team";
+          } else {
+            type = "enterprise";
+          }
 
-      // Filter plans based on mode
-      if (props.mode === "personal") {
-        plans = enhancedPlans.filter(
-          (plan) => plan.type === "free" || plan.type === "pro"
-        );
-      } else {
-        // For organization mode, add enterprise plan and use consistent colors
-        const enterprisePlan: SubscriptionPlan = {
-          id: "enterprise",
-          name: "Enterprise",
-          productId: "enterprise",
-          monthlyPriceId: "",
-          yearlyPriceId: "",
-          features: [
-            "Everything in Team plan",
-            "Custom user limit",
-            "Priority support",
-            "SLA guarantees",
-          ],
-          maxUsers: null,
-          priceMonthly: 0,
-          priceYearly: 0,
-          type: "enterprise",
-          tag: "Custom Solution",
-          accentColor: "blue-400",
-          highlight: false,
-          description: "Customized solutions for teams and institutions",
-        };
+          return {
+            ...plan,
+            type,
+            priceMonthly: parseFloat(plan.priceMonthly),
+            priceYearly: parseFloat(plan.priceYearly),
+            accentColor:
+              type === "free" || type === "team" ? "yellow-400" : "blue-400",
+            tag: getTagForPlan(type),
+            highlight: type === "pro" || type === "team",
+            description: getDescriptionForPlan(type),
+          };
+        });
 
-        plans = [
-          ...enhancedPlans.filter((plan) => plan.type === "team"),
-          enterprisePlan,
-        ].map((plan) => ({
-          ...plan,
-          accentColor: "blue-400", // Make all organization plans use blue accent
-        }));
+        // Filter plans based on mode
+        if (props.mode === "personal") {
+          plans = enhancedPlans.filter(
+            (plan) => plan.type === "free" || plan.type === "pro"
+          );
+        } else {
+          // For organization mode, add enterprise plan and use consistent colors
+          const enterprisePlan: SubscriptionPlan = {
+            id: "enterprise",
+            name: "Enterprise",
+            productId: "enterprise",
+            monthlyPriceId: "",
+            yearlyPriceId: "",
+            features: [
+              "Everything in Team plan",
+              "Custom user limit",
+              "Priority support",
+              "SLA guarantees",
+            ],
+            maxUsers: null,
+            priceMonthly: 0,
+            priceYearly: 0,
+            type: "enterprise",
+            tag: "Custom Solution",
+            accentColor: "blue-400",
+            highlight: false,
+            description: "Customized solutions for teams and institutions",
+          };
+
+          plans = [
+            ...enhancedPlans.filter((plan) => plan.type === "team"),
+            enterprisePlan,
+          ].map((plan) => ({
+            ...plan,
+            accentColor: "blue-400", // Make all organization plans use blue accent
+          }));
+        }
+      } catch (err) {
+        error = err instanceof Error ? err.message : "Failed to fetch plans";
+        console.error("Failed to fetch plans:", err);
       }
-    } catch (err) {
-      error = err instanceof Error ? err.message : "Failed to fetch plans";
-      console.error("Failed to fetch plans:", err);
-    }
+    })();
   });
 
   function getTagForPlan(type: string): string {

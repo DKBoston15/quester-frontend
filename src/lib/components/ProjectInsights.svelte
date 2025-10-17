@@ -11,6 +11,7 @@
   import { slide } from "svelte/transition";
   import { quintOut } from "svelte/easing";
   import type { Project } from "$lib/types/auth";
+  import { hasDesignContent } from "$lib/utils/design";
 
   type InsightRule = {
     field: keyof Project | string;
@@ -66,10 +67,10 @@
       description:
         "Add design concepts and visual representations to communicate your project effectively.",
       checkFn: (project) =>
-        !project.researchDesign?.trim() &&
-        !project.samplingDesign?.trim() &&
-        !project.measurementDesign?.trim() &&
-        !project.analyticDesign?.trim(),
+        !hasDesignContent(project.researchDesign) &&
+        !hasDesignContent(project.samplingDesign) &&
+        !hasDesignContent(project.measurementDesign) &&
+        !hasDesignContent(project.analyticDesign),
       // action: {
       //   label: "Add Designs",
       //   route: "project_settings",
@@ -157,11 +158,9 @@
   });
 </script>
 
-<Card.Root
-  class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
->
+<Card.Root>
   <Accordion.Root value={accordionValue} type="multiple" class="w-full">
-    <Accordion.Item value="insights">
+    <Accordion.Item value="insights" class="border-none">
       <div class="flex items-center justify-between px-6 pt-6">
         <div class="flex items-center gap-2">
           <Card.Title class="text-xl flex items-center gap-2">

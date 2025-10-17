@@ -117,7 +117,7 @@
     }
   }
 
-  let citedPage: number | null = null;
+  let citedPage = $state<number | null>(null);
 
   // Read cited page from query (e.g., ?p=3)
   $effect(() => {
@@ -386,7 +386,7 @@
                 View Document
               </Button>
               <DropdownMenu.Root>
-                <DropdownMenu.Trigger asChild>
+                <DropdownMenu.Trigger>
                   {#snippet child({ props })}
                     <Button variant="outline" size="sm" {...props}>
                       Actions
@@ -419,15 +419,18 @@
               </Button>
             {/if}
             <AlertDialog.Root bind:open={showDeleteDialog}>
-              <AlertDialog.Trigger asChild>
-                <Button
-                  id="lit-view-delete-button"
-                  variant="destructive"
-                  size="sm"
-                >
-                  <Trash2 class="h-4 w-4 mr-2" />
-                  Delete Literature
-                </Button>
+              <AlertDialog.Trigger>
+                {#snippet child({ props })}
+                  <Button
+                    id="lit-view-delete-button"
+                    variant="destructive"
+                    size="sm"
+                    {...props}
+                  >
+                    <Trash2 class="h-4 w-4 mr-2" />
+                    Delete Literature
+                  </Button>
+                {/snippet}
               </AlertDialog.Trigger>
               <AlertDialog.Content class="border-2 dark:border-dark-border">
                 <AlertDialog.Header>
@@ -556,10 +559,7 @@
 
         <!-- Status Card -->
         <div class="mt-4 mb-6">
-          <Card.Root
-            id="lit-status-card"
-            class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
-          >
+          <Card.Root id="lit-status-card">
             <Card.Content class="py-4">
               <LiteratureStatus {literature} />
             </Card.Content>
@@ -663,10 +663,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Left Column: Details -->
         <div class="space-y-6">
-          <Card.Root
-            id="lit-details-card"
-            class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
-          >
+          <Card.Root id="lit-details-card">
             <Card.Header>
               <Card.Title>Details</Card.Title>
             </Card.Header>
@@ -701,10 +698,7 @@
           />
 
           <!-- Keywords -->
-          <Card.Root
-            id="lit-keywords-card"
-            class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
-          >
+          <Card.Root id="lit-keywords-card">
             <Card.Header>
               <Card.Title>Keywords</Card.Title>
             </Card.Header>

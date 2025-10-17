@@ -232,6 +232,17 @@
         return "text-gray-600";
     }
   }
+
+  function triggerFileInput() {
+    document.getElementById("file-input-inline")?.click();
+  }
+
+  function handleUploadZoneKeydown(event: KeyboardEvent) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      triggerFileInput();
+    }
+  }
 </script>
 
 <!-- Inline Upload UI for use inside Add Literature dialog -->
@@ -242,6 +253,9 @@
       ? 'border-primary bg-primary/5'
       : 'border-muted-foreground/25'}"
     role="button"
+    tabindex="0"
+    onkeydown={handleUploadZoneKeydown}
+    onclick={triggerFileInput}
     ondragover={handleDragOver}
     ondragleave={handleDragLeave}
     ondrop={handleDrop}
@@ -291,7 +305,7 @@
     />
 
     <Button
-      onclick={() => document.getElementById("file-input-inline")?.click()}
+      onclick={triggerFileInput}
     >
       Select Files
     </Button>

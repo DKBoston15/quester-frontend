@@ -21,7 +21,7 @@
     variant="ghost"
     size="icon"
     class={cn(
-      "h-8 w-8 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 p-2 rounded-sm",
+      "h-8 w-8 rounded-full p-0 text-foreground transition duration-200 hover:bg-accent hover:text-accent-foreground focus-visible:ring-brand/80 focus-visible:ring-offset-0",
       props.class
     )}
   >
