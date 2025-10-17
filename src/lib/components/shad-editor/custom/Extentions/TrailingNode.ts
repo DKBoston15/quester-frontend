@@ -1,6 +1,6 @@
 import { Extension } from '@tiptap/core'
-import { Plugin, PluginKey, Transaction } from 'prosemirror-state'
-import type { Node as ProseMirrorNode } from 'prosemirror-model'
+import { Plugin, PluginKey, Transaction } from '@tiptap/pm/state'
+import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
 
 export interface TrailingNodeOptions {
   node: string // node name to append, e.g., 'paragraph'
