@@ -30,6 +30,7 @@
   import { toast } from "svelte-sonner";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import { ChevronDown } from "lucide-svelte";
+  import { openUrlInNewTab } from "$lib/utils/browser";
 
   const { literatureId } = $props<{ literatureId: string }>();
   let selectedTab = $state("details");
@@ -163,11 +164,7 @@
         return;
       }
       const url = page ? `${baseUrl}#page=${page}` : baseUrl;
-      const win = window.open(url, "_blank", "noopener,noreferrer");
-      if (!win) {
-        // Popup blocked; provide a navigable fallback
-        window.location.assign(url);
-      }
+      openUrlInNewTab(url);
     } catch (err) {
       console.error("Preview error:", err);
       toast.error("Unable to preview document", {

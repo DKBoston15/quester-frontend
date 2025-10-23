@@ -20,6 +20,7 @@
     AlertCircle,
   } from "lucide-svelte";
   import { API_BASE_URL } from '$lib/config';
+  import { openUrlInNewTab } from '$lib/utils/browser';
 
   // Register required modules
   ModuleRegistry.registerModules([ClientSideRowModelModule]);
@@ -364,11 +365,7 @@
         await downloadDocument(fileId, filename);
         return;
       }
-      const win = window.open(url, '_blank', 'noopener,noreferrer');
-      if (!win) {
-        // Popup blocked; provide a navigable fallback
-        window.location.assign(url);
-      }
+      openUrlInNewTab(url);
     } catch (err) {
       console.error('Preview error:', err);
       toast.error('Unable to preview document', {
