@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
-  import { onDestroy } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import { debounce } from "$lib/utils/debounce";
   import { api } from "$lib/services/api-client";
   import { Badge } from "$lib/components/ui/badge";
@@ -53,6 +53,7 @@
   let isSearching = false;
   let searchError: string | null = null;
   let results: ContextSelectionItem[] = [];
+  let rootEl: HTMLDivElement | null = null;
 
   const abortController = new AbortController();
 
@@ -271,6 +272,25 @@
     abortController.abort();
   });
 
+  // Clear query/results when clicking outside the component
+  onMount(() => {
+    const handlePointerDown = (e: MouseEvent | PointerEvent | TouchEvent) => {
+      const target = e.target as Node | null;
+      if (!rootEl || (target && rootEl.contains(target))) return;
+      // Click happened outside, clear query and close results
+      query = "";
+      results = [];
+      searchError = null;
+    };
+
+    // Use pointerdown to fire early and catch most interactions
+    document.addEventListener("pointerdown", handlePointerDown, true);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown, true);
+    };
+  });
+
   $: if (!query || query.trim().length < MIN_QUERY_LENGTH) {
     if (query.length === 0) {
       results = [];
@@ -435,7 +455,7 @@
   }
 </script>
 
-<div class="flex flex-col gap-3">
+<div class="flex flex-col gap-3" bind:this={rootEl}>
   <div class="flex items-center justify-between">
     <div>
       <p class="text-sm font-semibold">Context Focus</p>
