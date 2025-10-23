@@ -337,7 +337,8 @@
 
   async function previewDocument(fileId: string, filename: string) {
     try {
-      const response = await fetch(`${API_BASE_URL}/documents/${fileId}/download?preview=true`, {
+      const endpoint = `${API_BASE_URL}/documents/${fileId}/download?preview=true`;
+      const response = await fetch(endpoint, {
         credentials: 'include',
       });
 
@@ -373,12 +374,18 @@
 
   async function downloadDocument(fileId: string, filename: string) {
     try {
-      const response = await fetch(`${API_BASE_URL}/documents/${fileId}/download`, {
+      const endpoint = `${API_BASE_URL}/documents/${fileId}/download`;
+      const response = await fetch(endpoint, {
         credentials: 'include',
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get download URL');
+        let message = 'Failed to get download URL';
+        try {
+          const err = await response.json();
+          if (err?.message) message = err.message;
+        } catch {}
+        throw new Error(message);
       }
 
       const data = await response.json();

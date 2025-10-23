@@ -133,42 +133,39 @@
     if (!literature?.sourceFileId) return;
 
     try {
+      const endpoint = `${API_BASE_URL}/documents/${literature.sourceFileId}/download?preview=true`;
       const response = await fetch(
-        `${API_BASE_URL}/documents/${literature.sourceFileId}/download?preview=true`,
+        endpoint,
         {
           credentials: "include",
         }
       );
 
       if (!response.ok) {
-        throw new Error("Failed to get preview URL");
+        // Surface server message if available
+        let message = "Failed to get preview URL";
+        try {
+          const err = await response.json();
+          if (err?.message) message = err.message;
+        } catch {}
+        toast.error("Unable to preview document", { description: message });
+        return;
       }
 
       const data = await response.json();
 
-      // Fetch the PDF through CORS-enabled request, then create blob URL
-      const pdfResponse = await fetch(data.downloadUrl, {
-        method: "GET",
-        mode: "cors",
-      });
-
-      if (!pdfResponse.ok) {
-        throw new Error("Failed to fetch PDF");
+      // Open the signed URL directly (no CORS fetch needed)
+      const urlWithAnchor = page ? `${data.downloadUrl}#page=${page}` : data.downloadUrl;
+      const win = window.open(urlWithAnchor, "_blank");
+      if (!win) {
+        // Popup blocked; provide a navigable fallback
+        window.location.href = urlWithAnchor;
       }
-
-      const pdfBlob = await pdfResponse.blob();
-      // Create blob with correct MIME type for PDF
-      const typedBlob = new Blob([pdfBlob], { type: "application/pdf" });
-      const blobUrl = URL.createObjectURL(typedBlob);
-
-      // Open blob URL (no CORS issues). If a page was provided, append #page=
-      const urlWithAnchor = page ? `${blobUrl}#page=${page}` : blobUrl;
-      window.open(urlWithAnchor, "_blank");
-
-      // Clean up blob URL after a delay
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
     } catch (err) {
       console.error("Preview error:", err);
+      toast.error("Unable to preview document", {
+        description: err instanceof Error ? err.message : "Unknown error",
+      });
     }
   }
 
@@ -176,15 +173,21 @@
     if (!literature?.sourceFileId) return;
 
     try {
+      const endpoint = `${API_BASE_URL}/documents/${literature.sourceFileId}/download`;
       const response = await fetch(
-        `${API_BASE_URL}/documents/${literature.sourceFileId}/download`,
+        endpoint,
         {
           credentials: "include",
         }
       );
 
       if (!response.ok) {
-        throw new Error("Failed to get download URL");
+        let message = "Failed to get download URL";
+        try {
+          const err = await response.json();
+          if (err?.message) message = err.message;
+        } catch {}
+        throw new Error(message);
       }
 
       const data = await response.json();
