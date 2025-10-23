@@ -298,6 +298,25 @@
     });
   });
 
+  // Keep the internal editor in sync if the incoming `content` prop changes.
+  // This fixes cases where the component is reused (not remounted) with a new note
+  // — for example, in split view when switching the right-hand note.
+  $effect(() => {
+    if (!editor) return;
+    try {
+      const current = editor.getJSON();
+      const next = content;
+      // Avoid unnecessary updates and infinite loops by comparing JSON
+      if (JSON.stringify(current) !== JSON.stringify(next)) {
+        editor.commands.setContent(next, false);
+      }
+    } catch (e) {
+      // Swallow errors to avoid breaking typing if malformed content arrives
+      // eslint-disable-next-line no-console
+      console.warn("ShadEditor: failed to sync external content", e);
+    }
+  });
+
   onDestroy(() => {
     if (editor) editor.destroy();
   });
