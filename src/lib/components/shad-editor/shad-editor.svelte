@@ -233,7 +233,8 @@
         Superscript,
         Subscript,
         Link.configure({
-          openOnClick: false,
+          // Make hyperlinks clickable directly in the editor
+          openOnClick: true,
           autolink: true,
           defaultProtocol: "https",
           HTMLAttributes: {

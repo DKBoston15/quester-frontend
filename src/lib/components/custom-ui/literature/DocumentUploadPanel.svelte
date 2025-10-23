@@ -305,7 +305,7 @@
     />
 
     <Button
-      onclick={triggerFileInput}
+      onclick={(e) => { e.stopPropagation(); triggerFileInput(); }}
     >
       Select Files
     </Button>
