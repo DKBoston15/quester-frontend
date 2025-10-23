@@ -37,10 +37,17 @@
   const MIN_QUERY_LENGTH = 2;
   const SEARCH_DEBOUNCE_MS = 300;
 
-  export let selectedItems: ContextSelectionItem[] = [];
-  export let projectId: string | null = null;
-  export let scope: "current" | "all" = "current";
-  export let disabled = false;
+  let {
+    selectedItems = [],
+    projectId = null,
+    scope = "current" as "current" | "all",
+    disabled = false,
+  } = $props<{
+    selectedItems?: ContextSelectionItem[];
+    projectId?: string | null;
+    scope?: "current" | "all";
+    disabled?: boolean;
+  }>();
 
   const dispatch = createEventDispatcher<{
     select: ContextSelectionItem;
@@ -48,13 +55,15 @@
     clear: void;
   }>();
 
-  let query = "";
-  let lastExecutedQuery = "";
-  let isSearching = false;
-  let searchError: string | null = null;
-  let results: ContextSelectionItem[] = [];
+  let query = $state("");
+  let lastExecutedQuery = $state("");
+  let isSearching = $state(false);
+  let searchError = $state<string | null>(null);
+  let results = $state<ContextSelectionItem[]>([]);
+  let rootEl: HTMLDivElement | null = null;
 
-  const abortController = new AbortController();
+  let abortController: AbortController | null = null;
+  let searchToken = 0;
 
   function getDedupKey(item: ContextSelectionItem): string {
     const normalize = (value: unknown) =>
@@ -142,11 +151,17 @@
       return;
     }
 
+    const controller = new AbortController();
+    if (abortController) abortController.abort();
+    abortController = controller;
+    const token = ++searchToken;
+
     lastExecutedQuery = trimmed;
     isSearching = true;
     searchError = null;
 
     try {
+      if (controller.signal.aborted) return;
       const response = await api.post<{ results: RawSearchResult[] }>(
         "/search",
         {
@@ -166,10 +181,14 @@
           limit: 15,
         },
         {
-          signal: abortController.signal,
+          signal: controller.signal,
           expectedContentType: "json",
         }
       );
+
+      if (controller.signal.aborted || query.trim() !== trimmed || token !== searchToken) {
+        return;
+      }
 
       const mapped = (response?.results || [])
         .map(mapResultToContextItem)
@@ -257,10 +276,17 @@
       results = scopedResults.filter((item) => item.type !== "document_chunk");
     } catch (error) {
       console.error("Context search failed", error);
-      searchError =
-        error instanceof Error
-          ? error.message
-          : "Failed to load context suggestions";
+      // Ignore errors caused by intentional aborts (avoid DOMException in SSR/tests)
+      const isAbortError =
+        error &&
+        typeof error === "object" &&
+        (error as any).name === "AbortError";
+      if (!isAbortError) {
+        searchError =
+          error instanceof Error
+            ? error.message
+            : "Failed to load context suggestions";
+      }
       results = [];
     } finally {
       isSearching = false;
@@ -268,17 +294,44 @@
   }, SEARCH_DEBOUNCE_MS);
 
   onDestroy(() => {
-    abortController.abort();
+    abortController?.abort();
   });
 
-  $: if (!query || query.trim().length < MIN_QUERY_LENGTH) {
-    if (query.length === 0) {
+  // Clear query/results when clicking outside the component
+  $effect(() => {
+    const handlePointerDown = (e: MouseEvent | PointerEvent | TouchEvent) => {
+      const target = e.target as Node | null;
+      if (!rootEl || (target && rootEl.contains(target))) return;
+      // Click happened outside, clear query and close results
+      query = "";
       results = [];
       searchError = null;
+      abortController?.abort();
+      searchToken++;
+      isSearching = false;
+    };
+
+    // Use pointerdown to fire early and catch most interactions
+    document.addEventListener("pointerdown", handlePointerDown, true);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown, true);
+    };
+  });
+
+  $effect(() => {
+    const trimmed = (query || "").trim();
+    if (!query || trimmed.length < MIN_QUERY_LENGTH) {
+      if ((query || "").length === 0) {
+        results = [];
+        searchError = null;
+      }
+      return;
     }
-  } else if (query.trim() !== lastExecutedQuery) {
-    performSearch(query);
-  }
+    if (trimmed !== lastExecutedQuery) {
+      performSearch(query);
+    }
+  });
 
   function mapResultToContextItem(
     result: RawSearchResult
@@ -435,7 +488,7 @@
   }
 </script>
 
-<div class="flex flex-col gap-3">
+<div class="flex flex-col gap-3" bind:this={rootEl}>
   <div class="flex items-center justify-between">
     <div>
       <p class="text-sm font-semibold">Context Focus</p>
