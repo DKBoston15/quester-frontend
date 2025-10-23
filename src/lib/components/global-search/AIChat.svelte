@@ -38,6 +38,7 @@
   import Save from "lucide-svelte/icons/save";
   import CheckCircle from "lucide-svelte/icons/check-circle";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
+  import { openUrlInNewTab } from "$lib/utils/browser";
 
   // Reactive bindings to store state
   let chatMessages = $derived(globalSearchStore.chatMessages);
@@ -261,10 +262,7 @@
         return;
       }
       const url = page ? `${baseUrl}#page=${page}` : baseUrl;
-      const win = window.open(url, "_blank", "noopener,noreferrer");
-      if (!win) {
-        window.location.assign(url);
-      }
+      openUrlInNewTab(url);
     } catch (e) {
       console.error("Preview open failed", e);
     }
