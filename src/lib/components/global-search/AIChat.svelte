@@ -13,6 +13,7 @@
   import MarkdownIt from "markdown-it";
   import ContextSelector from "$lib/components/ai/ContextSelector.svelte";
   import type { ContextSelectionItem } from "$lib/types/context";
+  import { toast } from "svelte-sonner";
 
   // Icons
   import Send from "lucide-svelte/icons/send";
@@ -254,8 +255,16 @@
       );
       if (!res.ok) return;
       const data = await res.json();
-      const url = page ? `${data.downloadUrl}#page=${page}` : data.downloadUrl;
-      window.open(url, "_blank");
+      const baseUrl: unknown = data?.downloadUrl;
+      if (typeof baseUrl !== "string" || baseUrl.length === 0) {
+        toast.error("Unable to preview document", { description: "Missing download URL" });
+        return;
+      }
+      const url = page ? `${baseUrl}#page=${page}` : baseUrl;
+      const win = window.open(url, "_blank", "noopener,noreferrer");
+      if (!win) {
+        window.location.assign(url);
+      }
     } catch (e) {
       console.error("Preview open failed", e);
     }

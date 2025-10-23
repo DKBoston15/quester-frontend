@@ -155,11 +155,18 @@
       const data = await response.json();
 
       // Open the signed URL directly (no CORS fetch needed)
-      const urlWithAnchor = page ? `${data.downloadUrl}#page=${page}` : data.downloadUrl;
-      const win = window.open(urlWithAnchor, "_blank");
+      const baseUrl: unknown = data?.downloadUrl;
+      if (typeof baseUrl !== "string" || baseUrl.length === 0) {
+        toast.error("Unable to preview document", { description: "Missing download URL" });
+        // Fallback to download in case preview inline fails
+        await downloadDocument();
+        return;
+      }
+      const url = page ? `${baseUrl}#page=${page}` : baseUrl;
+      const win = window.open(url, "_blank", "noopener,noreferrer");
       if (!win) {
         // Popup blocked; provide a navigable fallback
-        window.location.href = urlWithAnchor;
+        window.location.assign(url);
       }
     } catch (err) {
       console.error("Preview error:", err);

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
-  import { onDestroy, onMount } from "svelte";
+  import { onDestroy } from "svelte";
   import { debounce } from "$lib/utils/debounce";
   import { api } from "$lib/services/api-client";
   import { Badge } from "$lib/components/ui/badge";
@@ -55,7 +55,8 @@
   let results: ContextSelectionItem[] = [];
   let rootEl: HTMLDivElement | null = null;
 
-  const abortController = new AbortController();
+  let abortController: AbortController | null = null;
+  let searchToken = 0;
 
   function getDedupKey(item: ContextSelectionItem): string {
     const normalize = (value: unknown) =>
@@ -143,11 +144,17 @@
       return;
     }
 
+    const controller = new AbortController();
+    if (abortController) abortController.abort();
+    abortController = controller;
+    const token = ++searchToken;
+
     lastExecutedQuery = trimmed;
     isSearching = true;
     searchError = null;
 
     try {
+      if (controller.signal.aborted) return;
       const response = await api.post<{ results: RawSearchResult[] }>(
         "/search",
         {
@@ -167,10 +174,14 @@
           limit: 15,
         },
         {
-          signal: abortController.signal,
+          signal: controller.signal,
           expectedContentType: "json",
         }
       );
+
+      if (controller.signal.aborted || query.trim() !== trimmed || token !== searchToken) {
+        return;
+      }
 
       const mapped = (response?.results || [])
         .map(mapResultToContextItem)
@@ -258,10 +269,17 @@
       results = scopedResults.filter((item) => item.type !== "document_chunk");
     } catch (error) {
       console.error("Context search failed", error);
-      searchError =
-        error instanceof Error
-          ? error.message
-          : "Failed to load context suggestions";
+      // Ignore errors caused by intentional aborts (avoid DOMException in SSR/tests)
+      const isAbortError =
+        error &&
+        typeof error === "object" &&
+        (error as any).name === "AbortError";
+      if (!isAbortError) {
+        searchError =
+          error instanceof Error
+            ? error.message
+            : "Failed to load context suggestions";
+      }
       results = [];
     } finally {
       isSearching = false;
@@ -269,11 +287,11 @@
   }, SEARCH_DEBOUNCE_MS);
 
   onDestroy(() => {
-    abortController.abort();
+    abortController?.abort();
   });
 
   // Clear query/results when clicking outside the component
-  onMount(() => {
+  $effect(() => {
     const handlePointerDown = (e: MouseEvent | PointerEvent | TouchEvent) => {
       const target = e.target as Node | null;
       if (!rootEl || (target && rootEl.contains(target))) return;
@@ -281,6 +299,9 @@
       query = "";
       results = [];
       searchError = null;
+      abortController?.abort();
+      searchToken++;
+      isSearching = false;
     };
 
     // Use pointerdown to fire early and catch most interactions
