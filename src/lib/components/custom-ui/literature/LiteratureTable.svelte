@@ -226,7 +226,14 @@
       field: "sourceFileId",
       headerName: "File",
       width: 100,
-      sortable: false,
+      sortable: true,
+      comparator: (a: string | undefined, b: string | undefined) => {
+        const aHas = !!a;
+        const bHas = !!b;
+        if (aHas === bHas) return 0;
+        // In ascending order: items without a file (false) come before those with a file (true)
+        return aHas ? 1 : -1;
+      },
       filter: false,
       suppressMenu: true,
       // Ensure content in this cell is vertically centered
@@ -326,6 +333,8 @@
     domLayout: "normal",
   };
 
+  import { toast } from 'svelte-sonner';
+
   async function previewDocument(fileId: string, filename: string) {
     try {
       const response = await fetch(`${API_BASE_URL}/documents/${fileId}/download?preview=true`, {
@@ -333,34 +342,30 @@
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get preview URL');
+        let message = 'Failed to get preview URL';
+        try {
+          const err = await response.json();
+          if (err?.message) message = err.message;
+        } catch {}
+        toast.error('Unable to preview document', { description: message });
+        // Fallback to download in case preview inline fails
+        await downloadDocument(fileId, filename);
+        return;
       }
 
       const data = await response.json();
-      
-      // Fetch the PDF through CORS-enabled request, then create blob URL
-      const pdfResponse = await fetch(data.downloadUrl, {
-        method: 'GET',
-        mode: 'cors', // Explicitly enable CORS
-      });
-      
-      if (!pdfResponse.ok) {
-        throw new Error('Failed to fetch PDF');
+
+      // Open the signed URL directly (no CORS fetch needed)
+      const win = window.open(data.downloadUrl, '_blank');
+      if (!win) {
+        // Popup blocked; provide a navigable fallback
+        window.location.href = data.downloadUrl;
       }
-      
-      const pdfBlob = await pdfResponse.blob();
-      // Create blob with correct MIME type for PDF
-      const typedBlob = new Blob([pdfBlob], { type: 'application/pdf' });
-      const blobUrl = URL.createObjectURL(typedBlob);
-      
-      // Open blob URL (no CORS issues)
-      const newWindow = window.open(blobUrl, '_blank');
-      
-      // Clean up blob URL after a delay
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
-      
     } catch (err) {
       console.error('Preview error:', err);
+      toast.error('Unable to preview document', {
+        description: err instanceof Error ? err.message : 'Unknown error',
+      });
       // Fallback to download
       await downloadDocument(fileId, filename);
     }
