@@ -37,10 +37,17 @@
   const MIN_QUERY_LENGTH = 2;
   const SEARCH_DEBOUNCE_MS = 300;
 
-  export let selectedItems: ContextSelectionItem[] = [];
-  export let projectId: string | null = null;
-  export let scope: "current" | "all" = "current";
-  export let disabled = false;
+  let {
+    selectedItems = [],
+    projectId = null,
+    scope = "current" as "current" | "all",
+    disabled = false,
+  } = $props<{
+    selectedItems?: ContextSelectionItem[];
+    projectId?: string | null;
+    scope?: "current" | "all";
+    disabled?: boolean;
+  }>();
 
   const dispatch = createEventDispatcher<{
     select: ContextSelectionItem;
@@ -48,11 +55,11 @@
     clear: void;
   }>();
 
-  let query = "";
-  let lastExecutedQuery = "";
-  let isSearching = false;
-  let searchError: string | null = null;
-  let results: ContextSelectionItem[] = [];
+  let query = $state("");
+  let lastExecutedQuery = $state("");
+  let isSearching = $state(false);
+  let searchError = $state<string | null>(null);
+  let results = $state<ContextSelectionItem[]>([]);
   let rootEl: HTMLDivElement | null = null;
 
   let abortController: AbortController | null = null;
@@ -312,14 +319,19 @@
     };
   });
 
-  $: if (!query || query.trim().length < MIN_QUERY_LENGTH) {
-    if (query.length === 0) {
-      results = [];
-      searchError = null;
+  $effect(() => {
+    const trimmed = (query || "").trim();
+    if (!query || trimmed.length < MIN_QUERY_LENGTH) {
+      if ((query || "").length === 0) {
+        results = [];
+        searchError = null;
+      }
+      return;
     }
-  } else if (query.trim() !== lastExecutedQuery) {
-    performSearch(query);
-  }
+    if (trimmed !== lastExecutedQuery) {
+      performSearch(query);
+    }
+  });
 
   function mapResultToContextItem(
     result: RawSearchResult
