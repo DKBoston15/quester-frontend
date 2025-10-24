@@ -238,11 +238,13 @@
     }
 
     // Only update content if switching to a new note or if we're not currently editing
-    // This prevents interference with user typing
+    // Additionally, avoid resetting content if it is effectively identical to prevent cursor jumps
     if (isNewNote || !contentChanged) {
       const newContent = parseNoteContent(note.content);
-      content = newContent;
-      previousContent = JSON.stringify(newContent);
+      if (JSON.stringify(newContent) !== JSON.stringify(content)) {
+        content = newContent;
+        previousContent = JSON.stringify(newContent);
+      }
     }
 
     // Update section type
@@ -632,7 +634,11 @@
       <ShadEditor
         {content}
 on:contentChange={(e) => {
+          // Update local content from editor
           content = e.detail;
+          // Ensure autosave is scheduled immediately on user input
+          contentChanged = true;
+          scheduleSave();
         }}
         placeholder="Start writing..."
       />
