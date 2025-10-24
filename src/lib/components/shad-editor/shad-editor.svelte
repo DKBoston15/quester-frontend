@@ -304,11 +304,25 @@
   $effect(() => {
     if (!editor) return;
     try {
+      // Do not reset content (and thereby selection) while the user is typing
+      if (editor.isFocused || editor.view?.hasFocus?.()) return;
+
       const current = editor.getJSON();
       const next = content;
       // Avoid unnecessary updates and infinite loops by comparing JSON
       if (JSON.stringify(current) !== JSON.stringify(next)) {
+        // Try to preserve selection/caret where possible
+        const { from, to } = editor.state.selection;
         editor.commands.setContent(next, false);
+        try {
+          // Restore selection best-effort after content sync
+          if (typeof from === 'number' && typeof to === 'number') {
+            editor.commands.setTextSelection({ from, to });
+          }
+        } catch (restoreErr) {
+          // eslint-disable-next-line no-console
+          console.warn("ShadEditor: failed to restore selection after sync", restoreErr);
+        }
       }
     } catch (e) {
       // Swallow errors to avoid breaking typing if malformed content arrives
