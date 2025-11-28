@@ -13,6 +13,11 @@
   import { API_BASE_URL } from "$lib/config";
   import MarkdownIt from "markdown-it";
   import { navigate } from "svelte-routing";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper to get translation value imperatively
+  const t = (key: string) => get(_)(key);
   
   // Icons
   import Send from "lucide-svelte/icons/send";
@@ -80,27 +85,27 @@
   let showDeleteDialog = $state(false);
   let sessionToDelete = $state<string | null>(null);
 
-  // Research question suggestions
-  const researchSuggestions = [
+  // Research question suggestions - using getters for reactivity
+  const getResearchSuggestions = () => [
     {
       icon: Search,
-      title: "Summarize my recent research findings",
-      description: "Get an overview of your latest research progress"
+      title: t("chat.summarizeResearch"),
+      description: t("chat.summarizeDescription")
     },
     {
       icon: TrendingUp,
-      title: "What are the key themes in my literature?",
-      description: "Identify patterns and trends across your sources"
+      title: t("chat.keyThemes"),
+      description: t("chat.keyThemesDescription")
     },
     {
       icon: Lightbulb,
-      title: "Help me find research gaps",
-      description: "Discover unexplored areas in your field"
+      title: t("chat.findGaps"),
+      description: t("chat.findGapsDescription")
     },
     {
       icon: Target,
-      title: "What are my next research steps?",
-      description: "Get recommendations for continuing your work"
+      title: t("chat.nextSteps"),
+      description: t("chat.nextStepsDescription")
     }
   ];
 
@@ -240,7 +245,7 @@
       sessionToDelete = null;
     } catch (error) {
       console.error('Failed to delete session:', error);
-      alert('Failed to delete session: ' + (error as Error).message);
+      alert($_('chat.failedToDeleteSession') + ': ' + (error as Error).message);
     } finally {
       isDeleting = false;
     }
@@ -263,7 +268,7 @@
       showHistory = false;
     } catch (e) {
       console.error("Failed to load chat session:", e);
-      error = "Failed to load chat session";
+      error = $_('errors.failedToLoadChatSession');
     } finally {
       isLoading = false;
     }
@@ -422,8 +427,8 @@
         console.log("Chat request was cancelled");
         return;
       }
-      
-      error = e instanceof Error ? e.message : "Failed to get response";
+
+      error = e instanceof Error ? e.message : $_('errors.failedToGetResponse');
       console.error("Chat error:", e);
       
       // Remove the failed assistant message if it was added
@@ -484,7 +489,7 @@
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffMins < 1) return "Just now";
+    if (diffMins < 1) return t("time.justNow");
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
@@ -513,7 +518,7 @@
   function getTypeLabel(type: string): string {
     switch (type) {
       case 'document_chunk':
-        return 'Literature Page';
+        return t("chat.literaturePage");
       default:
         return type.charAt(0).toUpperCase() + type.slice(1);
     }
@@ -623,9 +628,9 @@
           <Bot class="h-6 w-6 text-white" />
         </div>
         <div class="flex items-center gap-2">
-          <span class="font-bold">AI Research Assistant</span>
+          <span class="font-bold">{$_("chat.aiAssistant")}</span>
           <span class="text-sm text-muted-foreground hidden sm:inline">
-            · Chat with your research data
+            · {$_("chat.chatWithResearchData")}
           </span>
         </div>
       </div>
@@ -638,7 +643,7 @@
             : ''}"
         >
           <History class="h-4 w-4 mr-2" />
-          <span class="hidden sm:inline">History</span>
+          <span class="hidden sm:inline">{$_("chat.history")}</span>
         </Button>
         <Button
           variant="outline"
@@ -646,7 +651,7 @@
           class="border-2 dark:border-dark-border shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[1px_1px_0px_0px_rgba(44,46,51,0.1)] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all"
         >
           <RefreshCcw class="h-4 w-4 mr-2" />
-          <span class="hidden sm:inline">New Chat</span>
+          <span class="hidden sm:inline">{$_("chat.newChat")}</span>
         </Button>
       </div>
     </div>
@@ -661,7 +666,7 @@
             <div class="flex flex-col gap-2">
               <h3 class="font-semibold text-lg flex items-center gap-2">
                 <Folder class="h-5 w-5" />
-                Chat History
+                {$_("chat.chatHistory")}
               </h3>
               <div class="relative">
                 <Search
@@ -669,7 +674,7 @@
                 />
                 <input
                   type="text"
-                  placeholder="Search conversations..."
+                  placeholder={$_("chat.searchConversations")}
                   bind:value={searchTerm}
                   class="w-full pl-9 p-2 text-sm rounded-lg border-2 dark:border-dark-border bg-background focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:focus:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] transition-all duration-200"
                 />
@@ -685,10 +690,10 @@
             {:else if filteredSessions.length === 0}
               <div class="text-center py-8">
                 <p class="text-sm text-muted-foreground">
-                  {searchTerm ? "No matching conversations" : "No previous conversations"}
+                  {searchTerm ? $_("chat.noMatchingConversations") : $_("chat.noPreviousConversations")}
                 </p>
                 <p class="text-xs text-muted-foreground mt-1">
-                  {searchTerm ? "Try adjusting your search terms" : "Start a new conversation to begin"}
+                  {searchTerm ? $_("chat.tryAdjustingSearch") : $_("chat.startNewConversation")}
                 </p>
               </div>
             {:else}
@@ -711,7 +716,7 @@
                       <div class="flex-1 min-w-0">
                         <div class="text-sm font-medium truncate">
                           {session.messages?.[0]?.content?.slice(0, 50) ||
-                            "Chat Session"}
+                            $_("chat.chatSession")}
                           {(session.messages?.[0]?.content?.length ?? 0) > 50
                             ? "..."
                             : ""}
@@ -752,15 +757,15 @@
                   <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mb-4">
                     <Sparkles class="size-8 text-white" />
                   </div>
-                  <h3 class="font-semibold text-lg mb-2">AI Research Assistant</h3>
+                  <h3 class="font-semibold text-lg mb-2">{$_("chat.aiAssistant")}</h3>
                   <p class="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
-                    Ask questions about your research, get insights from your literature, or explore patterns in your data. I'm here to help accelerate your research process.
+                    {$_("chat.startConversation")}
                   </p>
                 </div>
 
                 <!-- Research Question Suggestions -->
                 <div class="grid gap-3 max-w-2xl mx-auto">
-                  {#each researchSuggestions as suggestion}
+                  {#each getResearchSuggestions() as suggestion}
                     {@const Icon = suggestion.icon}
                     <Button
                       variant="outline"
@@ -848,7 +853,7 @@
                                 <div class="w-1 h-1 bg-current rounded-full animate-pulse typing-dot" style="animation-delay: 0.2s;"></div>
                                 <div class="w-1 h-1 bg-current rounded-full animate-pulse typing-dot" style="animation-delay: 0.4s;"></div>
                               </div>
-                              <span class="ml-2">AI is thinking...</span>
+                              <span class="ml-2">{$_("chat.aiIsThinking")}</span>
                             </div>
                           {/if}
 
@@ -860,7 +865,7 @@
                                 <div class="mb-3">
                                   <div class="text-xs text-muted-foreground mb-2 font-medium flex items-center gap-1">
                                     <Sparkles class="size-3" />
-                                    AI Analysis Tools Used:
+                                    {$_("chat.aiToolsUsed")}
                                   </div>
                                   <div class="flex flex-wrap gap-2">
                                     {#each message.metadata.tools_used as tool}
@@ -876,7 +881,7 @@
                               {#if message.sources && message.sources.length > 0}
                                 <div class="mb-2">
                                   <div class="text-xs text-muted-foreground mb-2 font-medium">
-                                    Referenced sources:
+                                    {$_("chat.referencedSources")}
                                   </div>
                                   <div class="space-y-2">
                                     {#each message.sources as source}
@@ -898,7 +903,7 @@
                                               </Badge>
                                               {#if source.similarity}
                                                 <span class="text-xs text-muted-foreground">
-                                                  {Math.round(source.similarity * 100)}% relevance
+                                                  {$_("chat.relevance", { values: { percent: Math.round(source.similarity * 100) } })}
                                                 </span>
                                               {/if}
                                             </div>
@@ -920,7 +925,7 @@
                               {#if message.sources && message.sources.length > 0}
                                 <div class="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
                                   <Search class="size-3" />
-                                  <span>Used {message.sources.length} sources from your research</span>
+                                  <span>{$_("chat.usedSources", { values: { count: message.sources.length } })}</span>
                                 </div>
                               {/if}
 
@@ -928,7 +933,7 @@
                               {#if message.metadata?.project_context}
                                 <div class="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
                                   <Folder class="size-3" />
-                                  <span>Using current project context</span>
+                                  <span>{$_("chat.usingProjectContext")}</span>
                                 </div>
                               {/if}
                             </div>
@@ -985,7 +990,7 @@
                   class="absolute -top-8 left-0 text-xs text-muted-foreground"
                   transition:fade={{ duration: 200 }}
                 >
-                  You are typing...
+                  {$_("chat.youAreTyping")}
                 </div>
               {/if}
 
@@ -998,7 +1003,7 @@
                     bind:value={chatInput}
                     onkeydown={handleKeydown}
                     oninput={handleInput}
-                    placeholder="Ask questions about your research, get insights, or explore your data..."
+                    placeholder={$_("chat.askAboutResearch")}
                     disabled={isLoading || isStreaming}
                     rows="1"
                     class="w-full resize-none rounded-lg border-2 dark:border-dark-border bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:focus:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] max-h-32 overflow-y-auto transition-all duration-200"
@@ -1018,7 +1023,7 @@
                   onclick={handleSubmit}
                   disabled={!chatInput.trim() || isLoading || isStreaming}
                   class="flex items-center justify-center px-4 py-3 h-[44px] min-w-[44px] border-2 dark:border-dark-border bg-blue-500 text-white rounded-lg hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-none transition-all duration-200"
-                  aria-label="Send message"
+                  aria-label={$_("chat.sendMessage")}
                 >
                   {#if isLoading || isStreaming}
                     <Loader class="size-4 animate-spin" />
@@ -1034,11 +1039,11 @@
                   <kbd class="inline-flex items-center gap-1 rounded border bg-muted px-1.5 py-0.5 font-mono">
                     Enter
                   </kbd>
-                  <span>to send</span>
+                  <span>{$_("chat.enterToSend")}</span>
                   <kbd class="inline-flex items-center gap-1 rounded border bg-muted px-1.5 py-0.5 font-mono">
                     Shift + Enter
                   </kbd>
-                  <span>for new line</span>
+                  <span>{$_("chat.shiftEnterNewLine")}</span>
                 </div>
               </div>
             </div>
@@ -1053,14 +1058,13 @@
 <AlertDialog.Root bind:open={showDeleteDialog}>
   <AlertDialog.Content>
     <AlertDialog.Header>
-      <AlertDialog.Title>Delete Chat Session</AlertDialog.Title>
+      <AlertDialog.Title>{$_("chat.deleteChatSession")}</AlertDialog.Title>
       <AlertDialog.Description>
-        Are you sure you want to delete this chat session? This action cannot be
-        undone.
+        {$_("chat.deleteChatSessionConfirm")}
       </AlertDialog.Description>
     </AlertDialog.Header>
     <AlertDialog.Footer>
-      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+      <AlertDialog.Cancel>{$_("common.cancel")}</AlertDialog.Cancel>
       <AlertDialog.Action
         onclick={confirmDeleteSession}
         disabled={isDeleting}
@@ -1069,7 +1073,7 @@
         {#if isDeleting}
           <Loader2 class="h-4 w-4 animate-spin mr-2" />
         {/if}
-        Delete Session
+        {$_("chat.deleteSession")}
       </AlertDialog.Action>
     </AlertDialog.Footer>
   </AlertDialog.Content>

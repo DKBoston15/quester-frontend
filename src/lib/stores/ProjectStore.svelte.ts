@@ -1,6 +1,10 @@
 
   import { api } from "../services/api-client";
   import type { Project } from "../types/auth";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  const t = (key: string) => get(_)(key);
 
   const createEmptyDesigns = () => ({
     research: [] as { name: string }[],
@@ -32,7 +36,7 @@
 
     async loadProject(projectId: string, options: { force?: boolean } = {}) {
       if (!projectId) {
-        error = "No project ID provided";
+        error = t('stores.project.failedToLoad');
         isLoading = false;
         return;
       }

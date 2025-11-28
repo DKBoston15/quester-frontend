@@ -3,6 +3,7 @@
   import { Input } from "$lib/components/ui/input";
   import { X } from "lucide-svelte";
   import { createEventDispatcher } from "svelte";
+  import { _ } from "svelte-i18n";
 
   const dispatch = createEventDispatcher();
   const { tags, placeholder = "" } = $props<{
@@ -57,7 +58,7 @@
         onclick={() => removeTag(index)}
       >
         <X class="h-3 w-3" />
-        <span class="sr-only">Remove {tag}</span>
+        <span class="sr-only">{$_('srOnly.removeTag', { values: { tag } })}</span>
       </button>
     </Badge>
   {/each}

@@ -10,6 +10,11 @@
   import { navigate } from "svelte-routing";
   import { API_BASE_URL } from "$lib/config";
   import MarkdownIt from "markdown-it";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper for imperative translation access
+  const t = (key: string) => get(_)(key);
 
   // Icons
   import Send from "lucide-svelte/icons/send";
@@ -69,28 +74,28 @@
   });
 
   // Research question suggestions
-  const researchSuggestions = [
+  const researchSuggestions = $derived([
     {
       icon: Search,
-      title: "Summarize my recent research findings",
-      description: "Get an overview of your latest research progress",
+      title: $_("chat.summarizeResearch"),
+      description: $_("chat.summarizeDescription"),
     },
     {
       icon: TrendingUp,
-      title: "What are the key themes in my literature?",
-      description: "Identify patterns and trends across your sources",
+      title: $_("chat.keyThemes"),
+      description: $_("chat.keyThemesDescription"),
     },
     {
       icon: Lightbulb,
-      title: "Help me find research gaps",
-      description: "Discover unexplored areas in your field",
+      title: $_("chat.findGaps"),
+      description: $_("chat.findGapsDescription"),
     },
     {
       icon: Target,
-      title: "What are my next research steps?",
-      description: "Get recommendations for continuing your work",
+      title: $_("chat.nextSteps"),
+      description: $_("chat.nextStepsDescription"),
     },
-  ];
+  ]);
 
   // Auto-scroll to bottom when new messages arrive
   $effect(() => {
@@ -131,7 +136,7 @@
       } catch (error) {
         console.error("Failed to parse chat session messages JSON:", {
           sessionId: session.id,
-          error: error instanceof Error ? error.message : "Unknown error",
+          error: error instanceof Error ? error.message : t("common.unknown"),
           rawMessages: messages?.substring(0, 100) + "...", // Log first 100 chars for debugging
         });
         // Return 0 but notify user that data might be corrupted
@@ -212,7 +217,7 @@
   }
 
   function getTypeLabel(type: string): string {
-    return type === 'document_chunk' ? 'Literature Page' : (type?.[0]?.toUpperCase() + type?.slice(1));
+    return type === 'document_chunk' ? $_("chat.literaturePage") : (type?.[0]?.toUpperCase() + type?.slice(1));
   }
 
   async function openDocumentPreview(fileId: string, page?: number) {
@@ -288,10 +293,10 @@
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffMins < 1) return $_('time.justNow');
+    if (diffMins < 60) return $_('time.minutesAgo', { values: { count: diffMins } });
+    if (diffHours < 24) return $_('time.hoursAgo', { values: { count: diffHours } });
+    if (diffDays < 7) return $_('time.daysAgo', { values: { count: diffDays } });
 
     return date.toLocaleDateString();
   }
@@ -367,16 +372,16 @@
   }
 
   function getLastSaveText(): string {
-    if (!lastSaveTime) return "Not saved";
+    if (!lastSaveTime) return $_('notes.saveNote');
 
     const now = new Date();
     const diffMs = now.getTime() - lastSaveTime.getTime();
     const diffMins = Math.floor(diffMs / 60000);
 
-    if (diffMins < 1) return "Saved just now";
-    if (diffMins < 60) return `Saved ${diffMins}m ago`;
+    if (diffMins < 1) return $_('time.justNow');
+    if (diffMins < 60) return $_('time.minutesAgo', { values: { count: diffMins } });
 
-    return `Saved ${lastSaveTime.toLocaleTimeString()}`;
+    return lastSaveTime.toLocaleTimeString();
   }
 </script>
 
@@ -412,7 +417,7 @@
           {:else}
             <PanelLeft class="size-4 mr-1" />
           {/if}
-          History
+          {$_('chat.history')}
         </Button>
 
         <!-- Session Title -->
@@ -421,12 +426,12 @@
           {#if hasUnsavedChanges}
             <div
               class="w-2 h-2 bg-orange-500 rounded-full"
-              title="Unsaved changes"
+              title={$_('aiChat.unsavedChanges')}
             ></div>
           {/if}
           {#if currentSession}
             <Badge variant="secondary" class="text-xs">
-              {getSessionMessageCount(currentSession)} messages
+              {$_('chat.chatSession')} ({getSessionMessageCount(currentSession)})
             </Badge>
           {/if}
         </div>
@@ -437,7 +442,7 @@
         {#if isSavingSession}
           <div class="flex items-center gap-2 text-xs text-muted-foreground">
             <Loader class="size-3 animate-spin" />
-            Saving...
+            {$_('settings.saving')}
           </div>
         {:else if lastSaveTime}
           <div class="flex items-center gap-2 text-xs text-muted-foreground">
@@ -456,7 +461,7 @@
             class="h-7"
           >
             <Save class="size-3 mr-1" />
-            Save
+            {$_('common.save')}
           </Button>
         {/if}
 
@@ -469,7 +474,7 @@
             class="text-muted-foreground hover:text-destructive h-7"
           >
             <Trash2 class="size-3 mr-1" />
-            Clear
+            {$_('chat.clearChat')}
           </Button>
         {/if}
 
@@ -481,7 +486,7 @@
           class="text-muted-foreground hover:text-foreground h-7"
         >
           <ArrowLeft class="size-3 mr-1" />
-          Search
+          {$_('common.search')}
         </Button>
       </div>
     </div>
@@ -498,11 +503,9 @@
               >
                 <Sparkles class="size-8 text-white" />
               </div>
-              <h3 class="font-semibold text-lg mb-2">AI Research Assistant</h3>
+              <h3 class="font-semibold text-lg mb-2">{$_("chat.aiAssistant")}</h3>
               <p class="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
-                Ask questions about your research, get insights from your
-                literature, or explore patterns in your data. I'm here to help
-                accelerate your research process.
+                {$_("chat.startConversation")}
               </p>
             </div>
 
@@ -539,11 +542,11 @@
                 <div class="flex items-center gap-2 mb-2">
                   <Search class="size-4 text-muted-foreground" />
                   <span class="text-sm font-medium"
-                    >Search context available</span
+                    >{$_('chat.usingProjectContext')}</span
                   >
                 </div>
                 <p class="text-xs text-muted-foreground">
-                  I can reference {searchResults.length} search results in our conversation
+                  {$_('chat.usedSources', { values: { count: searchResults.length } })}
                 </p>
               </div>
             {/if}
@@ -638,7 +641,7 @@
                               style="animation-delay: 0.4s;"
                             ></div>
                           </div>
-                          <span class="ml-2">AI is thinking...</span>
+                          <span class="ml-2">{$_('chat.aiIsThinking')}</span>
                         </div>
                       {/if}
 
@@ -655,7 +658,7 @@
                                 class="text-xs text-muted-foreground mb-2 font-medium flex items-center gap-1"
                               >
                                 <Sparkles class="size-3" />
-                                AI Analysis Tools Used:
+                                {$_("chat.aiToolsUsed")}
                               </div>
                               <div class="flex flex-wrap gap-2">
                                 {#each message.metadata.tools_used as tool}
@@ -673,7 +676,7 @@
                               <div
                                 class="text-xs text-muted-foreground mb-2 font-medium"
                               >
-                                Referenced sources:
+                                {$_("chat.referencedSources")}
                               </div>
                               <div class="space-y-2">
                                 {#each sources as source}
@@ -707,9 +710,7 @@
                                             <span
                                               class="text-xs text-muted-foreground"
                                             >
-                                              {Math.round(
-                                                source.similarity * 100
-                                              )}% relevance
+                                              {$_("chat.relevance", { values: { percent: Math.round(source.similarity * 100) } })}
                                             </span>
                                           {/if}
                                         </div>
@@ -734,7 +735,7 @@
                             >
                               <Search class="size-3" />
                               <span
-                                >Used {sources.length} sources from your research</span
+                                >{$_("chat.usedSources", { values: { count: sources.length } })}</span
                               >
                             </div>
                           {/if}
@@ -745,7 +746,7 @@
                               class="mt-2 flex items-center gap-2 text-xs text-muted-foreground"
                             >
                               <Folder class="size-3" />
-                              <span>Using current project context</span>
+                              <span>{$_("chat.usingProjectContext")}</span>
                             </div>
                           {/if}
                         </div>
@@ -779,7 +780,7 @@
               <span class="text-xs">!</span>
             </div>
             <div class="flex-1">
-              <div class="font-medium text-sm">Error</div>
+              <div class="font-medium text-sm">{$_("processingStatus.error")}</div>
               <div class="text-xs opacity-80">{error}</div>
             </div>
           </div>
@@ -796,7 +797,7 @@
             class="absolute -top-8 left-0 text-xs text-muted-foreground"
             transition:fade={{ duration: 200 }}
           >
-            You are typing...
+            {$_("chat.youAreTyping")}
           </div>
         {/if}
 
@@ -809,7 +810,7 @@
               bind:value={chatInput}
               onkeydown={handleKeydown}
               oninput={handleInput}
-              placeholder="Ask questions about your research, get insights, or explore your data..."
+              placeholder={$_('chat.askAboutResearch')}
               disabled={isStreaming}
               rows="1"
               class="w-full resize-none rounded-lg border bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] max-h-32 overflow-y-auto"
@@ -832,7 +833,7 @@
             disabled={!chatInput.trim() || isStreaming}
             size="sm"
             class="px-4 py-3 h-11 min-w-11"
-            aria-label="Send message"
+            aria-label={$_('ariaLabels.sendMessage')}
           >
             {#if isStreaming}
               <Loader class="size-4 animate-spin" />
@@ -850,21 +851,21 @@
             <kbd
               class="inline-flex items-center gap-1 rounded border bg-muted px-1.5 py-0.5 font-mono"
             >
-              Enter
+              {$_('chat.enter')}
             </kbd>
-            <span>to send</span>
+            <span>{$_('chat.enterToSend')}</span>
             <kbd
               class="inline-flex items-center gap-1 rounded border bg-muted px-1.5 py-0.5 font-mono"
             >
-              Shift + Enter
+              {$_('chat.shiftEnter')}
             </kbd>
-            <span>for new line</span>
+            <span>{$_('chat.shiftEnterNewLine')}</span>
           </div>
           {#if hasResults}
             <div class="flex items-center gap-1">
               <Search class="size-3" />
               <span
-                >{searchResults.length} search results available as context</span
+                >{$_('chat.usedSources', { values: { count: searchResults.length } })}</span
               >
             </div>
           {/if}

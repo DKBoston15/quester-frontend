@@ -3,6 +3,7 @@
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import { buttonVariants } from "$lib/components/ui/button/index.js";
   import { cn } from "$lib/utils.js";
+  import { t } from "svelte-i18n";
 
   let {
     ref = $bindable(null),
@@ -13,7 +14,7 @@
 </script>
 
 {#snippet Fallback()}
-  <span>Next</span>
+  <span>{$t('common.next')}</span>
   <ChevronRight class="size-4" />
 {/snippet}
 

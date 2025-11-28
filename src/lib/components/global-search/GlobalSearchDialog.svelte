@@ -6,6 +6,7 @@
   import { ScrollArea } from "$lib/components/ui/scroll-area";
   import { Switch } from "$lib/components/ui/switch";
   import { navigate } from "svelte-routing";
+  import { _ } from "svelte-i18n";
 
   // Icons
   import Search from "lucide-svelte/icons/search";
@@ -227,23 +228,23 @@
       <!-- Header with mode toggle -->
       <div class="border-b p-4">
         <div class="flex items-center justify-between mb-3">
-          <h2 class="text-lg font-semibold">Search</h2>
+          <h2 class="text-lg font-semibold">{$_("globalSearchDialog.search")}</h2>
         </div>
 
         <!-- Scope Toggle -->
         <div class="flex items-center justify-between mb-3">
           <div class="flex items-center gap-2">
             <Globe class="size-4 text-muted-foreground" />
-            <span class="text-sm font-medium">Search Scope</span>
+            <span class="text-sm font-medium">{$_('globalSearch.searchScope')}</span>
           </div>
           <div class="flex items-center gap-2">
-            <span class="text-xs text-muted-foreground">Current Project</span>
+            <span class="text-xs text-muted-foreground">{$_('globalSearch.currentProject')}</span>
             <Switch
               pressed={searchScope === "all"}
               onPressedChange={handleScopeToggle}
               class="data-[state=checked]:bg-primary"
             />
-            <span class="text-xs text-muted-foreground">All Projects</span>
+            <span class="text-xs text-muted-foreground">{$_('globalSearch.allProjects')}</span>
           </div>
         </div>
 
@@ -305,18 +306,17 @@
                     <Search
                       class="size-12 mx-auto text-muted-foreground/50 mb-4"
                     />
-                    <h3 class="font-medium mb-2">Search your research</h3>
+                    <h3 class="font-medium mb-2">{$_('globalSearchDialog.searchYourResearch')}</h3>
                     <p class="text-sm text-muted-foreground mb-4">
-                      Find notes, literature, projects, outcomes, models, and
-                      keyword analyses across your entire workspace
+                      {$_('globalSearch.searchDescription')}
                     </p>
                     <div class="flex flex-wrap gap-2 justify-center">
-                      <Badge variant="outline">Notes</Badge>
-                      <Badge variant="outline">Literature</Badge>
-                      <Badge variant="outline">Projects</Badge>
-                      <Badge variant="outline">Outcomes</Badge>
-                      <Badge variant="outline">Models</Badge>
-                      <Badge variant="outline">Keyword Analyses</Badge>
+                      <Badge variant="outline">{$_('globalSearch.categories.notes')}</Badge>
+                      <Badge variant="outline">{$_('globalSearch.categories.literature')}</Badge>
+                      <Badge variant="outline">{$_('globalSearch.categories.projects')}</Badge>
+                      <Badge variant="outline">{$_('globalSearch.categories.outcomes')}</Badge>
+                      <Badge variant="outline">{$_('globalSearch.categories.models')}</Badge>
+                      <Badge variant="outline">{$_('globalSearch.categories.keywordAnalyses')}</Badge>
                     </div>
                   </div>
                 {/if}
@@ -326,7 +326,7 @@
                   <Loader
                     class="size-8 mx-auto animate-spin text-muted-foreground mb-4"
                   />
-                  <p class="text-sm text-muted-foreground">Searching...</p>
+                  <p class="text-sm text-muted-foreground">{$_('globalSearchDialog.searching')}</p>
                 </div>
               {:else if searchResults.length === 0}
                 <!-- No Results -->
@@ -334,7 +334,7 @@
                   <Search
                     class="size-12 mx-auto text-muted-foreground/50 mb-4"
                   />
-                  <h3 class="font-medium mb-2">No results found</h3>
+                  <h3 class="font-medium mb-2">{$_("globalSearchDialog.noResultsFound")}</h3>
                   <p class="text-sm text-muted-foreground">
                     Try adjusting your search terms or check your spelling
                   </p>
@@ -345,12 +345,12 @@
                   <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
                       <h3 class="text-sm font-medium">
-                        {searchMetadata.total_results} results found
+                        {$_('globalSearch.resultsFound', { values: { count: searchMetadata.total_results } })}
                       </h3>
                       <Badge variant="secondary" class="text-xs">
                         {searchScope === "current"
-                          ? "Current Project"
-                          : "All Projects"}
+                          ? $_('globalSearch.currentProject')
+                          : $_('globalSearch.allProjects')}
                       </Badge>
                     </div>
                     <div class="text-xs text-muted-foreground">

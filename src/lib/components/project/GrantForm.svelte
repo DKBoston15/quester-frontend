@@ -6,6 +6,7 @@
   import * as Card from "$lib/components/ui/card";
   import { Loader2Icon, XIcon, PlusIcon, MinusIcon } from "lucide-svelte";
   import type { Grant } from "$lib/types/auth";
+  import { _ } from "$lib/i18n";
 
   interface Props {
     grant?: Grant | null;
@@ -36,22 +37,22 @@
   let errors = $state<Record<string, string>>({});
 
   const awardInstrumentOptions = [
-    { value: "standard", label: "Standard Grant" },
-    { value: "research", label: "Research Grant" },
-    { value: "training", label: "Training Grant" },
-    { value: "equipment", label: "Equipment Grant" },
-    { value: "fellowship", label: "Fellowship" },
-    { value: "career", label: "Career Development" },
-    { value: "collaborative", label: "Collaborative Research" },
-    { value: "other", label: "Other" },
+    { value: "standard", label: $_("grants.types.standard") },
+    { value: "research", label: $_("grants.types.research") },
+    { value: "training", label: $_("grants.types.training") },
+    { value: "equipment", label: $_("grants.types.equipment") },
+    { value: "fellowship", label: $_("grants.types.fellowship") },
+    { value: "career", label: $_("grants.types.career") },
+    { value: "collaborative", label: $_("grants.types.collaborative") },
+    { value: "other", label: $_("grants.types.other") },
   ];
 
   const statusOptions = [
-    { value: "active", label: "Active" },
-    { value: "pending", label: "Pending" },
-    { value: "completed", label: "Completed" },
-    { value: "cancelled", label: "Cancelled" },
-    { value: "expired", label: "Expired" },
+    { value: "active", label: $_("grants.status.active") },
+    { value: "pending", label: $_("grants.status.pending") },
+    { value: "completed", label: $_("grants.status.completed") },
+    { value: "cancelled", label: $_("grants.status.cancelled") },
+    { value: "expired", label: $_("grants.status.expired") },
   ];
 
   function addPrincipalInvestigator() {
@@ -84,7 +85,7 @@
     errors = {};
 
     if (!formData.grantName.trim()) {
-      errors.grantName = "Grant name is required";
+      errors.grantName = $_("grants.validation.grantNameRequired");
     }
 
     if (formData.startDate && formData.endDate) {
@@ -92,18 +93,18 @@
       const endDate = new Date(formData.endDate);
 
       if (endDate <= startDate) {
-        errors.endDate = "End date must be after start date";
+        errors.endDate = $_("grants.validation.endDateAfterStart");
       }
     }
 
     if (formData.amount && isNaN(Number(formData.amount))) {
-      errors.amount = "Amount must be a valid number";
+      errors.amount = $_("grants.validation.amountMustBeNumber");
     }
 
     if (formData.programManagerEmail && formData.programManagerEmail.trim()) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.programManagerEmail.trim())) {
-        errors.programManagerEmail = "Must be a valid email address";
+        errors.programManagerEmail = $_("grants.validation.invalidEmail");
       }
     }
 
@@ -152,7 +153,7 @@
 >
   <Card.Header>
     <div class="flex justify-between items-center">
-      <Card.Title>{grant ? "Edit Grant" : "Add New Grant"}</Card.Title>
+      <Card.Title>{grant ? $_("grants.form.editGrant") : $_("grants.form.addNewGrant")}</Card.Title>
       <Button variant="ghost" size="sm" onclick={onCancel}>
         <XIcon class="h-4 w-4" />
       </Button>
@@ -166,11 +167,11 @@
     >
       <!-- Grant Name -->
       <div class="md:col-span-2">
-        <Label for="grantName">Grant Name *</Label>
+        <Label for="grantName">{$_("grants.form.title")}</Label>
         <Input
           id="grantName"
           bind:value={formData.grantName}
-          placeholder="e.g., NSF Career Development Award"
+          placeholder={$_("grants.form.titlePlaceholder")}
           class={errors.grantName ? "border-destructive" : ""}
         />
         {#if errors.grantName}
@@ -180,27 +181,27 @@
 
       <!-- Recipient -->
       <div>
-        <Label for="recipient">Recipient</Label>
+        <Label for="recipient">{$_("grants.form.recipient")}</Label>
         <Input
           id="recipient"
           bind:value={formData.recipient}
-          placeholder="e.g., University of California"
+          placeholder={$_("grants.form.recipientPlaceholder")}
         />
       </div>
 
       <!-- Award Number -->
       <div>
-        <Label for="awardNumber">Award Number</Label>
+        <Label for="awardNumber">{$_("grants.form.awardNumber")}</Label>
         <Input
           id="awardNumber"
           bind:value={formData.awardNumber}
-          placeholder="e.g., NSF-2023-001"
+          placeholder={$_("grants.form.awardNumberPlaceholder")}
         />
       </div>
 
       <!-- Start Date -->
       <div>
-        <Label for="startDate">Start Date</Label>
+        <Label for="startDate">{$_("grants.form.startDate")}</Label>
         <Input
           id="startDate"
           type="date"
@@ -214,7 +215,7 @@
 
       <!-- End Date -->
       <div>
-        <Label for="endDate">End Date</Label>
+        <Label for="endDate">{$_("grants.form.endDate")}</Label>
         <Input
           id="endDate"
           type="date"
@@ -228,13 +229,13 @@
 
       <!-- Award Instrument -->
       <div>
-        <Label for="awardType">Award Instrument</Label>
+        <Label for="awardType">{$_("grants.form.awardInstrument")}</Label>
         <Select.Root bind:value={formData.awardType} type="single">
           <Select.Trigger>
             <span class="truncate">
               {awardInstrumentOptions.find(
                 (opt) => opt.value === formData.awardType
-              )?.label || "Select award instrument"}
+              )?.label || $_("grants.form.selectAwardInstrument")}
             </span>
           </Select.Trigger>
           <Select.Content>
@@ -249,12 +250,12 @@
 
       <!-- Status -->
       <div>
-        <Label for="status">Status</Label>
+        <Label for="status">{$_("grants.form.statusLabel")}</Label>
         <Select.Root bind:value={formData.status} type="single">
           <Select.Trigger>
             <span class="truncate">
               {statusOptions.find((opt) => opt.value === formData.status)
-                ?.label || "Select status"}
+                ?.label || $_("grants.form.selectStatus")}
             </span>
           </Select.Trigger>
           <Select.Content>
@@ -269,23 +270,23 @@
 
       <!-- Directorate/Division -->
       <div>
-        <Label for="directorateDivision">Directorate/Division</Label>
+        <Label for="directorateDivision">{$_("grants.form.directorateDivision")}</Label>
         <Input
           id="directorateDivision"
           bind:value={formData.directorateDivision}
-          placeholder="e.g., Engineering Directorate"
+          placeholder={$_("grants.form.directorateDivisionPlaceholder")}
         />
       </div>
 
       <!-- Amount -->
       <div>
-        <Label for="amount">Amount ($)</Label>
+        <Label for="amount">{$_("grants.form.amountLabel")}</Label>
         <Input
           id="amount"
           type="number"
           step="0.01"
           bind:value={formData.amount}
-          placeholder="e.g., 500000"
+          placeholder={$_("grants.form.amountPlaceholder")}
           class={errors.amount ? "border-destructive" : ""}
         />
         {#if errors.amount}
@@ -296,7 +297,7 @@
       <!-- Principal Investigators -->
       <div class="md:col-span-2">
         <div class="flex justify-between items-center mb-2">
-          <Label>Principal Investigators</Label>
+          <Label>{$_("grants.form.principalInvestigators")}</Label>
           <Button
             type="button"
             variant="outline"
@@ -304,14 +305,14 @@
             onclick={addPrincipalInvestigator}
           >
             <PlusIcon class="h-4 w-4 mr-1" />
-            Add PI
+            {$_("grants.form.addPI")}
           </Button>
         </div>
         {#each formData.principalInvestigators as pi, index}
           <div class="flex gap-2 mb-2">
             <Input
               bind:value={formData.principalInvestigators[index]}
-              placeholder="e.g., Dr. Jane Smith"
+              placeholder={$_("grants.form.piPlaceholder")}
               class="flex-1"
             />
             {#if formData.principalInvestigators.length > 1}
@@ -331,7 +332,7 @@
       <!-- Co-Principal Investigators -->
       <div class="md:col-span-2">
         <div class="flex justify-between items-center mb-2">
-          <Label>Co-Principal Investigators</Label>
+          <Label>{$_("grants.form.coPrincipalInvestigators")}</Label>
           <Button
             type="button"
             variant="outline"
@@ -339,14 +340,14 @@
             onclick={addCoPrincipalInvestigator}
           >
             <PlusIcon class="h-4 w-4 mr-1" />
-            Add Co-PI
+            {$_("grants.form.addCoPI")}
           </Button>
         </div>
         {#each formData.coPrincipalInvestigators as copi, index}
           <div class="flex gap-2 mb-2">
             <Input
               bind:value={formData.coPrincipalInvestigators[index]}
-              placeholder="e.g., Dr. John Doe"
+              placeholder={$_("grants.form.copiPlaceholder")}
               class="flex-1"
             />
             {#if formData.coPrincipalInvestigators.length > 1}
@@ -365,22 +366,22 @@
 
       <!-- Program Manager -->
       <div>
-        <Label for="programManager">Program Manager</Label>
+        <Label for="programManager">{$_("grants.form.programManager")}</Label>
         <Input
           id="programManager"
           bind:value={formData.programManager}
-          placeholder="e.g., Dr. Program Manager"
+          placeholder={$_("grants.form.programManagerPlaceholder")}
         />
       </div>
 
       <!-- Program Manager Email -->
       <div>
-        <Label for="programManagerEmail">Program Manager Email</Label>
+        <Label for="programManagerEmail">{$_("grants.form.programManagerEmail")}</Label>
         <Input
           id="programManagerEmail"
           type="email"
           bind:value={formData.programManagerEmail}
-          placeholder="e.g., pm@nsf.gov"
+          placeholder={$_("grants.form.programManagerEmailPlaceholder")}
           class={errors.programManagerEmail ? "border-destructive" : ""}
         />
         {#if errors.programManagerEmail}
@@ -392,12 +393,12 @@
 
       <!-- Program Manager Phone -->
       <div class="md:col-span-2">
-        <Label for="programManagerPhone">Program Manager Phone</Label>
+        <Label for="programManagerPhone">{$_("grants.form.programManagerPhone")}</Label>
         <Input
           id="programManagerPhone"
           type="tel"
           bind:value={formData.programManagerPhone}
-          placeholder="e.g., (555) 123-4567"
+          placeholder={$_("grants.form.programManagerPhonePlaceholder")}
         />
       </div>
     </form>
@@ -405,13 +406,13 @@
 
   <Card.Footer class="flex justify-end gap-2">
     <Button variant="outline" onclick={onCancel} disabled={isLoading}>
-      Cancel
+      {$_("common.cancel")}
     </Button>
     <Button onclick={handleSubmit} disabled={isLoading}>
       {#if isLoading}
         <Loader2Icon class="h-4 w-4 animate-spin mr-2" />
       {/if}
-      {grant ? "Update Grant" : "Add Grant"}
+      {grant ? $_("grants.form.updateGrant") : $_("grants.form.addGrant")}
     </Button>
   </Card.Footer>
 </Card.Root>

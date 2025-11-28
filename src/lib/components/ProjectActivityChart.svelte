@@ -1,6 +1,10 @@
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
   import Chart from "chart.js/auto";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  const t = (key: string) => get(_)(key);
 
   interface ActivityCount {
     literature: number;
@@ -169,13 +173,25 @@
         labels: formattedDates,
         datasets: [
           {
-            label: "Literature",
+            label: t("common.projectActivityChart.literature"),
             data: literatureData,
             backgroundColor: "#007bff",
           },
-          { label: "Notes", data: notesData, backgroundColor: "#28a745" },
-          { label: "Models", data: modelsData, backgroundColor: "#ffc107" },
-          { label: "Outcomes", data: outcomesData, backgroundColor: "#dc3545" },
+          {
+            label: t("common.projectActivityChart.notes"),
+            data: notesData,
+            backgroundColor: "#28a745"
+          },
+          {
+            label: t("common.projectActivityChart.models"),
+            data: modelsData,
+            backgroundColor: "#ffc107"
+          },
+          {
+            label: t("common.projectActivityChart.outcomes"),
+            data: outcomesData,
+            backgroundColor: "#dc3545"
+          },
         ],
       };
     } catch (error) {
@@ -309,10 +325,10 @@
     chartInstance = new Chart(ctx, {
       type: "bar",
       data: {
-        labels: ["No Data"],
+        labels: [get(_)('projectActivityChart.noData')],
         datasets: [
           {
-            label: "No Activity Data Available",
+            label: get(_)('projectActivityChart.noActivityDataAvailable'),
             data: [0],
             backgroundColor: "rgba(200, 200, 200, 0.3)",
             borderColor: "rgba(200, 200, 200, 0.5)",
@@ -326,7 +342,7 @@
         plugins: {
           title: {
             display: true,
-            text: `No Activity Data for ${projectName}`,
+            text: get(_)('projectActivityChart.noActivityDataFor', { values: { projectName } }),
             color: getTextColor(),
           },
           legend: {

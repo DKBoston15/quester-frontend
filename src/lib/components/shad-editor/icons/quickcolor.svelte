@@ -5,21 +5,22 @@
 	import { cn } from '$lib/utils.js';
 	import { ChevronDown } from 'lucide-svelte';
 	import type { ToolBarIconProps } from './types.js';
+	import { _ } from 'svelte-i18n';
 
 	let { editor, toolTipProps = { delayDuration: 0, disabled: false } }: ToolBarIconProps = $props();
 
-	const colors = [
-		{ label: 'Default', value: '' },
-		{ label: 'Blue', value: '#0000FF' },
-		{ label: 'Brown', value: '#A52A2A' },
-		{ label: 'Green', value: '#008000' },
-		{ label: 'Grey', value: '#808080' },
-		{ label: 'Orange', value: '#FFA500' },
-		{ label: 'Pink', value: '#FFC0CB' },
-		{ label: 'Purple', value: '#800080' },
-		{ label: 'Red', value: '#FF0000' },
-		{ label: 'Yellow', value: '#FFFF00' }
-	];
+	const colors = $derived([
+		{ label: $_('editor.colors.default'), value: '' },
+		{ label: $_('editor.colors.blue'), value: '#0000FF' },
+		{ label: $_('editor.colors.brown'), value: '#A52A2A' },
+		{ label: $_('editor.colors.green'), value: '#008000' },
+		{ label: $_('editor.colors.grey'), value: '#808080' },
+		{ label: $_('editor.colors.orange'), value: '#FFA500' },
+		{ label: $_('editor.colors.pink'), value: '#FFC0CB' },
+		{ label: $_('editor.colors.purple'), value: '#800080' },
+		{ label: $_('editor.colors.red'), value: '#FF0000' },
+		{ label: $_('editor.colors.yellow'), value: '#FFFF00' }
+	]);
 
 	const currentColor = $derived.by(() => editor.getAttributes('textStyle').color);
 	const currentHighlight = $derived.by(() => editor.getAttributes('highlight').color);
@@ -44,7 +45,7 @@
 					avoidCollisions
 					class="border bg-background p-2 font-medium text-foreground"
 				>
-					<p>Quick Colors</p>
+					<p>{$_('editor.quickColors')}</p>
 				</Tooltip.Content>
 			</Tooltip.Root>
 		</Tooltip.Provider>
@@ -53,7 +54,7 @@
 		class="h-fit max-h-60 w-fit max-w-60 overflow-auto"
 		portalProps={{ disabled: true, to: undefined }}
 	>
-		<span class="text-[0.75rem] font-medium text-muted-foreground">Text Color</span>
+		<span class="text-[0.75rem] font-medium text-muted-foreground">{$_('editor.textColor')}</span>
 		<DropdownMenu.Group class="grid grid-cols-5 gap-2">
 			{#each colors as color}
 				<DropdownMenu.Item
@@ -83,7 +84,7 @@
 			{/each}
 		</DropdownMenu.Group>
 		<DropdownMenu.Separator />
-		<span class="text-[0.75rem] font-medium text-muted-foreground">Background Colors</span>
+		<span class="text-[0.75rem] font-medium text-muted-foreground">{$_('editor.backgroundColors')}</span>
 		<DropdownMenu.Group class="grid grid-cols-5 gap-2">
 			{#each colors as color}
 				<DropdownMenu.Item

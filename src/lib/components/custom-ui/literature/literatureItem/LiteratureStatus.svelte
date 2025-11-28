@@ -10,6 +10,7 @@
     Archive,
     AlertCircle,
   } from "lucide-svelte";
+  import { _ } from "svelte-i18n";
 
   const { literature } = $props<{ literature: Literature }>();
   let selectedStatus = $state(literature?.status || "Not Started");
@@ -90,10 +91,10 @@
         />
       </div>
       <div>
-        <Label class="text-base font-medium">Reading Status</Label>
+        <Label class="text-base font-medium">{$_("literatureStatus.readingStatus")}</Label>
         {#if !editMode}
           <p class={`text-lg font-semibold ${currentStatus.color}`}>
-            {selectedStatus}
+            {$_(`literatureTable.status.${selectedStatus === "Not Started" ? "notStarted" : selectedStatus === "Note Taking" ? "noteTaking" : selectedStatus.toLowerCase()}`)}
           </p>
         {/if}
       </div>
@@ -104,14 +105,14 @@
           id="lit-status-cancel-button"
           size="sm"
           variant="ghost"
-          onclick={cancelEdit}>Cancel</Button
+          onclick={cancelEdit}>{$_("common.cancel")}</Button
         >
         <Button id="lit-status-save-button" size="sm" onclick={updateStatus}
-          >Save</Button
+          >{$_("common.save")}</Button
         >
       {:else}
         <Button id="lit-status-change-button" size="sm" onclick={enterEditMode}
-          >Change Status</Button
+          >{$_("literatureStatus.changeStatus")}</Button
         >
       {/if}
     </div>
@@ -124,11 +125,11 @@
       bind:value={selectedStatus}
       onchange={handleStatusChange}
     >
-      <option value="Not Started">Not Started</option>
-      <option value="Reading">Reading</option>
-      <option value="Note Taking">Note Taking</option>
-      <option value="Completed">Completed</option>
-      <option value="Archived">Archived</option>
+      <option value="Not Started">{$_("literatureTable.status.notStarted")}</option>
+      <option value="Reading">{$_("literatureTable.status.reading")}</option>
+      <option value="Note Taking">{$_("literatureTable.status.noteTaking")}</option>
+      <option value="Completed">{$_("literatureTable.status.completed")}</option>
+      <option value="Archived">{$_("literatureTable.status.archived")}</option>
     </select>
   {/if}
 </div>

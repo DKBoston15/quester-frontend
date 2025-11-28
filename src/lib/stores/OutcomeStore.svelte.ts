@@ -1,5 +1,9 @@
 
   import { api } from "../services/api-client";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  const t = (key: string) => get(_)(key);
 
   interface Outcome {
     id: string;
@@ -1253,7 +1257,7 @@
 
     async loadOutcomes(projectId: string) {
       if (!projectId) {
-        error = "No project ID provided";
+        error = t("outcomeStore.noProjectIdProvided");
         isLoading = false;
         return;
       }
@@ -1266,7 +1270,7 @@
         outcomes = data;
       } catch (err) {
         console.error("Error loading outcomes:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("outcomeStore.errorOccurred");
         outcomes = [];
       } finally {
         isLoading = false;
@@ -1275,7 +1279,7 @@
 
     async loadOutcome(outcomeId: string) {
       if (!outcomeId) {
-        this.setError("No outcome ID provided");
+        this.setError(t("outcomeStore.noOutcomeIdProvided"));
         isLoading = false;
         return;
       }
@@ -1291,14 +1295,14 @@
       try {
         const data = await api.get<Outcome>(`/outcome/${outcomeId}`);
         if (!data) {
-          throw new Error("Outcome not found");
+          throw new Error(t("outcomeStore.outcomeNotFound"));
         }
 
         currentOutcome = data;
         return data;
       } catch (err) {
         console.error("Error loading outcome:", err);
-        this.setError(err instanceof Error ? err.message : "An error occurred");
+        this.setError(err instanceof Error ? err.message : t("outcomeStore.errorOccurred"));
         currentOutcome = null;
       } finally {
         isLoading = false;
@@ -1345,7 +1349,7 @@
         return newOutcome;
       } catch (err) {
         console.error("Error creating outcome:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("outcomeStore.errorOccurred");
         throw err;
       } finally {
         isLoading = false;
@@ -1371,7 +1375,7 @@
         return updatedOutcome;
       } catch (err) {
         console.error("Error updating outcome:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("outcomeStore.errorOccurred");
         throw err;
       }
     },
@@ -1386,7 +1390,7 @@
         }
       } catch (err) {
         console.error("Error deleting outcome:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("outcomeStore.errorOccurred");
         throw err;
       }
     },

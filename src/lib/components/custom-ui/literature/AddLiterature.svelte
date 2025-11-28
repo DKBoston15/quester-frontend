@@ -22,6 +22,11 @@
   } from "lucide-svelte";
   import { api } from "$lib/services/api-client";
   import DocumentUploadPanel from "./DocumentUploadPanel.svelte";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper function for imperative translation access
+  const t = (key: string) => get(_)(key);
 
   const dispatch = createEventDispatcher();
 
@@ -84,7 +89,7 @@
   let issue = $state("");
   let start_page = $state("");
   let end_page = $state("");
-  let type = $state({ label: "Journal Article", value: "Journal Article" });
+  let type = $state({ label: $_("literatureDetails.types.journalArticle"), value: "Journal Article" });
   let link = $state("");
   let start_date = $state<Date | undefined>(undefined);
   let end_date = $state<Date | undefined>(undefined);
@@ -110,19 +115,19 @@
     city,
   });
 
-  // Literature type options
-  const literatureTypes: LiteratureType[] = [
-    { label: "Journal Article", value: "Journal Article" },
-    { label: "Literature Review", value: "Literature Review" },
-    { label: "Book", value: "Book" },
-    { label: "Book Chapter", value: "Book Chapter" },
-    { label: "Conference Presentation", value: "Conference Presentation" },
-    { label: "Conference Proceedings", value: "Conference Proceedings" },
-    { label: "Dissertation", value: "Dissertation" },
-    { label: "Website", value: "Website" },
-    { label: "Gray Literature", value: "Gray Literature" },
-    { label: "Other", value: "Other" },
-  ];
+  // Literature type options - using derived to get reactive translations
+  const literatureTypes = $derived([
+    { label: $_("literatureDetails.types.journalArticle"), value: "Journal Article" },
+    { label: $_("literatureDetails.types.literatureReview"), value: "Literature Review" },
+    { label: $_("literatureDetails.types.book"), value: "Book" },
+    { label: $_("literatureDetails.types.bookChapter"), value: "Book Chapter" },
+    { label: $_("literatureDetails.types.conferencePresentation"), value: "Conference Presentation" },
+    { label: $_("literatureDetails.types.conferenceProceedings"), value: "Conference Proceedings" },
+    { label: $_("literatureDetails.types.dissertation"), value: "Dissertation" },
+    { label: $_("literatureDetails.types.website"), value: "Website" },
+    { label: $_("literatureDetails.types.grayLiterature"), value: "Gray Literature" },
+    { label: $_("literatureDetails.types.other"), value: "Other" },
+  ]);
 
   function startProgressSimulation(
     initialValue: number = 0,
@@ -258,7 +263,7 @@
       stopProgressSimulation();
       console.error("Error processing references:", error);
       processingError =
-        error instanceof Error ? error.message : "Failed to process references";
+        error instanceof Error ? error.message : t("addLiterature.failedToProcessReferences");
     } finally {
       if (!processingError) {
         await new Promise((resolve) => setTimeout(resolve, 500));
@@ -340,7 +345,7 @@
       stopProgressSimulation();
       console.error("Error saving literature:", error);
       processingError =
-        error instanceof Error ? error.message : "Failed to save literature";
+        error instanceof Error ? error.message : t("addLiterature.failedToSaveLiterature");
     } finally {
       isSaving = false;
       saveSuccess = false;
@@ -365,7 +370,7 @@
     issue = "";
     start_page = "";
     end_page = "";
-    type = { label: "Journal Article", value: "Journal Article" };
+    type = { label: $_("literatureDetails.types.journalArticle"), value: "Journal Article" };
     link = "";
     start_date = undefined;
     end_date = undefined;
@@ -400,8 +405,8 @@
       const hasEditors = editors.length > 0;
       if (!name || (!hasAuthors && !(isBook && hasEditors))) {
         processingError = isBook
-          ? "Title and at least one author or editor are required"
-          : "Title and at least one author are required";
+          ? t("addLiterature.titleAuthorEditorRequired")
+          : t("addLiterature.titleAuthorRequired");
         return;
       }
       processingError = null;
@@ -409,7 +414,7 @@
     } catch (error) {
       console.error("Error in handleSaveLiterature:", error);
       processingError =
-        error instanceof Error ? error.message : "Failed to save literature";
+        error instanceof Error ? error.message : t("addLiterature.saveFailed");
     }
   }
 
@@ -459,7 +464,7 @@
     >
       <!-- Header -->
       <div class="flex items-center justify-between border-b p-4">
-        <Dialog.Title class="text-xl font-semibold">Add Literature</Dialog.Title
+        <Dialog.Title class="text-xl font-semibold">{$_("addLiterature.title")}</Dialog.Title
         >
       </div>
 
@@ -468,15 +473,15 @@
         <Tabs.List class="border-b px-4 dark:bg-background">
           <Tabs.Trigger value="paste" class="flex-1">
             <BookOpen class="h-4 w-4 mr-2" />
-            Paste References
+            {$_("addLiterature.pasteReferences")}
           </Tabs.Trigger>
           <Tabs.Trigger value="manual" class="flex-1">
             <Plus class="h-4 w-4 mr-2" />
-            Manual Entry
+            {$_("addLiterature.manualEntry")}
           </Tabs.Trigger>
           <Tabs.Trigger value="upload" class="flex-1">
             <Upload class="h-4 w-4 mr-2" />
-            Upload Documents
+            {$_("addLiterature.uploadDocuments")}
           </Tabs.Trigger>
         </Tabs.List>
 
@@ -487,10 +492,10 @@
               <!-- Paste Area -->
               {#if extractedReferences.length === 0}
                 <div class="space-y-4">
-                  <Label.Root>Paste your references</Label.Root>
+                  <Label.Root>{$_("addLiterature.pasteYourReferences")}</Label.Root>
                   <Textarea
                     bind:value={pasteText}
-                    placeholder="Paste your references here, separated by empty lines..."
+                    placeholder={$_("addLiterature.pasteHerePlaceholder")}
                     rows={8}
                     disabled={isProcessing}
                   />
@@ -501,9 +506,9 @@
                   >
                     {#if isProcessing}
                       <Loader2 class="h-4 w-4 mr-2 animate-spin" />
-                      Processing...
+                      {$_("addLiterature.processing")}
                     {:else}
-                      Process References
+                      {$_("addLiterature.processReferences")}
                     {/if}
                   </Button>
                 </div>
@@ -519,12 +524,12 @@
                   />
                   <p class="text-sm text-muted-foreground text-center">
                     {#if isProcessing}
-                      Analyzing and extracting references...
+                      {$_("addLiterature.analyzingExtracting")}
                     {:else if isSaving}
                       {#if saveSuccess}
-                        References saved successfully!
+                        {$_("addLiterature.referencesSavedSuccess")}
                       {:else}
-                        Saving references...
+                        {$_("addLiterature.savingReferences")}
                       {/if}
                     {/if}
                   </p>
@@ -544,7 +549,7 @@
               {#if extractedReferences.length > 0}
                 <div class="space-y-4">
                   <h3 class="text-lg font-semibold">
-                    Extracted References ({extractedReferences.length})
+                    {$_("addLiterature.extractedReferences")} ({extractedReferences.length})
                   </h3>
                   <div class="space-y-2">
                     {#each extractedReferences as reference}
@@ -553,29 +558,29 @@
                       >
                         <div class="flex-1 min-w-0 mr-4 overflow-hidden">
                           <p class="font-medium break-words">
-                            {reference.name || "Untitled Reference"}
+                            {reference.name || $_("addLiterature.untitledReference")}
                           </p>
                           <p class="text-sm text-muted-foreground break-words">
-                            {reference.authors?.join(", ") || "No authors"}
+                            {reference.authors?.join(", ") || $_("addLiterature.noAuthors")}
                           </p>
                         </div>
                         <div class="flex items-center gap-2 shrink-0">
                           {#if reference.status === "success"}
                             <Badge variant="success" class="shrink-0">
                               <CheckCircle2 class="h-3 w-3 mr-1" />
-                              Ready
+                              {$_("addLiterature.ready")}
                             </Badge>
                           {:else}
                             <Badge variant="destructive" class="shrink-0">
                               <AlertCircle class="h-3 w-3 mr-1" />
-                              Needs Review
+                              {$_("addLiterature.needsReview")}
                             </Badge>
                           {/if}
                           <Button
                             variant="outline"
                             size="sm"
                             onclick={() => (selectedReference = reference)}
-                            >Edit</Button
+                            >{$_("common.edit")}</Button
                           >
                         </div>
                       </div>
@@ -592,27 +597,27 @@
                   <div class="space-y-2">
                     <Label.Root for="manual-entry-name">
                       {#if type.value === "Book Chapter"}
-                        Book
+                        {$_("addLiterature.book")}
                       {:else if type.value === "Conference Presentation"}
-                        Presentation Title
+                        {$_("addLiterature.presentationTitle")}
                       {:else}
-                        Name (Title)
+                        {$_("addLiterature.nameTitle")}
                       {/if}
                     </Label.Root>
                     <Input
                       id="manual-entry-name"
                       bind:value={name}
-                      placeholder="Enter article or book title"
+                      placeholder={$_("literatureItem.enterTitle")}
                     />
                   </div>
 
                   <!-- Authors -->
                   <div class="space-y-2">
-                    <Label.Root>Authors</Label.Root>
+                    <Label.Root>{$_("addLiterature.authors")}</Label.Root>
                     <TagInput
                       tags={authors}
                       on:change={(e) => (authors = e.detail.tags)}
-                      placeholder="Add authors"
+                      placeholder={$_("addLiterature.addAuthors")}
                     />
                   </div>
 
@@ -620,12 +625,12 @@
                     <!-- Conference Name for Conference Presentation -->
                     <div class="space-y-2">
                       <Label.Root for="conference-name"
-                        >Conference Name</Label.Root
+                        >{$_("addLiterature.conferenceName")}</Label.Root
                       >
                       <Input
                         id="conference-name"
                         bind:value={second_name}
-                        placeholder="Enter conference name"
+                        placeholder={$_("addLiterature.enterConferenceName")}
                       />
                     </div>
                   {/if}
@@ -633,11 +638,11 @@
                   {#if type.value === "Book Chapter"}
                     <!-- Chapter Title for Book Chapter -->
                     <div class="space-y-2">
-                      <Label.Root for="chapter-title">Chapter Title</Label.Root>
+                      <Label.Root for="chapter-title">{$_("addLiterature.chapterTitle")}</Label.Root>
                       <Input
                         id="chapter-title"
                         bind:value={chapterTitle}
-                        placeholder="Enter chapter title"
+                        placeholder={$_("addLiterature.enterChapterTitle")}
                       />
                     </div>
                   {/if}
@@ -645,18 +650,18 @@
                   {#if type.value === "Book Chapter" || type.value === "Book"}
                     <!-- Editors for Book and Book Chapter -->
                     <div class="space-y-2">
-                      <Label.Root>Editors</Label.Root>
+                      <Label.Root>{$_("addLiterature.editors")}</Label.Root>
                       <TagInput
                         tags={editors}
                         on:change={(e) => (editors = e.detail.tags)}
-                        placeholder="Add editors"
+                        placeholder={$_("addLiterature.addEditors")}
                       />
                     </div>
                   {/if}
 
                   <!-- Type -->
                   <div class="space-y-2">
-                    <Label.Root>Type</Label.Root>
+                    <Label.Root>{$_("addLiterature.type")}</Label.Root>
                     <Select.Root
                       type="single"
                       value={type.value}
@@ -683,24 +688,24 @@
                   <!-- Publication Details -->
                   <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-2">
-                      <Label.Root>Publisher</Label.Root>
+                      <Label.Root>{$_("addLiterature.publisher")}</Label.Root>
                       <Input
                         bind:value={publisher_name}
-                        placeholder="Publisher name"
+                        placeholder={$_("addLiterature.publisherName")}
                       />
                     </div>
                     {#if type.value !== "Conference Presentation"}
                       <div class="space-y-2">
-                        <Label.Root>Year</Label.Root>
+                        <Label.Root>{$_("addLiterature.year")}</Label.Root>
                         <Input
                           bind:value={publish_year}
-                          placeholder="Publication year"
+                          placeholder={$_("addLiterature.publicationYear")}
                         />
                       </div>
                     {:else}
                       <div class="space-y-2">
-                        <Label.Root>City</Label.Root>
-                        <Input bind:value={city} placeholder="City" />
+                        <Label.Root>{$_("addLiterature.city")}</Label.Root>
+                        <Input bind:value={city} placeholder={$_("addLiterature.city")} />
                       </div>
                     {/if}
                   </div>
@@ -709,15 +714,15 @@
                   {#if type.value !== "Book" && type.value !== "Book Chapter" && type.value !== "Conference Presentation"}
                     <div class="grid grid-cols-2 gap-4">
                       <div class="space-y-2">
-                        <Label.Root>Volume</Label.Root>
+                        <Label.Root>{$_("addLiterature.volume")}</Label.Root>
                         <Input
                           bind:value={volume}
-                          placeholder="Volume number"
+                          placeholder={$_("addLiterature.volumeNumber")}
                         />
                       </div>
                       <div class="space-y-2">
-                        <Label.Root>Issue</Label.Root>
-                        <Input bind:value={issue} placeholder="Issue number" />
+                        <Label.Root>{$_("addLiterature.issue")}</Label.Root>
+                        <Input bind:value={issue} placeholder={$_("addLiterature.issueNumber")} />
                       </div>
                     </div>
                   {/if}
@@ -725,7 +730,7 @@
                   {#if type.value === "Conference Presentation"}
                     <div class="grid grid-cols-2 gap-4">
                       <div class="space-y-2">
-                        <Label.Root>Start Date</Label.Root>
+                        <Label.Root>{$_("addLiterature.startDate")}</Label.Root>
                         <Input
                           type="date"
                           value={start_date
@@ -739,7 +744,7 @@
                         />
                       </div>
                       <div class="space-y-2">
-                        <Label.Root>End Date</Label.Root>
+                        <Label.Root>{$_("addLiterature.endDate")}</Label.Root>
                         <Input
                           type="date"
                           value={end_date
@@ -758,25 +763,25 @@
                   {#if type.value !== "Book" && type.value !== "Conference Presentation"}
                     <div class="grid grid-cols-2 gap-4">
                       <div class="space-y-2">
-                        <Label.Root>Start Page</Label.Root>
+                        <Label.Root>{$_("addLiterature.startPage")}</Label.Root>
                         <Input
                           bind:value={start_page}
-                          placeholder="Start page"
+                          placeholder={$_("addLiterature.startPage")}
                         />
                       </div>
                       <div class="space-y-2">
-                        <Label.Root>End Page</Label.Root>
-                        <Input bind:value={end_page} placeholder="End page" />
+                        <Label.Root>{$_("addLiterature.endPage")}</Label.Root>
+                        <Input bind:value={end_page} placeholder={$_("addLiterature.endPage")} />
                       </div>
                     </div>
                   {/if}
 
                   <!-- Link -->
                   <div class="space-y-2">
-                    <Label.Root>Link</Label.Root>
+                    <Label.Root>{$_("addLiterature.link")}</Label.Root>
                     <Input
                       bind:value={link}
-                      placeholder="URL to the literature"
+                      placeholder={$_("addLiterature.urlToLiterature")}
                     />
                   </div>
 
@@ -788,9 +793,9 @@
                   >
                     {#if isSaving}
                       <Loader2 class="h-4 w-4 mr-2 animate-spin" />
-                      Saving...
+                      {$_("addLiterature.saving")}
                     {:else}
-                      Add Literature
+                      {$_("addLiterature.addLiterature")}
                     {/if}
                   </Button>
 
@@ -808,7 +813,7 @@
 
             <Tabs.Content value="upload" class="space-y-4">
               <div class="space-y-4">
-                <Label.Root>Upload your files</Label.Root>
+                <Label.Root>{$_("addLiterature.uploadYourFiles")}</Label.Root>
                 <DocumentUploadPanel
                   projectId={urlProjectId || ''}
                   on:upload-starting={onUploadStarting}
@@ -830,9 +835,9 @@
                   (ref) => ref.status === "success"
                 )}
               >
-                Save All References
+                {$_("addLiterature.saveAllReferences")}
               </Button>
-              <Button variant="outline" onclick={handleClose}>Cancel</Button>
+              <Button variant="outline" onclick={handleClose}>{$_("common.cancel")}</Button>
             </div>
           {/if}
         </div>
@@ -862,7 +867,7 @@
         <!-- Header -->
         <div class="flex items-center justify-between border-b p-4">
           <Dialog.Title class="text-xl font-semibold"
-            >Edit Reference</Dialog.Title
+            >{$_("addLiterature.editReference")}</Dialog.Title
           >
         </div>
 
@@ -871,77 +876,77 @@
           <div class="space-y-4">
             <!-- Form Fields -->
             <div class="space-y-2">
-              <Label.Root>Title</Label.Root>
-              <Input bind:value={selectedReference.name} placeholder="Title" />
+              <Label.Root>{$_("addLiterature.titleLabel")}</Label.Root>
+              <Input bind:value={selectedReference.name} placeholder={$_("addLiterature.titleLabel")} />
             </div>
 
             {#if selectedReference.type?.value === "Book Chapter" || selectedReference.type?.value === "Conference Presentation"}
               <div class="space-y-2">
                 <Label.Root>
                   {#if selectedReference.type?.value === "Book Chapter"}
-                    Chapter Title
+                    {$_("addLiterature.chapterTitle")}
                   {:else if selectedReference.type?.value === "Conference Presentation"}
-                    Conference Name
+                    {$_("addLiterature.conferenceName")}
                   {/if}
                 </Label.Root>
                 {#if selectedReference.type?.value === "Book Chapter"}
                   <Input
                     bind:value={selectedReference.chapterTitle}
-                    placeholder="Chapter Title"
+                    placeholder={$_('addLiteraturePlaceholders.chapterTitle')}
                   />
                 {:else}
                   <Input
                     bind:value={selectedReference.second_name}
-                    placeholder="Second Title"
+                    placeholder={$_('addLiteraturePlaceholders.secondTitle')}
                   />
                 {/if}
               </div>
             {/if}
 
             <div class="space-y-2">
-              <Label.Root>Authors</Label.Root>
+              <Label.Root>{$_("addLiterature.authors")}</Label.Root>
               <TagInput
                 tags={selectedReference!.authors}
                 on:change={(e: CustomEvent<{ tags: string[] }>) =>
                   (selectedReference!.authors = e.detail.tags)}
-                placeholder="Add authors"
+                placeholder={$_("addLiterature.addAuthors")}
               />
             </div>
 
             {#if selectedReference.type?.value === "Book Chapter" || selectedReference.type?.value === "Book"}
               <div class="space-y-2">
-                <Label.Root>Editors</Label.Root>
+                <Label.Root>{$_("addLiterature.editors")}</Label.Root>
                 <TagInput
                   tags={selectedReference!.editors}
                   on:change={(e: CustomEvent<{ tags: string[] }>) =>
                     (selectedReference!.editors = e.detail.tags)}
-                  placeholder="Add editors"
+                  placeholder={$_("addLiterature.addEditors")}
                 />
               </div>
             {/if}
 
             <div class="grid grid-cols-2 gap-4">
               <div class="space-y-2">
-                <Label.Root>Publisher</Label.Root>
+                <Label.Root>{$_("addLiterature.publisher")}</Label.Root>
                 <Input
                   bind:value={selectedReference.publisher_name}
-                  placeholder="Publisher name"
+                  placeholder={$_("addLiterature.publisherName")}
                 />
               </div>
               {#if selectedReference.type?.value !== "Conference Presentation"}
                 <div class="space-y-2">
-                  <Label.Root>Year</Label.Root>
+                  <Label.Root>{$_("addLiterature.year")}</Label.Root>
                   <Input
                     bind:value={selectedReference.publish_year}
-                    placeholder="Publication year"
+                    placeholder={$_("addLiterature.publicationYear")}
                   />
                 </div>
               {:else}
                 <div class="space-y-2">
-                  <Label.Root>City</Label.Root>
+                  <Label.Root>{$_("addLiterature.city")}</Label.Root>
                   <Input
                     bind:value={selectedReference.city}
-                    placeholder="City"
+                    placeholder={$_("addLiterature.city")}
                   />
                 </div>
               {/if}
@@ -950,17 +955,17 @@
             {#if selectedReference.type?.value !== "Book" && selectedReference.type?.value !== "Book Chapter" && selectedReference.type?.value !== "Conference Presentation"}
               <div class="grid grid-cols-2 gap-4">
                 <div class="space-y-2">
-                  <Label.Root>Volume</Label.Root>
+                  <Label.Root>{$_("addLiterature.volume")}</Label.Root>
                   <Input
                     bind:value={selectedReference.volume}
-                    placeholder="Volume number"
+                    placeholder={$_("addLiterature.volumeNumber")}
                   />
                 </div>
                 <div class="space-y-2">
-                  <Label.Root>Issue</Label.Root>
+                  <Label.Root>{$_("addLiterature.issue")}</Label.Root>
                   <Input
                     bind:value={selectedReference.issue}
-                    placeholder="Issue number"
+                    placeholder={$_("addLiterature.issueNumber")}
                   />
                 </div>
               </div>
@@ -969,14 +974,14 @@
             {#if selectedReference.type?.value === "Conference Presentation"}
               <div class="grid grid-cols-2 gap-4">
                 <div class="space-y-2">
-                  <Label.Root>Start Date</Label.Root>
+                  <Label.Root>{$_("addLiterature.startDate")}</Label.Root>
                   <Input
                     type="date"
                     bind:value={selectedReference.start_date}
                   />
                 </div>
                 <div class="space-y-2">
-                  <Label.Root>End Date</Label.Root>
+                  <Label.Root>{$_("addLiterature.endDate")}</Label.Root>
                   <Input type="date" bind:value={selectedReference.end_date} />
                 </div>
               </div>
@@ -984,7 +989,7 @@
 
             <div class="grid grid-cols-2 gap-4">
               <div class="space-y-2">
-                <Label.Root>Type</Label.Root>
+                <Label.Root>{$_("addLiterature.type")}</Label.Root>
                 <Select.Root
                   type="single"
                   value={selectedReference.type.value}
@@ -1008,10 +1013,10 @@
                 </Select.Root>
               </div>
               <div class="space-y-2">
-                <Label.Root>Link</Label.Root>
+                <Label.Root>{$_("addLiterature.link")}</Label.Root>
                 <Input
                   bind:value={selectedReference.link}
-                  placeholder="URL to literature"
+                  placeholder={$_("addLiterature.urlToLiterature")}
                 />
               </div>
             </div>
@@ -1021,7 +1026,7 @@
         <!-- Footer -->
         <div class="border-t p-4 flex justify-end gap-2">
           <Dialog.Close class={buttonVariants({ variant: "outline" })}
-            >Cancel</Dialog.Close
+            >{$_("common.cancel")}</Dialog.Close
           >
           <Button
             onclick={() => {
@@ -1050,7 +1055,7 @@
               );
               // Close the edit dialog
               selectedReference = null;
-            }}>Update Reference</Button
+            }}>{$_("addLiterature.updateReference")}</Button
           >
         </div>
       </Dialog.Content>

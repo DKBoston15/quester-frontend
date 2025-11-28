@@ -11,4 +11,8 @@ export default defineConfig({
     },
     extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.svelte', '.svelte.ts'],
   },
+  json: {
+    // Enable JSON stringify for translation file imports
+    stringify: true,
+  },
 })

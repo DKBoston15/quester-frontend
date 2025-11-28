@@ -6,6 +6,7 @@
     AlertTitle,
   } from "$lib/components/ui/alert";
   import { Info } from "lucide-svelte";
+  import { _ } from "svelte-i18n";
 
   const props = $props<{
     currentCount: number;
@@ -24,36 +25,38 @@
     Math.min(100, (props.currentCount / props.maxUsers) * 100)
   );
 
-  // Get upgrade suggestion based on plan
-  function getUpgradeSuggestion(plan: string, isFull: boolean): string {
+  // Get upgrade suggestion based on plan - using reactive $_() for translations
+  let upgradeSuggestion = $derived.by(() => {
+    const plan = props.subscriptionPlan;
+    const full = isFull;
+
     if (plan === "Enterprise") {
-      return "Please contact support to adjust your seat count.";
+      return $_('teamSizeIndicator.contactSupportSeats');
     } else if (plan === "Quester Pro") {
-      return isFull
-        ? "Upgrade to Quester Team to add more team members."
-        : "Consider upgrading to Quester Team for up to 5 team members.";
+      return full
+        ? $_('teamSizeIndicator.upgradeToTeam')
+        : $_('teamSizeIndicator.considerTeamUpgrade');
     } else if (plan === "Quester Team") {
-      return "Please contact support to discuss enterprise options for larger teams.";
+      return $_('teamSizeIndicator.contactSupportEnterprise');
     } else {
-      return "Upgrade your plan to invite users.";
+      return $_('teamSizeIndicator.upgradePlanToInvite');
     }
-  }
+  });
 </script>
 
 {#if props.maxUsers > 0}
   <div class="space-y-4">
     <div class="flex items-center justify-between">
       <div>
-        <h4 class="text-sm font-medium">Team Members</h4>
+        <h4 class="text-sm font-medium">{$_('teamSizeIndicator.teamMembers')}</h4>
         <p class="text-sm text-muted-foreground">
-          {props.currentCount} of {props.maxUsers} seats used
+          {$_('teamSizeIndicator.seatsUsed', { values: { current: props.currentCount, max: props.maxUsers } })}
         </p>
       </div>
       <div class="flex items-center gap-2">
         <Progress value={percentage} class="w-32" />
         <span class="text-xs font-medium text-muted-foreground">
-          {usersRemaining}
-          {usersRemaining === 1 ? "seat" : "seats"} remaining
+          {usersRemaining === 1 ? $_('teamSizeIndicator.seatRemaining') : $_('teamSizeIndicator.seatsRemaining', { values: { count: usersRemaining } })}
         </span>
       </div>
     </div>
@@ -62,22 +65,21 @@
       {#if isFull}
         <Alert variant="destructive">
           <Info class="h-4 w-4" />
-          <AlertTitle>User Limit Reached</AlertTitle>
+          <AlertTitle>{$_('teamSizeIndicator.userLimitReached')}</AlertTitle>
           <AlertDescription>
-            You've reached the maximum of {props.maxUsers} users for your {props.subscriptionPlan}
-            plan.
-            {getUpgradeSuggestion(props.subscriptionPlan, true)}
+            {$_('teamSizeIndicator.maxUsersReached', { values: { max: props.maxUsers, plan: props.subscriptionPlan } })}
+            {upgradeSuggestion}
           </AlertDescription>
         </Alert>
       {:else if isNearLimit}
         <Alert>
           <Info class="h-4 w-4" />
-          <AlertTitle>Almost at User Limit</AlertTitle>
+          <AlertTitle>{$_('teamSizeIndicator.almostAtLimit')}</AlertTitle>
           <AlertDescription>
-            You have {usersRemaining}
-            {usersRemaining === 1 ? "seat" : "seats"} remaining on your {props.subscriptionPlan}
-            plan.
-            {getUpgradeSuggestion(props.subscriptionPlan, false)}
+            {usersRemaining === 1
+              ? $_('teamSizeIndicator.oneSeatRemaining', { values: { plan: props.subscriptionPlan } })
+              : $_('teamSizeIndicator.seatsRemainingOnPlan', { values: { count: usersRemaining, plan: props.subscriptionPlan } })}
+            {upgradeSuggestion}
           </AlertDescription>
         </Alert>
       {/if}

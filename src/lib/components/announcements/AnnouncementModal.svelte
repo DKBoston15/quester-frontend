@@ -11,6 +11,7 @@
   } from "$lib/components/ui/dialog";
   import { Button } from "$lib/components/ui/button";
   import { Info, AlertTriangle, CheckCircle, AlertCircle } from "lucide-svelte";
+  import { _ } from "svelte-i18n";
 
   // Component registry for different announcement types
   import AnnouncementOne from "./AnnouncementOne.svelte";
@@ -152,7 +153,7 @@
                   )}
                 class="bg-primary text-primary-foreground hover:bg-primary/90"
               >
-                {currentAnnouncement.metadata.primaryAction.label || "Continue"}
+                {currentAnnouncement.metadata.primaryAction.label || $_('common.continue')}
               </Button>
             {/if}
             {#if currentAnnouncement.metadata?.dismissLabel}

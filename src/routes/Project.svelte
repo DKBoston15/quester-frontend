@@ -18,6 +18,7 @@
   import OutcomeView from "./project/OutcomeView.svelte";
   import Chat from "./project/Chat.svelte";
   import { trackPageView } from "$lib/services/fullstory";
+  import { _ } from "svelte-i18n";
 
   type SectionKey =
     | "overview"
@@ -96,7 +97,7 @@
     >
       {#if projectStore.isLoading}
         <div class="container mx-auto py-6">
-          <div class="text-center">Loading project...</div>
+          <div class="text-center">{$_('emptyStates.loadingProject')}</div>
         </div>
       {:else if projectStore.error}
         <div class="container mx-auto py-6">

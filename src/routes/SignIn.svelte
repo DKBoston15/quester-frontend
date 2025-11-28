@@ -3,6 +3,7 @@
   import logo from "../assets/logo.png";
   import { ModeToggle } from "$lib/components/ui/darkmode-toggle";
   import * as Tooltip from "$lib/components/ui/tooltip";
+  import { _ } from "svelte-i18n";
 </script>
 
 <div
@@ -28,7 +29,7 @@
         <Tooltip.Content
           class="max-w-[20rem] dark:bg-dark-card dark:text-dark-text-primary"
         >
-          <p>Change Theme</p>
+          <p>{$_('signIn.changeTheme')}</p>
         </Tooltip.Content>
       </Tooltip.Root>
     </Tooltip.Provider>
@@ -75,10 +76,10 @@
             <h2
               class=" text-4xl font-bold text-black dark:text-dark-text-primary mb-3"
             >
-              Welcome
+              {$_('signIn.welcome')}
             </h2>
             <p class="text-lg text-blue-800 dark:text-dark-text-blue">
-              Sign in to Quester to continue to your research workspace
+              {$_('signIn.subtitle')}
             </p>
             <div
               class="mt-4 h-1 w-12 bg-yellow-400 dark:bg-dark-accent-yellow"
@@ -93,7 +94,7 @@
               onclick={onLogin}
               class="relative w-full border-2 dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)]"
             >
-              Open Research Workspace
+              {$_('signIn.openWorkspace')}
             </button>
           </div>
         </div>

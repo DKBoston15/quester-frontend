@@ -28,6 +28,7 @@
   import { Portal } from "bits-ui";
   import { tick } from "svelte";
   import { EmptyState } from "$lib/components/ui/empty-state";
+  import { _ } from "svelte-i18n";
 
   // Props
   const { onNoteSelect, showSecondPanelOption = false } = $props<{
@@ -102,16 +103,16 @@
 
   // Get literature title for a note
   function getLiteratureTitle(literatureId: string | undefined) {
-    if (!literatureId) return "Literature";
+    if (!literatureId) return $_('noteList.literature');
     const literature = literatureMap[literatureId];
-    return literature?.title || "Literature";
+    return literature?.title || $_('noteList.literature');
   }
 
   // Get complete literature details for tooltip
   function getLiteratureDetails(literatureId: string | undefined) {
-    if (!literatureId) return "No literature connected";
+    if (!literatureId) return $_('noteList.noLiteratureConnected');
     const literature = literatureMap[literatureId];
-    if (!literature) return "Literature data not found";
+    if (!literature) return $_('noteList.literatureDataNotFound');
 
     let details = literature.name;
     if (literature.authors) {
@@ -468,10 +469,10 @@
       }
 
       // If we couldn't extract any text, return a default message
-      return "No preview available";
+      return $_('noteList.noPreviewAvailable');
     } catch (err) {
       console.warn("Error getting preview:", err);
-      return "Error extracting preview";
+      return $_('noteList.errorExtractingPreview');
     }
   }
 
@@ -502,7 +503,7 @@
         <Search class="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
           type="text"
-          placeholder="Search notes..."
+          placeholder={$_('forms.placeholder.searchNotes')}
           class="pl-8"
           bind:value={searchInput}
         />
@@ -525,11 +526,11 @@
             <Popover.Content class="w-[300px] p-0" align="end">
               <Command.Root>
                 <Command.Input
-                  placeholder="Search literature..."
+                  placeholder={$_('noteList.searchLiterature')}
                   bind:value={filterSearchValue}
                 />
                 <Command.List>
-                  <Command.Empty>No literature found.</Command.Empty>
+                  <Command.Empty>{$_('noteList.noLiteratureFound')}</Command.Empty>
                   <Command.Group>
                     {#each filteredLiterature as literature (literature.id)}
                       <Command.Item
@@ -626,7 +627,7 @@
                           {#if isSearchActive && "highlightedName" in note}
                             {@html note.highlightedName}
                           {:else}
-                            {note.name || "Untitled Note"}
+                            {note.name || $_('noteList.untitledNote')}
                           {/if}
                         </h4>
                         <p class="text-sm text-muted-foreground line-clamp-2">
@@ -643,7 +644,7 @@
                           <div class="flex gap-1">
                             <button
                               class="p-1 rounded hover:bg-secondary"
-                              title="Open in left panel"
+                              title={$_('noteList.openInLeftPanel')}
                               onclick={(e) => {
                                 e.stopPropagation();
                                 onNoteSelect(note, "left");
@@ -659,7 +660,7 @@
                             </button>
                             <button
                               class="p-1 rounded hover:bg-secondary"
-                              title="Open in right panel"
+                              title={$_('noteList.openInRightPanel')}
                               onclick={(e) => {
                                 e.stopPropagation();
                                 onNoteSelect(note, "right");
@@ -677,7 +678,7 @@
                         {:else}
                           <button
                             class="p-1 rounded hover:bg-secondary"
-                            title="Open note"
+                            title={$_('noteList.openNote')}
                             onclick={(e) => {
                               e.stopPropagation();
                               onNoteSelect(note);
@@ -761,8 +762,8 @@
 
       {#if filteredNotes.length === 0}
         <EmptyState
-          title="No notes found"
-          description={searchInput ? "Try adjusting your search terms" : undefined}
+          title={$_('noteList.noNotesFound')}
+          description={searchInput ? $_('noteList.tryAdjustingSearch') : undefined}
           variant="search-empty"
           height="py-8"
         />

@@ -19,6 +19,7 @@
   import { literatureStore } from "$lib/stores/LiteratureStore";
   import type { Literature } from "$lib/types/literature";
   import { api } from "$lib/services/api-client";
+  import { _ } from "svelte-i18n";
 
   const dispatch = createEventDispatcher<{
     literatureSelect: Literature;
@@ -52,18 +53,18 @@
   let statusFilter = $state<string>("all");
   let severityFilter = $state<string>("all");
 
-  const statusOptions = [
-    { value: "all", label: "All Statuses" },
-    { value: "Note Taking", label: "Note Taking" },
-    { value: "Reading", label: "Reading" },
-    { value: "Not Started", label: "Not Started" },
-  ];
+  const statusOptions = $derived([
+    { value: "all", label: $_('nextBestActions.allStatuses') },
+    { value: "Note Taking", label: $_('nextBestActions.noteTaking') },
+    { value: "Reading", label: $_('nextBestActions.reading') },
+    { value: "Not Started", label: $_('nextBestActions.notStarted') },
+  ]);
 
-  const severityOptions = [
-    { value: "all", label: "All Severities" },
-    { value: "error", label: "Errors Only" },
-    { value: "warning", label: "Warnings Only" },
-  ];
+  const severityOptions = $derived([
+    { value: "all", label: $_('nextBestActions.allSeverities') },
+    { value: "error", label: $_('nextBestActions.errorsOnly') },
+    { value: "warning", label: $_('nextBestActions.warningsOnly') },
+  ]);
 
   async function fetchNextActions() {
     if (!projectStore.currentProject?.id) return;
@@ -77,7 +78,7 @@
       );
     } catch (err) {
       console.error("Error fetching next actions:", err);
-      error = err instanceof Error ? err.message : "An error occurred";
+      error = err instanceof Error ? err.message : $_("common.anErrorOccurred");
     } finally {
       isLoading = false;
     }
@@ -159,7 +160,7 @@
       class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
     >
       <Card.Title class="text-xl truncate py-2">
-        {activeTab === "needs-attention" ? "Project Reading" : "Recent Updates"}
+        {activeTab === "needs-attention" ? $_('nextBestActions.projectReading') : $_('nextBestActions.recentUpdates')}
       </Card.Title>
       {#if activeTab === "needs-attention"}
         <div class="flex items-center gap-2 w-full sm:w-auto">
@@ -171,21 +172,21 @@
                 class="gap-2 w-full sm:w-auto"
               >
                 <Filter class="h-4 w-4 flex-shrink-0" />
-                <span class="truncate">Filter</span>
+                <span class="truncate">{$_('nextBestActions.filter')}</span>
               </Button>
             </Popover.Trigger>
             <Popover.Content
               class="w-[calc(100vw-2rem)] sm:w-80 max-w-[calc(100vw-2rem)]"
             >
               <Card.Header>
-                <Card.Title class="truncate">Filter Actions</Card.Title>
+                <Card.Title class="truncate">{$_('nextBestActions.filterActions')}</Card.Title>
                 <Card.Description class="truncate">
-                  Filter literature by status and severity
+                  {$_('nextBestActions.filterDescription')}
                 </Card.Description>
               </Card.Header>
               <Card.Content class="space-y-4">
                 <div class="space-y-2">
-                  <label class="text-sm font-medium">Status</label>
+                  <label class="text-sm font-medium">{$_('nextBestActions.status')}</label>
                   <Select
                     type="single"
                     value={statusFilter}
@@ -209,7 +210,7 @@
                   </Select>
                 </div>
                 <div class="space-y-2">
-                  <label class="text-sm font-medium">Severity</label>
+                  <label class="text-sm font-medium">{$_('nextBestActions.severity')}</label>
                   <Select
                     type="single"
                     value={severityFilter}
@@ -252,13 +253,13 @@
         value="needs-attention"
         class="capitalize px-4 data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]: dark:data-[state=active]:border-dark-border data-[state=active]:font-medium"
       >
-        Needs Attention
+        {$_('nextBestActions.needsAttention')}
       </Tabs.Trigger>
       <Tabs.Trigger
         value="recent"
         class="capitalize px-4 data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]: dark:data-[state=active]:border-dark-border data-[state=active]:font-medium"
       >
-        Recently Updated
+        {$_('nextBestActions.recentlyUpdated')}
       </Tabs.Trigger>
     </Tabs.List>
 
@@ -280,8 +281,8 @@
         {:else if nextActions.length === 0}
           <div transition:slide={{ duration: 300, easing: quintOut }}>
             <EmptyState
-              title="No Literature Needs Attention"
-              description="No literature needs attention right now."
+              title={$_('nextBestActions.noLiteratureNeedsAttention')}
+              description={$_('emptyStateDescriptions.noLiteratureNeedsAttention')}
               variant="data-empty"
               height="h-auto"
             />
@@ -301,14 +302,14 @@
                     <div class="flex flex-col gap-2 min-w-0">
                       <div class="flex flex-wrap items-center gap-2">
                         <h3 class="font-bold text-lg truncate">
-                          {action.literature.name || "Untitled Literature"}
+                          {action.literature.name || $_('nextBestActions.untitledLiterature')}
                         </h3>
                         {#if action.errorCount > 0}
                           <span
                             class="text-xs px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 whitespace-nowrap"
                           >
                             {action.errorCount}
-                            {action.errorCount === 1 ? "Error" : "Errors"}
+                            {action.errorCount === 1 ? $_('nextBestActions.error') : $_('nextBestActions.errors')}
                           </span>
                         {/if}
                         {#if action.warningCount > 0}
@@ -316,7 +317,7 @@
                             class="text-xs px-2 py-0.5 rounded-full bg-yellow-100 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 whitespace-nowrap"
                           >
                             {action.warningCount}
-                            {action.warningCount === 1 ? "Warning" : "Warnings"}
+                            {action.warningCount === 1 ? $_('nextBestActions.warning') : $_('nextBestActions.warnings')}
                           </span>
                         {/if}
                       </div>
@@ -340,7 +341,7 @@
                     class="w-full sm:w-auto flex-shrink-0 group-hover:translate-x-[-2px] group-hover:translate-y-[-2px] group-hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all duration-300"
                     on:click={(e) => handleButtonClick(e, action.literature)}
                   >
-                    <span class="truncate">View Details</span>
+                    <span class="truncate">{$_('nextBestActions.viewDetails')}</span>
                     <ChevronRight class="h-4 w-4 ml-2 flex-shrink-0" />
                   </Button>
                 </div>
@@ -354,8 +355,8 @@
         {#if recentLiterature.length === 0}
           <div transition:slide={{ duration: 300, easing: quintOut }}>
             <EmptyState
-              title="No Recent Updates"
-              description="No literature has been updated recently."
+              title={$_('nextBestActions.noRecentUpdates')}
+              description={$_('emptyStateDescriptions.noLiteratureUpdatedRecently')}
               variant="data-empty"
               height="h-auto"
             />
@@ -375,7 +376,7 @@
                     <div class="flex flex-col gap-2 min-w-0">
                       <div class="flex flex-wrap items-center gap-2">
                         <h3 class="font-bold text-lg truncate">
-                          {literature.name || "Untitled Literature"}
+                          {literature.name || $_('nextBestActions.untitledLiterature')}
                         </h3>
                         <span
                           class="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-900/20 text-gray-600 dark:text-gray-400 whitespace-nowrap"
@@ -384,9 +385,7 @@
                         </span>
                       </div>
                       <div class="text-sm text-muted-foreground">
-                        Last updated {new Date(
-                          literature.updatedAt
-                        ).toLocaleDateString()}
+                        {$_('nextBestActions.lastUpdated', { values: { date: new Date(literature.updatedAt).toLocaleDateString() } })}
                       </div>
                     </div>
                   </div>
@@ -396,7 +395,7 @@
                     class="w-full sm:w-auto flex-shrink-0 group-hover:translate-x-[-2px] group-hover:translate-y-[-2px] group-hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all duration-300"
                     on:click={(e) => handleButtonClick(e, literature)}
                   >
-                    <span class="truncate">View Details</span>
+                    <span class="truncate">{$_('nextBestActions.viewDetails')}</span>
                     <ChevronRight class="h-4 w-4 ml-2 flex-shrink-0" />
                   </Button>
                 </div>

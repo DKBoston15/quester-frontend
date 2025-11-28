@@ -19,10 +19,11 @@
   import { DarkmodeToggle } from "$lib/components/ui/darkmode-toggle";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { api } from "$lib/services/api-client";
+  import { _ } from "svelte-i18n";
 
   // Define MenuItem type
   interface MenuItem {
-    title: string;
+    titleKey: string;
     url: string;
     icon: typeof Home | typeof UserPlus | typeof ChartBar | typeof Settings;
     requiresAdmin?: boolean;
@@ -31,23 +32,23 @@
   // Menu items for the main navigation
   const mainNavItems: MenuItem[] = [
     {
-      title: "Dashboard",
+      titleKey: "navigation.dashboard",
       url: "/dashboard",
       icon: Home,
     },
     {
-      title: "Team Management",
+      titleKey: "navigation.teamManagement",
       url: "/team-management",
       icon: UserPlus,
     },
     {
-      title: "Organization Analytics",
+      titleKey: "navigation.organizationAnalytics",
       url: "/organization-analytics",
       icon: ChartBar,
       requiresAdmin: true,
     },
     {
-      title: "Settings",
+      titleKey: "navigation.settings",
       url: "/settings",
       icon: Settings,
     },
@@ -203,11 +204,11 @@
           <span
             class="block font-bold text-lg truncate group-data-[collapsible=icon]:hidden pr-2"
           >
-            {auth.currentOrganization?.name || "Select Workspace"}
+            {auth.currentOrganization?.name || $_('sidebar.selectWorkspace')}
           </span>
         </Tooltip.Trigger>
         <Tooltip.Content side="right" sideOffset={10} class="z-[9999]">
-          <span>{auth.currentOrganization?.name || "Select Workspace"}</span>
+          <span>{auth.currentOrganization?.name || $_('sidebar.selectWorkspace')}</span>
         </Tooltip.Content>
       </Tooltip.Root>
     </div>
@@ -218,7 +219,7 @@
     <Sidebar.Group>
       <Sidebar.GroupContent>
         <Sidebar.Menu>
-          {#each visibleNavItems as item (item.title)}
+          {#each visibleNavItems as item (item.titleKey)}
             <Link to={item.url} class="block">
               <Sidebar.MenuItem>
                 <Sidebar.MenuButton>
@@ -232,7 +233,7 @@
                           class="h-4 w-4 flex-shrink-0"
                         />
                         <span class="group-data-[collapsible=icon]:hidden"
-                          >{item.title}</span
+                          >{$_(item.titleKey)}</span
                         >
                       </div>
                     </Tooltip.Trigger>
@@ -241,7 +242,7 @@
                       sideOffset={10}
                       class="group-data-[collapsible=icon]:block hidden z-[9999]"
                     >
-                      <span class="">{item.title}</span>
+                      <span class="">{$_(item.titleKey)}</span>
                     </Tooltip.Content>
                   </Tooltip.Root>
                 </Sidebar.MenuButton>
@@ -269,7 +270,7 @@
                   >
                     <FolderKanban class="h-4 w-4 flex-shrink-0" />
                     <span class="group-data-[collapsible=icon]:hidden"
-                      >Projects</span
+                      >{$_('navigation.projects')}</span
                     >
                     {#if isProjectsOpen === "projects"}
                       <ChevronUp
@@ -287,7 +288,7 @@
                   sideOffset={10}
                   class="group-data-[collapsible=icon]:block hidden z-[9999]"
                 >
-                  <span class="">Projects</span>
+                  <span class="">{$_('navigation.projects')}</span>
                 </Tooltip.Content>
               </Tooltip.Root>
             </Sidebar.MenuButton>
@@ -348,7 +349,7 @@
                       {/each}
                     {:else}
                       <div class="px-4 py-2 text-sm text-muted-foreground">
-                        No projects yet
+                        {$_('projects.noProjects')}
                       </div>
                     {/if}
                   </Sidebar.Menu>
@@ -401,7 +402,7 @@
               class="flex items-center gap-3"
             >
               <LogOut class="h-4 w-4" />
-              <span class="">Sign out</span>
+              <span class="">{$_('auth.signOut')}</span>
             </DropdownMenu.Item>
           </DropdownMenu.Content>
         </DropdownMenu.Root>

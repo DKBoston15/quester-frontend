@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
   import { teamManagement } from "$lib/stores/TeamManagementStore";
+  import { _ } from 'svelte-i18n';
 
   // Props
   const props = $props<{
@@ -79,7 +80,7 @@
 
   async function updateUserRole() {
     if (!selectedRoleId || !props.userId) {
-      error = "No role selected";
+      error = $_('userRoleForm.noRoleSelected');
       return;
     }
 
@@ -94,14 +95,14 @@
 
       if (success) {
         // Use browser alert instead of toast since toast is not available
-        alert("User role updated successfully");
+        alert($_('userRoleForm.updateSuccess'));
         props.onCancel();
       } else {
-        throw new Error(teamManagement.error || "Failed to update user role");
+        throw new Error(teamManagement.error || $_('userRoleForm.updateFailed'));
       }
     } catch (err) {
       error =
-        err instanceof Error ? err.message : "An unexpected error occurred";
+        err instanceof Error ? err.message : $_('common.unexpectedError');
       console.error("Error updating user role:", error);
     } finally {
       isLoading = false;
@@ -113,20 +114,20 @@
   {#if user}
     <div class="space-y-2">
       <p class="text-sm text-muted-foreground">
-        Change role for <strong>{user.firstName} {user.lastName}</strong>
+        {$_('userRoleForm.changeRoleFor')} <strong>{user.firstName} {user.lastName}</strong>
         ({user.email})
       </p>
 
       <div class="space-y-4">
         <div class="space-y-2">
-          <label for="role" class="text-sm font-medium">Role</label>
+          <label for="role" class="text-sm font-medium">{$_('userRoleForm.role')}</label>
           <select
             id="role"
             bind:value={selectedRoleId}
             disabled={isLoading}
             class="w-full border-2 dark:border-dark-border rounded-md p-2"
           >
-            <option value={undefined}>Select a role</option>
+            <option value={undefined}>{$_('userRoleForm.selectRole')}</option>
             {#each availableRoles as role}
               <option value={role.id}>{role.name}</option>
             {/each}
@@ -144,7 +145,7 @@
             disabled={isLoading}
             class="border-2  dark:border-dark-border"
           >
-            Cancel
+            {$_('common.cancel')}
           </Button>
           <Button
             onclick={updateUserRole}
@@ -155,16 +156,16 @@
               <div
                 class="h-4 w-4 border-t-2 border-primary-foreground animate-spin rounded-full mr-2"
               ></div>
-              Updating...
+              {$_('userRoleForm.updating')}
             {:else}
-              Update Role
+              {$_('userRoleForm.updateRole')}
             {/if}
           </Button>
         </div>
       </div>
     </div>
   {:else}
-    <p class="text-muted-foreground">User data not found</p>
+    <p class="text-muted-foreground">{$_('userRoleForm.userDataNotFound')}</p>
     <Button
       variant="outline"
       onclick={props.onCancel}

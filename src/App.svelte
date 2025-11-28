@@ -23,15 +23,24 @@
   import { initializeFullStory } from "$lib/services/fullstory";
   import ProcessingTray from "$lib/components/custom-ui/literature/ProcessingTray.svelte";
   import { initializeTheme } from "$lib/utils/mode-watcher";
+  import { setupI18n } from "$lib/i18n";
+  import { localeStore } from "$lib/stores/LocaleStore.svelte";
+  import { _ } from "svelte-i18n";
 
   const props = $props<{ url: string }>();
 
   // Check if the user is authenticated
   let isCheckingAuth = $state(true);
+  let i18nReady = $state(false);
 
   onMount(async () => {
     // Initialize theme early so auth-check respects dark mode
     initializeTheme();
+
+    // Initialize i18n
+    await setupI18n();
+    i18nReady = true;
+    localeStore.setInitialized();
 
     // Initialize FullStory
     initializeFullStory();
@@ -55,6 +64,11 @@
       await Promise.race([auth.verifySession(), timeoutPromise]);
 
       isCheckingAuth = false;
+
+      // Initialize locale from user preference if authenticated
+      if (auth.isAuthenticated && auth.user?.metadata?.locale) {
+        localeStore.initializeFromUser(auth.user.metadata.locale);
+      }
 
       if (!auth.isAuthenticated && window.location.pathname !== "/") {
         console.error(
@@ -133,17 +147,17 @@
   });
 </script>
 
-{#if isCheckingAuth}
+{#if isCheckingAuth || !i18nReady}
   <div class="fixed inset-0 flex flex-col items-center justify-center bg-background text-foreground">
     <div
       class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-4"
     ></div>
-    <p class="text-muted-foreground mb-2">Checking authentication...</p>
+    <p class="text-muted-foreground mb-2">{$_('auth.checkingAuth')}</p>
     <div class="text-xs text-center text-muted-foreground/70 max-w-md px-4">
-      <p>If this persists, you can try to:</p>
+      <p>{$_('auth.authPersist')}</p>
       <ul class="mt-2 text-left list-disc pl-6">
-        <li>Refresh the page</li>
-        <li>Clear your browser cache</li>
+        <li>{$_('auth.refreshPage')}</li>
+        <li>{$_('auth.clearCache')}</li>
         <li>
           <button
             class="underline text-primary"
@@ -153,7 +167,7 @@
               navigate("/", { replace: true });
             }}
           >
-            Click here to reset authentication
+            {$_('auth.resetAuth')}
           </button>
         </li>
       </ul>
@@ -178,7 +192,7 @@
             {#if auth.isAuthenticated}
               <Dashboard />
             {:else}
-              <div>Redirecting...</div>
+              <div>{$_('auth.redirecting')}</div>
             {/if}
           </Route>
           <Route path="/dashboard">
@@ -187,7 +201,7 @@
           <Route path="/onboarding">
             {#if auth.user}
               {#await checkPendingInvites()}
-                <div>Loading...</div>
+                <div>{$_('common.loading')}</div>
               {:then hasPendingInvites}
                 {#if hasPendingInvites}
                   <PendingInvites />
@@ -196,7 +210,7 @@
                 {/if}
               {/await}
             {:else}
-              <div>User data not loaded</div>
+              <div>{$_('common.loading')}</div>
             {/if}
           </Route>
           <Route path="/team-management">
@@ -220,7 +234,7 @@
                 }}
               />
             {:else}
-              <div>Invalid project or literature ID</div>
+              <div>{$_('errors.invalidProjectOrLiteratureId')}</div>
             {/if}
           </Route>
           <Route path="/project/:projectId/literature" let:params>
@@ -229,7 +243,7 @@
                 params={{ projectId: params.projectId, view: "literature" }}
               />
             {:else}
-              <div>Invalid project ID</div>
+              <div>{$_('errors.invalidProjectId')}</div>
             {/if}
           </Route>
           <Route path="/project/:projectId/models/:modelId" let:params>
@@ -242,7 +256,7 @@
                 }}
               />
             {:else}
-              <div>Invalid project or model ID</div>
+              <div>{$_('errors.invalidProjectOrModelId')}</div>
             {/if}
           </Route>
           <Route path="/project/:projectId/models" let:params>
@@ -251,7 +265,7 @@
                 params={{ projectId: params.projectId, view: "models" }}
               />
             {:else}
-              <div>Invalid project ID</div>
+              <div>{$_('errors.invalidProjectId')}</div>
             {/if}
           </Route>
           <Route path="/project/:projectId/outcomes/:outcomeId" let:params>
@@ -264,7 +278,7 @@
                 }}
               />
             {:else}
-              <div>Invalid project or outcome ID</div>
+              <div>{$_('errors.invalidProjectOrOutcomeId')}</div>
             {/if}
           </Route>
           <Route path="/project/:projectId/outcomes" let:params>
@@ -273,26 +287,26 @@
                 params={{ projectId: params.projectId, view: "outcomes" }}
               />
             {:else}
-              <div>Invalid project ID</div>
+              <div>{$_('errors.invalidProjectId')}</div>
             {/if}
           </Route>
           <Route path="/project/:projectId" let:params>
             {#if params.projectId}
               <Project params={{ projectId: params.projectId }} />
             {:else}
-              <div>Invalid project ID</div>
+              <div>{$_('errors.invalidProjectId')}</div>
             {/if}
           </Route>
           <Route path="/project/:projectId/*" let:params>
             {#if params.projectId}
               <Project params={{ projectId: params.projectId }} />
             {:else}
-              <div>Invalid project ID</div>
+              <div>{$_('errors.invalidProjectId')}</div>
             {/if}
           </Route>
           <Route path="/pricing">
             {#if auth.isLoading}
-              <div>Loading...</div>
+              <div>{$_('common.loading')}</div>
             {:else if !auth.currentOrgId}
               {navigate("/onboarding")}
             {:else}

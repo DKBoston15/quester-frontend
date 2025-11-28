@@ -1,6 +1,10 @@
 
   import { api } from "../services/api-client";
   import type { Literature } from "../types/literature";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  const t = (key: string, options?: object) => get(_)(key, options);
 
   let literatureData = $state<Literature[]>([]);
   // Track which project the literature is loaded for
@@ -24,7 +28,7 @@
 
     async loadLiterature(projectId: string) {
       if (!projectId) {
-        error = "No project ID provided";
+        error = t("literatureStore.noProjectId");
         isLoading = false;
         return;
       }
@@ -40,7 +44,7 @@
         loadedProjectId = projectId;
       } catch (err) {
         console.error("Error loading literature:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("literatureStore.errorLoadingLiterature");
         literatureData = [];
         loadedProjectId = null;
       } finally {
@@ -54,7 +58,7 @@
         literatureData = [newLiterature.literature, ...literatureData];
         return newLiterature;
       } catch (err) {
-        console.error("Error adding literature:", err);
+        console.error(t("literatureStore.errorAddingLiterature"), err);
         throw err;
       }
     },
@@ -70,7 +74,7 @@
         );
         return updatedLiterature;
       } catch (err) {
-        console.error("Error updating literature:", err);
+        console.error(t("literatureStore.errorUpdatingLiterature"), err);
         throw err;
       }
     },
@@ -81,7 +85,7 @@
         await api.delete(`/literature/${id}`, { timeout: 120000, retries: 0 });
         literatureData = literatureData.filter((item) => item.id !== id);
       } catch (err) {
-        console.error("Error deleting literature:", err);
+        console.error(t("literatureStore.errorDeletingLiterature"), err);
         throw err;
       }
     },

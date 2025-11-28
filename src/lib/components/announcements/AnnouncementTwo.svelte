@@ -4,15 +4,16 @@
   import { Card, CardContent } from '$lib/components/ui/card'
   import { Badge } from '$lib/components/ui/badge'
   import { Progress } from '$lib/components/ui/progress'
-  import { 
-    Megaphone, 
-    Calendar, 
-    Users, 
-    ExternalLink, 
+  import {
+    Megaphone,
+    Calendar,
+    Users,
+    ExternalLink,
     Clock,
     CheckCircle2,
     AlertCircle
   } from 'lucide-svelte'
+  import { _ } from 'svelte-i18n'
 
   interface Props {
     announcement: Announcement
@@ -37,14 +38,14 @@
     const expiry = new Date(expiresAt)
     const diff = expiry.getTime() - now.getTime()
     
-    if (diff <= 0) return 'Expired'
-    
+    if (diff <= 0) return $_('announcementTwo.expired')
+
     const days = Math.floor(diff / (1000 * 60 * 60 * 24))
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-    
-    if (days > 0) return `${days} day${days > 1 ? 's' : ''} remaining`
-    if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} remaining`
-    return 'Less than an hour remaining'
+
+    if (days > 0) return days === 1 ? $_('announcementTwo.dayRemaining') : $_('announcementTwo.daysRemaining', { values: { days } })
+    if (hours > 0) return hours === 1 ? $_('announcementTwo.hourRemaining') : $_('announcementTwo.hoursRemaining', { values: { hours } })
+    return $_('announcementTwo.lessThanHour')
   }
 </script>
 
@@ -87,31 +88,31 @@
             <div class="flex items-center gap-3">
               <Calendar class="w-4 h-4 text-blue-600 dark:text-blue-400" />
               <div>
-                <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Date</p>
+                <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{$_('common.announcements.date')}</p>
                 <p class="text-xs text-gray-600 dark:text-gray-400">
                   {announcement.metadata.eventDetails.date}
                 </p>
               </div>
             </div>
           {/if}
-          
+
           {#if announcement.metadata.eventDetails.duration}
             <div class="flex items-center gap-3">
               <Clock class="w-4 h-4 text-green-600 dark:text-green-400" />
               <div>
-                <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Duration</p>
+                <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{$_('common.announcements.duration')}</p>
                 <p class="text-xs text-gray-600 dark:text-gray-400">
                   {announcement.metadata.eventDetails.duration}
                 </p>
               </div>
             </div>
           {/if}
-          
+
           {#if announcement.metadata.eventDetails.affectedUsers}
             <div class="flex items-center gap-3">
               <Users class="w-4 h-4 text-purple-600 dark:text-purple-400" />
               <div>
-                <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Affected</p>
+                <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{$_('common.announcements.affected')}</p>
                 <p class="text-xs text-gray-600 dark:text-gray-400">
                   {announcement.metadata.eventDetails.affectedUsers}
                 </p>
@@ -123,7 +124,7 @@
             <div class="flex items-center gap-3">
               <AlertCircle class="w-4 h-4 text-orange-600 dark:text-orange-400" />
               <div>
-                <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Time Remaining</p>
+                <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{$_('announcementTwo.timeRemaining')}</p>
                 <p class="text-xs text-gray-600 dark:text-gray-400">
                   {getTimeRemaining(announcement.expiresAt)}
                 </p>

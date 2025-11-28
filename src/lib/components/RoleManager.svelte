@@ -4,6 +4,7 @@
   import { teamManagement } from "$lib/stores/TeamManagementStore";
   import { auth } from "$lib/stores/AuthStore";
   import { UserCog, X, Info } from "lucide-svelte";
+  import { _ } from "svelte-i18n";
   import { api } from "$lib/services/api-client";
 
   const props = $props<{
@@ -302,13 +303,13 @@
       ).length;
 
       if (ownerCount <= 1) {
-        error = "The last Organization Owner's role cannot be changed";
+        error = $_('errors.lastOwnerCannotChange');
         return;
       }
     }
 
     if (!selectedRoleId) {
-      error = "Please select a role";
+      error = $_('errors.pleaseSelectRole');
       return;
     }
 
@@ -318,9 +319,7 @@
       isProjectOwner &&
       isUsingElevatedPermissions
     ) {
-      const confirmMessage =
-        "You are about to change a Project Owner's role using your Organization privileges. " +
-        "Are you sure you want to proceed?";
+      const confirmMessage = $_('roleManagerExtra.confirmElevatedPermissions');
 
       if (!confirm(confirmMessage)) {
         return; // User cancelled the action
@@ -341,11 +340,11 @@
         props.onRoleUpdated();
         closeDialog();
       } else {
-        error = teamManagement.error || "Failed to update role";
+        error = teamManagement.error || $_('errors.failedToUpdateRole');
       }
     } catch (err) {
       error =
-        err instanceof Error ? err.message : "An unexpected error occurred";
+        err instanceof Error ? err.message : $_('errors.anUnexpectedErrorOccurred');
     } finally {
       isLoading = false;
     }
@@ -392,7 +391,7 @@
       </div>
 
       <p class="text-muted-foreground mb-4">
-        Update the role for {userName}
+        {$_('roleManager.updateRoleFor', { values: { userName } })}
       </p>
 
       <!-- Elevated permissions notice -->
@@ -439,7 +438,7 @@
               bind:value={selectedRoleId}
               class="w-full rounded-md border-2 dark:border-dark-border bg-card dark:bg-dark-card p-2"
             >
-              <option value="" disabled>Choose a role</option>
+              <option value="" disabled>{$_('roleManager.chooseRole')}</option>
               {#each availableRoles as role}
                 {#if !(isOwner && role.name === "Owner")}
                   <option value={role.id} selected={role.id === selectedRoleId}
@@ -451,14 +450,14 @@
           {/if}
         {:else if availableRoles.length === 0}
           <div class="text-muted-foreground py-2">
-            No roles available. Using hardcoded fallback roles.
+            {$_('roles.noRolesAvailable')}
           </div>
           <select
             id="role-select"
             bind:value={selectedRoleId}
             class="w-full rounded-md border-2 dark:border-dark-border bg-card dark:bg-dark-card p-2"
           >
-            <option value="" disabled>Choose a role</option>
+            <option value="" disabled>{$_('roleManager.chooseRole')}</option>
             {#each ["admin", "member"].filter((r) => r !== selectedRoleId) as role}
               <option value={role}
                 >{role.charAt(0).toUpperCase() + role.slice(1)}</option
@@ -471,7 +470,7 @@
             bind:value={selectedRoleId}
             class="w-full rounded-md border-2 dark:border-dark-border bg-card dark:bg-dark-card p-2"
           >
-            <option value="" disabled>Choose a role</option>
+            <option value="" disabled>{$_('roleManager.chooseRole')}</option>
             {#each availableRoles as role}
               {#if !(isOwner && role.name === "Owner")}
                 <option value={role.id} selected={role.id === selectedRoleId}
@@ -506,7 +505,7 @@
                   user.$extras?.roleName === "Owner"
               ).length <= 1)}
         >
-          {isLoading ? "Updating..." : "Update Role"}
+          {isLoading ? $_('roleManager.updating') : $_('roleManager.updateRole')}
         </Button>
       </div>
     </div>

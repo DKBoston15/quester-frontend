@@ -12,6 +12,11 @@
   import { Separator } from "$lib/components/ui/separator";
   import { EmptyState } from "$lib/components/ui/empty-state";
   import { api } from "$lib/services/api-client";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper for imperative translation access
+  const t = (key: string) => get(_)(key);
 
   type Invitation = {
     id: string;
@@ -45,7 +50,7 @@
         `/invitations/pending?email=${encodeURIComponent(auth.user?.email || "")}`
       );
     } catch (err) {
-      error = err instanceof Error ? err.message : "Failed to load invitations";
+      error = err instanceof Error ? err.message : t("pendingInvites.failedToLoad");
     } finally {
       isLoading = false;
     }
@@ -66,7 +71,7 @@
       navigate("/dashboard");
     } catch (err) {
       error =
-        err instanceof Error ? err.message : "Failed to accept invitations";
+        err instanceof Error ? err.message : t("pendingInvites.failedToAccept");
       isLoading = false;
     }
   }
@@ -78,17 +83,17 @@
   >
     <CardHeader>
       <CardTitle class="text-2xl text-primary dark:text-primary"
-        >Pending Invitations</CardTitle
+        >{$_('pendingInvites.title')}</CardTitle
       >
     </CardHeader>
     <CardContent>
       {#if isLoading}
-        <div class="text-center py-4 text-muted-foreground">Loading...</div>
+        <div class="text-center py-4 text-muted-foreground">{$_('pendingInvites.loadingInvites')}</div>
       {:else if error}
         <div class="text-destructive py-4">{error}</div>
       {:else if invitations.length === 0}
         <EmptyState
-          title="No pending invitations"
+          title={$_('pendingInvites.noInvites')}
           variant="data-empty"
           height="h-[200px]"
         />
@@ -100,8 +105,7 @@
             >
               <div class="mb-4">
                 <h3 class="text-lg text-foreground dark:text-zinc-100">
-                  {invitation.invitedBy.firstName}
-                  {invitation.invitedBy.lastName} invited you to:
+                  {$_('pendingInvites.invitedBy', { values: { name: `${invitation.invitedBy.firstName} ${invitation.invitedBy.lastName}` } })}
                 </h3>
                 <p
                   class="text-xl font-semibold text-foreground dark:text-white"
@@ -114,7 +118,7 @@
                 {#if invitation.accessMapping.departments?.length}
                   <div>
                     <h4 class="font-medium text-foreground dark:text-zinc-200">
-                      Departments:
+                      {$_('team.departments')}:
                     </h4>
                     <ul class="list-disc pl-5 mt-2 space-y-1">
                       {#each invitation.accessMapping.departments as dept}
@@ -129,7 +133,7 @@
                 {#if invitation.accessMapping.projects?.length}
                   <div>
                     <h4 class="font-medium text-foreground dark:text-zinc-200">
-                      Projects:
+                      {$_('team.projects')}:
                     </h4>
                     <ul class="list-disc pl-5 mt-2 space-y-1">
                       {#each invitation.accessMapping.projects as project}
@@ -148,7 +152,7 @@
 
           <div class="flex justify-end">
             <Button onclick={acceptInvitations} disabled={isLoading}>
-              {isLoading ? "Accepting..." : "Accept All Invitations"}
+              {isLoading ? $_('pendingInvites.accepting') : $_('pendingInvites.accept')}
             </Button>
           </div>
         </div>

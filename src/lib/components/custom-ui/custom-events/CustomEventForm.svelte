@@ -22,6 +22,8 @@
     Zap,
     CheckCircle,
   } from "lucide-svelte";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
 
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
@@ -37,6 +39,8 @@
     getEventTypeOptions,
     getEventTypeConfig,
   } from "$lib/config/custom-event-types";
+
+  const t = (key: string) => get(_)(key);
 
   const dispatch = createEventDispatcher<{
     close: void;
@@ -127,18 +131,18 @@
     localErrors = {};
 
     if (!formState.data.title.trim()) {
-      localErrors.title = "Event title is required";
+      localErrors.title = t("customEvents.validation.titleRequired");
     }
 
     if (formState.data.title.trim().length > 200) {
-      localErrors.title = "Title must be 200 characters or less";
+      localErrors.title = t("customEvents.validation.titleMaxLength");
     }
 
     if (
       formState.data.description &&
       formState.data.description.length > 1000
     ) {
-      localErrors.description = "Description must be 1000 characters or less";
+      localErrors.description = t("customEvents.validation.descriptionMaxLength");
     }
 
     return Object.keys(localErrors).length === 0;
@@ -319,14 +323,14 @@
     <div class="flex flex-col space-y-1.5 text-center sm:text-left">
       <Dialog.Title class="text-lg font-semibold leading-none tracking-tight">
         {formState.mode === "create"
-          ? "Create Custom Event"
-          : "Edit Custom Event"}
+          ? $_('customEventFormExtra.createCustomEvent')
+          : $_('customEventFormExtra.editCustomEvent')}
       </Dialog.Title>
       <Dialog.Description class="text-muted-foreground text-sm">
         {#if formState.mode === "create"}
-          Add a new custom event to your project timeline
+          {$_('customEventForm.addNewEvent')}
         {:else}
-          Update the details of this custom event
+          {$_('customEventForm.updateEvent')}
         {/if}
       </Dialog.Description>
     </div>
@@ -341,18 +345,18 @@
         <!-- Basic Information -->
         <div class="form-section">
           <div class="section-header">
-            <h3 class="section-title">Basic Information</h3>
-            <p class="section-description">Core details about your event</p>
+            <h3 class="section-title">{$_('customEventFormExtra.basicInformation')}</h3>
+            <p class="section-description">{$_('customEventForm.coreDetails')}</p>
           </div>
 
           <!-- Title -->
           <div class="form-field">
-            <Label for="event-title" class="field-label">Event Title *</Label>
+            <Label for="event-title" class="field-label">{$_('customEventFormExtra.eventTitle')} *</Label>
             <Input
               id="event-title"
               type="text"
               bind:value={formState.data.title}
-              placeholder="Enter a descriptive title for your event"
+              placeholder={$_('forms.placeholder.eventTitle')}
               maxlength={200}
               required
               disabled={formState.loading}
@@ -373,19 +377,19 @@
               </div>
             {/if}
             <div class="field-hint">
-              {formState.data.title.length}/200 characters
+              {$_('customEventFormExtra.charactersCount', { values: { count: formState.data.title.length } })}
             </div>
           </div>
 
           <!-- Description -->
           <div class="form-field">
             <Label for="event-description" class="field-label">
-              Description
+              {$_('customEventFormExtra.description')}
             </Label>
             <Textarea
               id="event-description"
               bind:value={formState.data.description}
-              placeholder="Provide additional context or details about this event"
+              placeholder={$_('forms.placeholder.eventDescription')}
               maxlength={1000}
               disabled={formState.loading}
               class="field-textarea {allErrors.description ? 'error' : ''}"
@@ -408,7 +412,7 @@
               </div>
             {/if}
             <div class="field-hint">
-              {(formState.data.description || "").length}/1000 characters
+              {$_('customEventFormExtra.descriptionCount', { values: { count: (formState.data.description || "").length } })}
             </div>
           </div>
         </div>
@@ -416,14 +420,14 @@
         <!-- Event Type & DateTime -->
         <div class="form-section">
           <div class="section-header">
-            <h3 class="section-title">Event Details</h3>
-            <p class="section-description">Classification and timing</p>
+            <h3 class="section-title">{$_('customEventFormExtra.eventDetails')}</h3>
+            <p class="section-description">{$_('customEventForm.classificationTiming')}</p>
           </div>
 
           <div class="form-row">
             <!-- Event Type -->
             <div class="form-field flex-1">
-              <Label for="event-type" class="field-label">Event Type *</Label>
+              <Label for="event-type" class="field-label">{$_('customEventFormExtra.eventType')} *</Label>
               <div class="event-type-selector">
                 {#each eventTypeOptions as option}
                   {@const IconComponent =
@@ -460,7 +464,7 @@
             <!-- DateTime -->
             <div class="form-field flex-1">
               <Label for="event-datetime" class="field-label">
-                Event Date & Time *
+                {$_('customEventFormExtra.eventDateTime')} *
               </Label>
               <div class="datetime-input-group">
                 <input
@@ -505,8 +509,8 @@
             aria-expanded={showAdvanced}
           >
             <span class="toggle-text">
-              Advanced Options
-              <Badge variant="secondary" class="ml-2">Optional</Badge>
+              {$_('customEventFormExtra.advancedOptions')}
+              <Badge variant="secondary" class="ml-2">{$_('common.optional')}</Badge>
             </span>
             <span class="toggle-icon {showAdvanced ? 'rotated' : ''}">
               <svg
@@ -530,8 +534,8 @@
               <!-- Details -->
               <div class="form-field">
                 <Label class="field-label">
-                  Additional Details
-                  <span class="field-optional">(up to 5 items)</span>
+                  {$_('customEventFormExtra.additionalDetails')}
+                  <span class="field-optional">{$_('customEventFormExtra.upToFiveItems')}</span>
                 </Label>
 
                 {#if formState.data.details && formState.data.details.length > 0}
@@ -545,7 +549,7 @@
                           size="sm"
                           onclick={() => removeDetail(index)}
                           disabled={formState.loading}
-                          aria-label="Remove detail"
+                          aria-label={$_('ariaLabels.removeDetail')}
                           class="detail-remove"
                         >
                           <Minus class="w-3 h-3" />
@@ -559,7 +563,7 @@
                   <div class="detail-input-group">
                     <Input
                       bind:value={newDetail}
-                      placeholder="Add implementation note or detail"
+                      placeholder={$_('timeline.addNote')}
                       maxlength={500}
                       disabled={formState.loading}
                       onkeydown={handleDetailKeydown}
@@ -589,8 +593,8 @@
               <!-- Tags -->
               <div class="form-field">
                 <Label class="field-label">
-                  Tags
-                  <span class="field-optional">(up to 10 tags)</span>
+                  {$_('customEventFormExtra.tags')}
+                  <span class="field-optional">{$_('customEventFormExtra.upToTenTags')}</span>
                 </Label>
 
                 {#if formState.data.tags && formState.data.tags.length > 0}
@@ -602,7 +606,7 @@
                           type="button"
                           onclick={() => removeTag(index)}
                           disabled={formState.loading}
-                          aria-label="Remove tag"
+                          aria-label={$_('ariaLabels.removeTag')}
                           class="tag-remove"
                         >
                           <X class="w-3 h-3" />
@@ -616,7 +620,7 @@
                   <div class="tag-input-group">
                     <Input
                       bind:value={newTag}
-                      placeholder="Add tags for categorization"
+                      placeholder={$_('timeline.addTag')}
                       maxlength={50}
                       disabled={formState.loading}
                       onkeydown={handleTagKeydown}
@@ -665,7 +669,7 @@
         onclick={handleClose}
         disabled={formState.loading}
       >
-        Cancel
+        {$_('common.cancel')}
       </Button>
 
       <Button
@@ -679,7 +683,7 @@
         {:else}
           <Save class="w-4 h-4 mr-2" />
         {/if}
-        {formState.mode === "create" ? "Create Event" : "Update Event"}
+        {formState.mode === "create" ? $_('customEventFormExtra.createEvent') : $_('customEventFormExtra.updateEvent')}
       </Button>
     </div>
   </Dialog.Content>

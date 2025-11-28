@@ -14,6 +14,11 @@
   import { InfoIcon, Plus, X, Edit, Check, Save } from "lucide-svelte";
   import { projectStore } from "$lib/stores/ProjectStore";
   import { toast } from "svelte-sonner";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper for imperative translation access
+  const t = (key: string) => get(_)(key);
 
   // Design types that match our existing components
   const designTypes = [
@@ -71,7 +76,7 @@
   // Check if a project is selected
   $effect(() => {
     if (!projectStore.currentProject) {
-      toast.error("Please select a project to manage its designs");
+      toast.error($_('toasts.selectProjectToManageDesigns'));
     }
   });
 
@@ -91,7 +96,7 @@
   // Function to add a new design option
   async function addDesign() {
     if (!newDesignName.trim()) {
-      toast.error("Design name cannot be empty");
+      toast.error($_('toasts.designNameCannotBeEmpty'));
       return;
     }
 
@@ -101,7 +106,7 @@
         (design) => design.name.toLowerCase() === newDesignName.toLowerCase()
       )
     ) {
-      toast.error("Design with this name already exists");
+      toast.error($_('toasts.designAlreadyExists'));
       return;
     }
 
@@ -134,7 +139,7 @@
     if (!editingDesign) return;
 
     if (!editingDesign.newName.trim()) {
-      toast.error("Design name cannot be empty");
+      toast.error($_('toasts.designNameCannotBeEmpty'));
       return;
     }
 
@@ -146,7 +151,7 @@
           design.name.toLowerCase() === editingDesign!.newName.toLowerCase()
       )
     ) {
-      toast.error("Design with this name already exists");
+      toast.error($_('toasts.designAlreadyExists'));
       return;
     }
 
@@ -211,11 +216,11 @@
       // Update local designs with sorted versions
       localDesigns = sortedDesigns;
 
-      toast.success("Designs updated successfully");
+      toast.success($_('toasts.designsUpdatedSuccessfully'));
     } catch (error) {
       console.error("Failed to update designs:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to update designs"
+        error instanceof Error ? error.message : t("designManager.failedToUpdateDesigns")
       );
     } finally {
       isPending = false;
@@ -237,30 +242,28 @@
   <CardHeader>
     <div class="flex justify-between items-center">
       <CardTitle class="flex items-center gap-2">
-        Manage Project Designs
+        {$_('designManager.title')}
         <Tooltip.Root>
           <Tooltip.Trigger>
             <InfoIcon class="h-5 w-5" />
           </Tooltip.Trigger>
           <Tooltip.Content>
             <p class="text-sm max-w-xs">
-              The design options below will be available for describing both the
-              current project and the literature associated with this project.
+              {$_('designManager.tooltip')}
             </p>
           </Tooltip.Content>
         </Tooltip.Root>
       </CardTitle>
     </div>
     <CardDescription>
-      These design options will be available for selection in this project and
-      its literature items.
+      {$_('designManager.description')}
       {#if projectStore.currentProject}
         <span class="font-medium"
-          >Current project: {projectStore.currentProject.name}</span
+          >{$_('designManager.currentProject', { values: { name: projectStore.currentProject.name } })}</span
         >
       {:else}
         <span class="text-red-500"
-          >No project selected. Please select a project first.</span
+          >{$_('emptyStateDescriptions.noProjectSelected')}</span
         >
       {/if}
     </CardDescription>
@@ -288,7 +291,7 @@
             <div class="flex items-center gap-2">
               <Input
                 type="text"
-                placeholder="Add new design option"
+                placeholder={$_("designManager.addNewOption")}
                 bind:value={newDesignName}
                 class="flex-grow"
                 onkeydown={(e) =>
@@ -310,7 +313,7 @@
                 {:else}
                   <Plus class="h-4 w-4 mr-1" />
                 {/if}
-                Add
+                {$_('common.add')}
               </Button>
             </div>
 
@@ -320,7 +323,7 @@
             >
               {#if localDesigns[type].length === 0}
                 <div class="p-4 text-center text-muted-foreground">
-                  No {type} designs added yet. Add your first one above.
+                  {$_('emptyStateDescriptions.noDesignsAddedYet', { values: { type } })}
                 </div>
               {:else}
                 <div class="divide-y divide-black dark:divide-dark-border">
@@ -400,9 +403,9 @@
   <CardFooter class="flex items-center justify-between">
     <p class="text-sm text-muted-foreground">
       {#if projectStore.currentProject}
-        Changes are saved automatically as you make them.
+        {$_('designManager.autoSaveMessage')}
       {:else}
-        Please select a project to manage its designs.
+        {$_('designManager.selectProjectMessage')}
       {/if}
     </p>
     <Button
@@ -411,9 +414,9 @@
       class="ml-auto"
     >
       {#if isOperationPending("save")}
-        <span class="animate-spin mr-2">⏳</span> Saving...
+        <span class="animate-spin mr-2">⏳</span> {$_('common.saving')}
       {:else}
-        <Save class="h-4 w-4 mr-1" /> Save Now
+        <Save class="h-4 w-4 mr-1" /> {$_('designManager.saveNow')}
       {/if}
     </Button>
   </CardFooter>

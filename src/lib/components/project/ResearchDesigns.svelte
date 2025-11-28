@@ -11,6 +11,7 @@
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { InfoIcon } from "lucide-svelte";
   import { projectStore } from "$lib/stores/ProjectStore";
+  import { _ } from "svelte-i18n";
 
   const designTypes = [
     "research",
@@ -74,20 +75,20 @@
   <CardHeader>
     <div class="flex justify-between items-center">
       <CardTitle class="flex items-center gap-2">
-        Project Designs
+        {$_('researchDesignsCard.projectDesigns')}
         <Tooltip.Root>
           <Tooltip.Trigger>
             <InfoIcon class="h-5 w-5" />
           </Tooltip.Trigger>
           <Tooltip.Content>
             <p class="text-sm max-w-xs">
-              Define your research methodology across different design types.
+              {$_('researchDesigns.defineMethodology')}
             </p>
           </Tooltip.Content>
         </Tooltip.Root>
       </CardTitle>
       {#if !editMode}
-        <Button size="sm" onclick={() => (editMode = true)}>Edit</Button>
+        <Button size="sm" onclick={() => (editMode = true)}>{$_('common.edit')}</Button>
       {/if}
     </div>
   </CardHeader>
@@ -113,14 +114,14 @@
               value={localDesigns[type]}
               onchange={(e) => handleDesignChange(type, e.currentTarget.value)}
             >
-              <option value="">Select {type} design</option>
+              <option value="">{$_('researchDesignsCard.selectDesign', { values: { type } })}</option>
               {#each projectStore.designs[type] || [] as option}
                 <option value={option.name}>{option.name}</option>
               {/each}
             </select>
           {:else}
             <p class="text-muted-foreground">
-              {localDesigns[type] || `No ${type} design specified`}
+              {localDesigns[type] || $_('researchDesignsCard.noDesignSpecified', { values: { type } })}
             </p>
           {/if}
         </Tabs.Content>
@@ -136,7 +137,7 @@
         disabled={isPending}
         class="w-full"
       >
-        Cancel
+        {$_('common.cancel')}
       </Button>
       <Button
         size="sm"
@@ -144,7 +145,7 @@
         disabled={isPending}
         class="w-full"
       >
-        {isPending ? "Saving..." : "Save"}
+        {isPending ? $_('common.saving') : $_('common.save')}
       </Button>
     </CardFooter>
   {/if}

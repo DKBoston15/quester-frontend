@@ -2,6 +2,10 @@
   import { api } from "../services/api-client";
   import type { Node, Edge } from "@xyflow/svelte";
   import { toPng } from "html-to-image";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  const t = (key: string) => get(_)(key);
 
   interface Model {
     id: string;
@@ -38,7 +42,7 @@
 
     async loadModels(projectId: string) {
       if (!projectId) {
-        error = "No project ID provided";
+        error = t("modelStore.noProjectIdProvided");
         isLoading = false;
         return;
       }
@@ -51,7 +55,7 @@
         models = data;
       } catch (err) {
         console.error("Error loading models:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("modelStore.anErrorOccurred");
         models = [];
       } finally {
         isLoading = false;
@@ -60,7 +64,7 @@
 
     async loadModel(modelId: string) {
       if (!modelId) {
-        error = "No model ID provided";
+        error = t("modelStore.noModelIdProvided");
         isLoading = false;
         return;
       }
@@ -74,7 +78,7 @@
         return data;
       } catch (err) {
         console.error("Error loading model:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("modelStore.anErrorOccurred");
         currentModel = null;
       } finally {
         isLoading = false;
@@ -93,7 +97,7 @@
         });
 
         if (!newModel?.id) {
-          throw new Error("Received invalid model data from API");
+          throw new Error(t("modelStore.receivedInvalidModelData"));
         }
 
         models = [newModel, ...models];
@@ -101,7 +105,7 @@
         return newModel;
       } catch (err) {
         console.error("Error creating model:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("modelStore.anErrorOccurred");
         throw err;
       } finally {
         isLoading = false;
@@ -123,7 +127,7 @@
         const actualUpdatedModel = updatedModelResponse.model;
 
         if (!actualUpdatedModel) {
-          throw new Error("API response did not contain model data.");
+          throw new Error(t("modelStore.apiResponseNoModelData"));
         }
 
         // Create a new array with the updated model
@@ -143,7 +147,7 @@
         return actualUpdatedModel; // Return the actual model data
       } catch (err) {
         console.error("Error updating model:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("modelStore.anErrorOccurred");
         throw err;
       }
     },
@@ -158,7 +162,7 @@
         }
       } catch (err) {
         console.error("Error deleting model:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("modelStore.anErrorOccurred");
         throw err;
       }
     },
@@ -167,7 +171,7 @@
       try {
         const element = document.querySelector(`[data-flowid="${flowId}"]`);
         if (!element) {
-          throw new Error("Flow element not found");
+          throw new Error(t("modelStore.flowElementNotFound"));
         }
 
         const dataUrl = await toPng(element as HTMLElement, {
@@ -181,7 +185,7 @@
         link.click();
       } catch (err) {
         console.error("Error exporting model:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("modelStore.anErrorOccurred");
         throw err;
       }
     },

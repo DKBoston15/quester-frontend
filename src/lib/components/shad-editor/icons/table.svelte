@@ -5,6 +5,7 @@
   import { cn } from "$lib/utils.js";
   import { Table, ChevronDown } from "lucide-svelte";
   import type { ToolBarIconProps } from "./types.js";
+  import { _ } from "svelte-i18n";
 
   let {
     editor,
@@ -35,7 +36,7 @@
           </Button>
         </Tooltip.Trigger>
         <Tooltip.Content>
-          <p>Table</p>
+          <p>{$_('editor.toolbar.table')}</p>
         </Tooltip.Content>
       </Tooltip.Root>
     </Tooltip.Provider>
@@ -50,73 +51,73 @@
             .insertTable({ rows: 3, cols: 3, withHeaderRow: false })
             .run()}
       >
-        <span>Insert Table</span>
+        <span>{$_('editor.table.insertTable')}</span>
       </DropdownMenu.Item>
       <DropdownMenu.Sub>
         <DropdownMenu.SubTrigger>
-          <span>Cells</span>
+          <span>{$_('editor.table.cells')}</span>
         </DropdownMenu.SubTrigger>
         <DropdownMenu.SubContent>
           <DropdownMenu.Item
             onclick={() => editor.chain().focus().mergeCells().run()}
           >
-            <span>Merge</span>
+            <span>{$_('editor.table.merge')}</span>
           </DropdownMenu.Item>
           <DropdownMenu.Item
             onclick={() => editor.chain().focus().splitCell().run()}
           >
-            <span>Split</span>
+            <span>{$_('editor.table.split')}</span>
           </DropdownMenu.Item>
           <DropdownMenu.Item
             onclick={() => editor.chain().focus().mergeOrSplit().run()}
           >
-            <span>Merge or Split</span>
+            <span>{$_('editor.table.mergeOrSplit')}</span>
           </DropdownMenu.Item>
         </DropdownMenu.SubContent>
       </DropdownMenu.Sub>
       <DropdownMenu.Sub>
         <DropdownMenu.SubTrigger>
-          <span>Row</span>
+          <span>{$_('editor.table.row')}</span>
         </DropdownMenu.SubTrigger>
         <DropdownMenu.SubContent>
           <DropdownMenu.Item
             onclick={() => editor.chain().focus().addRowBefore().run()}
           >
-            <span>Insert Above</span>
+            <span>{$_('editor.table.insertAbove')}</span>
           </DropdownMenu.Item>
           <DropdownMenu.Item
             onclick={() => editor.chain().focus().addRowAfter().run()}
           >
-            <span>Insert Below</span>
+            <span>{$_('editor.table.insertBelow')}</span>
           </DropdownMenu.Item>
           <DropdownMenu.Item
             onclick={() => editor.chain().focus().deleteRow().run()}
             class="text-destructive hover:text-foreground data-[highlighted]:bg-destructive"
           >
-            <span>Delete Row</span>
+            <span>{$_('editor.table.deleteRow')}</span>
           </DropdownMenu.Item>
         </DropdownMenu.SubContent>
       </DropdownMenu.Sub>
       <DropdownMenu.Sub>
         <DropdownMenu.SubTrigger>
-          <span>Column</span>
+          <span>{$_('editor.table.column')}</span>
         </DropdownMenu.SubTrigger>
         <DropdownMenu.SubContent>
           <DropdownMenu.Item
             onclick={() => editor.chain().focus().addColumnBefore().run()}
           >
-            <span>Insert Before</span>
+            <span>{$_('editor.table.insertBefore')}</span>
           </DropdownMenu.Item>
           <DropdownMenu.Item
             onclick={() => editor.chain().focus().addColumnAfter().run()}
           >
-            <span>Insert After</span>
+            <span>{$_('editor.table.insertAfter')}</span>
           </DropdownMenu.Item>
           <DropdownMenu.Item
             onclick={() => editor.chain().focus().deleteColumn().run()}
             class="text-destructive hover:text-foreground data-[highlighted]:bg-destructive"
           >
-            <span>Delete</span>
+            <span>{$_('editor.table.delete')}</span>
           </DropdownMenu.Item>
         </DropdownMenu.SubContent>
       </DropdownMenu.Sub>
@@ -124,7 +125,7 @@
         onclick={() => editor.chain().focus().deleteTable().run()}
         class="text-destructive hover:text-foreground data-[highlighted]:bg-destructive"
       >
-        <span>Delete</span>
+        <span>{$_('editor.table.delete')}</span>
       </DropdownMenu.Item>
     {:else}
       <div class="mb-4 flex flex-col gap-1 p-1">
@@ -138,7 +139,7 @@
                   "size-4 rounded-none bg-muted/20 p-0",
                   row <= rows && col <= cols && "bg-muted"
                 )}
-                title={`Rows:${rows}, Columns:${cols}`}
+                title={$_('editor.table.rowsColumns', { values: { rows, cols } })}
                 onmouseenter={() => {
                   cols = col;
                   rows = row;
@@ -157,7 +158,7 @@
         {/each}
       </div>
       <span class="text-xs">
-        Rows: {rows}, Columns: {cols}
+        {$_('editor.table.rowsColumns', { values: { rows, cols } })}
       </span>
     {/if}
   </DropdownMenu.Content>

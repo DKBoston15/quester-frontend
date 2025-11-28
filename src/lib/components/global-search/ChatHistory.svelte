@@ -11,6 +11,11 @@
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { cn } from "$lib/utils";
   import type { ChatSession } from "$lib/services/chat-history-api";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper for imperative translation access
+  const t = (key: string) => get(_)(key);
 
   // Icons
   import Search from "lucide-svelte/icons/search";
@@ -78,7 +83,7 @@
               "Failed to parse chat history messages for filtering:",
               {
                 sessionId: session.id,
-                error: error instanceof Error ? error.message : "Unknown error",
+                error: error instanceof Error ? error.message : t("common.unknown"),
               }
             );
             messages = [];
@@ -200,10 +205,10 @@
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffMins < 1) return get(_)('keyInsightsExtra.justNow');
+    if (diffMins < 60) return get(_)('keyInsightsExtra.minutesAgo', { values: { minutes: diffMins } });
+    if (diffHours < 24) return get(_)('keyInsightsExtra.hoursAgo', { values: { hours: diffHours } });
+    if (diffDays < 7) return get(_)('keyInsightsExtra.daysAgoShort', { values: { days: diffDays } });
 
     return date.toLocaleDateString();
   }
@@ -218,14 +223,14 @@
       } catch (error) {
         console.error("Failed to parse chat history messages for preview:", {
           sessionId: session.id,
-          error: error instanceof Error ? error.message : "Unknown error",
+          error: error instanceof Error ? error.message : t("common.unknown"),
         });
-        return "No messages yet";
+        return get(_)('chatHistory.noMessagesYet');
       }
     }
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
-      return "No messages yet";
+      return get(_)('chatHistory.noMessagesYet');
     }
 
     const firstUserMessage = messages.find((msg: any) => msg.role === "user");
@@ -235,7 +240,7 @@
         : firstUserMessage.content;
     }
 
-    return "No messages yet";
+    return get(_)('chatHistory.noMessagesYet');
   }
 
   // Get message count
@@ -248,7 +253,7 @@
       } catch (error) {
         console.error("Failed to parse chat history messages for count:", {
           sessionId: session.id,
-          error: error instanceof Error ? error.message : "Unknown error",
+          error: error instanceof Error ? error.message : t("common.unknown"),
         });
         return 0;
       }
@@ -272,7 +277,7 @@
     <div class="flex items-center justify-between mb-3">
       <div class="flex items-center gap-2">
         <MessageCircle class="size-4 text-muted-foreground" />
-        <h2 class="font-semibold text-sm">Chat History</h2>
+        <h2 class="font-semibold text-sm">{$_('globalSearch.chatHistory')}</h2>
         {#if isSaving}
           <Loader class="size-3 animate-spin text-muted-foreground" />
         {/if}
@@ -305,7 +310,7 @@
       />
       <Input
         bind:value={searchQuery}
-        placeholder="Search chat history..."
+        placeholder={$_('globalSearch.searchPlaceholder')}
         class="pl-9 h-8 text-xs"
         oninput={handleSearch}
       />
@@ -335,7 +340,7 @@
         class="h-7 text-xs"
       >
         <Star class="size-3 mr-1 {showStarredOnly ? 'fill-current' : ''}" />
-        Starred
+        {$_('globalSearch.starred')}
         {#if starredSessions.length > 0}
           <Badge variant="secondary" class="ml-2 h-4 px-1 text-xs">
             {starredSessions.length}
@@ -351,14 +356,14 @@
           class="h-7 text-xs text-muted-foreground"
         >
           <X class="size-3 mr-1" />
-          Clear
+          {$_('globalSearch.clear')}
         </Button>
       {/if}
     </div>
 
     <!-- Stats -->
     <div class="text-xs text-muted-foreground">
-      {filteredSessions.length} of {sessions.length} sessions
+      {$_('globalSearch.sessionsCount', { values: { count: filteredSessions.length, total: sessions.length } })}
     </div>
   </div>
 
@@ -383,11 +388,11 @@
         <div class="text-center py-8 text-muted-foreground">
           <MessageCircle class="size-8 mx-auto mb-3 opacity-50" />
           <p class="text-sm">
-            {hasFilters ? "No matching sessions found" : "No chat sessions yet"}
+            {hasFilters ? $_('globalSearch.noMatchingSessions') : $_('globalSearch.noChatSessions')}
           </p>
           {#if !hasFilters}
             <p class="text-xs mt-1">
-              Start a conversation to see your chat history
+              {$_('globalSearch.startConversation')}
             </p>
           {/if}
         </div>
@@ -416,7 +421,7 @@
             <div class="flex items-start justify-between mb-2">
               <div class="flex-1 min-w-0">
                 <h3 class="font-medium text-sm truncate">
-                  {session.title || "Untitled Chat"}
+                  {session.title || $_('globalSearch.untitledChat')}
                 </h3>
                 <div class="flex items-center gap-2 mt-1">
                   <div
@@ -473,19 +478,19 @@
               <div class="flex items-center gap-3">
                 <div class="flex items-center gap-1 text-muted-foreground">
                   <MessageCircle class="size-3" />
-                  {getMessageCount(session)} messages
+                  {$_('globalSearch.messages', { values: { count: getMessageCount(session) } })}
                 </div>
                 {#if session.metadata?.isStarred}
                   <Badge variant="secondary" class="h-4 px-1">
                     <Star class="size-2 mr-1 fill-current" />
-                    Starred
+                    {$_('globalSearch.starred')}
                   </Badge>
                 {/if}
               </div>
 
               {#if hoveredSessionId === session.id}
                 <div class="text-xs text-muted-foreground" transition:fade>
-                  Click to open
+                  {$_('globalSearch.clickToOpen')}
                 </div>
               {/if}
             </div>
@@ -500,14 +505,13 @@
 <AlertDialog.Root bind:open={showDeleteDialog}>
   <AlertDialog.Content>
     <AlertDialog.Header>
-      <AlertDialog.Title>Delete Chat Session</AlertDialog.Title>
+      <AlertDialog.Title>{$_('globalSearch.deleteChatSession')}</AlertDialog.Title>
       <AlertDialog.Description>
-        Are you sure you want to delete this chat session? This action cannot be
-        undone.
+        {$_('globalSearch.deleteConfirmation')}
       </AlertDialog.Description>
     </AlertDialog.Header>
     <AlertDialog.Footer>
-      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+      <AlertDialog.Cancel>{$_('globalSearch.cancel')}</AlertDialog.Cancel>
       <AlertDialog.Action
         onclick={confirmDeleteSession}
         disabled={isDeleting}
@@ -516,7 +520,7 @@
         {#if isDeleting}
           <Loader2 class="h-4 w-4 animate-spin mr-2" />
         {/if}
-        Delete Session
+        {$_('globalSearch.deleteChatSession')}
       </AlertDialog.Action>
     </AlertDialog.Footer>
   </AlertDialog.Content>

@@ -22,6 +22,7 @@
     Bell,
     Calendar,
   } from "lucide-svelte";
+  import { _ } from "svelte-i18n";
 
   interface Props {
     announcement: Announcement;
@@ -134,7 +135,7 @@
           <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">
             15+
           </div>
-          <div class="text-sm text-gray-600 dark:text-gray-400">Bug Fixes</div>
+          <div class="text-sm text-gray-600 dark:text-gray-400">{$_('announcementLaunch.bugFixes')}</div>
         </div>
         <div
           class="text-center p-3 bg-white/50 dark:bg-gray-900/30 rounded-lg backdrop-blur-sm"
@@ -143,7 +144,7 @@
             100s
           </div>
           <div class="text-sm text-gray-600 dark:text-gray-400">
-            User Suggestions Implemented
+            {$_('announcementLaunch.userSuggestions')}
           </div>
         </div>
       </div>

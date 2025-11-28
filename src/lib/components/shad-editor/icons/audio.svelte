@@ -4,6 +4,7 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import { cn } from "$lib/utils.js";
   import type { ToolBarIconProps } from "./types.js";
+  import { _ } from "svelte-i18n";
 
   let {
     editor,
@@ -26,7 +27,7 @@
       </Button>
     </Tooltip.Trigger>
     <Tooltip.Content>
-      <p>Add Audio</p>
+      <p>{$_('editor.toolbar.addAudio')}</p>
     </Tooltip.Content>
   </Tooltip.Root>
 </Tooltip.Provider>

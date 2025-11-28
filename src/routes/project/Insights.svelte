@@ -6,6 +6,7 @@
   import { api } from "$lib/services/api-client";
   import { Info } from "lucide-svelte";
   import * as Tooltip from "$lib/components/ui/tooltip";
+  import { _ } from "svelte-i18n";
 
   let isLoadingCapability = $state(true);
   let hasAccess = $state(false);
@@ -56,21 +57,20 @@
     <div class="container mx-auto py-6 px-4">
       <div class="mb-8">
         <div class="flex items-center gap-2">
-          <h1 class="text-3xl font-bold">Insights</h1>
+          <h1 class="text-3xl font-bold">{$_("insights.title")}</h1>
           <Tooltip.Root>
             <Tooltip.Trigger>
               <Info class="h-5 w-5 text-muted-foreground" />
             </Tooltip.Trigger>
             <Tooltip.Content>
               <p class="text-sm max-w-xs">
-                Analyze keyword patterns and relationships across your research to discover emerging themes and connections in your literature.
+                {$_("insights.tooltip")}
               </p>
             </Tooltip.Content>
           </Tooltip.Root>
         </div>
         <p class="text-muted-foreground mt-2">
-          Gain insights into keyword patterns and relationships across your
-          research
+          {$_("insights.description")}
         </p>
       </div>
       <KeywordAnalysis />

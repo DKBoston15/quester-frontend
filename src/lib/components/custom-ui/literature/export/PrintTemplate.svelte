@@ -3,6 +3,11 @@
   import type { CitationStyle } from "$lib/utils/citationFormatters";
   import { formatCitation } from "$lib/utils/citationFormatters";
   import { compileBibliography } from "$lib/utils/bibliographyUtils";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper for imperative translation access
+  const t = (key: string) => get(_)(key);
 
   interface Props {
     literature: Literature[];
@@ -64,7 +69,7 @@
         // Fallback formatting
         return {
           literature: item,
-          formatted: `${item.name || "Unknown Title"} (${item.publishYear || "n.d."})`,
+          formatted: `${item.name || t("printTemplate.unknownTitle")} (${item.publishYear || t("printTemplate.noDate")})`,
         };
       }
     });
@@ -83,19 +88,19 @@
   <div class="title-page">
     <div class="title-content">
       <h1 class="main-title">{safeProjectTitle}</h1>
-      <h2 class="subtitle">Bibliography</h2>
+      <h2 class="subtitle">{$_('printTemplate.bibliography')}</h2>
 
       <div class="metadata">
         <p class="date">
-          Generated on {currentDate} by Quester{safeAuthorName
-            ? ` for ${safeAuthorName}`
-            : ""}
+          {safeAuthorName
+            ? $_('printTemplate.generatedOnByFor', { values: { date: currentDate, author: safeAuthorName } })
+            : $_('printTemplate.generatedOnBy', { values: { date: currentDate } })}
         </p>
-        <p class="style">Citation Style: {citationStyle}</p>
+        <p class="style">{$_('printTemplate.citationStyle', { values: { style: citationStyle } })}</p>
         <p class="count">
-          {formattedCitations.length} Reference{formattedCitations.length !== 1
-            ? "s"
-            : ""}
+          {formattedCitations.length === 1
+            ? $_('printTemplate.reference')
+            : $_('printTemplate.references', { values: { count: formattedCitations.length } })}
         </p>
         {#if safeInstitution}
           <p class="institution">{safeInstitution}</p>
@@ -110,12 +115,12 @@
   <!-- Bibliography Content -->
   <div class="bibliography-content">
     <header class="bibliography-header">
-      <h1>Bibliography</h1>
+      <h1>{$_('referenceExport.bibliography')}</h1>
     </header>
 
     {#if formattedCitations.length === 0}
       <div class="no-references">
-        <p>No references available.</p>
+        <p>{$_('referenceExport.noReferencesAvailable')}</p>
       </div>
     {:else}
       <div class="references-list">

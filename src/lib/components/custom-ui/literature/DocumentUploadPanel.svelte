@@ -14,6 +14,11 @@
   import { API_BASE_URL } from "$lib/config";
   import { auth } from "$lib/stores/AuthStore";
   import { processingJobsStore } from "$lib/stores/ProcessingJobsStore.svelte";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper function for imperative translation access
+  const t = (key: string) => get(_)(key);
 
   const dispatch = createEventDispatcher();
 
@@ -94,12 +99,12 @@
     }
 
     if (errors.length > 0) {
-      uploadError = `File validation errors:\n${errors.join("\n")}`;
+      uploadError = `${t("documentUpload.validationErrors")}:\n${errors.join("\n")}`;
       return;
     }
 
     if (validFiles.length > 5) {
-      uploadError = "You can upload up to 5 files at once";
+      uploadError = t("documentUpload.maxFilesExceeded");
       return;
     }
 
@@ -108,13 +113,13 @@
 
   function validateFile(file: File): { valid: boolean; error?: string } {
     if (file.size > MAX_FILE_SIZE) {
-      return { valid: false, error: "File size exceeds 25MB limit" };
+      return { valid: false, error: t("documentUpload.fileSizeExceeds") };
     }
     if (!ALLOWED_TYPES.includes(file.type)) {
       // Fallback to extension check if type is empty or unrecognized
       const ext = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
       if (!ALLOWED_EXTENSIONS.includes(ext)) {
-        return { valid: false, error: "Unsupported file type" };
+        return { valid: false, error: t("documentUpload.unsupportedFileType") };
       }
     }
     return { valid: true };
@@ -154,7 +159,7 @@
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || "Upload failed");
+        throw new Error(error.message || t("documentUploadPanel.uploadFailed"));
       }
 
       const result = await response.json();
@@ -171,13 +176,13 @@
       }
     } catch (error) {
       console.error("Upload error:", error);
-      uploadError = error instanceof Error ? error.message : "Upload failed";
+      uploadError = error instanceof Error ? error.message : t("documentUploadPanel.uploadFailed");
 
       // Mark all files as failed
       uploadedFiles = uploadedFiles.map((file) => ({
         ...file,
         status: "failed",
-        error: uploadError || "Upload failed",
+        error: uploadError || t("documentUploadPanel.uploadFailed"),
       }));
     } finally {
       isUploading = false;
@@ -248,16 +253,15 @@
   >
     <Upload class="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
     <h3 class="text-lg font-medium mb-2">
-      Drop documents here or click to browse
+      {$_("documentUpload.dropOrBrowse")}
     </h3>
     <p class="text-sm text-muted-foreground mb-4">
-      Supports PDF, DOCX, DOC, and TXT files (max 25MB each, up to 5 files per
-      upload)
+      {$_("documentUpload.supportedFormats")}
     </p>
 
     {#if attachLiteratureId}
       <div class="max-w-md mx-auto text-left mb-4">
-        <p class="text-sm font-medium mb-2">When metadata is extracted:</p>
+        <p class="text-sm font-medium mb-2">{$_("documentUpload.whenMetadataExtracted")}:</p>
         <div class="space-y-2 text-sm">
           <label class="flex items-center gap-2">
             <input
@@ -266,7 +270,7 @@
               value="fill-empty"
               bind:group={mergeMode}
             />
-            <span>Fill empty fields only (recommended)</span>
+            <span>{$_("documentUpload.fillEmptyOnly")}</span>
           </label>
           <label class="flex items-center gap-2">
             <input
@@ -275,7 +279,7 @@
               value="override"
               bind:group={mergeMode}
             />
-            <span>Override existing fields with extracted values</span>
+            <span>{$_("documentUpload.overrideExisting")}</span>
           </label>
         </div>
       </div>
@@ -293,7 +297,7 @@
     <Button
       onclick={() => document.getElementById("file-input-inline")?.click()}
     >
-      Select Files
+      {$_("documentUpload.selectFiles")}
     </Button>
   </div>
 
@@ -301,7 +305,7 @@
     <div class="mt-4 p-4 bg-destructive/10 text-destructive rounded-lg">
       <div class="flex items-center space-x-2">
         <AlertCircle class="h-5 w-5" />
-        <span class="font-medium">Upload Error</span>
+        <span class="font-medium">{$_("documentUpload.uploadError")}</span>
       </div>
       <p class="mt-1 text-sm whitespace-pre-line">{uploadError}</p>
     </div>
@@ -312,11 +316,8 @@
     class="mt-4 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-lg"
   >
     <p class="text-sm text-amber-900 dark:text-amber-100">
-      <span class="font-medium"
-        >We're always improving our document processing.</span
-      > If you notice that something about your document was processed incorrectly
-      after upload, please hit the red flag button within the literature so we can
-      take a look and improve our process.
+      <span class="font-medium">{$_("documentUpload.improvingProcessing")}</span>
+      {" "}{$_("documentUpload.feedbackNote")}
     </p>
   </div>
 </div>

@@ -18,6 +18,14 @@
   import { exportToBibTeX } from "$lib/utils/exportFormats/bibtex";
   import { exportToRIS } from "$lib/utils/exportFormats/ris";
   import { exportToCSV } from "$lib/utils/exportFormats/csv";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper function for imperative translation access
+  const t = (key: string, values?: Record<string, any>) => {
+    const translate = get(_);
+    return values ? translate(key, { values }) : translate(key);
+  };
 
   interface Props {
     open: boolean;
@@ -96,14 +104,14 @@
   >("copy");
   let isExporting = $state(false);
 
-  const exportFormats = [
-    { value: "copy", label: "Copy to Clipboard", icon: Copy },
+  const exportFormats = $derived([
+    { value: "copy", label: $_('exportReferences.copyToClipboard'), icon: Copy },
     { value: "pdf", label: "PDF", icon: FileText, disabled: false },
-    { value: "docx", label: "Word (DOCX)", icon: FileText, disabled: false },
+    { value: "docx", label: $_('exportReferences.wordDocx'), icon: FileText, disabled: false },
     { value: "bibtex", label: "BibTeX", icon: FileText, disabled: false },
     { value: "ris", label: "RIS", icon: FileText, disabled: false },
     { value: "csv", label: "CSV", icon: FileText, disabled: false },
-  ];
+  ]);
 
   $effect(() => {
     // Store user preference
@@ -137,7 +145,7 @@
 
   async function handleExport() {
     if (currentlySelected.length === 0) {
-      toast.error("No references selected");
+      toast.error(t("exportReferences.noReferencesSelected"));
       return;
     }
 
@@ -148,7 +156,7 @@
       const selectedItems = currentlySelected;
 
       if (selectedItems.length === 0) {
-        toast.error("No references selected for export");
+        toast.error(t("exportReferences.noReferencesSelectedForExport"));
         return;
       }
 
@@ -163,7 +171,7 @@
       if (invalidItems.length > 0) {
         console.warn("Found literature items with missing data:", invalidItems);
         toast.warning(
-          `${invalidItems.length} references are missing title or authors. Export may be incomplete.`
+          t("exportReferences.missingDataWarning", { count: invalidItems.length })
         );
       }
 
@@ -175,11 +183,11 @@
           await exportToPDFSimple({
             literature: currentlySelected,
             citationStyle: selectedStyle,
-            projectTitle: projectTitle || "Research Bibliography",
+            projectTitle: projectTitle || t("exportReferences.researchBibliography"),
             authorName: userName,
           });
           toast.success(
-            `PDF exported successfully with ${currentlySelected.length} references`
+            t("exportReferences.exportSuccess", { format: "PDF", count: currentlySelected.length })
           );
           open = false;
           break;
@@ -187,11 +195,11 @@
           await exportToDOCX({
             literature: currentlySelected,
             citationStyle: selectedStyle,
-            projectTitle: projectTitle || "Research Bibliography",
+            projectTitle: projectTitle || t("exportReferences.researchBibliography"),
             authorName: userName,
           });
           toast.success(
-            `DOCX exported successfully with ${currentlySelected.length} references`
+            t("exportReferences.exportSuccess", { format: "DOCX", count: currentlySelected.length })
           );
           open = false;
           break;
@@ -200,7 +208,7 @@
             literature: currentlySelected,
           });
           toast.success(
-            `BibTeX exported successfully with ${currentlySelected.length} references`
+            t("exportReferences.exportSuccess", { format: "BibTeX", count: currentlySelected.length })
           );
           open = false;
           break;
@@ -209,7 +217,7 @@
             literature: currentlySelected,
           });
           toast.success(
-            `RIS exported successfully with ${currentlySelected.length} references`
+            t("exportReferences.exportSuccess", { format: "RIS", count: currentlySelected.length })
           );
           open = false;
           break;
@@ -218,14 +226,14 @@
             literature: currentlySelected,
           });
           toast.success(
-            `CSV exported successfully with ${currentlySelected.length} references`
+            t("exportReferences.exportSuccess", { format: "CSV", count: currentlySelected.length })
           );
           open = false;
           break;
       }
     } catch (error) {
       console.error("Export error:", error);
-      toast.error("Failed to export references");
+      toast.error(t("exportReferences.exportFailed"));
     } finally {
       isExporting = false;
     }
@@ -234,7 +242,7 @@
   async function copyToClipboard() {
     const currentLiterature = currentlySelected;
     if (currentLiterature.length === 0) {
-      throw new Error("No references to copy");
+      throw new Error(t("exportReferences.noReferencesToCopy"));
     }
 
     try {
@@ -245,7 +253,7 @@
       });
 
       // Create bibliography header
-      const header = `Bibliography\n\nGenerated on ${new Date().toLocaleDateString(
+      const header = `${t("exportReferences.bibliography")}\n\n${t("exportReferences.generatedOn")} ${new Date().toLocaleDateString(
         "en-US",
         {
           year: "numeric",
@@ -269,20 +277,20 @@
 
       await navigator.clipboard.writeText(fullText);
       toast.success(
-        `${currentLiterature.length} references copied to clipboard`
+        t("exportReferences.copiedToClipboard", { count: currentLiterature.length })
       );
       open = false;
     } catch (err) {
-      throw new Error("Failed to copy to clipboard");
+      throw new Error(t("exportReferences.copyFailed"));
     }
   }
 
   function getExportButtonText() {
     const format = exportFormats.find((f) => f.value === selectedFormat);
     if (selectedFormat === "copy") {
-      return "Copy to Clipboard";
+      return t("exportReferences.copyToClipboard");
     }
-    return `Download ${format?.label || ""}`;
+    return `${t("exportReferences.download")} ${format?.label || ""}`;
   }
 
   function getExportButtonIcon() {
@@ -294,9 +302,9 @@
 <Dialog.Root bind:open {onOpenChange}>
   <Dialog.Content class="max-w-5xl h-[90vh] overflow-hidden flex flex-col">
     <Dialog.Header>
-      <Dialog.Title>Export References</Dialog.Title>
+      <Dialog.Title>{$_("exportReferences.title")}</Dialog.Title>
       <Dialog.Description>
-        Preview and export your selected references in various formats
+        {$_("exportReferences.description")}
       </Dialog.Description>
     </Dialog.Header>
 
@@ -305,10 +313,7 @@
       <div class="flex items-center justify-between gap-4 px-6 pt-4">
         <div class="flex items-center gap-4">
           <Badge variant="secondary" class="px-3 py-1">
-            {currentlySelected.length} of {selectedLiterature.length} reference{selectedLiterature.length !==
-            1
-              ? "s"
-              : ""} selected
+            {$_("exportReferences.referencesSelected", { values: { selected: currentlySelected.length, total: selectedLiterature.length } })}
           </Badge>
 
           <!-- Selection controls -->
@@ -320,7 +325,7 @@
               disabled={currentlySelected.length === selectedLiterature.length}
             >
               <CheckSquare class="h-4 w-4 mr-1" />
-              All
+              {$_("exportReferences.all")}
             </Button>
             <Button
               variant="ghost"
@@ -329,7 +334,7 @@
               disabled={currentlySelected.length === 0}
             >
               <Square class="h-4 w-4 mr-1" />
-              None
+              {$_("exportReferences.none")}
             </Button>
           </div>
         </div>
@@ -383,14 +388,14 @@
     </div>
 
     <Dialog.Footer class="px-6 py-4">
-      <Button variant="outline" onclick={() => (open = false)}>Cancel</Button>
+      <Button variant="outline" onclick={() => (open = false)}>{$_("common.cancel")}</Button>
       <Button
         onclick={handleExport}
         disabled={isExporting || currentlySelected.length === 0}
       >
         {#if isExporting}
           <span class="animate-spin mr-2">⏳</span>
-          Exporting...
+          {$_("exportReferences.exporting")}
         {:else}
           {@const IconComponent = getExportButtonIcon()}
           <IconComponent class="h-4 w-4 mr-2" />

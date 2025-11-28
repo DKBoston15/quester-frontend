@@ -16,6 +16,7 @@
 	} from 'lucide-svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { duplicateContent } from './utils.js';
+	import { _ } from 'svelte-i18n';
 
 	const { node, editor, selected, deleteNode, updateAttributes }: NodeViewProps = $props();
 
@@ -144,7 +145,7 @@
 			<div
 				role="button"
 				tabindex="0"
-				aria-label="Back"
+				aria-label={$_('ariaLabels.back')}
 				class="absolute inset-y-0 z-20 flex w-[25px] cursor-col-resize items-center justify-start p-2"
 				style="left: 0px"
 				onmousedown={(event: MouseEvent) => {
@@ -162,7 +163,7 @@
 			<div
 				role="button"
 				tabindex="0"
-				aria-label="Back"
+				aria-label={$_('ariaLabels.back')}
 				class="absolute inset-y-0 z-20 flex w-[25px] cursor-col-resize items-center justify-end p-2"
 				style="right: 0px"
 				onmousedown={(event: MouseEvent) => {

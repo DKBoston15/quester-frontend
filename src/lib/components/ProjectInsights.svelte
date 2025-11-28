@@ -11,6 +11,7 @@
   import { slide } from "svelte/transition";
   import { quintOut } from "svelte/easing";
   import type { Project } from "$lib/types/auth";
+  import { _ } from "svelte-i18n";
 
   type InsightRule = {
     field: keyof Project | string;
@@ -24,13 +25,12 @@
     checkFn?: (project: Project) => boolean;
   };
 
-  const insightRules: InsightRule[] = [
+  const insightRules = $derived<InsightRule[]>([
     {
       field: "name",
       severity: "error",
-      message: "Missing Project Name",
-      description:
-        "Give your project a clear and descriptive name to help identify it.",
+      message: $_('projectInsights.missingProjectName'),
+      description: $_('projectInsights.giveProjectName'),
       // action: {
       //   label: "Add Name",
       //   route: "project_settings",
@@ -39,9 +39,8 @@
     {
       field: "purpose",
       severity: "error",
-      message: "Missing Purpose Statement",
-      description:
-        "Create a purpose statement to help guide your research and keep your team aligned.",
+      message: $_('projectInsights.missingPurposeStatement'),
+      description: $_('projectInsights.createPurposeStatement'),
       // action: {
       //   label: "Add Description",
       //   route: "project_settings",
@@ -50,9 +49,8 @@
     {
       field: "grants",
       severity: "warning",
-      message: "Missing Grant Information",
-      description:
-        "Add grant information to track funding sources and compliance requirements.",
+      message: $_('projectInsights.missingGrantInfo'),
+      description: $_('projectInsights.addGrantInfo'),
       checkFn: (project) => grantStore.grants.length === 0,
       // action: {
       //   label: "Add Grant Info",
@@ -62,9 +60,8 @@
     {
       field: "researchDesign",
       severity: "warning",
-      message: "Missing Project Designs",
-      description:
-        "Add design concepts and visual representations to communicate your project effectively.",
+      message: $_('projectInsights.missingProjectDesigns'),
+      description: $_('projectInsights.addDesigns'),
       checkFn: (project) =>
         !project.researchDesign?.trim() &&
         !project.samplingDesign?.trim() &&
@@ -78,9 +75,8 @@
     {
       field: "keywords",
       severity: "warning",
-      message: "Missing Project Keywords",
-      description:
-        "Add relevant keywords to improve project discoverability and categorization.",
+      message: $_('projectInsights.missingProjectKeywords'),
+      description: $_('projectInsights.addKeywords'),
       checkFn: (project) => !project.keywords || project.keywords.length === 0,
       // action: {
       //   label: "Add Keywords",
@@ -90,15 +86,14 @@
     {
       field: "status",
       severity: "error",
-      message: "Project Status Not Set",
-      description:
-        "Set the current status of your project to track its progress.",
+      message: $_('projectInsights.projectStatusNotSet'),
+      description: $_('projectInsights.setStatus'),
       // action: {
       //   label: "Set Status",
       //   route: "project_settings",
       // },
     },
-  ];
+  ]);
 
   let insights = $state<InsightRule[]>([]);
   let completionPercentage = $state(0);
@@ -165,7 +160,7 @@
       <div class="flex items-center justify-between px-6 pt-6">
         <div class="flex items-center gap-2">
           <Card.Title class="text-xl flex items-center gap-2">
-            Project Health
+            {$_('projectInsights.projectHealth')}
             {#if completionPercentage === 100}
               <Tooltip.Provider>
                 <Tooltip.Root>
@@ -173,7 +168,7 @@
                     <Sparkles class="h-5 w-5 text-yellow-500" />
                   </Tooltip.Trigger>
                   <Tooltip.Content>
-                    <p class=" text-sm">All setup tasks completed!</p>
+                    <p class=" text-sm">{$_("projectInsights.allTasksCompleted")}</p>
                   </Tooltip.Content>
                 </Tooltip.Root>
               </Tooltip.Provider>
@@ -181,7 +176,7 @@
           </Card.Title>
           <span class="text-sm text-muted-foreground">
             ({insights.length}
-            {insights.length === 1 ? "task" : "tasks"} remaining)
+            {insights.length === 1 ? $_('projectInsights.task') : $_('projectInsights.tasks')} {$_('projectInsights.remaining')})
           </span>
         </div>
         <Accordion.Trigger class="hover:opacity-70 transition-opacity group"
@@ -196,12 +191,11 @@
                 <Tooltip.Trigger
                   class="hover:text-foreground/70 transition-colors"
                 >
-                  <span>Project Setup Progress</span>
+                  <span>{$_('projectInsights.projectSetupProgress')}</span>
                 </Tooltip.Trigger>
                 <Tooltip.Content>
                   <p class=" text-sm max-w-xs">
-                    Complete these tasks to improve your project's organization
-                    and efficiency
+                    {$_('projectInsights.progressTooltip')}
                   </p>
                 </Tooltip.Content>
               </Tooltip.Root>
@@ -221,7 +215,7 @@
                 <div
                   class="bg-black dark:bg-white text-white dark:text-black text-xs px-2 py-1 rounded-full"
                 >
-                  {completionPercentage}% complete
+                  {$_('projectInsights.percentComplete', { values: { percent: completionPercentage } })}
                 </div>
               </div>
             {/if}
@@ -243,7 +237,7 @@
                   <h3
                     class=" text-sm font-bold text-red-500 flex items-center gap-2"
                   >
-                    Required Setup
+                    {$_('projectInsights.requiredSetup')}
                     <span
                       class="text-xs bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full"
                     >
@@ -265,7 +259,7 @@
                             <span
                               class="text-xs px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400"
                             >
-                              Required
+                              {$_('projectInsights.required')}
                             </span>
                           </h4>
                           <p class="text-sm text-muted-foreground">
@@ -293,7 +287,7 @@
                   <h3
                     class=" text-sm font-bold text-yellow-500 flex items-center gap-2"
                   >
-                    Recommended Setup
+                    {$_('projectInsights.recommendedSetup')}
                     <span
                       class="text-xs bg-yellow-100 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 px-2 py-0.5 rounded-full"
                     >
@@ -315,7 +309,7 @@
                             <span
                               class="text-xs px-2 py-0.5 rounded-full bg-yellow-100 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400"
                             >
-                              Recommended
+                              {$_('projectInsights.recommended')}
                             </span>
                           </h4>
                           <p class="text-sm text-muted-foreground">
@@ -340,8 +334,8 @@
           {:else}
             <div transition:slide={{ duration: 300, easing: quintOut }}>
               <EmptyState
-                title="All project setup tasks completed!"
-                description="Your project is well-configured and ready for research."
+                title={$_("projectInsights.allTasksCompleted")}
+                description={$_('emptyStateDescriptions.projectWellConfigured')}
                 variant="completion"
                 icon={CheckCircle2}
                 height="h-auto"

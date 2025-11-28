@@ -14,6 +14,11 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { api } from "$lib/services/api-client";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper to get translation value imperatively
+  const t = (key: string) => get(_)(key);
 
   const props = $props<{
     organizationId: string;
@@ -102,19 +107,19 @@
           monthlyPriceId: "",
           yearlyPriceId: "",
           features: [
-            "Everything in Team plan",
-            "Custom user limit",
-            "Priority support",
-            "SLA guarantees",
+            t("pricing.everythingInTeamPlan"),
+            t("pricing.customUserLimit"),
+            t("pricing.prioritySupport"),
+            t("pricing.slaGuarantees"),
           ],
           maxUsers: null,
           priceMonthly: 0,
           priceYearly: 0,
           type: "enterprise",
-          tag: "Custom Solution",
+          tag: t("pricing.customSolution"),
           accentColor: "blue-400",
           highlight: false,
-          description: "Customized solutions for teams and institutions",
+          description: t("pricing.customizedSolutions"),
         };
 
         plans = [
@@ -126,7 +131,7 @@
         }));
       }
     } catch (err) {
-      error = err instanceof Error ? err.message : "Failed to fetch plans";
+      error = err instanceof Error ? err.message : $_('pricing.failedToFetchPlans');
       console.error("Failed to fetch plans:", err);
     }
   });
@@ -134,13 +139,13 @@
   function getTagForPlan(type: string): string {
     switch (type) {
       case "free":
-        return "Get Started";
+        return t("pricing.getStarted");
       case "pro":
-        return "Most Popular";
+        return t("pricing.mostPopular");
       case "team":
-        return "Team Value";
+        return t("pricing.teamValue");
       case "enterprise":
-        return "Custom Solution";
+        return t("pricing.customSolution");
       default:
         return "";
     }
@@ -149,13 +154,13 @@
   function getDescriptionForPlan(type: string): string {
     switch (type) {
       case "free":
-        return "Perfect for trying out Quester";
+        return t("pricing.perfectForTrying");
       case "pro":
-        return "Full-featured plan for individuals";
+        return t("pricing.fullFeaturedIndividual");
       case "team":
-        return "Full-featured plan for teams";
+        return t("pricing.fullFeaturedTeam");
       case "enterprise":
-        return "Customized solutions for teams and institutions";
+        return t("pricing.customizedSolutions");
       default:
         return "";
     }
@@ -193,7 +198,7 @@
     <div class="flex items-center space-x-6 mb-4 sm:mb-0">
       <span
         class={`text-xl  text-black dark:text-dark-text-primary ${!isYearly ? "font-bold" : ""}`}
-        >Monthly</span
+        >{$_('pricing.monthly')}</span
       >
       <div
         class="border-2 dark:border-dark-border p-1.5 flex items-center justify-center bg-card dark:bg-dark-card shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,1)]"
@@ -202,17 +207,17 @@
       </div>
       <span
         class={`text-xl  text-black dark:text-dark-text-primary ${isYearly ? "font-bold" : ""}`}
-        >Yearly</span
+        >{$_('pricing.yearly')}</span
       >
       <span
         class="hidden sm:inline-block text-base font-bold bg-blue-400 dark:bg-dark-accent-blue dark:text-black px-3 py-1.5 border-2 dark:border-dark-border"
-        >Save up to 17%</span
+        >{$_('pricing.saveUpTo', { values: { percent: '17' } })}</span
       >
     </div>
     <div class="flex items-center space-x-2">
       <span
         class="text-sm font-medium text-gray-600 dark:text-dark-text-secondary"
-        >Workspace:</span
+        >{$_('pricing.workspace')}:</span
       >
       <span
         class=" font-bold text-black dark:text-dark-text-primary px-2 py-1 bg-blue-400/20 dark:bg-dark-accent-blue/20 border-2 dark:border-dark-border text-sm"
@@ -225,7 +230,7 @@
   <div class="sm:hidden flex justify-center mb-8">
     <span
       class="text-base font-bold bg-blue-400 dark:bg-dark-accent-blue dark:text-black px-3 py-1.5 border-2 dark:border-dark-border"
-      >Save up to 17%</span
+      >{$_('pricing.saveUpTo', { values: { percent: '17' } })}</span
     >
   </div>
 
@@ -242,7 +247,7 @@
     {#if plans.length === 0}
       <div class="col-span-2 text-center py-12">
         <p class="text-xl text-black dark:text-dark-text-primary">
-          No subscription plans available.
+          {$_('pricing.noPlansAvailable')}
         </p>
       </div>
     {:else}
@@ -285,7 +290,7 @@
                   <p
                     class="text-4xl font-bold text-black dark:text-dark-text-primary"
                   >
-                    Custom Pricing
+                    {$_('pricing.customPricing')}
                   </p>
                 {:else}
                   <p
@@ -294,16 +299,13 @@
                     ${getPrice(plan)}
                     <span
                       class="text-xl text-gray-600 dark:text-dark-text-secondary"
-                      >{isYearly ? " / year" : " / month"}</span
+                      >{isYearly ? " / " + $_('pricing.perYear').replace('per ', '') : " / " + $_('pricing.perMonth').replace('per ', '')}</span
                     >
                     {#if isYearly && plan.type !== "free"}
                       <span
                         class="text-base font-bold bg-{plan.accentColor} dark:bg-dark-accent-blue px-2 py-1 border dark:border-dark-border ml-2"
                       >
-                        Save {calculateSavings(
-                          plan.priceMonthly,
-                          plan.priceYearly
-                        )}%
+                        {$_('pricing.save', { values: { percent: calculateSavings(plan.priceMonthly, plan.priceYearly) } })}
                       </span>
                     {/if}
                   </p>
@@ -343,7 +345,7 @@
                                      shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] hover:translate-x-0.5
                                      hover:translate-y-0.5 hover:shadow-none transition-all"
                     >
-                      Contact Us
+                      {$_('pricing.contactUs')}
                     </button>
                   </AlertDialog.Trigger>
                   <AlertDialog.Content
@@ -354,13 +356,12 @@
                         <h3
                           class="text-2xl font-bold mb-4 text-black dark:text-dark-text-primary"
                         >
-                          Thank you for your interest!
+                          {$_('pricing.thankYouInterest')}
                         </h3>
                         <p
                           class="text-base text-gray-600 dark:text-dark-text-secondary mb-6"
                         >
-                          Someone from our team will reach out to you soon to
-                          schedule a demo.
+                          {$_('pricing.teamWillReach')}
                         </p>
                         <AlertDialog.Cancel class="w-full">
                           <button
@@ -377,7 +378,7 @@
                               };
                             }}
                           >
-                            Close
+                            {$_('common.close')}
                           </button>
                         </AlertDialog.Cancel>
                       </div>
@@ -385,7 +386,7 @@
                       <AlertDialog.Header>
                         <AlertDialog.Title
                           class="text-black dark:text-dark-text-primary"
-                          >Get a full demo of how Quester works</AlertDialog.Title
+                          >{$_('pricing.getFullDemo')}</AlertDialog.Title
                         >
                       </AlertDialog.Header>
                       <form onsubmit={handleSubmit} class="space-y-4">
@@ -393,7 +394,7 @@
                           <Label
                             for="email"
                             class="text-black dark:text-dark-text-primary"
-                            >Business Email</Label
+                            >{$_('pricing.businessEmail')}</Label
                           >
                           <Input
                             id="email"
@@ -408,12 +409,12 @@
                           <Label
                             for="firstName"
                             class="text-black dark:text-dark-text-primary"
-                            >First Name</Label
+                            >{$_('settings.firstName')}</Label
                           >
                           <Input
                             id="firstName"
                             type="text"
-                            placeholder="John"
+                            placeholder={$_('pricing.placeholders.firstName')}
                             bind:value={formData.firstName}
                             required
                             class="border-2  dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary"
@@ -423,12 +424,12 @@
                           <Label
                             for="lastName"
                             class="text-black dark:text-dark-text-primary"
-                            >Last Name</Label
+                            >{$_('settings.lastName')}</Label
                           >
                           <Input
                             id="lastName"
                             type="text"
-                            placeholder="Doe"
+                            placeholder={$_('pricing.placeholders.lastName')}
                             bind:value={formData.lastName}
                             required
                             class="border-2  dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary"
@@ -438,12 +439,12 @@
                           <Label
                             for="companyUniversity"
                             class="text-black dark:text-dark-text-primary"
-                            >Company/University Name</Label
+                            >{$_('pricing.companyUniversity')}</Label
                           >
                           <Input
                             id="companyUniversity"
                             type="text"
-                            placeholder="Acme Inc."
+                            placeholder={$_('pricing.placeholders.company')}
                             bind:value={formData.companyUniversity}
                             required
                             class="border-2  dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary"
@@ -455,7 +456,7 @@
                                                      shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] hover:translate-x-0.5
                                                      hover:translate-y-0.5 hover:shadow-none transition-all"
                         >
-                          Submit
+                          {$_('common.submit')}
                         </button>
                       </form>
                     {/if}
@@ -516,7 +517,7 @@
         <path d="m12 19-7-7 7-7" />
         <path d="M19 12H5" />
       </svg>
-      Back to Workspace Selection
+      {$_('pricing.backToWorkspace')}
     </button>
   </div>
 </div>

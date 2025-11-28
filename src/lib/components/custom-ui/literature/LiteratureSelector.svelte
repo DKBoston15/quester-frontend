@@ -10,6 +10,7 @@
   import type { Literature } from "$lib/types/literature";
   import { Badge } from "$lib/components/ui/badge";
   import { Portal } from "bits-ui";
+  import { _ } from "svelte-i18n";
 
   // Add type for highlighted literature
   type HighlightedLiterature = Literature & {
@@ -143,7 +144,7 @@
           <span class="truncate text-muted-foreground">
             {selectedLiterature
               ? (selectedLiterature as Literature).name
-              : "Link literature..."}
+              : $_("literatureSelector.linkLiterature")}
           </span>
           <ChevronsUpDown class="ml-1 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -152,11 +153,11 @@
         <Popover.Content class="w-[300px] p-0 z-[9999]" align="start">
           <Command.Root>
             <Command.Input
-              placeholder="Search literature..."
+              placeholder={$_("literatureSelector.searchPlaceholder")}
               bind:value={searchValue}
             />
             <Command.List>
-              <Command.Empty>No literature found.</Command.Empty>
+              <Command.Empty>{$_("literatureSelector.noLiteratureFound")}</Command.Empty>
               <Command.Group>
                 {#each filteredLiterature as literature (literature.id)}
                   <Command.Item

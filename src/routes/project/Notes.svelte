@@ -14,6 +14,11 @@
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
   import { GraduationCap } from "lucide-svelte";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper function for imperative translation access
+  const t = (key: string) => get(_)(key);
   // Props
   const { literatureId = undefined } = $props();
 
@@ -23,92 +28,87 @@
   let selectedTab = $state("literature"); // Default to literature notes
   let rightPanelNote = $state<Note | null>(null);
 
-  const driverObj = driver({
-    showProgress: true,
-    popoverClass: "quester-driver-theme",
-    steps: [
-      {
-        element: "#notes-header-controls",
-        popover: {
-          title: "Welcome to Notes",
-          description:
-            "Capture, organize, and manage your research and literature notes. Use the controls here to manage your view and create new notes.",
-          side: "bottom",
-          align: "center",
+  // Driver.js tour - factory function for i18n support
+  function createDriverObj() {
+    return driver({
+      showProgress: true,
+      popoverClass: "quester-driver-theme",
+      steps: [
+        {
+          element: "#notes-header-controls",
+          popover: {
+            title: t("tours.notes.welcome.title"),
+            description: t("tours.notes.welcome.description"),
+            side: "bottom",
+            align: "center",
+          },
         },
-      },
-      {
-        element: "#note-type-tabs",
-        popover: {
-          title: "Filter by Note Type",
-          description:
-            "Switch between viewing notes specifically linked to literature items and general research notes for your project.",
-          side: "bottom",
-          align: "end",
+        {
+          element: "#note-type-tabs",
+          popover: {
+            title: t("tours.notes.filterType.title"),
+            description: t("tours.notes.filterType.description"),
+            side: "bottom",
+            align: "end",
+          },
         },
-      },
-      {
-        element: "#note-list-sidebar",
-        popover: {
-          title: "Your Notes List",
-          description:
-            "All your notes for the selected type appear here. Use the search bar at the top to filter them instantly.",
-          side: "right",
-          align: "start",
+        {
+          element: "#note-list-sidebar",
+          popover: {
+            title: t("tours.notes.notesList.title"),
+            description: t("tours.notes.notesList.description"),
+            side: "right",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#new-note-button",
-        popover: {
-          title: "Create a New Note",
-          description:
-            "Click here to start a new note. It will be automatically saved as you type.",
-          side: "bottom",
-          align: "end",
+        {
+          element: "#new-note-button",
+          popover: {
+            title: t("tours.notes.createNote.title"),
+            description: t("tours.notes.createNote.description"),
+            side: "bottom",
+            align: "end",
+          },
         },
-      },
-      {
-        element: "#note-editor-area",
-        popover: {
-          title: "Rich Text Editor",
-          description:
-            "Write and format your notes here. Changes are saved automatically. You can attach notes to literature entries from within the editor.",
-          side: "left",
-          align: "start",
+        {
+          element: "#note-editor-area",
+          popover: {
+            title: t("tours.notes.editor.title"),
+            description: t("tours.notes.editor.description"),
+            side: "left",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#view-toggle-button",
-        popover: {
-          title: "Toggle Split View",
-          description:
-            "Switch between viewing one note or two notes side-by-side for comparison or referencing.",
-          side: "bottom",
-          align: "end",
+        {
+          element: "#view-toggle-button",
+          popover: {
+            title: t("tours.notes.splitView.title"),
+            description: t("tours.notes.splitView.description"),
+            side: "bottom",
+            align: "end",
+          },
         },
-      },
-      {
-        element: "#focus-toggle-button",
-        popover: {
-          title: "Toggle Focus Mode",
-          description:
-            "Hide the sidebar to focus solely on the editor. Use the button or Cmd/Ctrl+B to toggle.",
-          side: "bottom",
-          align: "end",
+        {
+          element: "#focus-toggle-button",
+          popover: {
+            title: t("tours.notes.focusMode.title"),
+            description: t("tours.notes.focusMode.description"),
+            side: "bottom",
+            align: "end",
+          },
         },
-      },
-      {
-        element: ".container", // Target a stable element
-        popover: {
-          title: "Ready to Take Notes?",
-          description:
-            "Use these features to keep your thoughts organized and connected to your research sources.",
-          side: "top",
-          align: "center",
+        {
+          element: ".container",
+          popover: {
+            title: t("tours.notes.ready.title"),
+            description: t("tours.notes.ready.description"),
+            side: "top",
+            align: "center",
+          },
         },
-      },
-    ],
-  });
+      ],
+    });
+  }
 
   // Effect to sync rightPanelNote with store updates
   $effect(() => {
@@ -262,22 +262,20 @@
         <!-- Left Side: Title & Description -->
         <div class="flex-1 min-w-0 mr-4">
           <div class="flex items-center gap-2 mb-1">
-            <h1 class="text-3xl font-bold truncate">Notes</h1>
+            <h1 class="text-3xl font-bold truncate">{$_("notes.title")}</h1>
             <Tooltip.Root delayDuration={300}>
               <Tooltip.Trigger>
                 <Info class="h-5 w-5 text-muted-foreground flex-shrink-0" />
               </Tooltip.Trigger>
               <Tooltip.Content>
                 <p class="text-sm max-w-xs">
-                  Create, manage, and organize your research and literature
-                  notes. Use split view and focus mode for enhanced
-                  productivity. (Toggle focus mode: Cmd/Ctrl+B)
+                  {$_("notes.tooltip")}
                 </p>
               </Tooltip.Content>
             </Tooltip.Root>
           </div>
           <p class="text-muted-foreground text-sm truncate">
-            Create, manage, and organize your research and literature notes
+            {$_("notes.description")}
           </p>
         </div>
 
@@ -291,7 +289,7 @@
             onclick={() =>
               handleViewChange(selectedView === "split" ? "single" : "split")}
             class={selectedView === "split" ? "bg-secondary h-8" : "h-8"}
-            title="Toggle split view"
+            title={$_("notesView.toggleSplitView")}
           >
             <Layout class="h-4 w-4" />
           </Button>
@@ -303,7 +301,7 @@
             onclick={() => {
               focusMode = !focusMode;
             }}
-            title="Toggle focus mode (Cmd/Ctrl+B)"
+            title={$_("notesView.toggleFocusMode")}
           >
             {#if focusMode}
               <Minimize2 class="h-4 w-4" />
@@ -315,8 +313,8 @@
           <!-- Tabs -->
           <Tabs value={selectedTab} onValueChange={handleTabChange}>
             <TabsList id="note-type-tabs">
-              <TabsTrigger value="literature">Literature Notes</TabsTrigger>
-              <TabsTrigger value="research">Research Notes</TabsTrigger>
+              <TabsTrigger value="literature">{$_("notes.literatureNotes")}</TabsTrigger>
+              <TabsTrigger value="research">{$_("notes.researchNotes")}</TabsTrigger>
             </TabsList>
           </Tabs>
 
@@ -327,19 +325,19 @@
             disabled={!projectStore.currentProject}
           >
             <Plus class="h-4 w-4 mr-2" />
-            New Note
+            {$_("notes.newNote")}
           </Button>
           <!-- Learn Button -->
           <Tooltip.Provider>
             <Tooltip.Root>
               <Tooltip.Trigger>
-                <Button variant="outline" onclick={() => driverObj.drive()}>
+                <Button variant="outline" onclick={() => createDriverObj().drive()}>
                   <GraduationCap class="h-4 w-4 mr-2" />
-                  Tour
+                  {$_("dashboard.tour")}
                 </Button>
               </Tooltip.Trigger>
               <Tooltip.Content>
-                <p>Tutorial</p>
+                <p>{$_("common.tutorial")}</p>
               </Tooltip.Content>
             </Tooltip.Root>
           </Tooltip.Provider>
@@ -351,7 +349,7 @@
   <!-- Main Content -->
   {#if notesStore.isLoading}
     <div class="flex-1 flex items-center justify-center">
-      <div class="text-center text-muted-foreground">Loading notes...</div>
+      <div class="text-center text-muted-foreground">{$_("notes.loadingNotes")}</div>
     </div>
   {:else}
     <div class="flex-1 flex overflow-hidden">
@@ -384,10 +382,10 @@
               {/each}
             {:else}
               <EmptyState
-                title="No Note Selected"
-                description="Select a note from the sidebar or create a new one"
+                title={$_("notes.noNoteSelected")}
+                description={$_("notes.selectOrCreateNote")}
                 variant="data-empty"
-                ctaText="Create New Note"
+                ctaText={$_("notes.createNewNote")}
                 ctaAction={createNote}
                 ctaDisabled={!projectStore.currentProject}
               />
@@ -406,10 +404,10 @@
               />
             {:else}
               <EmptyState
-                title="No Note Selected"
-                description="Select a note from the sidebar or create a new one"
+                title={$_("notes.noNoteSelected")}
+                description={$_("notes.selectOrCreateNote")}
                 variant="data-empty"
-                ctaText="Create New Note"
+                ctaText={$_("notes.createNewNote")}
                 ctaAction={createNote}
                 ctaDisabled={!projectStore.currentProject}
               />
@@ -424,10 +422,10 @@
               {/each}
             {:else}
               <EmptyState
-                title="No Note Selected"
-                description="Select a note from the sidebar or create a new one"
+                title={$_("notes.noNoteSelected")}
+                description={$_("notes.selectOrCreateNote")}
                 variant="data-empty"
-                ctaText="Create New Note"
+                ctaText={$_("notes.createNewNote")}
                 ctaAction={createNote}
                 ctaDisabled={!projectStore.currentProject}
               />

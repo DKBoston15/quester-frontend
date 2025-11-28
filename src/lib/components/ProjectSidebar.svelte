@@ -28,6 +28,8 @@
   } from "lucide-svelte";
   import { api } from "$lib/services/api-client";
   import { DateTime } from "luxon"; // Import DateTime
+  import { _, locale } from "svelte-i18n";
+  import { get } from "svelte/store";
 
   type Route = {
     title: string;
@@ -281,29 +283,31 @@
       return;
     }
 
+    const t = (key: string) => get(_)(key);
+
     primaryRoutes = [
       {
-        title: "Overview",
+        title: t("projectSidebar.overview"),
         icon: Home,
         link: `/project/${projectId}/overview`,
       },
       {
-        title: "Literature",
+        title: t("projectSidebar.literature"),
         icon: Library,
         link: `/project/${projectId}/literature`,
       },
       {
-        title: "Notes",
+        title: t("projectSidebar.notes"),
         icon: Pencil,
         link: `/project/${projectId}/notes`,
       },
       {
-        title: "Research Assistant",
+        title: t("projectSidebar.researchAssistant"),
         icon: MessageCircle,
         link: `/project/${projectId}/chat`,
       },
       {
-        title: "Insights",
+        title: t("projectSidebar.insights"),
         icon: TextSearch,
         link: `/project/${projectId}/insights`,
         requiresSubscription: true,
@@ -311,7 +315,7 @@
         disabled: isLoading || !hasAnalysisAccess, // Use local constants
       },
       {
-        title: "Models",
+        title: t("projectSidebar.models"),
         icon: ChartNetwork,
         link: `/project/${projectId}/models`,
         requiresSubscription: true,
@@ -319,7 +323,7 @@
         disabled: isLoading || !hasModelAccess, // Use local constants
       },
       {
-        title: "Outcomes",
+        title: t("projectSidebar.outcomes"),
         icon: Microscope,
         link: `/project/${projectId}/outcomes`,
       },
@@ -327,12 +331,12 @@
 
     secondaryRoutes = [
       {
-        title: "Analytics",
+        title: t("projectSidebar.analytics"),
         icon: BarChartHorizontal,
         link: `/project/${projectId}/analytics`,
       },
       {
-        title: "Connections",
+        title: t("projectSidebar.connections"),
         icon: Workflow,
         link: `/project/${projectId}/connections`,
         requiresSubscription: true,
@@ -340,7 +344,7 @@
         disabled: isLoading || !hasGraphAccess, // Use local constants
       },
       {
-        title: "Progress",
+        title: t("projectSidebar.progress"),
         icon: Trophy,
         link: `/project/${projectId}/progress`,
       },
@@ -348,7 +352,7 @@
 
     tertiaryRoutes = [
       {
-        title: "Settings",
+        title: t("projectSidebar.settings"),
         icon: Settings,
         link: `/project/${projectId}/project_settings`,
       },
@@ -404,11 +408,11 @@
             <span
               class="block font-bold text-lg truncate group-data-[collapsible=icon]:hidden pr-2"
             >
-              {props.project?.name || "Project"}
+              {props.project?.name || $_('projectSidebar.project')}
             </span>
           </Tooltip.Trigger>
           <Tooltip.Content side="right" sideOffset={10} class="z-[9999]">
-            <span class="">{props.project?.name || "Project"}</span>
+            <span class="">{props.project?.name || $_('projectSidebar.project')}</span>
           </Tooltip.Content>
         </Tooltip.Root>
       </div>
@@ -427,7 +431,7 @@
                 onclick={() => globalSearchStore.open()}
               >
                 <Search class="h-4 w-4 flex-shrink-0" />
-                <span class="group-data-[collapsible=icon]:hidden">Search</span>
+                <span class="group-data-[collapsible=icon]:hidden">{$_('common.search')}</span>
                 <kbd
                   class="pointer-events-none ml-auto inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground group-data-[collapsible=icon]:hidden"
                 >
@@ -690,7 +694,7 @@
                       >
                         <Building2 class="h-4 w-4 flex-shrink-0" />
                         <span class="group-data-[collapsible=icon]:hidden"
-                          >Workspace</span
+                          >{$_('sidebar.workspace')}</span
                         >
                       </div>
                     </Tooltip.Trigger>
@@ -699,7 +703,7 @@
                       sideOffset={10}
                       class="group-data-[collapsible=icon]:block hidden z-[9999]"
                     >
-                      <span class="">Workspace</span>
+                      <span class="">{$_('sidebar.workspace')}</span>
                     </Tooltip.Content>
                   </Tooltip.Root>
                 </Sidebar.MenuButton>
@@ -750,7 +754,7 @@
                 class="flex items-center gap-3"
               >
                 <LogOut class="h-4 w-4" />
-                <span class="">Sign out</span>
+                <span class="">{$_('auth.signOut')}</span>
               </DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Root>

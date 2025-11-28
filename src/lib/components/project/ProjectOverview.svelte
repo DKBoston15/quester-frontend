@@ -16,15 +16,19 @@
   import { projectStore } from "$lib/stores/ProjectStore";
   import { toast } from "svelte-sonner";
   import { api } from "$lib/services/api-client";
+  import { get } from 'svelte/store';
+  import { _ } from "svelte-i18n";
+
+  const t = (key: string) => get(_)(key);
 
   const projectStatusOptions = [
-    { value: "Planning", label: "Planning" },
-    { value: "In Progress", label: "In Progress" },
-    { value: "Writing", label: "Writing" },
-    { value: "Review", label: "Review" },
-    { value: "Revision", label: "Revision" },
-    { value: "Completed", label: "Completed" },
-    { value: "Archived", label: "Archived" },
+    { value: "Planning", label: t('projectStatus.planning') },
+    { value: "In Progress", label: t('projectStatus.inProgress') },
+    { value: "Writing", label: t('projectStatus.writing') },
+    { value: "Review", label: t('projectStatus.review') },
+    { value: "Revision", label: t('projectStatus.revision') },
+    { value: "Completed", label: t('projectStatus.completed') },
+    { value: "Archived", label: t('projectStatus.archived') },
   ] as const;
 
   let editMode = $state({
@@ -93,7 +97,7 @@
   async function startAiRewrite() {
     if (!projectStore.currentProject?.id || !currentPurpose) return;
 
-    const toastId = toast.loading("Rewriting purpose...");
+    const toastId = toast.loading($_('toastsExtra.rewritingPurpose'));
     isRewriting = true;
     streamingContent = "";
 
@@ -137,18 +141,18 @@
       // After streaming is complete, update the purpose
       currentPurpose = streamingContent;
       await saveProjectOverview();
-      toast.success("Successfully rewrote purpose!", {
+      toast.success($_('toasts.successfullyRewrotePurpose'), {
         id: toastId,
-        description: "The new purpose has been saved.",
+        description: $_('projectOverviewCard.newPurposeSaved'),
       });
     } catch (error) {
       console.error("Error during rewrite:", error);
-      toast.error("Failed to rewrite purpose", {
+      toast.error($_('toasts.failedToRewritePurpose'), {
         id: toastId,
         description:
           error instanceof Error
             ? error.message
-            : "An unexpected error occurred",
+            : $_('common.unexpectedError'),
       });
     } finally {
       isRewriting = false;
@@ -164,14 +168,14 @@
   >
     <CardHeader>
       <div class="flex justify-between items-center">
-        <CardTitle class="">Project Overview</CardTitle>
+        <CardTitle class="">{$_('projectOverviewCard.projectOverview')}</CardTitle>
         {#if !editMode.purpose && !editMode.status}
           <Button
             size="sm"
             onclick={() => {
               editMode.purpose = true;
               editMode.status = true;
-            }}>Edit</Button
+            }}>{$_('common.edit')}</Button
           >
         {/if}
       </div>
@@ -186,12 +190,11 @@
             </Tooltip.Trigger>
             <Tooltip.Content>
               <p class="text-sm max-w-xs">
-                A research purpose is a statement establishing the intent of the
-                study.
+                {$_('projectOverviewCard.purposeTooltip')}
               </p>
             </Tooltip.Content>
           </Tooltip.Root>
-          <h3 class="text-sm font-bold">Purpose Statement</h3>
+          <h3 class="text-sm font-bold">{$_('projectOverviewCard.purposeStatement')}</h3>
           {#if !editMode.purpose && currentPurpose}
             <div class="flex gap-2 ml-auto">
               <Tooltip.Root>
@@ -205,14 +208,12 @@
                       (showCustomInstruction = !showCustomInstruction)}
                   >
                     <WandIcon class="h-4 w-4" />
-                    AI Rewrite
+                    {$_('projectOverviewCard.aiRewrite')}
                   </Button>
                 </Tooltip.Trigger>
                 <Tooltip.Content side="top" align="end">
                   <p class="text-sm max-w-xs">
-                    Let AI help improve your purpose statement. You can provide
-                    specific instructions or let Quester enhance it
-                    automatically.
+                    {$_('projectOverviewCard.aiRewriteTooltip')}
                   </p>
                 </Tooltip.Content>
               </Tooltip.Root>
@@ -224,15 +225,15 @@
           <div class="flex gap-2">
             <Input
               bind:value={customInstruction}
-              placeholder="Optional: Guide the rewrite (e.g. 'Make it more concise' or 'Emphasize methodology')"
+              placeholder={$_('projectOverview.rewriteGuide')}
               class="flex-1"
             />
             <Button size="sm" onclick={startAiRewrite} disabled={isRewriting}>
               {#if isRewriting}
                 <Loader2Icon class="h-4 w-4 animate-spin mr-2" />
-                Rewriting...
+                {$_('projectOverviewCard.rewriting')}
               {:else}
-                Start
+                {$_('projectOverviewCard.start')}
               {/if}
             </Button>
             <Button
@@ -244,7 +245,7 @@
               }}
               disabled={isRewriting}
             >
-              Cancel
+              {$_('common.cancel')}
             </Button>
           </div>
         {/if}
@@ -253,13 +254,13 @@
           <Textarea.Textarea
             bind:value={currentPurpose}
             rows={5}
-            placeholder="Enter project purpose"
+            placeholder={$_('forms.placeholder.purpose')}
             class="w-full"
           />
         {:else if isRewriting}
           <div class="relative">
             <p class="text-muted-foreground whitespace-pre-wrap">
-              {streamingContent || "Generating..."}
+              {streamingContent || $_('projectOverviewCard.generating')}
             </p>
             <div class="absolute top-0 right-0">
               <Loader2Icon class="h-4 w-4 animate-spin" />
@@ -267,7 +268,7 @@
           </div>
         {:else}
           <p class="text-muted-foreground whitespace-pre-wrap">
-            {currentPurpose || "No purpose defined"}
+            {currentPurpose || $_('projectOverviewCard.noPurposeDefined')}
           </p>
         {/if}
       </div>
@@ -280,10 +281,10 @@
               <InfoIcon class="h-5 w-5" />
             </Tooltip.Trigger>
             <Tooltip.Content>
-              <p class="text-sm max-w-xs">Current status of your project.</p>
+              <p class="text-sm max-w-xs">{$_('projectStatus.currentStatusDescription')}</p>
             </Tooltip.Content>
           </Tooltip.Root>
-          <h3 class="text-sm font-bold">Project Status</h3>
+          <h3 class="text-sm font-bold">{$_('projectOverviewCard.projectStatus')}</h3>
         </div>
 
         {#if editMode.status}
@@ -295,7 +296,7 @@
                     >{currentStatus}</Badge
                   >
                 {:else}
-                  <span>Select status</span>
+                  <span>{$_('projectOverview.selectStatus')}</span>
                 {/if}
               </Select.Trigger>
               <Select.Content>
@@ -317,13 +318,13 @@
         {:else}
           <div class="space-y-2">
             <div class="flex justify-between items-center">
-              <span class="text-muted-foreground">Status:</span>
+              <span class="text-muted-foreground">{$_('projectOverviewCard.status')}</span>
               {#if currentStatus}
                 <Badge variant={getBadgeVariant(currentStatus)}
                   >{currentStatus}</Badge
                 >
               {:else}
-                <span class="text-muted-foreground">Not set</span>
+                <span class="text-muted-foreground">{$_('projectOverviewCard.notSet')}</span>
               {/if}
             </div>
           </div>
@@ -342,7 +343,7 @@
           disabled={isPending}
           class="w-full"
         >
-          Cancel
+          {$_('common.cancel')}
         </Button>
         <Button
           size="sm"
@@ -350,7 +351,7 @@
           disabled={isPending}
           class="w-full"
         >
-          {isPending ? "Saving..." : "Save"}
+          {isPending ? $_('common.saving') : $_('common.save')}
         </Button>
       </CardFooter>
     {/if}

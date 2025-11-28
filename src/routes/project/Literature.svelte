@@ -17,6 +17,11 @@
   import "driver.js/dist/driver.css";
   import ExportReferences from "$lib/components/custom-ui/literature/export/ExportReferences.svelte";
   import ProcessingStatus from "$lib/components/custom-ui/literature/ProcessingStatus.svelte";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper to get translation value imperatively
+  const t = (key: string) => get(_)(key);
 
   let searchQuery = $state("");
   let gridApi = $state<GridApi<Literature>>();
@@ -25,129 +30,121 @@
   let isExportDialogOpen = $state(false);
   let activeProcessingJobs = $state<string[]>([]);
 
-  const driverObj = driver({
-    showProgress: true,
-    popoverClass: "quester-driver-theme",
-    steps: [
-      {
-        element: "#literature-header",
-        popover: {
-          title: "Manage Your Literature",
-          description:
-            "This page is your central hub for organizing all the articles, books, and other sources for your project. Keep everything in one place!",
-          side: "bottom",
-          align: "start",
+  function createDriverObj() {
+    return driver({
+      showProgress: true,
+      popoverClass: "quester-driver-theme",
+      steps: [
+        {
+          element: "#literature-header",
+          popover: {
+            title: t("tours.literature.header.title"),
+            description: t("tours.literature.header.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#add-literature-button",
-        popover: {
-          title: "Add New Sources Easily",
-          description:
-            "Click here to add new literature items. You can paste formatted references or enter details manually.",
-          side: "bottom",
-          align: "end",
+        {
+          element: "#add-literature-button",
+          popover: {
+            title: t("tours.literature.addButton.title"),
+            description: t("tours.literature.addButton.description"),
+            side: "bottom",
+            align: "end",
+          },
         },
-      },
-      {
-        element: "#literature-search",
-        popover: {
-          title: "Find Literature Quickly",
-          description:
-            "Use this search bar to instantly filter your literature list by title, author, year, or keyword.",
-          side: "bottom",
-          align: "start",
+        {
+          element: "#literature-search",
+          popover: {
+            title: t("tours.literature.search.title"),
+            description: t("tours.literature.search.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#literature-table-card",
-        popover: {
-          title: "Your Literature Library",
-          description:
-            "All your added literature appears here. Click column headers to sort, or click a row to view/edit details.",
-          side: "top",
-          align: "start",
+        {
+          element: "#literature-table-card",
+          popover: {
+            title: t("tours.literature.table.title"),
+            description: t("tours.literature.table.description"),
+            side: "top",
+            align: "start",
+          },
         },
-      },
-      {
-        // Step to trigger opening the modal
-        element: "#add-literature-button",
-        popover: {
-          title: "Adding Literature: Two Ways",
-          description:
-            "Let's look at how to add literature. Quester can automatically parse pasted references or you can enter details by hand.",
-          side: "bottom",
-          align: "end",
+        {
+          // Step to trigger opening the modal
+          element: "#add-literature-button",
+          popover: {
+            title: t("tours.literature.addTwoWays.title"),
+            description: t("tours.literature.addTwoWays.description"),
+            side: "bottom",
+            align: "end",
+          },
+          onHighlighted: () => {
+            // Open the modal when this step is highlighted
+            // Add a small delay to ensure highlight animation finishes before modal opens
+            setTimeout(() => {
+              isAddLiteratureOpen = true;
+            }, 100); // 100ms delay
+          },
         },
-        onHighlighted: () => {
-          // Open the modal when this step is highlighted
-          // Add a small delay to ensure highlight animation finishes before modal opens
-          setTimeout(() => {
-            isAddLiteratureOpen = true;
-          }, 100); // 100ms delay
+        {
+          // Target element *inside* the modal (dialog role)
+          element:
+            '[role="dialog"] [role="tabpanel"][data-state="active"] textarea',
+          popover: {
+            title: t("tours.literature.pasteReference.title"),
+            description: t("tours.literature.pasteReference.description"),
+            side: "bottom",
+            align: "center",
+          },
         },
-      },
-      {
-        // Target element *inside* the modal (dialog role)
-        element:
-          '[role="dialog"] [role="tabpanel"][data-state="active"] textarea',
-        popover: {
-          title: "Add Via Reference (Pasting)",
-          description:
-            "Paste one or more references here (like APA, MLA). Quester will try to extract the details automatically. Saves a lot of typing!",
-          side: "bottom",
-          align: "center",
+        {
+          // Target the other tab trigger first
+          element: '[role="dialog"] [value="manual"]',
+          popover: {
+            title: t("tours.literature.manualEntry.title"),
+            description: t("tours.literature.manualEntry.description"),
+            side: "bottom",
+            align: "center",
+          },
         },
-      },
-      {
-        // Target the other tab trigger first
-        element: '[role="dialog"] [value="manual"]',
-        popover: {
-          title: "Switch to Manual Entry",
-          description:
-            "Alternatively, click here to add details field-by-field.",
-          side: "bottom",
-          align: "center",
+        {
+          // Target element inside the *manual* tab (the input we added an ID to)
+          element:
+            '[role="dialog"] [role="tabpanel"][data-state="active"] #manual-entry-name',
+          popover: {
+            title: t("tours.literature.manualFields.title"),
+            description: t("tours.literature.manualFields.description"),
+            side: "bottom",
+            align: "center",
+          },
         },
-      },
-      {
-        // Target element inside the *manual* tab (the input we added an ID to)
-        element:
-          '[role="dialog"] [role="tabpanel"][data-state="active"] #manual-entry-name',
-        popover: {
-          title: "Add Manually",
-          description:
-            "Fill in the necessary fields like Title, Authors, Year, etc. This gives you full control over the entry.",
-          side: "bottom",
-          align: "center",
+        {
+          element: "[role='dialog']",
+          popover: {
+            title: t("tours.literature.finishAdding.title"),
+            description: t("tours.literature.finishAdding.description"),
+            side: "top",
+            align: "center",
+          },
+          onDeselected: () => {
+            // Close the modal when leaving this step
+            isAddLiteratureOpen = false;
+          },
         },
-      },
-      {
-        element: "[role='dialog']",
-        popover: {
-          title: "Finish Adding",
-          description:
-            "Once you've added your reference(s), confirm or save them. That's how you build your literature library!",
-          side: "top",
-          align: "center",
+        {
+          element: ".container", // Target a stable element on the main page
+          popover: {
+            title: t("tours.literature.organize.title"),
+            description: t("tours.literature.organize.description"),
+            side: "top",
+            align: "center",
+          },
         },
-        onDeselected: () => {
-          // Close the modal when leaving this step
-          isAddLiteratureOpen = false;
-        },
-      },
-      {
-        element: ".container", // Target a stable element on the main page
-        popover: {
-          title: "Ready to Organize?",
-          description:
-            "Use this page to efficiently manage your literature review. Keep sources organized, track reading status, and easily find what you need.",
-          side: "top",
-          align: "center",
-        },
-      },
-    ],
-  });
+      ],
+    });
+  }
 
   function handleSearch(e: Event) {
     const input = e.target as HTMLInputElement;
@@ -249,16 +246,14 @@
     <div class="mb-8">
       <div class="flex items-center justify-between" id="literature-header">
         <div class="flex items-center gap-2">
-          <h1 class="text-3xl font-bold">Literature</h1>
+          <h1 class="text-3xl font-bold">{$_("literature.title")}</h1>
           <Tooltip.Root>
             <Tooltip.Trigger>
               <Info class="h-5 w-5 text-muted-foreground" />
             </Tooltip.Trigger>
             <Tooltip.Content>
               <p class="text-sm max-w-xs">
-                Manage and organize your project literature. Add sources, track
-                reading status, and build your research library all in one
-                place.
+                {$_("literature.tooltip")}
               </p>
             </Tooltip.Content>
           </Tooltip.Root>
@@ -271,7 +266,7 @@
             class="border-2 dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
           >
             <Download class="h-4 w-4 mr-2" />
-            Export References
+            {$_("literature.exportReferences")}
             {#if selectedLiteratureItems.length > 0}
               <span
                 class="ml-1 px-1.5 py-0.5 text-xs bg-primary text-primary-foreground rounded-full"
@@ -286,25 +281,25 @@
             class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
           >
             <Plus class="h-4 w-4 mr-2" />
-            Add Literature
+            {$_("literature.addLiterature")}
           </Button>
           <Tooltip.Provider>
             <Tooltip.Root>
               <Tooltip.Trigger>
-                <Button variant="outline" onclick={() => driverObj.drive()}>
+                <Button variant="outline" onclick={() => createDriverObj().drive()}>
                   <GraduationCap class="h-4 w-4 mr-2" />
-                  Tour
+                  {$_("dashboard.tour")}
                 </Button>
               </Tooltip.Trigger>
               <Tooltip.Content>
-                <p>Tutorial</p>
+                <p>{$_("dashboard.tutorial")}</p>
               </Tooltip.Content>
             </Tooltip.Root>
           </Tooltip.Provider>
         </div>
       </div>
       <p class="text-muted-foreground mt-2">
-        Manage and organize your project literature
+        {$_("literature.manageAndOrganize")}
       </p>
     </div>
 
@@ -317,7 +312,7 @@
             <input
               id="literature-search"
               type="text"
-              placeholder="Search literature..."
+              placeholder={$_("literature.searchLiterature")}
               value={searchQuery}
               oninput={handleSearch}
               class="flex h-10 w-full md:w-[350px] rounded-md border dark:border-dark-border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -334,7 +329,7 @@
 
           {#if literatureStore.isLoading}
             <div class="flex justify-center items-center h-[400px]">
-              <p class="text-lg text-muted-foreground">Loading literature...</p>
+              <p class="text-lg text-muted-foreground">{$_("literature.loadingLiterature")}</p>
             </div>
           {:else if literatureStore.error}
             <div class="flex justify-center items-center h-[400px]">
@@ -342,9 +337,9 @@
             </div>
           {:else if !literatureStore.data?.length}
             <EmptyState
-              title="No literature added yet"
+              title={$_("literature.noLiteratureAdded")}
               variant="data-empty"
-              ctaText="Add Literature"
+              ctaText={$_("literature.addLiterature")}
               ctaAction={handleAddLiterature}
             />
           {:else}

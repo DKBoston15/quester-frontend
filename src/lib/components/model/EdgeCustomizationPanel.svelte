@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
   import type { Edge } from "@xyflow/svelte";
+  import { _ } from "svelte-i18n";
 
   export let edge: Edge;
   export let selected = false;
@@ -73,36 +74,36 @@
     >
       <div class="flex justify-between items-center mb-3">
         <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">
-          Connection Settings
+          {$_("models.customization.connectionSettings")}
         </h3>
         <button
           class="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
           on:click={resetToDefault}
         >
-          Reset
+          {$_("models.customization.reset")}
         </button>
       </div>
 
       <div class="space-y-3">
         <!-- Edge Type -->
         <div class="flex flex-col gap-1">
-          <label class="text-xs text-gray-600 dark:text-gray-400">Type</label>
+          <label class="text-xs text-gray-600 dark:text-gray-400">{$_("models.customization.type")}</label>
           <select
             bind:value={customSettings.type}
             class="text-xs p-1 bg-white dark:bg-slate-700 border border-gray-200 dark:border-gray-600 rounded"
             on:change={applyCustomSettings}
           >
-            <option value="default">Default</option>
-            <option value="step">Step</option>
-            <option value="smoothstep">Smooth Step</option>
-            <option value="straight">Straight</option>
-            <option value="bezier">Bezier</option>
+            <option value="default">{$_("models.customization.edgeTypes.default")}</option>
+            <option value="step">{$_("models.customization.edgeTypes.step")}</option>
+            <option value="smoothstep">{$_("models.customization.edgeTypes.smoothStep")}</option>
+            <option value="straight">{$_("models.customization.edgeTypes.straight")}</option>
+            <option value="bezier">{$_("models.customization.edgeTypes.bezier")}</option>
           </select>
         </div>
 
         <!-- Color -->
         <div class="flex flex-col gap-1">
-          <label class="text-xs text-gray-600 dark:text-gray-400">Color</label>
+          <label class="text-xs text-gray-600 dark:text-gray-400">{$_("models.customization.color")}</label>
           <div class="flex gap-2">
             <input
               type="color"
@@ -115,7 +116,7 @@
 
         <!-- Width -->
         <div class="flex flex-col gap-1">
-          <label class="text-xs text-gray-600 dark:text-gray-400">Width</label>
+          <label class="text-xs text-gray-600 dark:text-gray-400">{$_("models.customization.width")}</label>
           <input
             type="range"
             min="1"
@@ -135,7 +136,7 @@
             on:change={applyCustomSettings}
           />
           <span class="text-xs text-gray-600 dark:text-gray-400 mt-2"
-            >Animated</span
+            >{$_("models.customization.animated")}</span
           >
         </label>
 
@@ -149,7 +150,7 @@
               on:change={applyCustomSettings}
             />
             <span class="text-xs text-gray-600 dark:text-gray-400 mt-2"
-              >Marker One</span
+              >{$_('edgeCustomization.markerOne')}</span
             >
           </label>
           <label class="flex items-center gap-2">
@@ -160,7 +161,7 @@
               on:change={applyCustomSettings}
             />
             <span class="text-xs text-gray-600 dark:text-gray-400 mt-2"
-              >Marker Two</span
+              >{$_('edgeCustomization.markerTwo')}</span
             >
           </label>
         </div>

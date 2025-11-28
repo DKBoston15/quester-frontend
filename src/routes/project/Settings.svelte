@@ -16,6 +16,11 @@
   import "driver.js/dist/driver.css";
   import { GraduationCap, Info } from "lucide-svelte";
   import * as Tooltip from "$lib/components/ui/tooltip";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper function for imperative translation access
+  const t = (key: string) => get(_)(key);
 
   let projectName = $state("");
   let originalName = $state("");
@@ -43,12 +48,12 @@
     event.preventDefault();
 
     if (!projectStore.currentProject?.id) {
-      toast.error("No project selected");
+      toast.error(t("projectSettings.noProjectSelected"));
       return;
     }
 
     if (!projectName.trim()) {
-      toast.error("Project name cannot be empty");
+      toast.error(t("projectSettings.nameCannotBeEmpty"));
       return;
     }
 
@@ -58,10 +63,10 @@
         name: projectName,
       });
       originalName = projectName;
-      toast.success("Project name updated successfully");
+      toast.success(t("projectSettings.nameUpdatedSuccess"));
     } catch (error) {
       console.error("Failed to update project name:", error);
-      toast.error("Failed to update project name");
+      toast.error(t("projectSettings.nameUpdateFailed"));
     } finally {
       isUpdating = false;
     }
@@ -70,7 +75,7 @@
   // Export project function
   async function exportProject() {
     if (!projectStore.currentProject?.id) {
-      toast.error("No project selected");
+      toast.error(t("projectSettings.noProjectSelected"));
       return;
     }
 
@@ -83,7 +88,7 @@
       // toast.success("Project export started...");
     } catch (error) {
       console.error("Failed to initiate project export:", error);
-      toast.error("Failed to start project export");
+      toast.error(t("projectSettings.exportFailed"));
     } finally {
       // Reset exporting state after a short delay to allow navigation
       setTimeout(() => {
@@ -95,7 +100,7 @@
   // Delete project function
   async function deleteProject() {
     if (!projectStore.currentProject?.id) {
-      toast.error("No project selected");
+      toast.error(t("projectSettings.noProjectSelected"));
       return;
     }
 
@@ -104,106 +109,101 @@
       // Call the API to delete the project
       await api.delete(`/projects/${projectStore.currentProject.id}`);
 
-      toast.success("Project deleted successfully");
+      toast.success(t("projectSettings.deletedSuccess"));
       // Navigate to dashboard with lowercase path
       window.location.href = "/dashboard";
     } catch (error) {
       console.error("Failed to delete project:", error);
-      toast.error("Failed to delete project");
+      toast.error(t("projectSettings.deleteFailed"));
     } finally {
       isDeleting = false;
       showDeleteDialog = false;
     }
   }
 
-  // Define driverObj
-  const driverObj = driver({
-    showProgress: true,
-    popoverClass: "quester-driver-theme",
-    steps: [
-      {
-        element: "#settings-header",
-        popover: {
-          title: "Configure Your Project",
-          description:
-            "Manage your project's basic settings, custom designs, and data options here.",
-          side: "bottom",
-          align: "start",
+  // Factory function for driver.js tour with i18n
+  function createDriverObj() {
+    return driver({
+      showProgress: true,
+      popoverClass: "quester-driver-theme",
+      steps: [
+        {
+          element: "#settings-header",
+          popover: {
+            title: t("tours.projectSettings.configure.title"),
+            description: t("tours.projectSettings.configure.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#project-name-input",
-        popover: {
-          title: "Update Project Name",
-          description:
-            "Change the project name here and click 'Save Changes' when done.",
-          side: "bottom",
-          align: "start",
+        {
+          element: "#project-name-input",
+          popover: {
+            title: t("tours.projectSettings.projectName.title"),
+            description: t("tours.projectSettings.projectName.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#design-manager-card",
-        popover: {
-          title: "Manage Custom Designs",
-          description:
-            "Add, edit, or remove custom options for your research, sampling, measurement, and analytic designs to tailor Quester to your specific methodology.",
-          side: "top",
-          align: "start",
+        {
+          element: "#design-manager-card",
+          popover: {
+            title: t("tours.projectSettings.customDesigns.title"),
+            description: t("tours.projectSettings.customDesigns.description"),
+            side: "top",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#danger-zone-card",
-        popover: {
-          title: "Danger Zone",
-          description:
-            "Be careful! This section contains actions like exporting or permanently deleting your project.",
-          side: "top",
-          align: "start",
+        {
+          element: "#danger-zone-card",
+          popover: {
+            title: t("tours.projectSettings.dangerZone.title"),
+            description: t("tours.projectSettings.dangerZone.description"),
+            side: "top",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#export-data-button",
-        popover: {
-          title: "Export Project Data",
-          description:
-            "Download a zip file containing all your project data (literature, notes, designs, etc.) for backup or use elsewhere.",
-          side: "top",
-          align: "start",
+        {
+          element: "#export-data-button",
+          popover: {
+            title: t("tours.projectSettings.exportData.title"),
+            description: t("tours.projectSettings.exportData.description"),
+            side: "top",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#delete-project-button",
-        popover: {
-          title: "Delete Project",
-          description:
-            "Permanently delete this project and all its data. This action cannot be undone, so proceed with caution!",
-          side: "top",
-          align: "start",
+        {
+          element: "#delete-project-button",
+          popover: {
+            title: t("tours.projectSettings.deleteProject.title"),
+            description: t("tours.projectSettings.deleteProject.description"),
+            side: "top",
+            align: "start",
+          },
         },
-      },
-    ],
-  });
+      ],
+    });
+  }
 </script>
 
 <div class="container mx-auto py-6 px-4">
   <div class="flex justify-between items-center mb-6" id="settings-header">
     <div class="flex items-center gap-2">
-      <h1 class="text-3xl font-bold">Settings</h1>
+      <h1 class="text-3xl font-bold">{$_("projectSettings.title")}</h1>
       <Tooltip.Root>
         <Tooltip.Trigger>
           <Info class="h-5 w-5 text-muted-foreground" />
         </Tooltip.Trigger>
         <Tooltip.Content>
           <p class="text-sm max-w-xs">
-            Configure your project settings, manage custom designs, and handle
-            data export or deletion options for your research project.
+            {$_("projectSettings.tooltip")}
           </p>
         </Tooltip.Content>
       </Tooltip.Root>
     </div>
-    <Button variant="outline" onclick={() => driverObj.drive()}>
+    <Button variant="outline" onclick={() => createDriverObj().drive()}>
       <GraduationCap class="h-4 w-4 mr-2" />
-      Tour
+      {$_("dashboard.tour")}
     </Button>
   </div>
 
@@ -213,22 +213,22 @@
       class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
     >
       <CardHeader>
-        <CardTitle class="">General Settings</CardTitle>
+        <CardTitle class="">{$_("projectSettings.generalSettings")}</CardTitle>
       </CardHeader>
       <CardContent>
         <form class="space-y-4" on:submit={updateProjectName}>
           <div class="space-y-2">
-            <Label for="projectName">Project Name</Label>
+            <Label for="projectName">{$_("projectSettings.projectName")}</Label>
             <Input
               id="project-name-input"
               type="text"
               bind:value={projectName}
-              placeholder="Enter project name"
+              placeholder={$_("projectSettings.enterProjectName")}
               disabled={isUpdating || !projectStore.currentProject}
             />
             {#if !projectStore.currentProject}
               <p class="text-sm text-red-500">
-                No project selected. Please select a project first.
+                {$_("projectSettings.selectProjectFirst")}
               </p>
             {/if}
           </div>
@@ -237,9 +237,9 @@
             disabled={!hasChanges || isUpdating || !projectStore.currentProject}
           >
             {#if isUpdating}
-              <span class="animate-spin mr-2">⏳</span> Updating...
+              <span class="animate-spin mr-2">⏳</span> {$_("common.updating")}
             {:else}
-              Save Changes
+              {$_("projectSettings.saveChanges")}
             {/if}
           </Button>
         </form>
@@ -255,14 +255,13 @@
       class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
     >
       <CardHeader>
-        <CardTitle class="text-red-600">Danger Zone</CardTitle>
+        <CardTitle class="text-red-600">{$_("projectSettings.dangerZone")}</CardTitle>
       </CardHeader>
       <CardContent class="space-y-4">
         <div>
-          <h3 class="font-medium mb-2">Export Project Data</h3>
+          <h3 class="font-medium mb-2">{$_("projectSettings.exportProjectData")}</h3>
           <p class="text-sm text-muted-foreground mb-3">
-            Download all your project data, including literature, notes,
-            outcomes, and analyses, as a zip file.
+            {$_("projectSettings.exportDescription")}
           </p>
           <Button
             id="export-data-button"
@@ -271,18 +270,17 @@
             onclick={exportProject}
           >
             {#if isExporting}
-              <span class="animate-spin mr-2">⏳</span> Exporting...
+              <span class="animate-spin mr-2">⏳</span> {$_("projectSettings.exporting")}
             {:else}
-              Export Data
+              {$_("projectSettings.exportData")}
             {/if}
           </Button>
         </div>
         <hr class="my-4" />
         <div>
-          <h3 class="font-medium mb-2 text-red-600">Delete Project</h3>
+          <h3 class="font-medium mb-2 text-red-600">{$_("projectSettings.deleteProject")}</h3>
           <p class="text-sm text-muted-foreground mb-3">
-            Permanently remove this project and all its associated data. This
-            action cannot be undone.
+            {$_("projectSettings.deleteDescription")}
           </p>
           <Button
             id="delete-project-button"
@@ -291,15 +289,15 @@
             onclick={() => (showDeleteDialog = true)}
           >
             {#if isDeleting}
-              <span class="animate-spin mr-2">⏳</span> Deleting...
+              <span class="animate-spin mr-2">⏳</span> {$_("common.deleting")}
             {:else}
-              Delete Project
+              {$_("projectSettings.deleteProject")}
             {/if}
           </Button>
         </div>
         {#if !projectStore.currentProject}
           <p class="text-sm text-red-500 mt-2">
-            No project selected. Please select a project first.
+            {$_("projectSettings.selectProjectFirst")}
           </p>
         {/if}
       </CardContent>
@@ -315,13 +313,12 @@
     <div
       class="bg-white dark:bg-gray-800 p-8 rounded-lg max-w-md w-full shadow-xl"
     >
-      <h2 class="text-2xl font-bold mb-4">Delete Project</h2>
+      <h2 class="text-2xl font-bold mb-4">{$_("projectSettings.deleteProject")}</h2>
       <p class="text-base mb-6">
-        Are you sure you want to delete this project? This action cannot be
-        undone.
+        {$_("projectSettings.deleteConfirmMessage")}
         {#if projectStore.currentProject}
           <p class="font-medium mt-2">
-            Project: {projectStore.currentProject.name}
+            {$_("projectSettings.projectLabel")}: {projectStore.currentProject.name}
           </p>
         {/if}
       </p>
@@ -332,7 +329,7 @@
           onclick={() => (showDeleteDialog = false)}
           disabled={isDeleting}
         >
-          Cancel
+          {$_("common.cancel")}
         </Button>
         <Button
           type="button"
@@ -341,9 +338,9 @@
           disabled={isDeleting}
         >
           {#if isDeleting}
-            <span class="animate-spin mr-2">⏳</span> Deleting...
+            <span class="animate-spin mr-2">⏳</span> {$_("common.deleting")}
           {:else}
-            Delete
+            {$_("common.delete")}
           {/if}
         </Button>
       </div>

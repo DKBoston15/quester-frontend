@@ -33,6 +33,8 @@
   } from "$lib/types/custom-events";
   import { getEventTypeConfig } from "$lib/config/custom-event-types";
   import { customEventsStore } from "$lib/stores/CustomEventsStore";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
 
   interface TimelineEvent {
     id: string;
@@ -138,7 +140,9 @@
         );
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekEnd.getDate() + 6);
-        return `Week of ${weekStart.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${weekEnd.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
+        const startStr = weekStart.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        const endStr = weekEnd.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+        return $_('timeline.weekOf', { values: { start: startStr, end: endStr } });
       case "months":
         const [, yearStr, monthStr] = groupingKey.split("-");
         const monthDate = new Date(parseInt(yearStr), parseInt(monthStr));
@@ -405,9 +409,9 @@
     yesterday.setDate(yesterday.getDate() - 1);
 
     if (date.toDateString() === today.toDateString()) {
-      return "Today";
+      return get(_)('insights.relativeDate.today');
     } else if (date.toDateString() === yesterday.toDateString()) {
-      return "Yesterday";
+      return get(_)('insights.relativeDate.yesterday');
     } else {
       return date.toLocaleDateString("en-US", {
         weekday: "long",
@@ -568,7 +572,7 @@
       </p>
       <div class="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
         <div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
-        <span>Ready to capture your first milestone</span>
+        <span>{$_('timelineEmpty.readyToCapture')}</span>
       </div>
     </div>
   {:else}
@@ -636,7 +640,7 @@
                         <h4 class="event-title">
                           {event.title}
                           {#if event.isCustom}
-                            <span class="custom-badge">Custom</span>
+                            <span class="custom-badge">{$_('timeline.custom')}</span>
                             {#if event.customEventType}
                               <span class="custom-type-badge"
                                 >{event.customEventType
@@ -659,8 +663,8 @@
                                 e.stopPropagation();
                                 handleContextMenu(e, event);
                               }}
-                              title="More options"
-                              aria-label="Open event options menu"
+                              title={$_('timeline.moreOptions')}
+                              aria-label={$_('timeline.openOptionsMenu')}
                             >
                               <MoreHorizontal class="w-4 h-4" />
                             </button>
@@ -708,7 +712,7 @@
                     <div class="details-content">
                       <div class="details-header">
                         <Sparkles class="w-4 h-4 text-current opacity-60" />
-                        <span class="details-title">Details</span>
+                        <span class="details-title">{$_('timeline.details')}</span>
                       </div>
                       <div class="details-list">
                         {#each event.details as detail, index}

@@ -19,6 +19,14 @@
   import { DEFAULT_EVENT_TYPE } from "../config/custom-event-types";
   import { projectStore } from "$lib/stores/ProjectStore";
   import { toast } from "svelte-sonner";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper function to translate keys
+  const t = (key: string, values?: Record<string, any>) => {
+    const translate = get(_);
+    return values ? translate(key, { values }) : translate(key);
+  };
 
   // Main state
   let customEventsState = $state<CustomEventsState>({
@@ -215,7 +223,7 @@
     },
 
     async createEvent(projectId: string, eventData: CreateCustomEventForm) {
-      if (!projectId) throw new Error("Project ID is required");
+      if (!projectId) throw new Error(t("customEventsStore.projectIdRequired"));
 
       const requestKey = "createEvent";
       this.cancelRequest(requestKey);
@@ -266,8 +274,8 @@
         this.closeForm();
 
         // Show success toast
-        toast.success("Event created successfully!", {
-          description: `"${response.event.title}" has been added to your timeline`,
+        toast.success(t("customEventsStore.eventCreatedSuccess"), {
+          description: t("customEventsStore.eventCreatedDescription", { title: response.event.title }),
         });
 
         return response.event;
@@ -310,7 +318,7 @@
         customEventsState.events.find((e) => e.id === eventId);
 
       if (!currentEvent) {
-        throw new Error("Event not found");
+        throw new Error(t("customEventsStore.eventNotFound"));
       }
 
       // Create optimistic update
@@ -378,7 +386,7 @@
         customEventsState.events.find((e) => e.id === eventId);
 
       if (!currentEvent) {
-        throw new Error("Event not found");
+        throw new Error(t("customEventsStore.eventNotFound"));
       }
 
       // Optimistic removal
@@ -493,7 +501,7 @@
         activeRequests.delete(requestKey);
       } catch (error) {
         console.error("Error loading event for editing:", error);
-        formState.errors = { general: "Failed to load event details" };
+        formState.errors = { general: t("customEventsStore.failedToLoadEventDetails") };
       }
     },
 

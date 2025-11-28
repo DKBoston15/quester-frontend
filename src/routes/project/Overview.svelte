@@ -15,100 +15,100 @@
   import CustomEventForm from "$lib/components/custom-ui/custom-events/CustomEventForm.svelte";
   import GrantDetails from "$lib/components/project/GrantDetails.svelte";
   import * as Tooltip from "$lib/components/ui/tooltip";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
 
-  const driverObj = driver({
-    showProgress: true,
-    popoverClass: "quester-driver-theme",
-    steps: [
-      {
-        element: "#project-overview",
-        popover: {
-          title: "Welcome to Your Project Overview",
-          description:
-            "This is your central hub for managing your research project. Let's explore the key sections that help you stay organized and focused.",
-          side: "bottom",
-          align: "start",
+  // Helper function for imperative translation access
+  const t = (key: string) => get(_)(key);
+
+  // Factory function for driver.js tour with i18n
+  function createDriverObj() {
+    return driver({
+      showProgress: true,
+      popoverClass: "quester-driver-theme",
+      steps: [
+        {
+          element: "#project-overview",
+          popover: {
+            title: t("tours.overview.welcome.title"),
+            description: t("tours.overview.welcome.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#project-overview-card",
-        popover: {
-          title: "Define Your Project's Core",
-          description:
-            "Start here by clearly defining your project's purpose and setting its current status. A clear purpose keeps your research focused, while the status helps track progress and funding. Use the AI rewrite tool to refine your statement!",
-          side: "right",
-          align: "start",
+        {
+          element: "#project-overview-card",
+          popover: {
+            title: t("tours.overview.projectCore.title"),
+            description: t("tours.overview.projectCore.description"),
+            side: "right",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#project-keywords-card",
-        popover: {
-          title: "Tag Your Research Themes",
-          description:
-            "Add relevant keywords to categorize your project. This makes it easier to find later and helps Quester connect related ideas across your research. Aim for 3-7 core terms.",
-          side: "right",
-          align: "start",
+        {
+          element: "#project-keywords-card",
+          popover: {
+            title: t("tours.overview.keywords.title"),
+            description: t("tours.overview.keywords.description"),
+            side: "right",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#research-designs-card",
-        popover: {
-          title: "Outline Your Methodology",
-          description:
-            "Document your research, sampling, measurement, and analytic designs. Clearly defining your methodology ensures consistency and rigor throughout your project.",
-          side: "right",
-          align: "start",
+        {
+          element: "#research-designs-card",
+          popover: {
+            title: t("tours.overview.methodology.title"),
+            description: t("tours.overview.methodology.description"),
+            side: "right",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#research-products-card",
-        popover: {
-          title: "Track Your Deliverables",
-          description:
-            "Manage your research outputs like papers, reports, or presentations. Keep track of their status and deadlines to stay on top of your publication goals.",
-          side: "right",
-          align: "start",
+        {
+          element: "#research-products-card",
+          popover: {
+            title: t("tours.overview.deliverables.title"),
+            description: t("tours.overview.deliverables.description"),
+            side: "right",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#project-insights-card",
-        popover: {
-          title: "Check Your Project's Health",
-          description:
-            "This card highlights missing setup steps or areas needing attention, ensuring your project is well-structured. Regularly reviewing insights helps maintain momentum.",
-          side: "left",
-          align: "start",
+        {
+          element: "#project-insights-card",
+          popover: {
+            title: t("tours.overview.health.title"),
+            description: t("tours.overview.health.description"),
+            side: "left",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#next-best-actions-card",
-        popover: {
-          title: "Focus Your Next Steps",
-          description:
-            "See prioritized literature items needing review and recent updates here. This helps you tackle the most important tasks first and stay informed about progress.",
-          side: "left",
-          align: "start",
+        {
+          element: "#next-best-actions-card",
+          popover: {
+            title: t("tours.overview.nextSteps.title"),
+            description: t("tours.overview.nextSteps.description"),
+            side: "left",
+            align: "start",
+          },
         },
-      },
-      {
-        element: ".container",
-        popover: {
-          title: "Ready to Get Started?",
-          description:
-            "Use this Overview page regularly to keep your research organized, focused, and on track from conception to publication. Explore each section to make the most of Quester!",
-          side: "top",
-          align: "center",
+        {
+          element: ".container",
+          popover: {
+            title: t("tours.overview.ready.title"),
+            description: t("tours.overview.ready.description"),
+            side: "top",
+            align: "center",
+          },
         },
-      },
-    ],
-  });
+      ],
+    });
+  }
 </script>
 
 <div class="flex-1 w-full overflow-x-hidden">
   <div class="container mx-auto py-6 px-4">
     <div class="flex justify-between items-center">
       <h1 class="text-3xl font-bold ml-1" id="project-overview">
-        Project Overview
+        {$_("overview.title")}
       </h1>
       <div class="flex gap-2">
         <Button
@@ -117,25 +117,25 @@
           class="h-10 px-3"
         >
           <Plus class="h-4 w-4 mr-2" />
-          Add Event
+          {$_("overview.addEvent")}
         </Button>
         <Tooltip.Provider>
           <Tooltip.Root>
             <Tooltip.Trigger>
-              <Button variant="outline" onclick={() => driverObj.drive()}>
+              <Button variant="outline" onclick={() => createDriverObj().drive()}>
                 <GraduationCap class="h-4 w-4 mr-2" />
-                Tour
+                {$_("dashboard.tour")}
               </Button>
             </Tooltip.Trigger>
             <Tooltip.Content>
-              <p>Tutorial</p>
+              <p>{$_("common.tutorial")}</p>
             </Tooltip.Content>
           </Tooltip.Root>
         </Tooltip.Provider>
       </div>
     </div>
     <p class="text-muted-foreground mt-2 mb-6 ml-1">
-      Get a high-level view of your project's status and key components.
+      {$_("overview.description")}
     </p>
 
     <div class="grid grid-cols-2 gap-6 w-full">
@@ -152,7 +152,7 @@
             class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
           >
             <Card.Header>
-              <Card.Title>Project Keywords</Card.Title>
+              <Card.Title>{$_("overview.projectKeywords")}</Card.Title>
             </Card.Header>
             <Card.Content>
               <ProjectKeywords project={projectStore.currentProject} />

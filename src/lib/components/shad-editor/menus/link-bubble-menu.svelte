@@ -6,6 +6,7 @@
 	import { Copy, Pencil, Trash, Check } from 'lucide-svelte';
 	import { cn } from '$lib/utils.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import { _ } from 'svelte-i18n';
 	interface Props {
 		editor: Editor;
 	}
@@ -62,7 +63,7 @@
 >
 	{#if isEditing}
 		<Input
-			placeholder="Enter link to attach.."
+			placeholder={$_('editor.link.placeholder')}
 			type="url"
 			bind:value={linkInput}
 			class={cn('w-full border-2', isLinkValid ? 'border-green-500' : 'border-red-500')}
@@ -78,7 +79,7 @@
 		<Button
 			variant="ghost"
 			disabled={!isLinkValid}
-			title={isLinkValid ? 'Set Link' : 'Invalid URL'}
+			title={isLinkValid ? $_('editor.link.setLink') : $_('editor.link.invalidURL')}
 			class="size-7 p-1"
 			onclick={() => {
 				isEditing = false;
@@ -91,7 +92,7 @@
 	{:else}
 		<Button
 			variant="ghost"
-			title="Edit Link"
+			title={$_('editor.link.editLink')}
 			class="size-7 p-1"
 			onclick={() => {
 				isEditing = true;
@@ -103,7 +104,7 @@
 		</Button>
 		<Button
 			variant="ghost"
-			title="Copy Link"
+			title={$_('editor.link.copyLink')}
 			class="size-7 p-1"
 			onclick={() => {
 				navigator.clipboard.writeText(link);
@@ -113,7 +114,7 @@
 		</Button>
 		<Button
 			variant="ghost"
-			title="Remove Link"
+			title={$_('editor.link.removeLink')}
 			class="size-7 p-1"
 			onclick={() => editor.chain().focus().extendMarkRange('link').unsetLink().run()}
 		>

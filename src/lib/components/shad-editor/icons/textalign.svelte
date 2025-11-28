@@ -11,6 +11,7 @@
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import Button from "$lib/components/ui/button/button.svelte";
   import type { ToolBarIconProps } from "./types.js";
+  import { _ } from "svelte-i18n";
 
   let {
     editor,
@@ -39,7 +40,7 @@
           </Button>
         </Tooltip.Trigger>
         <Tooltip.Content>
-          <p>Text Alignment</p>
+          <p>{$_('editor.textAlignment')}</p>
         </Tooltip.Content>
       </Tooltip.Root>
     </Tooltip.Provider>
@@ -49,7 +50,7 @@
       onclick={() => editor.chain().focus().setTextAlign("left").run()}
       closeOnSelect={false}
     >
-      <AlignLeft /> Align Left
+      <AlignLeft /> {$_('editor.alignLeft')}
       {#if editor.isActive({ textAlign: "left" })}
         <Check class="absolute right-2 !size-3 text-muted-foreground" />
       {/if}
@@ -58,7 +59,7 @@
       onclick={() => editor.chain().focus().setTextAlign("center").run()}
       closeOnSelect={false}
     >
-      <AlignCenter /> Align Center
+      <AlignCenter /> {$_('editor.alignCenter')}
       {#if editor.isActive({ textAlign: "center" })}
         <Check class="absolute right-2 !size-3 text-muted-foreground" />
       {/if}
@@ -67,7 +68,7 @@
       onclick={() => editor.chain().focus().setTextAlign("right").run()}
       closeOnSelect={false}
     >
-      <AlignRight /> Align Right
+      <AlignRight /> {$_('editor.alignRight')}
       {#if editor.isActive({ textAlign: "right" })}
         <Check class="absolute right-2 !size-3 text-muted-foreground" />
       {/if}
@@ -76,7 +77,7 @@
       onclick={() => editor.chain().focus().setTextAlign("justify").run()}
       closeOnSelect={false}
     >
-      <AlignJustify /> Align Justify
+      <AlignJustify /> {$_('editor.alignJustify')}
       {#if editor.isActive({ textAlign: "justify" })}
         <Check class="absolute right-2 !size-3 text-muted-foreground" />
       {/if}

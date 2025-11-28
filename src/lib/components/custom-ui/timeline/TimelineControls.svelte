@@ -32,6 +32,7 @@
     CustomTimelineEvent,
     CustomEventCreator,
   } from "$lib/types/custom-events";
+  import { _ } from "svelte-i18n";
 
   interface FilterOptions {
     types: string[];
@@ -386,7 +387,7 @@
         <Search class="search-icon" />
         <Input
           bind:value={searchQuery}
-          placeholder="Search timeline events..."
+          placeholder={$_('timeline.searchPlaceholder')}
           class="search-input"
         />
         {#if searchQuery}
@@ -418,27 +419,27 @@
       >
         <ToggleGroup.Item
           value="days"
-          aria-label="Group by days"
+          aria-label={$_('timeline.groupByDays')}
           class="grouping-toggle-item"
         >
           <Calendar class="w-4 h-4 mr-1.5" />
-          Days
+          {$_('timeline.days')}
         </ToggleGroup.Item>
         <ToggleGroup.Item
           value="weeks"
-          aria-label="Group by weeks"
+          aria-label={$_('timeline.groupByWeeks')}
           class="grouping-toggle-item"
         >
           <CalendarClock class="w-4 h-4 mr-1.5" />
-          Weeks
+          {$_('timeline.weeks')}
         </ToggleGroup.Item>
         <ToggleGroup.Item
           value="months"
-          aria-label="Group by months"
+          aria-label={$_('timeline.groupByMonths')}
           class="grouping-toggle-item"
         >
           <CalendarRange class="w-4 h-4 mr-1.5" />
-          Months
+          {$_('timeline.months')}
         </ToggleGroup.Item>
       </ToggleGroup.Root>
     </div>
@@ -450,7 +451,7 @@
       class="add-event-button"
     >
       <Plus class="w-4 h-4 mr-2" />
-      Add Event
+      {$_('timeline.addEvent')}
     </Button>
 
     <!-- Filter toggle -->
@@ -461,7 +462,7 @@
           class="filter-button {hasActiveFilters ? 'has-filters' : ''}"
         >
           <SlidersHorizontal class="w-4 h-4 mr-2" />
-          Filters
+          {$_('timeline.filters')}
           {#if hasActiveFilters}
             <Badge variant="secondary" class="filter-count ml-1">
               {selectedTypes.size +
@@ -485,29 +486,29 @@
       >
         <div class="filter-content">
           <div class="filter-header">
-            <h3 class="filter-title">Filter Timeline</h3>
+            <h3 class="filter-title">{$_('timeline.filterTimeline')}</h3>
             {#if hasActiveFilters}
               <button onclick={clearFilters} class="clear-filters">
-                Clear all
+                {$_('timeline.clearAll')}
               </button>
             {/if}
           </div>
 
           <!-- Date Range Filter -->
           <div class="filter-section">
-            <h4 class="filter-section-title">Date Range</h4>
+            <h4 class="filter-section-title">{$_('timeline.dateRange')}</h4>
             <div class="date-range-container">
               <div class="date-inputs">
                 <Input
                   type="date"
                   bind:value={dateRangeStartString}
-                  placeholder="Start date"
+                  placeholder={$_('timeline.startDate')}
                   class="date-input"
                 />
                 <Input
                   type="date"
                   bind:value={dateRangeEndString}
-                  placeholder="End date"
+                  placeholder={$_('timeline.endDate')}
                   class="date-input"
                 />
                 {#if dateRangeStart && dateRangeEnd}
@@ -521,7 +522,7 @@
 
           <!-- Event Types -->
           <div class="filter-section">
-            <h4 class="filter-section-title">Event Types</h4>
+            <h4 class="filter-section-title">{$_('timeline.eventTypes')}</h4>
             <div class="type-filters">
               {#each availableTypes as type}
                 <label class="type-filter-item">
@@ -546,7 +547,7 @@
           <!-- Custom Event Types -->
           {#if availableCustomEventTypes().length > 0}
             <div class="filter-section">
-              <h4 class="filter-section-title">Custom Event Types</h4>
+              <h4 class="filter-section-title">{$_('timeline.customEventTypes')}</h4>
               <div class="type-filters">
                 {#each availableCustomEventTypes() as type}
                   <label class="type-filter-item">
@@ -569,7 +570,7 @@
           <!-- Created By -->
           {#if availableCreators().length > 0}
             <div class="filter-section">
-              <h4 class="filter-section-title">Created By</h4>
+              <h4 class="filter-section-title">{$_('timeline.createdBy')}</h4>
               <div class="type-filters">
                 {#each availableCreators() as creator}
                   <label class="type-filter-item">
@@ -592,7 +593,7 @@
           <!-- Tags -->
           {#if availableTags().length > 0}
             <div class="filter-section">
-              <h4 class="filter-section-title">Tags</h4>
+              <h4 class="filter-section-title">{$_('timeline.tags')}</h4>
               <div class="type-filters">
                 {#each availableTags() as tag}
                   <label class="type-filter-item">
@@ -621,26 +622,26 @@
         <DropdownMenu.Trigger>
           <Button variant="outline" class="bulk-actions-button">
             <CheckSquare class="w-4 h-4 mr-2" />
-            {selectedEvents.length} Selected
+            {$_('timeline.selected', { values: { count: selectedEvents.length } })}
             <MoreHorizontal class="w-4 h-4 ml-2" />
           </Button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content align="end">
-          <DropdownMenu.Label>Bulk Actions</DropdownMenu.Label>
+          <DropdownMenu.Label>{$_('timeline.bulkActions')}</DropdownMenu.Label>
           <DropdownMenu.Separator />
           <DropdownMenu.Item
             onclick={() => handleBulkAction("edit")}
             disabled={bulkActionInProgress}
           >
             <Edit3 class="w-4 h-4 mr-2" />
-            Edit Selected
+            {$_('timeline.editSelected')}
           </DropdownMenu.Item>
           <DropdownMenu.Item
             onclick={() => handleBulkAction("export")}
             disabled={bulkActionInProgress}
           >
             <Download class="w-4 h-4 mr-2" />
-            Export Selected
+            {$_('timeline.exportSelected')}
           </DropdownMenu.Item>
           <DropdownMenu.Separator />
           <DropdownMenu.Item
@@ -649,7 +650,7 @@
             class="text-amber-600"
           >
             <Archive class="w-4 h-4 mr-2" />
-            Archive Selected
+            {$_('timeline.archiveSelected')}
           </DropdownMenu.Item>
           <DropdownMenu.Item
             onclick={() => handleBulkAction("delete")}
@@ -657,7 +658,7 @@
             class="text-destructive"
           >
             <Trash2 class="w-4 h-4 mr-2" />
-            Delete Selected
+            {$_('timeline.deleteSelected')}
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
@@ -669,19 +670,19 @@
         <DropdownMenu.Trigger>
           <Button variant="outline" size="sm">
             <Download class="w-4 h-4 mr-2" />
-            Export
+            {$_('timeline.export')}
           </Button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content align="end">
-          <DropdownMenu.Label>Export Format</DropdownMenu.Label>
+          <DropdownMenu.Label>{$_('timeline.exportFormat')}</DropdownMenu.Label>
           <DropdownMenu.Separator />
           <DropdownMenu.Item onclick={() => handleExport("csv")}>
             <FileText class="w-4 h-4 mr-2" />
-            CSV File
+            {$_('timeline.csvFile')}
           </DropdownMenu.Item>
           <DropdownMenu.Item onclick={() => handleExport("json")}>
             <FileText class="w-4 h-4 mr-2" />
-            JSON File
+            {$_('timeline.jsonFile')}
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
@@ -696,7 +697,7 @@
         class="clear-all-button"
       >
         <X class="w-4 h-4" />
-        Clear
+        {$_('timeline.clear')}
       </Button>
     {/if}
   </div>
@@ -706,7 +707,7 @@
     <div class="active-filters" in:slide={{ duration: 200 }}>
       {#if searchQuery}
         <Badge variant="secondary" class="filter-badge">
-          Search: "{searchQuery}"
+          {$_('timeline.search')}: "{searchQuery}"
           <button
             onclick={() => (searchQuery = "")}
             class="filter-badge-remove"

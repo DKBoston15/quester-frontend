@@ -5,6 +5,11 @@ import {
   chatHistoryAPI,
   type ChatSession,
 } from "$lib/services/chat-history-api";
+import { _ } from "svelte-i18n";
+import { get } from "svelte/store";
+
+// Helper function to get translations
+const t = (key: string) => get(_)(key);
 
 export interface SearchResult {
   id: string;
@@ -255,7 +260,7 @@ const debouncedAutoSave = debounce(async () => {
     await saveCurrentSession();
   } catch (error) {
     console.error("Auto-save failed:", error);
-    chatHistoryError = "Failed to auto-save session";
+    chatHistoryError = t("globalSearchStore.failedToAutoSaveSession");
   }
 }, 2000); // Save 2 seconds after last change
 
@@ -274,7 +279,7 @@ async function loadChatHistory(): Promise<void> {
     chatHistorySessions = response.sessions;
   } catch (error) {
     console.error("Failed to load chat history:", error);
-    chatHistoryError = "Failed to load chat history";
+    chatHistoryError = t("globalSearchStore.failedToLoadChatHistory");
   } finally {
     isLoadingHistory = false;
   }
@@ -328,10 +333,10 @@ async function saveCurrentSession(): Promise<void> {
         );
         chatHistoryError = null; // Don't show error for auth issues
       } else {
-        chatHistoryError = "Failed to save session";
+        chatHistoryError = t("globalSearchStore.failedToSaveSession");
       }
     } else {
-      chatHistoryError = "Failed to save session";
+      chatHistoryError = t("globalSearchStore.failedToSaveSession");
     }
   } finally {
     isSavingSession = false;
@@ -361,7 +366,7 @@ async function loadSession(sessionId: string): Promise<void> {
     }
   } catch (error) {
     console.error("Failed to load session:", error);
-    chatHistoryError = "Failed to load session";
+    chatHistoryError = t("globalSearchStore.failedToLoadSession");
   }
 }
 
@@ -390,7 +395,7 @@ async function deleteSession(sessionId: string): Promise<void> {
     }
   } catch (error) {
     console.error("Failed to delete session:", error);
-    chatHistoryError = "Failed to delete session";
+    chatHistoryError = t("globalSearchStore.failedToDeleteSession");
   }
 }
 
@@ -416,7 +421,7 @@ async function toggleStarSession(sessionId: string): Promise<void> {
     }
   } catch (error) {
     console.error("Failed to toggle star status:", error);
-    chatHistoryError = "Failed to update session";
+    chatHistoryError = t("globalSearchStore.failedToUpdateSession");
   }
 }
 
@@ -440,7 +445,7 @@ async function searchChatHistory(searchQuery: string): Promise<void> {
     chatHistorySessions = response.sessions;
   } catch (error) {
     console.error("Failed to search chat history:", error);
-    chatHistoryError = "Failed to search chat history";
+    chatHistoryError = t("globalSearchStore.failedToSearchChatHistory");
   } finally {
     isLoadingHistory = false;
   }
@@ -456,7 +461,7 @@ async function performSearch(searchQuery: string = query): Promise<void> {
   // Get current project ID - only required for current project scope
   const projectId = getCurrentProjectId();
   if (scope === "current" && !projectId) {
-    error = "Please navigate to a project to search within current project";
+    error = t("globalSearchStore.navigateToProjectForSearch");
     results = [];
     return;
   }
@@ -540,8 +545,7 @@ async function sendChatMessage(message: string): Promise<void> {
   // Get current project ID - only required for current project scope
   const projectId = getCurrentProjectId();
   if (scope === "current" && !projectId) {
-    error =
-      "Please navigate to a project to use AI chat in current project mode";
+    error = t("globalSearchStore.navigateToProjectForChat");
     return;
   }
 
