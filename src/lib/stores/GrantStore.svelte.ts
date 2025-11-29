@@ -3,7 +3,7 @@ import type { Grant } from "../types/auth";
 import { _ } from "svelte-i18n";
 import { get } from "svelte/store";
 
-const t = (key: string) => get(_)(key);
+const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
 let grants = $state<Grant[]>([]);
 let currentGrant = $state<Grant | null>(null);

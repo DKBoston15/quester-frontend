@@ -5,7 +5,7 @@ import { get } from "svelte/store";
 import { _ } from "svelte-i18n";
 
 // Helper function for runtime translation
-const t = (key: string) => get(_)(key);
+const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
 export const groupColorMap = {
   1: "#006eff",

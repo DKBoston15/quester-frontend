@@ -7,9 +7,10 @@ import { getInitialLocale } from './locale-detector';
  */
 function registerLocales() {
   register('en', () => import('./translations/en/common.json'));
-  // Add more locales here as needed:
-  // register('es', () => import('./translations/es/common.json'));
-  // register('fr', () => import('./translations/fr/common.json'));
+  register('fr', () => import('./translations/fr/common.json'));
+  register('es', () => import('./translations/es/common.json'));
+  register('de', () => import('./translations/de/common.json'));
+  register('zh', () => import('./translations/zh/common.json'));
 }
 
 /**

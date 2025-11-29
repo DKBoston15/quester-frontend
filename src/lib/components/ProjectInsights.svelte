@@ -62,11 +62,28 @@
       severity: "warning",
       message: $_('projectInsights.missingProjectDesigns'),
       description: $_('projectInsights.addDesigns'),
-      checkFn: (project) =>
-        !project.researchDesign?.trim() &&
-        !project.samplingDesign?.trim() &&
-        !project.measurementDesign?.trim() &&
-        !project.analyticDesign?.trim(),
+      checkFn: (project) => {
+        // Design fields can be strings or objects with selections array
+        const getDesignValue = (design: unknown): string => {
+          if (typeof design === 'string') return design;
+          if (design && typeof design === 'object') {
+            // Handle { selections: string[], description?: string } format
+            if ('selections' in design) {
+              const selections = (design as { selections: string[] }).selections;
+              if (Array.isArray(selections) && selections.length > 0) {
+                return selections.join(", ");
+              }
+            }
+            // Handle { name: string } format (legacy)
+            if ('name' in design) return (design as { name: string }).name || '';
+          }
+          return '';
+        };
+        return !getDesignValue(project.researchDesign)?.trim() &&
+          !getDesignValue(project.samplingDesign)?.trim() &&
+          !getDesignValue(project.measurementDesign)?.trim() &&
+          !getDesignValue(project.analyticDesign)?.trim();
+      },
       // action: {
       //   label: "Add Designs",
       //   route: "project_settings",

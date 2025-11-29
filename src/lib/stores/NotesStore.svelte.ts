@@ -5,7 +5,7 @@
   import { _ } from "svelte-i18n";
   import { get } from "svelte/store";
 
-  const t = (key: string) => get(_)(key);
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   type FilterType = "literature" | "research" | "all" | "unlinked" | "recent";
   type FilterState = {
@@ -408,7 +408,7 @@
 
     async loadNotes(projectId: string, literatureId?: string) {
       if (!projectId) {
-        error = "No project ID provided";
+        error = t("stores.notes.noProjectId");
         isLoading = false;
         return;
       }
@@ -454,7 +454,7 @@
         };
       } catch (err) {
         console.error("Error loading notes:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("common.anErrorOccurred");
         notes = [];
         loadedProjectId = null;
       } finally {
@@ -506,7 +506,7 @@
         return processedNote;
       } catch (err) {
         console.error("Error creating note:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("common.anErrorOccurred");
         throw err;
       } finally {
         isLoading = false;
@@ -639,7 +639,7 @@
 
       } catch (err) {
         console.error("Error updating note:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("common.anErrorOccurred");
         throw err;
       } finally {
         if (!isContentUpdate && !uiOnlyUpdate) {
@@ -665,7 +665,7 @@
         }
       } catch (err) {
         console.error("Error deleting note:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("common.anErrorOccurred");
         throw err;
       } finally {
         isLoading = false;

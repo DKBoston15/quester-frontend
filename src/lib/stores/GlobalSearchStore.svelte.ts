@@ -9,7 +9,7 @@ import { _ } from "svelte-i18n";
 import { get } from "svelte/store";
 
 // Helper function to get translations
-const t = (key: string) => get(_)(key);
+const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
 export interface SearchResult {
   id: string;

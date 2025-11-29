@@ -4,7 +4,7 @@
   import { _ } from "svelte-i18n";
   import { get } from "svelte/store";
 
-  const t = (key: string) => get(_)(key);
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   const createEmptyDesigns = () => ({
     research: [] as { name: string }[],
@@ -81,7 +81,7 @@
           }
         } catch (err) {
           console.error("Error loading project:", err);
-          error = err instanceof Error ? err.message : "An error occurred";
+          error = err instanceof Error ? err.message : t("common.anErrorOccurred");
           currentProject = null;
         } finally {
           if (pendingProjectId === projectId) {

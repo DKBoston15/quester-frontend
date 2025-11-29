@@ -1408,19 +1408,19 @@
       >
         <Tabs.Trigger value="overview" class="tab-button">
           <PieChart class="h-4 w-4 mr-2" />
-          Overview
+          {$_('analytics.tabs.overview')}
         </Tabs.Trigger>
         <Tabs.Trigger value="notes" class="tab-button">
           <FileText class="h-4 w-4 mr-2" />
-          Notes Analysis
+          {$_('analytics.tabs.notesAnalysis')}
         </Tabs.Trigger>
         <Tabs.Trigger value="literature" class="tab-button">
           <BookText class="h-4 w-4 mr-2" />
-          Literature Analysis
+          {$_('analytics.tabs.literatureAnalysis')}
         </Tabs.Trigger>
         <Tabs.Trigger value="research" class="tab-button">
           <FlaskConical class="h-4 w-4 mr-2" />
-          Designs Analysis
+          {$_('analytics.tabs.designsAnalysis')}
         </Tabs.Trigger>
       </Tabs.List>
 

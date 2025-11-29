@@ -21,7 +21,7 @@
   import { get } from "svelte/store";
 
   // Helper to get translation value imperatively
-  const t = (key: string) => get(_)(key);
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   let searchQuery = $state("");
   let gridApi = $state<GridApi<Literature>>();

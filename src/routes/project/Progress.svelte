@@ -49,7 +49,7 @@
   import { get } from "svelte/store";
 
   // Helper function for imperative translation access
-  const t = (key: string) => get(_)(key);
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
   import {
     Timeline,
     TimelineControls,
@@ -168,53 +168,53 @@
   };
 
   // Achievement categories for grouping with colors
-  const achievementGroups: Record<
+  const achievementGroups = $derived<Record<
     string,
     AchievementGroup & { color: string }
-  > = {
+  >>({
     "Note-Taking Master": {
-      name: "Note Taking",
+      name: t("progress.achievementGroups.noteTaking"),
       icon: PenTool,
       achievements: [],
       color: "from-blue-500 to-blue-600",
     },
     Collector: {
-      name: "Literature Collection",
+      name: t("progress.achievementGroups.literatureCollection"),
       icon: Book,
       achievements: [],
       color: "from-purple-500 to-purple-600",
     },
     Consistency: {
-      name: "Consistency",
+      name: t("progress.achievementGroups.consistency"),
       icon: Calendar,
       achievements: [],
       color: "from-green-500 to-green-600",
     },
     "Keyword Researcher": {
-      name: "Keyword Research",
+      name: t("progress.achievementGroups.keywordResearch"),
       icon: Search,
       achievements: [],
       color: "from-amber-500 to-amber-600",
     },
     Explorer: {
-      name: "Research Design",
+      name: t("progress.achievementGroups.researchDesign"),
       icon: Expand,
       achievements: [],
       color: "from-rose-500 to-rose-600",
     },
     "Expanding Horizons": {
-      name: "Custom Designs",
+      name: t("progress.achievementGroups.customDesigns"),
       icon: Star,
       achievements: [],
       color: "from-indigo-500 to-indigo-600",
     },
     "Visualization Expert": {
-      name: "Visualization",
+      name: t("progress.achievementGroups.visualization"),
       icon: Network,
       achievements: [],
       color: "from-cyan-500 to-cyan-600",
     },
-  };
+  });
 
   // Timeline event types for filtering
   let availableEventTypes = $derived(() => {
@@ -408,17 +408,40 @@
             .replace(/([A-Z])/g, " $1")
             .replace(/^./, (str: string) => str.toUpperCase());
 
+          // Format design values - they may be objects with selections array or strings
+          const formatDesignValue = (value: unknown): string => {
+            if (!value) return t("common.none");
+            if (typeof value === 'string') return value;
+            if (typeof value === 'object' && value !== null) {
+              // Handle { selections: string[], description?: string } format
+              if ('selections' in value) {
+                const selections = (value as { selections: string[] }).selections;
+                if (Array.isArray(selections) && selections.length > 0) {
+                  return selections.join(", ");
+                }
+              }
+              // Handle { name: string } format (legacy)
+              if ('name' in value) {
+                return (value as { name: string }).name || t("common.none");
+              }
+            }
+            return String(value);
+          };
+
+          const prevValue = formatDesignValue(change.data.previousValue);
+          const newValue = formatDesignValue(change.data.newValue);
+
           events.push({
             id: `design_${change.id}`,
             title: t("progress.eventTitles.designUpdated"),
-            description: `${fieldName}: ${change.data.previousValue || t("common.none")} → ${change.data.newValue}`,
+            description: `${fieldName}: ${prevValue} → ${newValue}`,
             timestamp: new Date(change.createdAt),
             type: "design",
             data: { ...change.data, fieldName },
             details: [
               t("progress.eventDetails.designType", { values: { type: fieldName } }),
-              t("progress.eventDetails.previousValue", { values: { value: change.data.previousValue || t("common.none") } }),
-              t("progress.eventDetails.newValue", { values: { value: change.data.newValue } }),
+              t("progress.eventDetails.previousValue", { values: { value: prevValue } }),
+              t("progress.eventDetails.newValue", { values: { value: newValue } }),
             ],
           });
         });

@@ -1,0 +1,3279 @@
+{
+  "common": {
+    "cancel": "取消",
+    "save": "保存",
+    "edit": "编辑",
+    "delete": "删除",
+    "loading": "加载中...",
+    "search": "搜索",
+    "close": "关闭",
+    "confirm": "确认",
+    "yes": "是",
+    "no": "否",
+    "optional": "可选",
+    "saving": "保存中...",
+    "unknown": "未知",
+    "unexpectedError": "发生意外错误",
+    "anErrorOccurred": "发生错误",
+    "none": "无",
+    "untitled": "无标题",
+    "continue": "继续",
+    "add": "添加",
+    "settings": "设置",
+    "tour": "导览"
+  },
+  "designTypes": {
+    "research": "研究",
+    "sampling": "抽样",
+    "measurement": "测量",
+    "analytic": "分析"
+  },
+  "datePicker": {
+    "selectDate": "选择日期"
+  },
+  "auth": {
+    "signIn": "登录",
+    "signOut": "退出登录",
+    "signUp": "注册",
+    "continueWith": "使用 {provider} 继续",
+    "checkingAuth": "正在检查身份验证...",
+    "authPersist": "如果问题持续存在，您可以尝试：",
+    "refreshPage": "刷新页面",
+    "clearCache": "清除浏览器缓存",
+    "resetAuth": "点击此处重置身份验证",
+    "redirecting": "正在跳转..."
+  },
+  "signIn": {
+    "welcome": "欢迎",
+    "subtitle": "登录 Quester 以继续访问您的研究工作区",
+    "openWorkspace": "打开研究工作区",
+    "changeTheme": "更改主题"
+  },
+  "landing": {
+    "heroTitle": "管理您的研究项目",
+    "heroSubtitle": "与您的团队一起组织、跟踪和协作研究项目",
+    "getStarted": "开始使用",
+    "learnMore": "了解更多"
+  },
+  "navigation": {
+    "dashboard": "仪表板",
+    "projects": "项目",
+    "settings": "设置",
+    "teamManagement": "团队管理",
+    "pricing": "定价",
+    "organizationAnalytics": "组织分析",
+    "switchOrganization": "切换组织",
+    "userMenu": "用户菜单",
+    "mainMenu": "主菜单",
+    "collapse": "收起",
+    "expand": "展开"
+  },
+  "sidebar": {
+    "workspace": "工作区",
+    "selectWorkspace": "选择工作区",
+    "recentProjects": "最近的项目",
+    "viewAllProjects": "查看所有项目",
+    "noRecentProjects": "没有最近的项目",
+    "newProject": "新建项目",
+    "searchProjects": "搜索项目...",
+    "managePlan": "管理计划",
+    "analytics": "分析",
+    "toggleSidebar": "切换侧边栏"
+  },
+  "projectSidebar": {
+    "overview": "概览",
+    "literature": "文献",
+    "notes": "笔记",
+    "researchAssistant": "研究助手",
+    "insights": "洞察",
+    "models": "模型",
+    "outcomes": "成果",
+    "analytics": "分析",
+    "connections": "关联",
+    "progress": "进度",
+    "settings": "设置",
+    "project": "项目"
+  },
+  "dashboard": {
+    "title": "仪表板",
+    "welcome": "欢迎回来，{name}！",
+    "workspaceOverview": "以下是您工作区的最新动态。",
+    "loadingDashboard": "正在加载您的仪表板...",
+    "tour": "导览",
+    "tutorial": "教程",
+    "organizationStructure": "组织结构",
+    "organizationStructureDescription": "管理您的部门和项目",
+    "projects": "项目",
+    "totalProjects": "共 {count} 个项目",
+    "teamMembers": "团队成员",
+    "memberCount": "{count} 名成员",
+    "departments": "部门",
+    "departmentCount": "{count} 个部门",
+    "failedToInitialize": "初始化仪表板失败",
+    "failedToLoadDashboard": "加载仪表板失败"
+  },
+  "settings": {
+    "title": "设置",
+    "subtitle": "管理您的账户和偏好设置",
+    "profile": "个人资料",
+    "organization": "组织",
+    "billing": "账单",
+    "firstName": "名",
+    "lastName": "姓",
+    "email": "电子邮件",
+    "orcidUrl": "ORCID 个人资料网址",
+    "orcidDescription": "您的 ORCID iD 提供一个持久的数字标识符，用于区分您与其他研究人员。",
+    "learnMoreOrcid": "了解更多关于 ORCID 的信息",
+    "orcidValidation": "请输入有效的 ORCID 网址（例如：https://orcid.org/0000-0000-0000-0000）",
+    "saveChanges": "保存更改",
+    "saving": "保存中...",
+    "profileUpdated": "个人资料更新成功！",
+    "failedToUpdate": "更新个人资料失败",
+    "organizationSettings": "组织设置",
+    "configureSettings": "配置 {name} 的设置",
+    "noPermission": "您没有权限管理组织设置",
+    "orgNotAvailable": "您当前的计划无法使用组织设置。请升级以访问组织设置。",
+    "subscription": "订阅",
+    "currentPlan": "当前计划：{plan}",
+    "noPlan": "无计划",
+    "subscribeToPlan": "订阅计划",
+    "subscribeDescription": "选择订阅计划以继续使用 Quester",
+    "viewPlans": "查看计划",
+    "language": "语言",
+    "selectLanguage": "选择语言",
+    "languageDescription": "选择您偏好的应用界面语言。更改将立即生效。"
+  },
+  "team": {
+    "title": "团队管理",
+    "subtitle": "管理您的团队成员、邀请和角色",
+    "members": "成员",
+    "invitations": "邀请",
+    "roles": "角色",
+    "invite": "邀请成员",
+    "inviteDescription": "邀请新成员加入您的组织",
+    "pendingInvites": "待处理的邀请",
+    "memberSince": "加入时间：{date}",
+    "lastActive": "最后活跃：{date}",
+    "removeMember": "移除成员",
+    "changeRole": "更改角色",
+    "owner": "所有者",
+    "admin": "管理员",
+    "member": "成员",
+    "noMembers": "未找到成员",
+    "searchMembers": "搜索成员...",
+    "inviteSent": "邀请发送成功",
+    "inviteFailed": "发送邀请失败",
+    "memberRemoved": "成员移除成功",
+    "roleChanged": "角色更改成功",
+    "settingUp": "正在设置团队管理",
+    "loadingResources": "正在加载您的资源和权限...",
+    "selectResourceTooltip": "选择一个资源来管理其团队成员、角色和权限。",
+    "selectResourceToManage": "选择一个资源来管理其团队",
+    "organizations": "组织",
+    "departments": "部门",
+    "projects": "项目",
+    "selectResource": "选择资源",
+    "selectResourceDescription": "从侧边栏选择一个组织、部门或项目来管理其团队成员和权限。",
+    "organizationAccess": "组织访问权限",
+    "joining": "加入中...",
+    "joinProject": "加入项目",
+    "joinDepartment": "加入部门",
+    "tour": "导览",
+    "manageTeamFor": "管理此 {resourceType} 的团队成员及其角色",
+    "teamMembers": "团队成员",
+    "inviteTeam": "邀请团队",
+    "teamInvitations": "团队邀请",
+    "sendInvitationsDescription": "发送邀请以添加新团队成员到此组织",
+    "addExistingUsers": "添加现有用户",
+    "addExistingUsersDescription": "添加已经是父组织成员的用户",
+    "inviteTeamMembers": "邀请团队成员",
+    "inviteModalDescription": "对于 {resourceType}，您可以添加现有组织成员或使用主要组织邀请功能。",
+    "welcomeToTeamManagement": "欢迎来到团队管理！",
+    "tourPrompt": "您想要快速了解如何有效管理您的团队吗？",
+    "startTour": "开始导览",
+    "skipForNow": "暂时跳过",
+    "restartTourHint": "您可以随时使用标题栏中的「导览」按钮重新开始导览。",
+    "successfullyJoined": "成功加入 {resourceType}",
+    "tourCompleted": "导览完成！您已准备好管理您的团队。",
+    "canRestartTour": "您可以随时从帮助菜单重新开始导览"
+  },
+  "teamManagement": {
+    "title": "团队管理",
+    "organization": "组织",
+    "department": "部门",
+    "project": "项目",
+    "failedToJoin": "加入失败。请重试。",
+    "roles": {
+      "owner": "所有者",
+      "admin": "管理员",
+      "manager": "经理",
+      "member": "成员"
+    },
+    "errors": {
+      "failedToLoadResources": "加载资源失败",
+      "failedToLoadSettings": "加载组织设置失败",
+      "failedToSaveSettings": "保存组织设置失败",
+      "failedToLoadProjectDetails": "加载项目详情失败",
+      "noUserContext": "没有可用的用户上下文",
+      "invalidResourceId": "无效的资源 ID",
+      "operationFailed": "操作失败"
+    }
+  },
+  "projects": {
+    "title": "项目",
+    "newProject": "新建项目",
+    "projectName": "项目名称",
+    "projectDescription": "项目描述",
+    "keywords": "关键词",
+    "purpose": "目的",
+    "status": "状态",
+    "createdAt": "创建时间",
+    "updatedAt": "更新时间",
+    "noProjects": "暂无项目",
+    "createFirst": "创建您的第一个项目以开始",
+    "searchProjects": "搜索项目...",
+    "filterByStatus": "按状态筛选",
+    "viewProject": "查看项目",
+    "editProject": "编辑项目",
+    "deleteProject": "删除项目",
+    "deleteConfirm": "您确定要删除此项目吗？",
+    "archiveProject": "归档项目"
+  },
+  "projectSettings": {
+    "title": "设置",
+    "tooltip": "配置您的项目设置，管理自定义设计，并处理研究项目的数据导出或删除选项。",
+    "generalSettings": "常规设置",
+    "projectName": "项目名称",
+    "enterProjectName": "输入项目名称",
+    "selectProjectFirst": "未选择项目。请先选择一个项目。",
+    "saveChanges": "保存更改",
+    "dangerZone": "危险区域",
+    "exportProjectData": "导出项目数据",
+    "exportDescription": "下载您的所有项目数据，包括文献、笔记、成果和分析，作为 zip 文件。",
+    "exportData": "导出数据",
+    "exporting": "导出中...",
+    "deleteProject": "删除项目",
+    "deleteDescription": "永久删除此项目及其所有相关数据。此操作无法撤销。",
+    "deleteConfirmMessage": "您确定要删除此项目吗？此操作无法撤销。",
+    "projectLabel": "项目",
+    "noProjectSelected": "未选择项目",
+    "nameCannotBeEmpty": "项目名称不能为空",
+    "nameUpdatedSuccess": "项目名称更新成功",
+    "nameUpdateFailed": "更新项目名称失败",
+    "exportFailed": "启动项目导出失败",
+    "deletedSuccess": "项目删除成功",
+    "deleteFailed": "删除项目失败"
+  },
+  "literature": {
+    "title": "文献",
+    "addDocument": "添加文档",
+    "uploadDocument": "上传文档",
+    "searchLiterature": "搜索文献...",
+    "noDocuments": "暂无文档",
+    "addFirstDocument": "添加您的第一个文档以开始",
+    "processing": "处理中",
+    "processed": "已处理",
+    "failed": "失败",
+    "authors": "作者",
+    "publishedDate": "发布日期",
+    "abstract": "摘要",
+    "citations": "引用",
+    "references": "参考文献",
+    "documentDetails": "文档详情",
+    "viewPdf": "查看 PDF",
+    "downloadPdf": "下载 PDF",
+    "deleteDocument": "删除文档",
+    "deleteConfirm": "您确定要删除此文档吗？",
+    "addLiterature": "添加文献",
+    "exportReferences": "导出参考文献",
+    "manageAndOrganize": "管理和组织您的项目文献",
+    "tooltip": "管理和组织您的项目文献。添加来源、跟踪阅读状态，并在一个地方构建您的研究文库。",
+    "loadingLiterature": "正在加载文献...",
+    "noLiteratureAdded": "尚未添加文献"
+  },
+  "insights": {
+    "title": "洞察",
+    "tooltip": "分析您研究中的关键词模式和关系，以发现文献中的新兴主题和联系。",
+    "description": "深入了解您研究中的关键词模式和关系",
+    "types": {
+      "researchFocus": "研究焦点",
+      "contentAnalysis": "内容分析",
+      "researchGaps": "研究空白",
+      "insight": "洞察"
+    },
+    "aiConfidence": "AI 置信度：{confidencePercentage}%",
+    "regenerateInsight": "重新生成洞察",
+    "supportingData": "支持数据",
+    "loadingInsights": "正在加载洞察...",
+    "viewHistory": "查看洞察历史",
+    "noInsightsYet": "暂无洞察",
+    "history": {
+      "title": "洞察历史",
+      "description": "查看此项目之前生成的所有洞察",
+      "loading": "正在加载洞察历史...",
+      "emptyHeading": "没有历史洞察",
+      "emptyDescription": "此项目还没有任何历史洞察。生成一些洞察以在此处查看！",
+      "insightCount": "{count} 条洞察",
+      "insightsCount": "{count} 条洞察"
+    },
+    "relativeDate": {
+      "today": "今天",
+      "yesterday": "昨天",
+      "daysAgo": "{count} 天前",
+      "weeksAgo": "{count} 周前",
+      "monthsAgo": "{count} 个月前",
+      "yearsAgo": "{count} 年前"
+    }
+  },
+  "overview": {
+    "title": "项目概览",
+    "description": "获取项目状态和关键组成部分的高级视图。",
+    "addEvent": "添加事件",
+    "projectKeywords": "项目关键词"
+  },
+  "literatureView": {
+    "backToLiterature": "返回文献",
+    "viewDocument": "查看文档",
+    "actions": "操作",
+    "downloadDocument": "下载文档",
+    "reportIssue": "报告问题",
+    "attachDocument": "附加文档",
+    "deleteLiterature": "删除文献",
+    "deleteConfirm": "您确定要删除「{name}」吗？此操作无法撤销。",
+    "learnAbout": "了解文献视图",
+    "citedFromPage": "此条目引用自第 {page} 页。",
+    "openDocumentAtPage": "在第 {page} 页打开文档",
+    "noAuthorsListed": "未列出作者",
+    "editors": "编辑",
+    "attachDocumentTo": "将文档附加到「{name}」",
+    "uploadFileTypes": "上传 PDF、DOCX、DOC 或 TXT 文件。我们将提取文本和元数据。",
+    "reportIssueDescription": "通过报告「{name}」的问题来帮助我们改进",
+    "whatWentWrong": "出了什么问题？（可选）",
+    "describeIssuePlaceholder": "描述您注意到的问题（例如：元数据不正确、文本缺失、提取错误）...",
+    "feedbackThanks": "您的反馈将帮助我们改进。谢谢！",
+    "submitting": "提交中...",
+    "submitReport": "提交报告",
+    "loadingDetails": "正在加载文献详情...",
+    "details": "详情",
+    "addedOn": "添加时间：",
+    "keywords": "关键词"
+  },
+  "connections": {
+    "title": "关联",
+    "legend": "图例",
+    "controls": "控制",
+    "interactionControls": "交互控制",
+    "2dGraphControls": "2D 图形控制",
+    "3dGraphControls": "3D 图形控制",
+    "leftClick": "左键点击",
+    "rightClick": "右键点击",
+    "scrollWheel": "滚轮",
+    "leftClickShift": "左键点击 + Shift",
+    "panSelectDrag": "平移/选择/拖动节点",
+    "zoomInOut": "放大/缩小",
+    "selectMultiple": "选择多个节点",
+    "rotateView": "旋转视图",
+    "panView": "平移视图",
+    "toggle2D": "切换 2D",
+    "toggle3D": "切换 3D"
+  },
+  "models": {
+    "title": "模型",
+    "newModel": "新建模型",
+    "modelName": "模型名称",
+    "modelDescription": "模型描述",
+    "noModels": "暂无模型",
+    "createFirst": "创建您的第一个模型以开始",
+    "searchModels": "搜索模型...",
+    "viewModel": "查看模型",
+    "editModel": "编辑模型",
+    "deleteModel": "删除模型",
+    "createModel": "创建模型",
+    "manageResearchModels": "创建和管理您的研究模型",
+    "tooltip": "创建和管理研究模型以可视化您的概念和关系。",
+    "loadingModels": "正在加载模型...",
+    "noModelsCreated": "尚未创建模型",
+    "createFirstModel": "创建您的第一个模型",
+    "createNewModel": "创建新模型",
+    "giveModelName": "为您的模型命名。您可以稍后更改。",
+    "name": "名称",
+    "deleteModelTitle": "删除模型",
+    "deleteModelConfirm": "您确定要删除「{name}」吗？此操作无法撤销。",
+    "renameModel": "重命名模型",
+    "enterNewName": "为「{name}」输入新名称",
+    "rename": "重命名",
+    "created": "创建时间",
+    "updated": "更新时间",
+    "loadingModel": "正在加载模型...",
+    "modelNotFound": "未找到模型",
+    "toolbar": {
+      "addNodes": "添加节点",
+      "rectangle": "矩形",
+      "circle": "圆形",
+      "ellipse": "椭圆",
+      "viewSettings": "视图设置",
+      "showGrid": "显示网格",
+      "snapToGrid": "对齐网格",
+      "backgroundColorForDownload": "下载背景颜色",
+      "transparent": "透明",
+      "downloadImage": "下载图片"
+    },
+    "customization": {
+      "connectionSettings": "连接设置",
+      "reset": "重置",
+      "type": "类型",
+      "color": "颜色",
+      "width": "宽度",
+      "animated": "动画",
+      "background": "背景",
+      "border": "边框",
+      "shape": "形状",
+      "showHandles": "显示手柄",
+      "opacity": "不透明度",
+      "size": "大小",
+      "weight": "粗细",
+      "align": "对齐",
+      "shadow": "阴影",
+      "edgeTypes": {
+        "default": "默认",
+        "step": "阶梯",
+        "smoothStep": "平滑阶梯",
+        "straight": "直线",
+        "bezier": "贝塞尔"
+      },
+      "borderStyles": {
+        "solid": "实线",
+        "dashed": "虚线",
+        "dotted": "点线",
+        "double": "双线"
+      },
+      "shapes": {
+        "square": "方形",
+        "rounded": "圆角"
+      },
+      "textAlign": {
+        "left": "左对齐",
+        "center": "居中",
+        "right": "右对齐"
+      },
+      "fontWeight": {
+        "normal": "正常",
+        "bold": "粗体",
+        "light": "细体"
+      }
+    },
+    "node": {
+      "style": "样式",
+      "text": "文本",
+      "effects": "效果",
+      "duplicate": "复制",
+      "bringToFront": "↑ 置顶",
+      "sendToBack": "↓ 置底",
+      "bringToFrontTitle": "置于顶层",
+      "sendToBackTitle": "置于底层"
+    }
+  },
+  "notes": {
+    "title": "笔记",
+    "newNote": "新建笔记",
+    "noteTitle": "笔记标题",
+    "noteContent": "笔记内容",
+    "noNotes": "暂无笔记",
+    "createFirst": "创建您的第一个笔记以开始",
+    "lastEdited": "最后编辑：{date}",
+    "saveNote": "保存笔记",
+    "deleteNote": "删除笔记",
+    "tooltip": "创建、管理和组织您的研究和文献笔记。使用分屏视图和专注模式提高效率。（切换专注模式：Cmd/Ctrl+B）",
+    "description": "创建、管理和组织您的研究和文献笔记",
+    "literatureNotes": "文献笔记",
+    "researchNotes": "研究笔记",
+    "loadingNotes": "正在加载笔记...",
+    "noNoteSelected": "未选择笔记",
+    "selectOrCreateNote": "从侧边栏选择一个笔记或创建新笔记",
+    "createNewNote": "创建新笔记",
+    "sections": {
+      "introduction": "引言",
+      "methods": "方法",
+      "results": "结果",
+      "discussion": "讨论",
+      "conclusion": "结论",
+      "references": "参考文献",
+      "other": "其他"
+    },
+    "editor": {
+      "untitledNote": "无标题笔记",
+      "rename": "重命名",
+      "renameTitle": "重命名标题",
+      "saveTitle": "保存标题",
+      "cancelRename": "取消重命名",
+      "saveChanges": "保存更改",
+      "saving": "保存中",
+      "saved": "已保存 {time}",
+      "sessionExpired": "会话已过期 - 未保存",
+      "deleteNote": "删除笔记",
+      "deleteConfirm": "您确定要删除此笔记吗？此操作无法撤销。",
+      "section": "章节",
+      "startWriting": "开始写作..."
+    }
+  },
+  "outcomes": {
+    "title": "成果",
+    "newOutcome": "新建成果",
+    "outcomeName": "成果名称",
+    "outcomeDescription": "成果描述",
+    "noOutcomes": "暂无成果",
+    "createFirst": "创建您的第一个成果以开始",
+    "searchOutcomes": "搜索成果...",
+    "viewOutcome": "查看成果",
+    "editOutcome": "编辑成果",
+    "deleteOutcome": "删除成果",
+    "tooltip": "创建和管理研究成果以跟踪您的发现和问题。",
+    "createOutcome": "创建成果",
+    "createAndManage": "创建和管理您的项目成果",
+    "loadingOutcomes": "正在加载成果...",
+    "noOutcomesCreated": "尚未创建成果",
+    "createFirstOutcome": "创建您的第一个成果",
+    "createNewOutcome": "创建新成果",
+    "giveOutcomeName": "为您的成果命名并选择模板。",
+    "type": "类型",
+    "researchOutcome": "研究成果",
+    "link": "链接",
+    "name": "名称",
+    "enterName": "输入名称",
+    "url": "网址",
+    "template": "模板",
+    "selectTemplate": "选择模板",
+    "templatesLabel": "模板",
+    "deleteOutcomeTitle": "删除成果",
+    "deleteOutcomeConfirm": "您确定要删除「{name}」吗？此操作无法撤销。",
+    "editOutcomeTitle": "编辑成果",
+    "updateNameAndUrl": "更新「{name}」的{type}",
+    "updateName": "名称",
+    "updateNameAndUrlType": "名称和网址",
+    "saveChanges": "保存更改",
+    "renameOutcome": "重命名成果",
+    "created": "创建时间",
+    "updated": "更新时间",
+    "deleteConfirmation": "您确定要删除此成果吗？此操作无法撤销。",
+    "cancel": "取消",
+    "delete": "删除",
+    "startWriting": "开始撰写您的成果...",
+    "createdDate": "创建于 {date}",
+    "updatedDate": "更新于 {date}",
+    "templates": {
+      "link": "链接",
+      "researchQuestion": {
+        "name": "研究问题",
+        "title": "研究问题",
+        "primaryQuestion": "主要研究问题",
+        "primaryQuestionPrompt": "在此陈述您的主要研究问题 - 确保它是具体的、可衡量的和可回答的",
+        "components": "研究问题组成部分",
+        "defineScope": "定义研究范围和边界",
+        "identifyVariables": "识别关键变量及其关系",
+        "specifyPopulation": "指定目标人群或情境",
+        "defineTimeframe": "定义研究时间范围",
+        "subQuestions": "子问题",
+        "subQuestion1": "需要调查哪些具体方面或维度？",
+        "subQuestion2": "需要考虑哪些情境因素？"
+      }
+    }
+  },
+  "chat": {
+    "title": "聊天",
+    "newChat": "新建聊天",
+    "sendMessage": "发送消息",
+    "typeMessage": "输入消息...",
+    "thinking": "思考中...",
+    "regenerate": "重新生成",
+    "copyMessage": "复制消息",
+    "deleteMessage": "删除消息",
+    "clearChat": "清空聊天",
+    "exportChat": "导出聊天",
+    "aiAssistant": "AI 研究助手",
+    "noMessages": "暂无消息",
+    "startConversation": "与您的 AI 研究助手开始对话",
+    "chatWithResearchData": "与您的研究数据聊天",
+    "history": "历史",
+    "chatHistory": "聊天历史",
+    "searchConversations": "搜索对话...",
+    "noMatchingConversations": "没有匹配的对话",
+    "tryAdjustingSearch": "尝试调整您的搜索词",
+    "noPreviousConversations": "没有之前的对话",
+    "startNewConversation": "开始新对话以开始",
+    "chatSession": "聊天会话",
+    "deleteChatSession": "删除聊天会话",
+    "deleteChatSessionConfirm": "您确定要删除此聊天会话吗？此操作无法撤销。",
+    "deleteSession": "删除会话",
+    "aiIsThinking": "AI 正在思考...",
+    "aiToolsUsed": "使用的 AI 分析工具：",
+    "referencedSources": "引用的来源：",
+    "usedSources": "使用了您研究中的 {count} 个来源",
+    "usingProjectContext": "使用当前项目上下文",
+    "youAreTyping": "您正在输入...",
+    "askAboutResearch": "询问关于您研究的问题、获取洞察或探索您的数据...",
+    "enterToSend": "发送",
+    "shiftEnterNewLine": "换行",
+    "enter": "Enter",
+    "shiftEnter": "Shift+Enter",
+    "summarizeResearch": "总结我最近的研究发现",
+    "summarizeDescription": "获取您最新研究进展的概览",
+    "keyThemes": "我的文献中有哪些关键主题？",
+    "keyThemesDescription": "识别您来源中的模式和趋势",
+    "findGaps": "帮我找到研究空白",
+    "findGapsDescription": "发现您领域中未探索的领域",
+    "nextSteps": "我的下一步研究步骤是什么？",
+    "nextStepsDescription": "获取继续您工作的建议",
+    "relevance": "{percent}% 相关性",
+    "literaturePage": "文献页面",
+    "failedToDeleteSession": "删除会话失败"
+  },
+  "onboarding": {
+    "welcome": "欢迎使用 Quester",
+    "welcomeSubtitle": "让我们为您设置",
+    "chooseWorkspaceType": "选择您的工作区类型",
+    "choosePersonalPlan": "选择您的个人计划",
+    "chooseTeamPlan": "选择您的团队计划",
+    "createDepartments": "创建部门",
+    "createFirstProject": "创建您的第一个项目",
+    "workspaceName": "工作区名称",
+    "workspaceType": "工作区类型",
+    "workspaceExists": "您已经创建了一个工作区",
+    "personalWorkspace": "个人工作区",
+    "forIndividualUse": "供个人使用",
+    "organizationWorkspace": "组织工作区",
+    "forTeams": "供团队和企业使用",
+    "createWorkspace": "创建工作区",
+    "numberOfDepartments": "部门数量",
+    "departmentName": "部门 {number} 名称",
+    "continueToProject": "继续创建项目",
+    "createProject": "创建项目",
+    "selectDepartment": "选择部门",
+    "selectDepartmentPlaceholder": "选择一个部门...",
+    "step1Title": "创建您的组织",
+    "step1Description": "设置您的工作区",
+    "step2Title": "选择您的计划",
+    "step2Description": "选择订阅计划",
+    "step3Title": "邀请团队成员",
+    "step3Description": "将协作者添加到您的工作区",
+    "step4Title": "创建您的第一个项目",
+    "step4Description": "开始组织您的研究",
+    "skipForNow": "暂时跳过",
+    "completeSetup": "完成设置",
+    "errorOccurred": "发生错误"
+  },
+  "pricing": {
+    "title": "选择您的计划",
+    "subtitle": "选择最适合您需求的计划",
+    "monthly": "月付",
+    "yearly": "年付",
+    "perMonth": "每月",
+    "perYear": "每年",
+    "currentPlan": "当前计划",
+    "upgrade": "升级",
+    "downgrade": "降级",
+    "selectPlan": "选择计划",
+    "features": "功能",
+    "mostPopular": "最受欢迎",
+    "enterprise": "企业版",
+    "contactUs": "联系我们",
+    "customPricing": "大型组织的定制价格",
+    "saveUpTo": "最高节省 {percent}%",
+    "save": "节省 {percent}%",
+    "workspace": "工作区",
+    "noPlansAvailable": "没有可用的订阅计划。",
+    "getStarted": "开始使用",
+    "teamValue": "团队价值",
+    "customSolution": "定制解决方案",
+    "perfectForTrying": "非常适合试用 Quester",
+    "fullFeaturedIndividual": "个人全功能计划",
+    "fullFeaturedTeam": "团队全功能计划",
+    "customizedSolutions": "团队和机构的定制解决方案",
+    "backToWorkspace": "返回工作区选择",
+    "thankYouInterest": "感谢您的关注！",
+    "teamWillReach": "我们团队的成员将很快联系您安排演示。",
+    "getFullDemo": "获取 Quester 工作原理的完整演示",
+    "businessEmail": "企业邮箱",
+    "companyUniversity": "公司/大学名称",
+    "placeholders": {
+      "firstName": "张",
+      "lastName": "三",
+      "company": "某某公司"
+    },
+    "failedToFetchPlans": "获取计划失败",
+    "everythingInTeamPlan": "团队计划中的所有功能",
+    "customUserLimit": "自定义用户限制",
+    "prioritySupport": "优先支持",
+    "slaGuarantees": "SLA 保证"
+  },
+  "analytics": {
+    "title": "分析",
+    "projectAnalyticsTooltip": "可视化和分析您项目的文献收藏和笔记内容。跟踪出版趋势，识别常见主题，并深入了解您的研究领域。",
+    "organizationAnalytics": "组织分析",
+    "overview": "概览",
+    "projects": "项目",
+    "members": "成员",
+    "activity": "活动",
+    "timeRange": "时间范围",
+    "last7Days": "最近 7 天",
+    "last14Days": "最近 14 天",
+    "last30Days": "最近 30 天",
+    "last90Days": "最近 90 天",
+    "allTime": "所有时间",
+    "noData": "暂无数据",
+    "totalProjects": "项目总数",
+    "activeProjects": "活跃项目",
+    "completedProjects": "已完成项目",
+    "totalMembers": "成员总数",
+    "activeMembers": "活跃成员",
+    "activityOverview": "您的项目和用户的活动概览。",
+    "analyticsTooltip": "查看有关您组织活动的综合分析，包括用户参与模式、项目内容创建和所有项目的团队生产力指标。",
+    "accessDenied": "访问被拒绝",
+    "noPermission": "您没有权限查看组织分析。此页面需要组织管理员、所有者或部门管理员权限。",
+    "returnToDashboard": "返回仪表板",
+    "loadingAnalytics": "正在加载分析数据...",
+    "errorLoadingData": "加载数据时出错",
+    "totalUsers": "用户总数",
+    "totalUsersTooltip": "您组织中所有用户的总数。",
+    "activeUsers7Days": "活跃用户（7 天）",
+    "activeUsers7DaysTooltip": "过去 7 天内至少登录一次的用户数量。",
+    "activeUsers30Days": "活跃用户（30 天）",
+    "activeUsers30DaysTooltip": "过去 30 天内至少登录一次的用户数量。",
+    "activityRate7d": "活跃率（7 天）",
+    "activityRateTooltip": "过去 7 天内有登录活动的总用户天数百分比。",
+    "noProjectsAvailable": "没有可用的项目。",
+    "projectActivityContentAdded": "项目活动（添加的内容）",
+    "selectProjectsHint": "点击项目行以在下方查看其活动图表。",
+    "days7": "7 天",
+    "days14": "14 天",
+    "days30": "30 天",
+    "searchProjectsByName": "按名称搜索项目...",
+    "noProjectsWithActivity": "未找到该组织有活动数据的项目。",
+    "activityDataCollection": "当团队成员在项目中创建或修改资源时，会收集活动数据。",
+    "project": "项目",
+    "literature": "文献",
+    "notes": "笔记",
+    "models": "模型",
+    "outcomes": "成果",
+    "actions": "操作",
+    "viewUsers": "查看用户",
+    "unnamedProject": "未命名项目",
+    "goToProject": "前往项目",
+    "selectedProjectDetails": "选定项目活动详情",
+    "userLoginActivity": "用户登录活动",
+    "searchUsersPlaceholder": "按姓名或邮箱搜索用户...",
+    "noUserLoginData": "没有可用的用户登录数据。",
+    "user": "用户",
+    "lastLogin": "最后登录",
+    "activeDays7d": "活跃天数（7 天）",
+    "activeDays14d": "活跃天数（14 天）",
+    "activeDays30d": "活跃天数（30 天）",
+    "activeDaysAll": "活跃天数（全部）",
+    "never": "从未",
+    "invalidDate": "无效日期",
+    "toggleYearsTimePeriods": "在单独年份和时间段之间切换",
+    "viewChartFullscreen": "全屏查看图表",
+    "loadingData": "正在加载数据...",
+    "noDataToAnalyze": "暂无可分析的数据！",
+    "tabs": {
+      "overview": "概览",
+      "notesAnalysis": "笔记分析",
+      "literatureAnalysis": "文献分析",
+      "designsAnalysis": "设计分析"
+    }
+  },
+  "errors": {
+    "generic": "出了点问题。请重试。",
+    "network": "网络错误。请检查您的连接。",
+    "unauthorized": "您无权执行此操作。",
+    "notFound": "未找到请求的资源。",
+    "validation": "请检查您的输入并重试。",
+    "serverError": "服务器错误。请稍后重试。",
+    "timeout": "请求超时。请重试。",
+    "sessionExpired": "您的会话已过期。请重新登录。",
+    "invalidInput": "提供的输入无效。",
+    "permissionDenied": "权限被拒绝。",
+    "invalidProjectId": "无效的项目 ID",
+    "invalidProjectOrLiteratureId": "无效的项目或文献 ID",
+    "invalidProjectOrModelId": "无效的项目或模型 ID",
+    "invalidProjectOrOutcomeId": "无效的项目或成果 ID",
+    "failedToLoad": "加载数据失败",
+    "failedToSave": "保存更改失败",
+    "failedToDelete": "删除失败",
+    "failedToCreateOrganization": "创建组织失败",
+    "failedToLoadChatSession": "加载聊天会话失败",
+    "failedToGetResponse": "获取响应失败",
+    "failedToLoadAchievements": "加载成就失败。请稍后重试。",
+    "invalidLiteratureOrProjectId": "无效的文献或项目 ID",
+    "noRoleSelected": "未选择角色",
+    "lastOwnerCannotChange": "无法更改最后一位组织所有者的角色",
+    "pleaseSelectRole": "请选择一个角色",
+    "failedToUpdateRole": "更新角色失败",
+    "anUnexpectedErrorOccurred": "发生意外错误",
+    "failedToUpdateSettings": "更新设置失败",
+    "failedToJoin": "加入失败。请重试。",
+    "failedToFetchPlans": "获取计划失败",
+    "failedToInitializeDashboard": "初始化仪表板失败",
+    "failedToLoadLiterature": "加载文献失败"
+  },
+  "validation": {
+    "required": "此字段为必填项",
+    "email": "请输入有效的电子邮件地址",
+    "minLength": "至少需要 {min} 个字符",
+    "maxLength": "最多 {max} 个字符",
+    "passwordMismatch": "密码不匹配",
+    "invalidUrl": "请输入有效的网址",
+    "invalidNumber": "请输入有效的数字"
+  },
+  "time": {
+    "justNow": "刚刚",
+    "minutesAgo": "{count} 分钟前",
+    "hoursAgo": "{count} 小时前",
+    "daysAgo": "{count} 天前",
+    "weeksAgo": "{count} 周前",
+    "monthsAgo": "{count} 个月前",
+    "yearsAgo": "{count} 年前"
+  },
+  "teamMembers": {
+    "title": "团队成员",
+    "searchPlaceholder": "搜索成员...",
+    "tableName": "姓名",
+    "tableEmail": "邮箱",
+    "tableRole": "角色",
+    "tableActions": "操作",
+    "noUsersMatchingSearch": "没有匹配搜索的用户",
+    "noMembersYet": "暂无团队成员",
+    "tryAdjustingSearch": "尝试调整您的搜索词",
+    "membersWillAppear": "添加后，团队成员将显示在这里",
+    "you": "您",
+    "roleLabel": "角色",
+    "roleOwnerDescription": "对此 {resourceType} 拥有完全控制权，包括团队管理和设置。",
+    "roleAdminDescription": "可以管理此 {resourceType} 的团队成员和大多数设置。",
+    "roleMemberDescription": "可以访问和贡献此 {resourceType}。",
+    "roleGenericDescription": "此 {resourceType} 中的 {role} 角色。",
+    "organizationOwner": "组织所有者",
+    "organizationAdmin": "组织管理员",
+    "orgOwnerAccessDescription": "此用户拥有此项目的完全访问权限，因为他们拥有父组织。",
+    "orgAdminAccessDescription": "此用户通过其组织角色拥有此项目的管理员访问权限。",
+    "manage": "管理",
+    "remove": "移除",
+    "cannotRemoveLastOwner": "无法移除最后一位组织所有者",
+    "memberRemovedSuccess": "{name} 已从团队中移除",
+    "removeFailed": "移除用户失败",
+    "removeDialogTitle": "移除团队成员",
+    "removeOwnerElevatedWarning": "您即将使用组织权限移除项目所有者。您确定要继续吗？",
+    "removeConfirmMessage": "您确定要从此 {resourceType} 中移除 {name} 吗？"
+  },
+  "invitationManager": {
+    "member": "成员"
+  },
+  "invitations": {
+    "enterValidEmail": "请输入有效的电子邮件地址",
+    "selectRole": "请选择一个角色",
+    "alreadyMember": "此邮箱已是此资源的成员",
+    "alreadyInvited": "此邮箱已被邀请",
+    "fillRequiredFields": "请填写所有必填字段",
+    "fixValidationErrors": "请在提交前修复验证错误",
+    "maxUsersReached": "您已达到计划的最大用户数 {max}",
+    "subscriptionNoInvites": "您的订阅不允许发送邀请",
+    "invitationSentTo": "邀请已发送至 {email}",
+    "sendFailed": "发送邀请失败",
+    "loadFailed": "加载邀请失败",
+    "revokedSuccess": "邀请已成功撤销",
+    "revokeFailed": "撤销邀请失败",
+    "sendNewInvitation": "发送新邀请",
+    "emailAddress": "电子邮件地址",
+    "emailPlaceholder": "colleague@example.com",
+    "role": "角色",
+    "selectRolePlaceholder": "选择一个角色...",
+    "sending": "发送中...",
+    "sendInvitation": "发送邀请",
+    "pendingInvitations": "待处理的邀请",
+    "loadingPending": "正在加载待处理的邀请...",
+    "fetchingStatus": "正在获取邀请状态",
+    "noPending": "没有待处理的邀请",
+    "tableEmail": "邮箱",
+    "tableRole": "角色",
+    "tableSent": "发送时间",
+    "tableActions": "操作",
+    "maxUsersForPlan": "您已达到 {plan} 计划的最大用户数 {max}。",
+    "contactSupportSeats": "联系支持以添加更多席位。",
+    "upgradeToTeam": "升级到 Quester 团队版以获得更多席位。",
+    "contactSupportEnterprise": "联系支持了解企业版选项。",
+    "upgradeOptions": "考虑升级您的计划以获得更多席位。"
+  },
+  "progress": {
+    "title": "进度",
+    "researchLevel": "研究等级",
+    "viewAll": "查看全部",
+    "progressTo": "进度至 {level}",
+    "pointsUntilNext": "距离下一等级还需 {points} 分",
+    "maximumLevelAchieved": "已达到最高等级！",
+    "pinnacleOfMastery": "您已达到研究精通的巅峰",
+    "projectTimeline": "项目时间线",
+    "achievements": "成就",
+    "complete": "完成",
+    "researchLevels": "研究等级",
+    "yourJourney": "您通往研究精通的旅程",
+    "andBeyond": "及更高",
+    "close": "关闭",
+    "noAdditionalDetails": "没有其他详情",
+    "additionalInfo": "附加信息",
+    "nodes": "节点",
+    "edges": "边",
+    "updatedFields": "更新的字段",
+    "eventDetailsTitle": "事件详情",
+    "type": "类型",
+    "created": "创建时间",
+    "createdBy": "创建者",
+    "eventTime": "事件时间",
+    "description": "描述",
+    "additionalDetails": "附加详情",
+    "tags": "标签",
+    "literatureAdded": "已添加文献（{count} 条）",
+    "authors": "作者",
+    "year": "年份",
+    "publisher": "出版商",
+    "eventDescriptions": {
+      "createdAndUpdatedModel": "创建并更新了模型：{name}",
+      "createdModel": "创建了模型：{name}",
+      "updatedModel": "更新了模型：{name}",
+      "createdAndUpdatedOutcome": "创建并更新了 {type} 成果：{name}",
+      "createdOutcome": "创建了 {type} 成果：{name}",
+      "updatedOutcome": "更新了 {type} 成果：{name}",
+      "createdInsight": "创建了 1 条关键词分析洞察",
+      "createdInsights": "创建了 {count} 条关键词分析洞察",
+      "addedLiteratureItem": "向项目添加了 1 条文献",
+      "addedLiteratureItems": "向项目添加了 {count} 条文献",
+      "createdNote": "创建了 1 条笔记",
+      "createdNotes": "创建了 {count} 条笔记"
+    },
+    "eventDetails": {
+      "modelName": "模型名称：{name}",
+      "name": "名称：{name}",
+      "type": "类型：{type}",
+      "section": "章节：{section}",
+      "events": "事件：{events}",
+      "previousStatus": "之前状态：{status}",
+      "newStatus": "新状态：{status}",
+      "designType": "设计类型：{type}",
+      "previousValue": "之前：{value}",
+      "newValue": "现在：{value}",
+      "keywords": "关键词：{keywords}",
+      "noAuthors": "无作者",
+      "untitledNote": "无标题笔记",
+      "researchType": "研究"
+    },
+    "unknownBulkAction": "未知批量操作：{action}",
+    "exportInitiated": "已开始导出",
+    "archiveNotImplemented": "归档功能尚未实现",
+    "deletedEvents": "已删除 {count} 个事件",
+    "noCustomEventsSelected": "未选择自定义事件进行批量操作",
+    "unknownModel": "未知模型",
+    "levels": {
+      "sparkOfCuriosity": {
+        "name": "好奇的火花",
+        "description": "您的研究旅程开始了"
+      },
+      "illuminator": {
+        "name": "启明者",
+        "description": "为新知识带来光明"
+      },
+      "knowledgeWeaver": {
+        "name": "知识编织者",
+        "description": "连接思想和洞察"
+      },
+      "insightArchitect": {
+        "name": "洞察建筑师",
+        "description": "构建理解的框架"
+      },
+      "wisdomSculptor": {
+        "name": "智慧雕塑家",
+        "description": "将知识塑造成智慧"
+      },
+      "enlightenmentExplorer": {
+        "name": "启蒙探索者",
+        "description": "深入探索发现的深度"
+      },
+      "sageOfScholars": {
+        "name": "学者圣人",
+        "description": "研究卓越的大师"
+      }
+    },
+    "eventTitles": {
+      "projectStatusChanged": "项目状态已更改",
+      "designUpdated": "设计已更新",
+      "modelCreatedAndUpdated": "模型已创建并更新",
+      "modelActivity": "{count} 个模型活动",
+      "modelCreated": "模型已创建",
+      "modelCreatedMultiple": "创建了 {count} 个模型",
+      "modelUpdated": "模型已更新",
+      "modelUpdatedMultiple": "更新了 {count} 个模型",
+      "outcomeCreatedAndUpdated": "成果已创建并更新",
+      "outcomeActivity": "{count} 个成果活动",
+      "outcomeCreated": "成果已创建",
+      "outcomeCreatedMultiple": "创建了 {count} 个成果",
+      "outcomeUpdated": "成果已更新",
+      "outcomeUpdatedMultiple": "更新了 {count} 个成果",
+      "createdInsight": "洞察已创建",
+      "createdInsights": "创建了 {count} 条洞察",
+      "addedLiteratureItem": "文献已添加",
+      "addedLiteratureItems": "添加了 {count} 条文献",
+      "createdNote": "笔记已创建",
+      "createdNotes": "创建了 {count} 条笔记"
+    },
+    "achievementGroups": {
+      "noteTaking": "笔记",
+      "literatureCollection": "文献收集",
+      "consistency": "一致性",
+      "keywordResearch": "关键词研究",
+      "researchDesign": "研究设计",
+      "customDesigns": "自定义设计",
+      "visualization": "可视化"
+    }
+  },
+  "keywordAnalysis": {
+    "title": "关键词分析",
+    "newAnalysis": "新建分析",
+    "selectProjectFirst": "请先选择一个项目",
+    "selectProjectToStart": "选择一个项目以开始",
+    "loadFailed": "加载关键词分析失败",
+    "createFailed": "创建关键词分析失败",
+    "canceledOrTimedOut": "关键词分析已取消或超时。",
+    "deleteFailed": "删除分析失败",
+    "switchingAnalysis": "正在切换分析...",
+    "noAnalysesYet": "暂无关键词分析",
+    "createFirstDescription": "创建您的首次分析以开始探索文献中的关键词关联。",
+    "createFirstAnalysis": "创建您的首次分析",
+    "previousAnalyses": "之前的分析",
+    "keywords": "关键词",
+    "frequencyDistribution": "频率分布",
+    "frequencyDistributionFigure": "频率分布图",
+    "downloadPNG": "下载 PNG",
+    "keywordOverlap": "关键词重叠",
+    "keywordOverlapDescription": "数值显示 Google Scholar 搜索结果计数。",
+    "selectKeywordsForOverlap": "选择 2-3 个关键词以查看其重叠",
+    "vennDiagramFigures": "关键词维恩图",
+    "analysisResults": "分析结果",
+    "summary": "摘要",
+    "copyText": "复制文本",
+    "crossDistribution": "交叉分布",
+    "threeWayDistribution": "三向分布",
+    "table1": "表 1",
+    "table2": "表 2",
+    "table3": "表 3",
+    "frequencyDistributionTable": "关键术语频率分布表",
+    "crossDistributionTable": "关键术语交叉分布表",
+    "threeWayDistributionTable": "关键术语三向分布表",
+    "keyTerm": "关键术语",
+    "frequency": "频率",
+    "percentage": "百分比（%）",
+    "cumulativePercentage": "累计百分比（%）",
+    "total": "总计",
+    "keyword1": "关键词 1",
+    "keyword2": "关键词 2",
+    "keyword3": "关键词 3",
+    "downloadCSV": "下载 CSV",
+    "tooltipScholarNote": "数字可能与 Google Scholar 界面不同。",
+    "noTripleCombinations": "未找到三重组合",
+    "tripleDataUnavailable": "三向关键词分析的数据不可用。",
+    "suggestedKeywords": "建议的关键词",
+    "summaryCopied": "摘要已复制到剪贴板！",
+    "copyFailed": "复制摘要失败。",
+    "keywordAlreadyAdded": "关键词已添加",
+    "maxKeywords": "最多允许 7 个关键词",
+    "minKeywords": "请至少添加 2 个关键词",
+    "keywordPlaceholder": "输入关键词并按 Enter...",
+    "analyzeKeywords": "分析关键词",
+    "tips": "提示：",
+    "tipPressEnter": "按 Enter 或逗号添加关键词",
+    "tipMaxKeywords": "添加最多 7 个关键词以获得最佳结果",
+    "tipSpecificTerms": "使用具体的、以研究为中心的术语"
+  },
+  "addLiterature": {
+    "title": "添加文献",
+    "pasteReferences": "粘贴参考文献",
+    "manualEntry": "手动输入",
+    "uploadDocuments": "上传文档",
+    "pasteYourReferences": "粘贴您的参考文献",
+    "pasteHerePlaceholder": "在此处粘贴您的参考文献，用空行分隔...",
+    "processing": "处理中...",
+    "processReferences": "处理参考文献",
+    "analyzingExtracting": "正在分析和提取参考文献...",
+    "referencesSavedSuccess": "参考文献保存成功！",
+    "savingReferences": "正在保存参考文献...",
+    "extractedReferences": "提取的参考文献",
+    "untitledReference": "无标题参考文献",
+    "noAuthors": "无作者",
+    "ready": "就绪",
+    "needsReview": "需要审核",
+    "book": "图书",
+    "presentationTitle": "演示标题",
+    "nameTitle": "名称（标题）",
+    "authors": "作者",
+    "addAuthors": "添加作者",
+    "conferenceName": "会议名称",
+    "enterConferenceName": "输入会议名称",
+    "chapterTitle": "章节标题",
+    "enterChapterTitle": "输入章节标题",
+    "editors": "编辑",
+    "addEditors": "添加编辑",
+    "type": "类型",
+    "publisher": "出版商",
+    "publisherName": "出版商名称",
+    "year": "年份",
+    "publicationYear": "出版年份",
+    "city": "城市",
+    "volume": "卷",
+    "volumeNumber": "卷号",
+    "issue": "期",
+    "issueNumber": "期号",
+    "startDate": "开始日期",
+    "endDate": "结束日期",
+    "startPage": "起始页",
+    "endPage": "结束页",
+    "link": "链接",
+    "urlToLiterature": "文献网址",
+    "saving": "保存中...",
+    "addLiterature": "添加文献",
+    "uploadYourFiles": "上传您的文件",
+    "saveAllReferences": "保存所有参考文献",
+    "editReference": "编辑参考文献",
+    "titleLabel": "标题",
+    "updateReference": "更新参考文献",
+    "titleAuthorEditorRequired": "标题和至少一位作者或编辑为必填项",
+    "titleAuthorRequired": "标题和至少一位作者为必填项",
+    "saveFailed": "保存文献失败",
+    "failedToProcessReferences": "处理参考文献失败",
+    "failedToSaveLiterature": "保存文献失败"
+  },
+  "literatureTable": {
+    "columns": {
+      "title": "标题",
+      "authors": "作者",
+      "status": "状态",
+      "publisher": "出版商",
+      "year": "年份",
+      "type": "类型",
+      "addedOn": "添加时间",
+      "file": "文件"
+    },
+    "status": {
+      "notStarted": "未开始",
+      "reading": "阅读中",
+      "noteTaking": "做笔记中",
+      "completed": "已完成",
+      "archived": "已归档"
+    },
+    "previewDocument": "预览文档",
+    "downloadDocument": "下载文档"
+  },
+  "literatureSelector": {
+    "linkLiterature": "关联文献...",
+    "searchPlaceholder": "搜索文献...",
+    "noLiteratureFound": "未找到文献。"
+  },
+  "processingStatus": {
+    "documentProcessing": "文档处理",
+    "loading": "加载中...",
+    "uploadingFiles": "正在上传 {count} 个文件...",
+    "processingDocuments": "正在处理 {count} 个文档...",
+    "totalFiles": "文件总数",
+    "started": "已开始",
+    "pending": "待处理",
+    "duration": "持续时间",
+    "error": "错误",
+    "processingComplete": "处理完成",
+    "successful": "成功",
+    "failed": "失败",
+    "fileDetails": "文件详情",
+    "size": "大小",
+    "type": "类型",
+    "pages": "页数",
+    "updated": "更新时间",
+    "extractionErrors": "提取错误",
+    "failedToFetchStatus": "获取处理状态失败"
+  },
+  "documentUpload": {
+    "dropOrBrowse": "将文档拖放到此处或点击浏览",
+    "supportedFormats": "支持 PDF、DOCX、DOC 和 TXT 文件（每个最大 25MB，每次最多上传 5 个文件）",
+    "whenMetadataExtracted": "当元数据被提取时",
+    "fillEmptyOnly": "仅填充空字段（推荐）",
+    "overrideExisting": "用提取的值覆盖现有字段",
+    "selectFiles": "选择文件",
+    "uploadError": "上传错误",
+    "improvingProcessing": "我们一直在改进文档处理功能。",
+    "feedbackNote": "如果您在上传后发现文档处理有误，请点击文献中的红旗按钮。",
+    "fileSizeExceeds": "文件大小超过 25MB 限制",
+    "unsupportedFileType": "不支持的文件类型",
+    "validationErrors": "文件验证错误",
+    "maxFilesExceeded": "每次最多上传 5 个文件"
+  },
+  "literatureDetails": {
+    "title": "标题",
+    "book": "图书",
+    "presentationTitle": "演示标题",
+    "chapterTitle": "章节标题",
+    "conferenceName": "会议名称",
+    "authors": "作者",
+    "authorFormatTip": "我们强烈建议使用以下格式填写作者：姓, 名首字母. 例如：Smith, J",
+    "editors": "编辑",
+    "publisher": "出版商",
+    "publishYear": "出版年份",
+    "city": "城市",
+    "volume": "卷",
+    "issue": "期",
+    "startPage": "起始页",
+    "endPage": "结束页",
+    "startDate": "开始日期",
+    "endDate": "结束日期",
+    "pickStartDate": "选择开始日期",
+    "pickEndDate": "选择结束日期",
+    "type": "类型",
+    "link": "链接",
+    "types": {
+      "journalArticle": "期刊文章",
+      "literatureReview": "文献综述",
+      "book": "图书",
+      "bookChapter": "图书章节",
+      "conferencePresentation": "会议演示",
+      "conferenceProceedings": "会议论文集",
+      "dissertation": "学位论文",
+      "website": "网站",
+      "grayLiterature": "灰色文献",
+      "other": "其他"
+    }
+  },
+  "literatureStatus": {
+    "readingStatus": "阅读状态",
+    "changeStatus": "更改状态"
+  },
+  "exportReferences": {
+    "title": "导出参考文献",
+    "description": "预览并以各种格式导出您选择的参考文献",
+    "referencesSelected": "已选择 {selected}/{total} 条参考文献",
+    "all": "全部",
+    "none": "无",
+    "exporting": "导出中...",
+    "copyToClipboard": "复制到剪贴板",
+    "download": "下载",
+    "noReferencesSelected": "未选择参考文献",
+    "noReferencesSelectedForExport": "未选择要导出的参考文献",
+    "noReferencesToCopy": "没有可复制的参考文献",
+    "missingDataWarning": "{count} 条参考文献缺少标题或作者。",
+    "exportSuccess": "{format} 导出成功，共 {count} 条参考文献",
+    "exportFailed": "导出参考文献失败",
+    "copiedToClipboard": "已复制 {count} 条参考文献到剪贴板",
+    "copyFailed": "复制到剪贴板失败",
+    "bibliography": "参考书目",
+    "bibliographyPreview": "参考书目预览",
+    "generatedOn": "生成于",
+    "researchBibliography": "研究参考书目",
+    "page": "页",
+    "pages": "页",
+    "words": "字",
+    "style": "格式",
+    "noReferencesAvailable": "没有可用的参考文献。",
+    "wordDocx": "Word (DOCX)"
+  },
+  "researchProducts": {
+    "title": "项目成果",
+    "types": {
+      "professionalism": "专业性",
+      "writing": "写作",
+      "analysis": "分析"
+    },
+    "status": {
+      "planned": "已计划",
+      "inProgress": "进行中",
+      "completed": "已完成",
+      "archived": "已归档"
+    },
+    "productNamePlaceholder": "成果名称",
+    "dueDatePlaceholder": "选择截止日期",
+    "descriptionPlaceholder": "描述（可选）",
+    "noProductsFound": "未找到研究成果",
+    "manageOutputs": "管理您的研究成果和交付物。",
+    "noProductsAddedYet": "尚未添加成果。",
+    "cancelEdit": "取消编辑",
+    "updateProduct": "更新成果",
+    "addProduct": "添加成果"
+  },
+  "citationFormats": {
+    "apa": "APA",
+    "mla": "MLA",
+    "chicago": "芝加哥格式",
+    "harvard": "哈佛格式",
+    "ieee": "IEEE",
+    "asa": "ASA"
+  },
+  "reference": {
+    "heading": "参考文献",
+    "copiedSuccess": "参考文献已复制到剪贴板",
+    "copyFailed": "复制参考文献失败",
+    "noDate": "无日期"
+  },
+  "announcements": {
+    "view": "查看",
+    "history": "历史",
+    "date": "日期",
+    "duration": "持续时间",
+    "affected": "受影响",
+    "viewDetails": "查看详情",
+    "dismiss": "关闭",
+    "systemAnnouncement": "系统公告",
+    "noAnnouncements": "没有公告",
+    "noAnnouncementsAvailable": "没有可用的公告",
+    "unread": "未读",
+    "loadingAnnouncements": "正在加载公告..."
+  },
+  "pendingInvites": {
+    "title": "待处理的邀请",
+    "youHaveInvites": "您有 {count} 个待处理的邀请",
+    "viewInvites": "查看邀请",
+    "noInvites": "没有待处理的邀请",
+    "accept": "接受",
+    "decline": "拒绝",
+    "accepting": "接受中...",
+    "declining": "拒绝中...",
+    "inviteTo": "邀请加入 {name}",
+    "invitedBy": "由 {name} 邀请",
+    "role": "角色：{role}",
+    "acceptSuccess": "邀请接受成功",
+    "acceptFailed": "接受邀请失败",
+    "declineSuccess": "邀请已拒绝",
+    "declineFailed": "拒绝邀请失败",
+    "loadingInvites": "正在加载邀请...",
+    "failedToLoad": "加载邀请失败",
+    "failedToAccept": "接受邀请失败"
+  },
+  "customEvents": {
+    "validation": {
+      "titleRequired": "事件标题为必填项",
+      "titleMaxLength": "标题不能超过 200 个字符",
+      "descriptionMaxLength": "描述不能超过 1000 个字符"
+    },
+    "types": {
+      "research_milestone": {
+        "label": "研究里程碑",
+        "description": "标记研究旅程中的重要成就",
+        "example": "例如：完成数据收集、提交手稿"
+      },
+      "grant_application": {
+        "label": "基金申请",
+        "description": "跟踪重要的基金相关截止日期和里程碑",
+        "example": "例如：基金提交截止日期、获奖通知"
+      },
+      "presentation": {
+        "label": "演示",
+        "description": "记录会议演示和讲座",
+        "example": "例如：会议演示、部门研讨会"
+      },
+      "publication": {
+        "label": "发表",
+        "description": "跟踪论文提交和接受",
+        "example": "例如：论文已提交、文章已发表"
+      },
+      "collaboration": {
+        "label": "合作",
+        "description": "记录合作会议和伙伴关系",
+        "example": "例如：建立伙伴关系、联合研究会议"
+      },
+      "training": {
+        "label": "培训",
+        "description": "记录研讨会、课程和技能发展活动",
+        "example": "例如：参加研讨会、完成认证"
+      },
+      "data_collection": {
+        "label": "数据收集",
+        "description": "跟踪数据收集活动和实地工作",
+        "example": "例如：问卷分发、访谈进行"
+      },
+      "ethics_review": {
+        "label": "伦理审查",
+        "description": "记录 IRB 提交和伦理批准",
+        "example": "例如：IRB 提交、伦理批准已收到"
+      },
+      "other": {
+        "label": "其他",
+        "description": "任何其他重要的项目事件",
+        "example": "例如：自定义里程碑或事件"
+      }
+    },
+    "deleteTitle": "删除自定义事件",
+    "removeDetail": "移除详情",
+    "removeTag": "移除标签"
+  },
+  "projectActivityChart": {
+    "literature": "文献",
+    "notes": "笔记",
+    "models": "模型",
+    "outcomes": "成果",
+    "noData": "无数据",
+    "noActivityDataAvailable": "没有可用的活动数据",
+    "noActivityDataFor": "{projectName} 没有活动数据",
+    "count": "计数",
+    "publications": "发表"
+  },
+  "literatureDesigns": {
+    "researchDesigns": "研究设计",
+    "defineMethodology": "定义此文献中使用的研究方法论。",
+    "selectDesign": "选择 {type} 设计",
+    "noDesignSpecified": "未指定 {type} 设计"
+  },
+  "projectOverviewCard": {
+    "projectOverview": "项目概览",
+    "purposeStatement": "目的陈述",
+    "purposeTooltip": "研究目的是建立研究意图的陈述。",
+    "aiRewrite": "AI 重写",
+    "aiRewriteTooltip": "让 AI 帮助改进您的目的陈述。",
+    "rewriting": "重写中...",
+    "start": "开始",
+    "generating": "生成中...",
+    "noPurposeDefined": "未定义目的",
+    "projectStatus": "项目状态",
+    "status": "状态：",
+    "notSet": "未设置",
+    "newPurposeSaved": "新的目的已保存。"
+  },
+  "literatureStore": {
+    "noProjectId": "未提供项目 ID",
+    "errorLoadingLiterature": "加载文献时出错",
+    "errorAddingLiterature": "添加文献时出错",
+    "errorUpdatingLiterature": "更新文献时出错",
+    "errorDeletingLiterature": "删除文献时出错"
+  },
+  "notesStore": {
+    "userNotAuthenticated": "用户未认证",
+    "noteNotFound": "未找到笔记",
+    "failedToUpdateNote": "更新笔记失败"
+  },
+  "insightsStore": {
+    "failedToLoadInsights": "加载洞察失败",
+    "failedToGenerateInsights": "生成洞察失败",
+    "failedToLoadHistoricalInsights": "加载历史洞察失败"
+  },
+  "grantStore": {
+    "noProjectId": "未提供项目 ID",
+    "noGrantId": "未提供基金 ID",
+    "errorOccurred": "发生错误"
+  },
+  "globalSearchStore": {
+    "failedToAutoSaveSession": "自动保存会话失败",
+    "failedToLoadChatHistory": "加载聊天历史失败",
+    "failedToSaveSession": "保存会话失败",
+    "failedToLoadSession": "加载会话失败",
+    "failedToDeleteSession": "删除会话失败",
+    "failedToUpdateSession": "更新会话失败",
+    "failedToSearchChatHistory": "搜索聊天历史失败",
+    "navigateToProjectForChat": "请导航到项目以在当前项目模式下使用 AI 聊天",
+    "navigateToProjectForSearch": "请导航到项目以在当前项目中搜索"
+  },
+  "modelStore": {
+    "noProjectIdProvided": "未提供项目 ID",
+    "noModelIdProvided": "未提供模型 ID",
+    "anErrorOccurred": "发生错误",
+    "receivedInvalidModelData": "从 API 收到无效的模型数据",
+    "apiResponseNoModelData": "API 响应不包含模型数据。",
+    "flowElementNotFound": "未找到流程元素"
+  },
+  "customEventsStore": {
+    "projectIdRequired": "项目 ID 为必填项",
+    "eventNotFound": "未找到事件",
+    "failedToLoadEventDetails": "加载事件详情失败",
+    "eventCreatedSuccess": "事件创建成功！",
+    "eventCreatedDescription": "「{title}」已添加到您的时间线"
+  },
+  "outcomeStore": {
+    "noProjectIdProvided": "未提供项目 ID",
+    "noOutcomeIdProvided": "未提供成果 ID",
+    "outcomeNotFound": "未找到成果",
+    "errorOccurred": "发生错误"
+  },
+  "organizationSettings": {
+    "title": "组织设置",
+    "subtitle": "管理您组织的设置和权限。",
+    "tooltip": "配置和管理您组织的设置，包括团队权限、邀请控制和项目创建策略。",
+    "loadingSettings": "正在加载设置...",
+    "refresh": "刷新",
+    "tourButton": "导览",
+    "tourAriaLabel": "了解组织设置",
+    "selectOrganization": "选择组织",
+    "selectOrganizationDescription": "选择一个组织来管理其设置",
+    "tour": {
+      "header": {
+        "title": "组织设置中心",
+        "description": "此页面允许管理员和所有者管理所选组织的特定设置。"
+      },
+      "selector": {
+        "title": "选择您的组织",
+        "description": "如果您属于多个组织，使用此选择器在它们之间切换。"
+      },
+      "refresh": {
+        "title": "刷新数据",
+        "description": "点击此处重新加载所选组织的最新设置和团队信息。"
+      },
+      "teamSettings": {
+        "title": "团队和权限设置",
+        "description": "此部分包含用于管理用户在组织内如何互动的控件。"
+      },
+      "disableInvitations": {
+        "title": "控制邀请",
+        "description": "（仅限所有者）启用或禁用任何人邀请新成员加入此组织的能力。"
+      },
+      "allowMemberInvites": {
+        "title": "委托邀请",
+        "description": "（仅限所有者）选择普通成员和管理员是否可以邀请他人。"
+      },
+      "membersCreateProjects": {
+        "title": "项目创建权限",
+        "description": "（管理员/所有者）决定普通成员是否可以创建新项目。"
+      },
+      "membersCreateDepartments": {
+        "title": "部门创建（成员）",
+        "description": "（仅限所有者）控制普通成员是否可以创建新部门。"
+      },
+      "adminsCreateDepartments": {
+        "title": "部门创建（管理员）",
+        "description": "（仅限所有者）控制管理员是否可以创建新部门。"
+      },
+      "overview": {
+        "title": "管理您的组织",
+        "description": "使用这些设置来配置您的团队如何在 Quester 中协作。"
+      }
+    }
+  },
+  "grants": {
+    "types": {
+      "standard": "标准基金",
+      "research": "研究基金",
+      "training": "培训基金",
+      "equipment": "设备基金",
+      "fellowship": "奖学金",
+      "career": "职业发展",
+      "collaborative": "合作研究",
+      "other": "其他"
+    },
+    "status": {
+      "active": "活跃",
+      "pending": "待定",
+      "completed": "已完成",
+      "cancelled": "已取消",
+      "expired": "已过期"
+    },
+    "labels": {
+      "amount": "金额",
+      "duration": "持续时间"
+    },
+    "form": {
+      "title": "基金名称 *",
+      "titlePlaceholder": "例如：NSF 职业发展奖",
+      "recipient": "接收方",
+      "recipientPlaceholder": "例如：加州大学",
+      "awardNumber": "奖励编号",
+      "awardNumberPlaceholder": "例如：NSF-2023-001",
+      "startDate": "开始日期",
+      "endDate": "结束日期",
+      "awardInstrument": "奖励类型",
+      "selectAwardInstrument": "选择奖励类型",
+      "statusLabel": "状态",
+      "selectStatus": "选择状态",
+      "directorateDivision": "司/部门",
+      "directorateDivisionPlaceholder": "例如：工程司",
+      "amountLabel": "金额（$）",
+      "amountPlaceholder": "例如：500000",
+      "principalInvestigators": "首席研究员",
+      "addPI": "添加首席研究员",
+      "piPlaceholder": "例如：张三博士",
+      "coPrincipalInvestigators": "合作研究员",
+      "addCoPI": "添加合作研究员",
+      "copiPlaceholder": "例如：李四博士",
+      "programManager": "项目经理",
+      "programManagerPlaceholder": "例如：王五博士",
+      "programManagerEmail": "项目经理邮箱",
+      "programManagerEmailPlaceholder": "例如：pm@nsf.gov",
+      "programManagerPhone": "项目经理电话",
+      "programManagerPhonePlaceholder": "例如：(555) 123-4567",
+      "editGrant": "编辑基金",
+      "addNewGrant": "添加新基金",
+      "updateGrant": "更新基金",
+      "addGrant": "添加基金"
+    },
+    "validation": {
+      "grantNameRequired": "基金名称为必填项",
+      "endDateAfterStart": "结束日期必须晚于开始日期",
+      "amountMustBeNumber": "金额必须是有效数字",
+      "invalidEmail": "必须是有效的电子邮件地址"
+    },
+    "display": {
+      "notSpecified": "未指定",
+      "awardNumber": "奖励编号",
+      "principalInvestigator": "首席研究员",
+      "principalInvestigators": "首席研究员",
+      "coPrincipalInvestigator": "合作研究员",
+      "coPrincipalInvestigators": "合作研究员",
+      "recipientLabel": "接收方：",
+      "awardInstrumentLabel": "奖励类型：",
+      "directorateLabel": "司：",
+      "programManagerLabel": "项目经理：",
+      "pmEmail": "项目经理邮箱：",
+      "pmPhone": "项目经理电话：",
+      "deleteGrant": "删除基金",
+      "deleteConfirm": "您确定要删除「{name}」吗？此操作无法撤销。",
+      "deleteGrantButton": "删除基金",
+      "grantUpdated": "基金更新成功",
+      "grantUpdateFailed": "更新基金失败",
+      "grantDeleted": "基金删除成功",
+      "grantDeleteFailed": "删除基金失败",
+      "projectGrants": "项目基金",
+      "addGrantButton": "添加基金",
+      "manageGrantInfo": "管理全面的基金信息。",
+      "noGrantsFound": "未找到基金",
+      "addFirstGrant": "添加您的第一个基金以开始。",
+      "loadingGrants": "正在加载基金...",
+      "grantAdded": "基金添加成功",
+      "grantAddFailed": "添加基金失败",
+      "tryAgain": "重试",
+      "showLess": "显示更少（{count} 个基金）",
+      "showAll": "显示全部（{count} 个基金）"
+    }
+  },
+  "timeline": {
+    "tags": "标签",
+    "custom": "自定义",
+    "details": "详情",
+    "searchPlaceholder": "搜索时间线事件...",
+    "startDate": "开始日期",
+    "endDate": "结束日期",
+    "addNote": "添加实施说明或详情",
+    "addTag": "添加标签进行分类",
+    "moreOptions": "更多选项",
+    "openOptionsMenu": "打开事件选项菜单",
+    "groupByDays": "按天分组",
+    "groupByWeeks": "按周分组",
+    "groupByMonths": "按月分组",
+    "weekOf": "{start} - {end} 周",
+    "days": "天",
+    "weeks": "周",
+    "months": "月",
+    "filters": "筛选",
+    "export": "导出",
+    "exportSelected": "导出选中项",
+    "exportFormat": "导出格式",
+    "addEvent": "添加事件"
+  },
+  "editor": {
+    "placeholder": {
+      "heading": "标题是什么？",
+      "paragraph": "按 / 或开始写作..."
+    },
+    "imageTooLarge": "图片太大！文件大小：{filesize} MB",
+    "toolbar": {
+      "bold": "粗体 (⌘B)",
+      "italic": "斜体 (⌘I)",
+      "underline": "下划线 (⌘U)",
+      "strikethrough": "删除线 (⌘⇧S)",
+      "code": "代码 (⌘E)",
+      "superscript": "上标 (⌘.)",
+      "subscript": "下标 (⌘,)",
+      "blockQuote": "引用块 (⌘⇧B)",
+      "taskList": "任务列表 (⌘⇧9)",
+      "codeBlock": "代码块",
+      "undo": "撤销 (⌘Z)",
+      "redo": "重做 (⌘Shift+Z)",
+      "addImage": "添加图片",
+      "addVideo": "添加视频",
+      "addAudio": "添加音频",
+      "table": "表格",
+      "highlighter": "高亮 (⌘⇧H)",
+      "exportData": "导出数据"
+    },
+    "textFormatting": "文本格式",
+    "heading1": "标题 1",
+    "heading2": "标题 2",
+    "heading3": "标题 3",
+    "paragraph": "段落",
+    "codeBlock": "代码块",
+    "quickColors": "快速颜色",
+    "textColor": "文字颜色",
+    "backgroundColors": "背景颜色",
+    "textAlignment": "文本对齐",
+    "alignLeft": "左对齐",
+    "alignCenter": "居中对齐",
+    "alignRight": "右对齐",
+    "alignJustify": "两端对齐",
+    "removeColor": "移除颜色",
+    "orderedList": "有序列表",
+    "bulletList": "无序列表 (⌘⇧8)",
+    "pickAColor": "选择颜色",
+    "fontSize": {
+      "title": "字号",
+      "tiny": "特小",
+      "smaller": "较小",
+      "small": "小",
+      "medium": "中",
+      "large": "大",
+      "extraLarge": "特大"
+    },
+    "colors": {
+      "default": "默认",
+      "blue": "蓝色",
+      "brown": "棕色",
+      "green": "绿色",
+      "grey": "灰色",
+      "orange": "橙色",
+      "pink": "粉色",
+      "purple": "紫色",
+      "red": "红色",
+      "yellow": "黄色"
+    },
+    "link": {
+      "title": "链接",
+      "addOrRemove": "添加或移除链接",
+      "description": "在选中文本中插入或移除链接。",
+      "placeholder": "输入要附加的链接...",
+      "insert": "插入",
+      "remove": "移除",
+      "editLink": "编辑链接",
+      "copyLink": "复制链接",
+      "removeLink": "移除链接",
+      "setLink": "设置链接",
+      "invalidURL": "无效的网址"
+    },
+    "search": {
+      "title": "查找和替换文本",
+      "searchPlaceholder": "输入要搜索的文本...",
+      "replacePlaceholder": "输入要替换的文本...",
+      "previousMatch": "上一个匹配",
+      "nextMatch": "下一个匹配",
+      "replaceCurrent": "替换当前匹配",
+      "replaceAll": "替换所有匹配",
+      "caseSensitive": "区分大小写"
+    },
+    "media": {
+      "image": {
+        "title": "图片",
+        "addImage": "添加图片",
+        "description": "插入图片网址",
+        "urlPlaceholder": "输入图片网址...",
+        "or": "或",
+        "pickImage": "选择图片"
+      },
+      "video": {
+        "title": "视频",
+        "insertVideo": "插入视频",
+        "description": "插入视频网址",
+        "urlPlaceholder": "输入视频网址...",
+        "or": "或",
+        "pickVideo": "选择视频",
+        "addVideo": "添加视频"
+      },
+      "audio": {
+        "title": "音频",
+        "insertAudio": "插入音频",
+        "description": "插入音频网址",
+        "urlPlaceholder": "输入音频网址...",
+        "or": "或",
+        "pickAudio": "选择音频",
+        "addAudio": "添加音频"
+      },
+      "caption": "说明",
+      "duplicate": "复制",
+      "fullScreen": "全屏",
+      "imageCaption": "图片说明",
+      "videoCaption": "视频说明",
+      "audioCaption": "音频说明"
+    },
+    "export": {
+      "html": "导出为 HTML",
+      "markdown": "导出为 Markdown",
+      "text": "导出为文本",
+      "json": "导出为 JSON"
+    },
+    "table": {
+      "insertTable": "插入表格",
+      "cells": "单元格",
+      "merge": "合并",
+      "split": "拆分",
+      "mergeOrSplit": "合并或拆分",
+      "row": "行",
+      "insertAbove": "在上方插入",
+      "insertBelow": "在下方插入",
+      "deleteRow": "删除行",
+      "column": "列",
+      "insertBefore": "在前方插入",
+      "insertAfter": "在后方插入",
+      "delete": "删除",
+      "deleteTable": "删除",
+      "rowsColumns": "行：{rows}，列：{cols}",
+      "addRowAfter": "在下方添加行",
+      "addRowBefore": "在上方添加行",
+      "addColumnAfter": "在右侧添加列",
+      "addColumnBefore": "在左侧添加列",
+      "deleteColumn": "删除列"
+    },
+    "highlighter": {
+      "title": "选择高亮颜色",
+      "removeHighlight": "移除高亮"
+    },
+    "slashCommands": {
+      "groups": {
+        "format": "格式",
+        "insert": "插入"
+      },
+      "heading1": {
+        "label": "标题 1",
+        "description": "高优先级章节标题"
+      },
+      "heading2": {
+        "label": "标题 2",
+        "description": "中优先级章节标题"
+      },
+      "heading3": {
+        "label": "标题 3",
+        "description": "低优先级章节标题"
+      },
+      "bulletList": {
+        "label": "无序列表",
+        "description": "无序的项目列表"
+      },
+      "numberedList": {
+        "label": "有序列表",
+        "description": "有序的项目列表"
+      },
+      "taskList": {
+        "label": "任务列表",
+        "description": "带待办事项的任务列表"
+      },
+      "blockquote": {
+        "label": "引用块",
+        "description": "用于引用的元素"
+      },
+      "codeBlock": {
+        "label": "代码块",
+        "description": "带语法高亮的代码块"
+      },
+      "image": {
+        "label": "图片",
+        "description": "插入图片"
+      },
+      "video": {
+        "label": "插入视频",
+        "description": "插入视频"
+      },
+      "audio": {
+        "label": "插入音频",
+        "description": "插入音频"
+      },
+      "table": {
+        "label": "插入表格",
+        "description": "插入表格"
+      },
+      "horizontalRule": {
+        "label": "水平线",
+        "description": "插入水平分隔线"
+      }
+    }
+  },
+  "organizationDialogs": {
+    "createProject": {
+      "title": "创建新项目",
+      "dialogDescription": "在 {organizationName} 中创建新项目。",
+      "name": "名称",
+      "namePlaceholder": "输入项目名称",
+      "descriptionLabel": "描述",
+      "descriptionPlaceholder": "输入项目描述（可选）",
+      "department": "部门",
+      "noDepartment": "无部门",
+      "cancel": "取消",
+      "creating": "创建中...",
+      "create": "创建项目"
+    },
+    "createDepartment": {
+      "title": "创建新部门",
+      "dialogDescription": "在 {organizationName} 中创建新部门。",
+      "name": "名称",
+      "namePlaceholder": "输入部门名称",
+      "descriptionLabel": "描述",
+      "descriptionPlaceholder": "输入部门描述（可选）",
+      "cancel": "取消",
+      "creating": "创建中...",
+      "create": "创建部门"
+    },
+    "moveProject": {
+      "title": "移动项目",
+      "description": "选择要将项目移动到的部门。",
+      "department": "部门",
+      "noDepartment": "无部门",
+      "cancel": "取消",
+      "moving": "移动中...",
+      "move": "移动项目"
+    },
+    "deleteConfirm": {
+      "areYouSure": "您确定吗？",
+      "departmentWarning": "此操作无法撤销。这将永久删除部门「{name}」。",
+      "cancel": "取消",
+      "delete": "删除"
+    },
+    "treeView": {
+      "treeView": "树视图",
+      "listView": "列表视图",
+      "newDepartment": "新建部门",
+      "newProject": "新建项目",
+      "searchProjects": "搜索项目...",
+      "myProjects": "我的项目",
+      "retry": "重试",
+      "noOrganizationsFound": "未找到组织",
+      "noAccessYet": "您还没有访问任何组织的权限。",
+      "join": "加入",
+      "move": "移动",
+      "noProjectsMatch": "没有项目匹配「{query}」",
+      "tryDifferentKeywords": "尝试使用不同的关键词或清除搜索",
+      "notMemberOfAny": "您不是任何项目的成员",
+      "disableFilter": "尝试禁用「我的项目」筛选以查看所有项目",
+      "noProjectsFound": "未找到项目",
+      "clearFilters": "清除筛选",
+      "noDepartmentsOrProjects": "没有部门或项目",
+      "project": "项目",
+      "department": "部门",
+      "organization": "组织",
+      "actions": "操作"
+    },
+    "treeNode": {
+      "departmentActions": "部门操作",
+      "newProject": "新建项目",
+      "renameDepartment": "重命名部门",
+      "deleteDepartment": "删除部门",
+      "moveTooltip": "请先移动或删除此部门中的所有项目。",
+      "departmentName": "部门名称",
+      "noProjectsInDepartment": "此部门中没有项目",
+      "moveToDepartment": "移动到部门",
+      "actions": "操作"
+    }
+  },
+  "emptyStates": {
+    "loadingProject": "正在加载项目...",
+    "loadingOutcome": "正在加载成果...",
+    "outcomeNotFound": "未找到成果",
+    "noData": "暂无数据",
+    "noDataFilter": "没有数据匹配您当前的筛选条件",
+    "loading": "加载中...",
+    "loadingUsers": "正在加载用户...",
+    "noUsersFound": "未找到此项目的用户。"
+  },
+  "globalSearch": {
+    "chatHistory": "聊天历史",
+    "searchPlaceholder": "搜索聊天历史...",
+    "starred": "已标星",
+    "clear": "清除",
+    "sessionsCount": "{count}/{total} 个会话",
+    "noMatchingSessions": "没有匹配的会话",
+    "noChatSessions": "暂无聊天会话",
+    "startConversation": "开始对话以查看您的聊天历史",
+    "untitledChat": "无标题聊天",
+    "messages": "{count} 条消息",
+    "clickToOpen": "点击打开",
+    "deleteChatSession": "删除聊天会话",
+    "deleteConfirmation": "您确定要删除此聊天会话吗？此操作无法撤销。",
+    "cancel": "取消",
+    "deleteSession": "删除会话",
+    "justNow": "刚刚",
+    "noMessagesYet": "暂无消息",
+    "searchScope": "搜索范围",
+    "currentProject": "当前项目",
+    "allProjects": "所有项目",
+    "resultsFound": "找到 {count} 个结果",
+    "searchDescription": "在整个工作区中查找笔记、文献、项目、成果、模型和关键词分析",
+    "categories": {
+      "notes": "笔记",
+      "literature": "文献",
+      "projects": "项目",
+      "outcomes": "成果",
+      "models": "模型",
+      "keywordAnalyses": "关键词分析"
+    }
+  },
+  "forms": {
+    "placeholder": {
+      "contactName": "您的姓名",
+      "contactEmail": "您的邮箱",
+      "searchNotes": "搜索笔记...",
+      "purpose": "描述您研究项目的目的和目标...",
+      "eventTitle": "事件标题",
+      "eventDescription": "事件描述（可选）"
+    }
+  },
+  "resourceSelector": {
+    "selectResource": "选择要管理的团队：",
+    "selectResourceFallback": "选择一个资源...",
+    "resourceCounts": "{orgs} 个组织，{depts} 个部门，{projects} 个项目",
+    "selectPlaceholder": "选择组织、部门或项目...",
+    "searchPlaceholder": "搜索组织、部门或项目...",
+    "noResourcesFound": "未找到资源",
+    "tryAdjusting": "尝试调整您的搜索词",
+    "organization": "组织",
+    "department": "部门",
+    "project": "项目"
+  },
+  "treeNodeItem": {
+    "actionFailed": "操作失败",
+    "failedToDeleteDepartment": "删除部门失败：{error}"
+  },
+  "projectUsers": {
+    "title": "{projectName} 中的用户",
+    "defaultTitle": "项目用户",
+    "description": "有权访问此项目的用户列表。",
+    "loadingUsers": "正在加载用户...",
+    "errorLoading": "加载用户时出错：{error}",
+    "noUsersFound": "未找到此项目的用户。",
+    "name": "姓名",
+    "email": "邮箱",
+    "close": "关闭"
+  },
+  "timelineControls": {
+    "tags": "标签",
+    "custom": "自定义",
+    "details": "详情"
+  },
+  "stores": {
+    "announcement": {
+      "networkError": "网络错误。请检查您的连接。"
+    },
+    "project": {
+      "failedToLoad": "加载项目失败"
+    },
+    "notes": {
+      "untitledNote": "无标题笔记",
+      "other": "其他",
+      "noProjectId": "未提供项目 ID"
+    }
+  },
+  "resourceUserManager": {
+    "loadingUsers": "正在加载可用用户...",
+    "searchPlaceholder": "按姓名或邮箱搜索用户...",
+    "noUsersFound": "没有用户匹配您的搜索"
+  },
+  "noteList": {
+    "searchLiterature": "搜索文献...",
+    "noLiteratureFound": "未找到文献。",
+    "noPreviewAvailable": "无预览可用",
+    "openInLeftPanel": "在左侧面板中打开",
+    "openInRightPanel": "在右侧面板中打开",
+    "openNote": "打开笔记",
+    "noNotesFound": "未找到笔记",
+    "literature": "文献",
+    "noLiteratureConnected": "未关联文献",
+    "literatureDataNotFound": "未找到文献数据",
+    "errorExtractingPreview": "提取预览时出错",
+    "untitledNote": "无标题笔记",
+    "tryAdjustingSearch": "尝试调整您的搜索词"
+  },
+  "outcomeEditor": {
+    "startWriting": "开始撰写您的成果...",
+    "deleteTitle": "删除成果",
+    "deleteConfirm": "您确定要删除此成果吗？此操作无法撤销。"
+  },
+  "designManager": {
+    "addNewOption": "添加新设计选项",
+    "saveNow": "立即保存",
+    "title": "管理项目设计",
+    "tooltip": "以下设计选项将可用于描述当前项目和与此项目相关的文献。",
+    "description": "自定义此项目可用的设计选项。",
+    "currentProject": "当前项目：{name}",
+    "failedToUpdateDesigns": "更新设计失败",
+    "autoSaveMessage": "更改会在您操作时自动保存。",
+    "selectProjectMessage": "请选择一个项目以管理其设计。"
+  },
+  "feedback": {
+    "thankYouDescription": "感谢您帮助我们改进！",
+    "tryAgainDescription": "请重试或联系支持。",
+    "processingIssueTitle": "已报告「{name}」的处理问题"
+  },
+  "projectOverview": {
+    "rewriteGuide": "可选：指导重写",
+    "selectStatus": "选择状态"
+  },
+  "keywords": {
+    "placeholder": "关键词",
+    "removeKeyword": "移除关键词"
+  },
+  "literatureItem": {
+    "enterTitle": "输入文章或书籍标题",
+    "chapterTitle": "章节标题",
+    "secondTitle": "第二标题"
+  },
+  "researchDesigns": {
+    "edit": "编辑",
+    "defineMethodology": "在不同设计类型中定义您的研究方法论。"
+  },
+  "projectInsights": {
+    "allTasksCompleted": "所有项目设置任务已完成！",
+    "missingProjectName": "缺少项目名称",
+    "giveProjectName": "为您的项目提供一个清晰且描述性的名称。",
+    "missingPurposeStatement": "缺少目的陈述",
+    "createPurposeStatement": "创建一个清晰的目的陈述来定义您的项目目标。",
+    "missingGrantInfo": "缺少基金信息",
+    "addGrantInfo": "添加基金信息以跟踪资金来源。",
+    "missingProjectDesigns": "缺少项目设计",
+    "addDesigns": "为您的项目添加研究、抽样、测量或分析设计。",
+    "missingProjectKeywords": "缺少项目关键词",
+    "addKeywords": "添加关键词以帮助分类和搜索您的项目。",
+    "projectStatusNotSet": "项目状态未设置",
+    "setStatus": "设置项目的当前状态以跟踪进度。",
+    "projectHealth": "项目健康状况",
+    "task": "任务",
+    "tasks": "任务",
+    "remaining": "剩余",
+    "projectSetupProgress": "项目设置进度",
+    "progressTooltip": "完成这些任务以改善项目的组织和效率",
+    "percentComplete": "已完成 {percent}%",
+    "requiredSetup": "必需设置",
+    "required": "必需",
+    "recommendedSetup": "建议设置",
+    "recommended": "建议"
+  },
+  "graph": {
+    "filter": "筛选",
+    "filterTitle": "筛选",
+    "labelsOn": "标签开启",
+    "labelsOff": "标签关闭",
+    "iconsOn": "图标开启",
+    "iconsOff": "图标关闭",
+    "showIcons": "显示图标",
+    "hideIcons": "隐藏图标",
+    "stickNodes": "固定节点",
+    "unstickNodes": "取消固定节点",
+    "timelapse": "时间推移"
+  },
+  "nextBestActions": {
+    "filter": "筛选",
+    "filterActions": "筛选操作",
+    "noLiteratureNeedsAttention": "没有文献需要关注",
+    "noRecentUpdates": "没有最近更新",
+    "allStatuses": "所有状态",
+    "noteTaking": "做笔记中",
+    "reading": "阅读中",
+    "notStarted": "未开始",
+    "allSeverities": "所有严重程度",
+    "errorsOnly": "仅错误",
+    "warningsOnly": "仅警告",
+    "status": "状态",
+    "severity": "严重程度",
+    "needsAttention": "需要关注",
+    "recentlyUpdated": "最近更新",
+    "viewDetails": "查看详情",
+    "untitledLiterature": "无标题文献",
+    "lastUpdated": "最后更新：{date}",
+    "error": "错误",
+    "errors": "错误",
+    "warning": "警告",
+    "warnings": "警告",
+    "projectReading": "项目阅读",
+    "recentUpdates": "最近更新",
+    "filterDescription": "按状态和严重程度筛选文献"
+  },
+  "globalSearchDialog": {
+    "search": "搜索",
+    "noResultsFound": "未找到结果",
+    "searchYourResearch": "搜索您的研究",
+    "searching": "搜索中..."
+  },
+  "roles": {
+    "selectRole": "选择角色",
+    "noRolesAvailable": "没有可用的角色。"
+  },
+  "printTemplate": {
+    "noReferencesAvailable": "没有可用的参考文献。",
+    "citationStyle": "引用格式：{style}",
+    "bibliography": "参考书目",
+    "generatedOnBy": "由 Quester 于 {date} 生成",
+    "generatedOnByFor": "由 Quester 于 {date} 为 {author} 生成",
+    "reference": "1 条参考文献",
+    "references": "{count} 条参考文献",
+    "unknownTitle": "未知标题",
+    "noDate": "无日期"
+  },
+  "teamSettings": {
+    "errorOccurred": "发生错误",
+    "failedToUpdateSettings": "更新设置失败",
+    "invitationSettings": "邀请设置",
+    "disableInvitations": "禁用邀请",
+    "disableInvitationsDescription": "启用后，无法邀请新成员加入此 {resourceType}",
+    "ownerOnly": "仅限所有者",
+    "allowMemberInvitations": "允许成员邀请",
+    "allowMemberInvitationsDescription": "允许普通成员和管理员邀请新成员加入此 {resourceType}",
+    "invitationSettingsAdminOnly": "邀请设置只能由组织管理员查看。",
+    "contentCreationPermissions": "内容创建权限",
+    "membersCanCreateProjects": "成员可以创建项目",
+    "membersCanCreateProjectsDescription": "允许普通成员在此组织中创建新项目",
+    "membersCanCreateDepartments": "成员可以创建部门",
+    "membersCanCreateDepartmentsDescription": "允许普通成员在此组织中创建新部门",
+    "adminsCanCreateDepartments": "管理员可以创建部门",
+    "adminsCanCreateDepartmentsDescription": "允许管理员用户在此组织中创建新部门",
+    "departmentSettings": "部门设置",
+    "projectSettings": "项目设置"
+  },
+  "subscription": {
+    "errorOccurred": "发生错误"
+  },
+  "notesView": {
+    "toggleSplitView": "切换分屏视图",
+    "toggleFocusMode": "切换专注模式 (Cmd/Ctrl+B)"
+  },
+  "aiChat": {
+    "unsavedChanges": "未保存的更改",
+    "sendMessage": "发送消息"
+  },
+  "media": {
+    "back": "返回"
+  },
+  "keyInsights": {
+    "title": "关键洞察",
+    "description": "AI 驱动的研究模式和趋势分析",
+    "checkingLimit": "正在检查每日限制...",
+    "generateNew": "为此项目生成新洞察"
+  },
+  "userRoleForm": {
+    "selectRole": "选择角色",
+    "userDataNotFound": "未找到用户数据",
+    "updateSuccess": "用户角色更新成功",
+    "updateFailed": "更新用户角色失败",
+    "changeRoleFor": "更改角色",
+    "role": "角色",
+    "updating": "更新中...",
+    "updateRole": "更新角色",
+    "noRoleSelected": "未选择角色"
+  },
+  "projectStatus": {
+    "planning": "规划中",
+    "inProgress": "进行中",
+    "writing": "写作中",
+    "review": "审核中",
+    "revision": "修订中",
+    "completed": "已完成",
+    "archived": "已归档",
+    "currentStatusDescription": "您项目的当前状态。"
+  },
+  "customEventForm": {
+    "coreDetails": "事件的核心详情",
+    "classificationTiming": "分类和时间",
+    "addNewEvent": "向您的项目时间线添加新的自定义事件",
+    "updateEvent": "更新此自定义事件的详情"
+  },
+  "timelineEmpty": {
+    "readyToCapture": "准备好记录您的第一个里程碑"
+  },
+  "roleManager": {
+    "chooseRole": "选择角色",
+    "updateRoleFor": "更新 {userName} 的角色",
+    "updating": "更新中...",
+    "updateRole": "更新角色"
+  },
+  "organizationStructure": {
+    "failedToLoadData": "加载组织数据失败",
+    "failedToCreateProject": "创建项目失败",
+    "failedToCreateDepartment": "创建部门失败",
+    "failedToMoveProject": "移动项目失败",
+    "failedToJoinProject": "加入项目失败",
+    "failedToJoinDepartment": "加入部门失败"
+  },
+  "textColor": {
+    "pickColor": "选择文字颜色"
+  },
+  "referencePreview": {
+    "sortedAlphabetically": "按作者字母顺序排列",
+    "totalReference": "总计：1 条参考文献",
+    "totalReferences": "总计：{count} 条参考文献"
+  },
+  "literatureInsights": {
+    "allSetupCompleted": "所有设置任务已完成！",
+    "allFieldsCompleted": "所有文献字段已完成！"
+  },
+  "publisherScore": {
+    "explain": "解释",
+    "suggestedJournalsConferences": "建议的期刊和会议"
+  },
+  "announcementHistory": {
+    "view": "查看",
+    "title": "公告历史",
+    "description": "浏览所有平台公告和更新"
+  },
+  "threeD": {
+    "startTimelapse": "开始时间推移"
+  },
+  "toasts": {
+    "feedbackSubmitted": "反馈提交成功！",
+    "failedToSubmitFeedback": "提交反馈失败",
+    "successfullyRewrotePurpose": "目的重写成功！",
+    "failedToRewritePurpose": "重写目的失败",
+    "selectProjectToManageDesigns": "请选择一个项目来管理其设计",
+    "designNameCannotBeEmpty": "设计名称不能为空",
+    "designAlreadyExists": "已存在同名设计",
+    "designsUpdatedSuccessfully": "设计更新成功",
+    "pleaseSelectUserAndRole": "请选择用户和角色",
+    "eventDetailsCopied": "事件详情已复制到剪贴板",
+    "failedToCopyDetails": "复制详情到剪贴板失败",
+    "eventDeletedPermanently": "事件已永久删除",
+    "failedToDeleteEvent": "删除事件失败"
+  },
+  "nextBestActionsFilters": {
+    "allStatuses": "所有状态",
+    "noteTaking": "做笔记中",
+    "reading": "阅读中",
+    "notStarted": "未开始",
+    "allSeverities": "所有严重程度",
+    "errorsOnly": "仅错误",
+    "warningsOnly": "仅警告"
+  },
+  "customEventContextMenu": {
+    "editEvent": "编辑事件",
+    "copyDetails": "复制详情",
+    "deletePermanently": "永久删除",
+    "titleLabel": "标题：{title}",
+    "descriptionLabel": "描述：{description}",
+    "typeLabel": "类型：{type}",
+    "dateLabel": "日期：{date}",
+    "tagsLabel": "标签：{tags}",
+    "detailsLabel": "详情",
+    "deleteConfirmation": "您确定要永久删除「{title}」吗？此操作无法撤销。",
+    "deleteEvent": "删除事件"
+  },
+  "exportFormats": {
+    "copyToClipboard": "复制到剪贴板",
+    "pdf": "PDF",
+    "word": "Word (DOCX)",
+    "bibtex": "BibTeX",
+    "ris": "RIS",
+    "csv": "CSV"
+  },
+  "chartLabels": {
+    "count": "计数",
+    "publications": "发表",
+    "noActivityDataAvailable": "没有可用的活动数据"
+  },
+  "addLiteraturePlaceholders": {
+    "chapterTitle": "章节标题",
+    "secondTitle": "第二标题"
+  },
+  "teamSizeIndicator": {
+    "upgradePlanToInvite": "升级您的计划以邀请用户。",
+    "teamMembers": "团队成员",
+    "seatsUsed": "已使用 {current}/{max} 个席位",
+    "seatRemaining": "剩余 1 个席位",
+    "seatsRemaining": "剩余 {count} 个席位",
+    "userLimitReached": "已达到用户限制",
+    "maxUsersReached": "您已达到 {plan} 计划的最大用户数 {max}。",
+    "almostAtLimit": "即将达到用户限制",
+    "oneSeatRemaining": "您的 {plan} 计划还剩 1 个席位。",
+    "seatsRemainingOnPlan": "您的 {plan} 计划还剩 {count} 个席位。"
+  },
+  "emptyStateDescriptions": {
+    "addLiteratureForAnalytics": "添加文献和笔记以查看您的分析。",
+    "addLiteratureForInsights": "向您的项目添加文献和笔记以生成 AI 驱动洞察。",
+    "addFirstResearchProduct": "添加您的第一个研究成果以开始。",
+    "addLiteratureForGraph": "添加文献以查看您的图表开始填充。",
+    "projectWellConfigured": "您的项目配置良好，已准备好进行研究。",
+    "noLiteratureNeedsAttention": "目前没有文献需要关注。",
+    "noLiteratureUpdatedRecently": "最近没有文献更新。",
+    "noDesignsAddedYet": "尚未添加 {type} 设计。",
+    "noProjectSelected": "未选择项目。请先选择一个项目。"
+  },
+  "projectInsightsDescriptions": {
+    "giveProjectName": "为您的项目提供一个清晰且描述性的名称。"
+  },
+  "announcementOne": {
+    "majorUpdate": "重大更新",
+    "platformUpdate": "Quester 2.5 平台更新",
+    "features": {
+      "teamManagement": {
+        "title": "团队管理重新设计",
+        "description": "团队导航全面改版。",
+        "bullet1": "持久侧边栏导航",
+        "bullet2": "快速团队切换",
+        "bullet3": "增强的团队概览"
+      },
+      "globalSearch": {
+        "title": "全局搜索和 AI 聊天",
+        "description": "跨所有项目的强大搜索。",
+        "bullet1": "跨项目搜索",
+        "bullet2": "AI 驱动的研究聊天",
+        "bullet3": "智能内容发现"
+      },
+      "keyInsights": {
+        "title": "关键洞察 AI",
+        "description": "AI 驱动的分析。",
+        "bullet1": "自动模式检测",
+        "bullet2": "研究建议",
+        "bullet3": "智能数据综合"
+      },
+      "referenceExport": {
+        "title": "参考文献导出套件",
+        "description": "以多种学术格式导出参考文献。",
+        "bullet1": "多种引用格式",
+        "bullet2": "批量导出功能",
+        "bullet3": "学术标准合规"
+      },
+      "modelBuilding": {
+        "title": "模型构建增强",
+        "description": "高级可视化建模工具。",
+        "bullet1": "新节点类型和形状",
+        "bullet2": "高级边缘样式",
+        "bullet3": "改进的画布控件"
+      },
+      "tutorials": {
+        "title": "互动教程",
+        "description": "全面的引导式导览。",
+        "bullet1": "分步指导",
+        "bullet2": "自动演示",
+        "bullet3": "上下文相关帮助"
+      }
+    }
+  },
+  "announcementTwo": {
+    "timeRemaining": "剩余时间",
+    "expired": "已过期",
+    "dayRemaining": "剩余 1 天",
+    "daysRemaining": "剩余 {days} 天",
+    "hourRemaining": "剩余 1 小时",
+    "hoursRemaining": "剩余 {hours} 小时",
+    "lessThanHour": "剩余不到一小时"
+  },
+  "sidebarTrigger": {
+    "toggleSidebar": "切换侧边栏"
+  },
+  "stripe": {
+    "processing": "处理中..."
+  },
+  "protectedRoute": {
+    "redirecting": "正在跳转..."
+  },
+  "srOnly": {
+    "select": "选择",
+    "toggleTheme": "切换主题",
+    "morePages": "更多页面",
+    "revokeInvitation": "撤销邀请",
+    "removeTag": "移除 {tag}"
+  },
+  "toastsExtra": {
+    "rewritingPurpose": "正在重写目的...",
+    "feedbackSubmittedSuccessfully": "反馈提交成功！",
+    "failedToSubmitFeedback": "提交反馈失败",
+    "pleaseSelectUserAndRole": "请选择用户和角色"
+  },
+  "ariaLabels": {
+    "toggleYearsTimePeriods": "在单独年份和时间段之间切换",
+    "sendMessage": "发送消息",
+    "emptyState": "空状态",
+    "removeDetail": "移除详情",
+    "removeTag": "移除标签",
+    "deleteDepartment": "删除部门",
+    "back": "返回"
+  },
+  "literatureKeywords": {
+    "placeholder": "关键词"
+  },
+  "graphData": {
+    "typeMap": {
+      "keyword": "关键词",
+      "publisher": "出版商",
+      "authors": "作者",
+      "year": "年份",
+      "researchDesign": "研究设计",
+      "samplingDesign": "抽样设计",
+      "measurementDesign": "测量设计",
+      "analyticDesign": "分析设计",
+      "model": "模型",
+      "type": "类型",
+      "note": "笔记"
+    },
+    "untitledNote": "无标题笔记"
+  },
+  "modelTutorial": {
+    "modelBuildingTools": {
+      "title": "模型构建工具",
+      "description": "使用此工具栏添加节点、切换网格可见性和对齐。"
+    },
+    "modelingCanvas": {
+      "title": "您的建模画布",
+      "description": "这是您的主要工作区。"
+    },
+    "canvasControls": {
+      "title": "画布控件",
+      "description": "使用这些控件放大/缩小。"
+    },
+    "minimapNavigation": {
+      "title": "迷你地图导航",
+      "description": "这提供了整个模型的概览。"
+    },
+    "nodes": {
+      "title": "节点",
+      "description": "节点代表模型中的核心概念或变量。"
+    },
+    "edges": {
+      "title": "边",
+      "description": "边显示概念之间的关系或连接。"
+    },
+    "edgeCustomization": {
+      "title": "边自定义",
+      "description": "当选择一条边时，使用此面板更改其样式。"
+    },
+    "modelViewContainer": {
+      "title": "模型视图容器",
+      "description": "这是模型视图的容器。"
+    },
+    "tutorialNode": "教程节点"
+  },
+  "edgeCustomization": {
+    "markerOne": "标记一",
+    "markerTwo": "标记二"
+  },
+  "announcementLaunch": {
+    "bugFixes": "错误修复",
+    "userSuggestions": "已实现的用户建议"
+  },
+  "manageSubscription": {
+    "loading": "加载中...",
+    "upgradePlan": "升级您的计划",
+    "manageSubscription": "管理订阅",
+    "failedToCreatePortalSession": "创建门户会话失败"
+  },
+  "subscriptionSuccess": {
+    "processingSubscription": "正在处理您的订阅",
+    "couldNotLoadOrganization": "无法加载组织详情。请刷新页面。",
+    "pleaseWaitProcessing": "请稍候，我们正在处理您的订阅",
+    "goToDashboard": "前往仪表板"
+  },
+  "researchDesignsCard": {
+    "projectDesigns": "项目设计",
+    "selectDesign": "选择 {type} 设计",
+    "noDesignSpecified": "未指定 {type} 设计"
+  },
+  "keyInsightsExtra": {
+    "history": "历史",
+    "generating": "生成中...",
+    "regenerate": "重新生成",
+    "dailyLimitReached": "您已达到每日洞察限制",
+    "generatingInsights": "正在生成洞察...",
+    "loadingInsights": "正在加载洞察...",
+    "dailyLimitMessage": "您已达到每天 3 次洞察生成的最大限制。",
+    "tryAgain": "重试",
+    "generateInsights": "生成洞察",
+    "insightsAutoUpdated": "当您的项目数据发生重大变化时，洞察会自动更新。",
+    "aiPoweredAnalysis": "AI 驱动的分析",
+    "justNow": "刚刚",
+    "minutesAgo": "{minutes} 分钟前",
+    "hoursAgo": "{hours} 小时前",
+    "daysAgoShort": "{days} 天前"
+  },
+  "publisherScoreExtra": {
+    "noJournalSuggestionsYet": "暂无期刊建议。继续添加文献以获取建议。",
+    "journalSuggestionsForPublication": "发表期刊建议",
+    "journalSuggestionsExplanation": "期刊建议利用对期刊文章和文献综述的加权评估。",
+    "conferenceSuggestionsForPresentation": "演示会议建议",
+    "noConferenceSuggestionsYet": "暂无会议建议。",
+    "conferenceSuggestionsExplanation": "会议建议利用对会议论文集和演示的加权评估。",
+    "suggestedJournalsAndConferences": "建议的期刊和会议",
+    "noJournalAndReviewSuggestions": "没有可用的期刊和综述建议。",
+    "noConferenceSuggestions": "没有可用的会议建议。",
+    "noSuggestionsAvailable": "没有可用的建议。"
+  },
+  "organizationFallbacks": {
+    "noDepartment": "无部门",
+    "noOrganization": "无组织",
+    "noProjectsFound": "未找到项目",
+    "noProjectsMatchQuery": "没有项目匹配「{query}」",
+    "tryDisablingFilter": "尝试禁用「我的项目」筛选以查看所有项目",
+    "notMemberOfProjects": "您不是任何项目的成员",
+    "tryDifferentKeywords": "尝试使用不同的关键词或清除搜索"
+  },
+  "chatHistory": {
+    "noMessagesYet": "暂无消息",
+    "unknownError": "未知错误"
+  },
+  "literatureInsightsRules": {
+    "missingTitle": "缺少文献标题",
+    "missingTitleDesc": "添加标题以帮助识别和引用此文献。",
+    "missingAuthors": "缺少作者",
+    "missingAuthorsDesc": "添加此文献的作者以正确引用。",
+    "missingYear": "缺少出版年份",
+    "missingYearDesc": "添加出版年份以按时间顺序参考。",
+    "missingPublisher": "缺少出版商",
+    "missingPublisherDesc": "添加出版商信息以完成引用。",
+    "typeNotSet": "文献类型未设置",
+    "typeNotSetDesc": "指定文献类型以便更好地组织。",
+    "statusNotSet": "阅读状态未设置",
+    "statusNotSetDesc": "设置阅读状态以跟踪您的进度。",
+    "literatureHealth": "文献健康状况",
+    "taskRemaining": "任务",
+    "tasksRemaining": "任务",
+    "remaining": "剩余",
+    "literatureSetupProgress": "文献设置进度",
+    "progressTooltip": "完成这些任务以改善文献的组织和引用质量",
+    "complete": "完成",
+    "requiredFields": "必填字段",
+    "required": "必需",
+    "recommendedFields": "建议字段",
+    "recommended": "建议",
+    "wellDocumented": "此文献条目记录完善，可以引用。"
+  },
+  "resourceUserManagerExtra": {
+    "noMoreUsersAvailable": "没有更多组织用户可添加",
+    "user": "用户",
+    "role": "角色",
+    "actions": "操作",
+    "selectRole": "选择角色",
+    "adding": "添加中...",
+    "add": "添加",
+    "addExistingUsersToDepartment": "将现有用户添加到部门",
+    "addExistingUsersToProject": "将现有用户添加到项目",
+    "userAddedSuccess": "用户成功添加到 {resourceType}",
+    "errorAddingUser": "将用户添加到 {resourceType} 时出错"
+  },
+  "roleManagerExtra": {
+    "confirmElevatedPermissions": "您即将使用组织权限更改项目所有者的角色。您确定要继续吗？"
+  },
+  "progressPage": {
+    "projectCreated": "项目已创建：{name}",
+    "projectInitialized": "项目已初始化",
+    "custom": "自定义",
+    "progress": "进度"
+  },
+  "modelsPage": {
+    "newModel": "新建模型"
+  },
+  "outcomesPage": {
+    "newOutcome": "新建成果"
+  },
+  "customEventFormExtra": {
+    "createCustomEvent": "创建自定义事件",
+    "editCustomEvent": "编辑自定义事件",
+    "createEvent": "创建事件",
+    "updateEvent": "更新事件",
+    "basicInformation": "基本信息",
+    "eventTitle": "事件标题",
+    "description": "描述",
+    "eventDetails": "事件详情",
+    "eventType": "事件类型",
+    "eventDateTime": "事件日期和时间",
+    "advancedOptions": "高级选项",
+    "additionalDetails": "附加详情",
+    "upToFiveItems": "（最多 5 项）",
+    "tags": "标签",
+    "upToTenTags": "（最多 10 个标签）",
+    "cancel": "取消",
+    "charactersCount": "{count}/200 字符",
+    "descriptionCount": "{count}/1000 字符"
+  },
+  "analyticsTutorial": {
+    "exploreAnalytics": {
+      "title": "探索您的项目分析",
+      "description": "此部分可视化您文献和笔记中的关键趋势和模式。"
+    },
+    "navigateViews": {
+      "title": "导航不同视图",
+      "description": "使用这些标签在不同分析类别之间切换。"
+    },
+    "projectOverview": {
+      "title": "项目概览",
+      "description": "查看高级趋势。"
+    },
+    "notesContentAnalysis": {
+      "title": "笔记内容分析",
+      "description": "通过识别最常用的词汇来分析笔记的内容。"
+    },
+    "literatureTitleAnalysis": {
+      "title": "文献标题分析",
+      "description": "发现所收集文献标题中出现的常见词汇。"
+    },
+    "researchDesignInsights": {
+      "title": "研究设计洞察",
+      "description": "了解文献中使用的方法论。"
+    },
+    "viewFullscreen": {
+      "title": "全屏查看",
+      "description": "点击任何图表卡片上的此图标查看更大的版本。"
+    },
+    "literatureTypesByYear": {
+      "title": "按年份的文献类型",
+      "description": "此图表显示不同文献类型在各出版年份的分布。"
+    },
+    "noDataYet": {
+      "title": "还没有数据？",
+      "description": "如果您看到「无数据」消息，请先向项目添加文献和笔记。"
+    },
+    "gainDeeperInsights": {
+      "title": "获得更深入的洞察",
+      "description": "定期检查这些分析以发现趋势、识别空白。"
+    }
+  },
+  "documentUploadPanel": {
+    "uploadFailed": "上传失败"
+  },
+  "tours": {
+    "dashboard": {
+      "welcome": {
+        "title": "欢迎来到您的仪表板",
+        "description": "这是您导航 Quester 工作区的主要中心。"
+      },
+      "organizationStructure": {
+        "title": "组织结构",
+        "description": "在这里查看和管理您的部门和项目。"
+      },
+      "viewModeToggle": {
+        "title": "切换视图",
+        "description": "在层级树视图和扁平列表视图之间切换。"
+      },
+      "newDepartment": {
+        "title": "创建部门",
+        "description": "通过创建部门来组织您的项目。"
+      },
+      "newProject": {
+        "title": "创建项目",
+        "description": "直接从这里开始新的研究项目。"
+      },
+      "search": {
+        "title": "搜索项目",
+        "description": "通过搜索项目名称快速找到项目。"
+      },
+      "filter": {
+        "title": "筛选视图",
+        "description": "切换此选项以仅显示您是成员的项目。"
+      }
+    },
+    "settings": {
+      "header": {
+        "title": "管理您的设置",
+        "description": "此区域允许您管理个人资料信息和组织设置。"
+      },
+      "tabs": {
+        "title": "切换设置区域",
+        "description": "使用这些标签在个人资料设置和组织设置之间导航。"
+      },
+      "profile": {
+        "title": "您的个人资料信息",
+        "description": "在这里更新您的姓名。"
+      },
+      "saveButton": {
+        "title": "保存个人资料更改",
+        "description": "点击此处保存对您姓名的任何更新。"
+      },
+      "organizationTab": {
+        "title": "组织设置标签",
+        "description": "在此访问您当前组织的设置。"
+      },
+      "organizationContent": {
+        "title": "组织特定设置",
+        "description": "管理您组织的邀请和内容创建权限。"
+      },
+      "disableInvitations": {
+        "title": "控制邀请",
+        "description": "启用或禁用邀请新成员的能力。"
+      },
+      "allowMemberInvites": {
+        "title": "委托邀请",
+        "description": "选择普通成员和管理员是否可以邀请他人。"
+      },
+      "membersCreateProjects": {
+        "title": "项目创建权限",
+        "description": "决定普通成员是否可以创建新项目。"
+      },
+      "keepUpdated": {
+        "title": "保持信息更新",
+        "description": "定期检查您的个人资料和组织设置。"
+      }
+    },
+    "teamManagement": {
+      "chooseTeam": {
+        "title": "选择您的团队",
+        "description": "从侧边栏选择一个组织、部门或项目以开始管理其团队成员。"
+      },
+      "teamMembers": {
+        "title": "您的团队成员",
+        "description": "在这里您可以查看所有团队成员、他们的角色，并管理他们的访问权限。"
+      },
+      "invitations": {
+        "title": "邀请新成员",
+        "description": "发送电子邮件邀请以添加新成员到您的组织。"
+      },
+      "addUsers": {
+        "title": "添加现有用户",
+        "description": "将已在您组织中的成员添加到此特定项目或部门。"
+      }
+    },
+    "analytics": {
+      "welcome": {
+        "title": "欢迎来到组织分析",
+        "description": "此页面提供您组织活动和参与度的高级概览。"
+      },
+      "summaryMetrics": {
+        "title": "关键绩效指标",
+        "description": "这些卡片显示您组织的重要信号。"
+      },
+      "projectActivity": {
+        "title": "项目内容活动",
+        "description": "此部分跟踪每个项目中研究内容的创建和修改。"
+      },
+      "dateRange": {
+        "title": "按时间筛选",
+        "description": "调整日期范围以将活动数据集中在特定时期。"
+      },
+      "projectSearch": {
+        "title": "快速查找项目",
+        "description": "使用此搜索栏按名称筛选下表并查找特定项目。"
+      },
+      "projectTable": {
+        "title": "项目活动详情",
+        "description": "此表列出了有近期活动的项目。"
+      },
+      "projectActions": {
+        "title": "项目操作",
+        "description": "快速查看与项目关联的用户或直接导航到项目工作区。"
+      },
+      "projectCharts": {
+        "title": "可视化项目趋势",
+        "description": "当您在上表中选择项目时，详细的活动图表会在此显示。"
+      },
+      "userActivity": {
+        "title": "用户登录活动",
+        "description": "通过跟踪登录频率来监控用户参与度。"
+      },
+      "userSearch": {
+        "title": "快速查找用户",
+        "description": "按姓名或电子邮件搜索特定用户以检查他们最近的登录活动。"
+      },
+      "userTable": {
+        "title": "用户登录详情",
+        "description": "查看每个用户的最后登录时间以及他们在不同时期的活跃天数。"
+      },
+      "overview": {
+        "title": "监控您组织的脉搏",
+        "description": "定期使用此分析页面来了解研究活动、跟踪用户参与度。"
+      }
+    },
+    "literature": {
+      "header": {
+        "title": "管理您的文献",
+        "description": "此页面是您组织项目所有来源的中心枢纽。"
+      },
+      "addButton": {
+        "title": "轻松添加新来源",
+        "description": "点击此处添加新的文献条目。"
+      },
+      "search": {
+        "title": "快速查找文献",
+        "description": "使用此搜索栏按标题、作者、年份或关键词即时筛选您的文献列表。"
+      },
+      "table": {
+        "title": "您的文献库",
+        "description": "您添加的所有文献都显示在此处。"
+      },
+      "addTwoWays": {
+        "title": "添加文献：两种方式",
+        "description": "Quester 可以自动解析粘贴的参考文献，或者您可以手动输入详情。"
+      },
+      "pasteReference": {
+        "title": "通过参考文献添加（粘贴）",
+        "description": "在此处粘贴一个或多个参考文献。"
+      },
+      "manualEntry": {
+        "title": "切换到手动输入",
+        "description": "或者，点击此处逐字段添加详情。"
+      },
+      "manualFields": {
+        "title": "手动添加",
+        "description": "填写必要的字段，如标题、作者、年份等。"
+      },
+      "finishAdding": {
+        "title": "完成添加",
+        "description": "添加完参考文献后，确认或保存它们。"
+      },
+      "organize": {
+        "title": "准备好整理了吗？",
+        "description": "使用此页面高效管理您的文献综述。"
+      }
+    },
+    "models": {
+      "header": {
+        "title": "管理您的研究模型",
+        "description": "在这里您可以创建、查看和组织研究概念及其关系的可视化模型。"
+      },
+      "createButton": {
+        "title": "创建新模型",
+        "description": "点击此处开始一个新模型。"
+      },
+      "search": {
+        "title": "查找您的模型",
+        "description": "随着您的收藏增长，使用搜索栏按名称快速查找特定模型。"
+      },
+      "grid": {
+        "title": "您的模型收藏",
+        "description": "您创建的所有模型都显示在此处。"
+      },
+      "visualize": {
+        "title": "可视化您的研究",
+        "description": "使用模型在研究中可视化地构建您的思想、理论和联系。"
+      }
+    },
+    "modelView": {
+      "loading": {
+        "title": "正在加载您的模型",
+        "description": "Quester 正在检查您的访问权限并加载选定的模型数据。"
+      },
+      "welcome": {
+        "title": "欢迎来到模型构建器！",
+        "description": "让我们来一次互动导览！"
+      },
+      "toolbar": {
+        "title": "模型构建工具栏",
+        "description": "此工具栏允许您添加不同类型的节点来构建模型。"
+      },
+      "firstNode": {
+        "title": "您的第一个节点！",
+        "description": "这是我为您创建的节点！"
+      },
+      "nodeMenu": {
+        "title": "节点编辑菜单",
+        "description": "当您选择一个节点时，此菜单会出现。"
+      },
+      "addingNodes": {
+        "title": "添加更多节点",
+        "description": "让我再添加一个节点，这样我们就可以用箭头连接它们！"
+      },
+      "connecting": {
+        "title": "用箭头连接节点",
+        "description": "现在我将演示如何连接节点。"
+      },
+      "arrows": {
+        "title": "箭头显示关系",
+        "description": "这个箭头显示了您概念之间的关系。"
+      },
+      "customizeArrows": {
+        "title": "自定义您的箭头",
+        "description": "在这里您可以更改箭头的样式、颜色、粗细。"
+      },
+      "navigation": {
+        "title": "导航控制",
+        "description": "使用这些控件放大/缩小、将整个模型适应视图。"
+      },
+      "minimap": {
+        "title": "大型模型的迷你地图",
+        "description": "此迷你地图显示整个模型的概览。"
+      },
+      "building": {
+        "title": "构建您的研究模型",
+        "description": "现在您已经知道了基础知识！"
+      }
+    },
+    "outcomes": {
+      "header": {
+        "title": "管理您的成果",
+        "description": "此页面是您创建、查看和管理所有成果的地方。"
+      },
+      "createButton": {
+        "title": "开始创建成果",
+        "description": "点击此按钮打开一个对话框。"
+      },
+      "search": {
+        "title": "快速查找成果",
+        "description": "使用此搜索栏按名称筛选您的成果列表。"
+      },
+      "grid": {
+        "title": "您的成果收藏",
+        "description": "您所有的成果都以卡片形式显示在这里。"
+      },
+      "journalSuggestions": {
+        "title": "获取期刊建议",
+        "description": "根据您添加的文献，Quester 会建议相关期刊。"
+      },
+      "conferenceSuggestions": {
+        "title": "查找相关会议",
+        "description": "Quester 会建议您的研究可能适合展示的会议。"
+      },
+      "createOutcome": {
+        "title": "让我们创建一个成果",
+        "description": "我们将逐步完成创建过程。"
+      },
+      "selectType": {
+        "title": "1. 选择成果类型",
+        "description": "首先，对您的成果进行分类。"
+      },
+      "nameOutcome": {
+        "title": "2. 为成果命名",
+        "description": "提供一个清晰、简洁的名称。"
+      },
+      "addDetails": {
+        "title": "3. 添加详情（类型特定）",
+        "description": "如果创建链接，在此处粘贴网址。"
+      },
+      "createSubmit": {
+        "title": "4. 创建成果",
+        "description": "点击此处保存成果。"
+      },
+      "manageExisting": {
+        "title": "管理现有成果",
+        "description": "将鼠标悬停在任何卡片上可显示重命名或删除成果的按钮。"
+      },
+      "ready": {
+        "title": "准备记录您的发现了吗？",
+        "description": "使用成果页面在整个研究过程中跟踪关键结果。"
+      }
+    },
+    "connections": {
+      "visualize": {
+        "title": "可视化您的研究关联",
+        "description": "此视图绘制出您的文献、笔记、关键词和概念之间的关系。"
+      },
+      "dimensions": {
+        "title": "切换维度",
+        "description": "在 2D 网络图和沉浸式 3D 视图之间切换。"
+      },
+      "legend": {
+        "title": "了解符号",
+        "description": "点击此处打开图例。"
+      },
+      "controls": {
+        "title": "显示/隐藏交互提示",
+        "description": "切换此选项以显示或隐藏有关如何导航的有用提示。"
+      },
+      "interact": {
+        "title": "与图形交互",
+        "description": "探索下方的图形区域！"
+      },
+      "discover": {
+        "title": "发现洞察",
+        "description": "使用此可视化查看想法如何连接、识别相关工作的集群。"
+      }
+    },
+    "notes": {
+      "welcome": {
+        "title": "欢迎来到笔记",
+        "description": "捕捉、组织和管理您的研究和文献笔记。"
+      },
+      "filterType": {
+        "title": "按笔记类型筛选",
+        "description": "在查看与文献条目关联的笔记和一般研究笔记之间切换。"
+      },
+      "notesList": {
+        "title": "您的笔记列表",
+        "description": "所选类型的所有笔记都显示在此处。"
+      },
+      "createNote": {
+        "title": "创建新笔记",
+        "description": "点击此处开始一个新笔记。"
+      },
+      "editor": {
+        "title": "富文本编辑器",
+        "description": "在此处撰写和格式化您的笔记。"
+      },
+      "splitView": {
+        "title": "切换分屏视图",
+        "description": "在查看一个笔记或并排查看两个笔记之间切换。"
+      },
+      "focusMode": {
+        "title": "切换专注模式",
+        "description": "隐藏侧边栏以专注于编辑器。"
+      },
+      "ready": {
+        "title": "准备好做笔记了吗？",
+        "description": "使用这些功能保持您的想法有序。"
+      }
+    },
+    "overview": {
+      "welcome": {
+        "title": "欢迎来到您的项目概览",
+        "description": "这是管理研究项目的中心枢纽。"
+      },
+      "projectCore": {
+        "title": "定义您项目的核心",
+        "description": "从这里开始，清楚地定义项目的目的并设置当前状态。"
+      },
+      "keywords": {
+        "title": "标记您的研究主题",
+        "description": "添加相关关键词来分类您的项目。"
+      },
+      "methodology": {
+        "title": "概述您的方法论",
+        "description": "记录您的研究、抽样、测量和分析设计。"
+      },
+      "deliverables": {
+        "title": "跟踪您的交付成果",
+        "description": "管理您的研究成果，如论文、报告或演示文稿。"
+      },
+      "health": {
+        "title": "检查您项目的健康状况",
+        "description": "此卡片突出显示缺失的设置步骤或需要关注的领域。"
+      },
+      "nextSteps": {
+        "title": "聚焦您的下一步",
+        "description": "在此处查看需要审阅的优先文献条目和最近更新。"
+      },
+      "ready": {
+        "title": "准备好开始了吗？",
+        "description": "定期使用此概览页面保持您的研究有序、专注和正轨。"
+      }
+    },
+    "progress": {
+      "header": {
+        "title": "跟踪您的研究旅程",
+        "description": "此页面可视化您项目的活动、里程碑和成就。"
+      },
+      "researchLevel": {
+        "title": "您的研究等级",
+        "description": "通过完成研究活动和成就获得经验值。"
+      },
+      "viewLevels": {
+        "title": "探索所有等级",
+        "description": "点击此处查看所有可用的研究等级。"
+      },
+      "tabs": {
+        "title": "导航进度视图",
+        "description": "在项目时间线视图和成就视图之间切换。"
+      },
+      "timeline": {
+        "title": "项目时间线",
+        "description": "按时间顺序查看关键项目事件。"
+      },
+      "switchToAchievements": {
+        "title": "切换到成就",
+        "description": "现在让我们看看您可以解锁的特定成就。"
+      },
+      "achievements": {
+        "title": "成就",
+        "description": "通过执行特定操作来解锁成就。"
+      },
+      "monitor": {
+        "title": "监控您的动力",
+        "description": "定期查看此页面以可视化您的研究活动。"
+      }
+    },
+    "literatureView": {
+      "header": {
+        "title": "文献条目详情",
+        "description": "此页面提供单个文献条目的详细视图。"
+      },
+      "goBack": {
+        "title": "返回",
+        "description": "返回此项目的主要文献列表。"
+      },
+      "viewDocument": {
+        "title": "查看文档",
+        "description": "在浏览器中打开原始文档文件。"
+      },
+      "downloadDocument": {
+        "title": "下载文档",
+        "description": "将原始文档文件下载到您的计算机。"
+      },
+      "deleteItem": {
+        "title": "删除条目",
+        "description": "从项目中永久删除此文献条目。"
+      },
+      "trackStatus": {
+        "title": "跟踪阅读状态",
+        "description": "监控和更新阅读和处理此文献条目的进度。"
+      },
+      "coreInfo": {
+        "title": "核心信息",
+        "description": "查看和编辑此文献条目的基本详情。"
+      },
+      "methodology": {
+        "title": "方法论详情",
+        "description": "根据您项目的框架对此文献中使用的设计进行分类。"
+      },
+      "health": {
+        "title": "文献健康状况和设置",
+        "description": "检查此文献条目的完整性。"
+      },
+      "addKeywords": {
+        "title": "添加关键词",
+        "description": "用相关关键词标记此文献。"
+      },
+      "generateCitations": {
+        "title": "生成引用",
+        "description": "根据输入的详情快速生成各种常见格式的引用。"
+      },
+      "manageSource": {
+        "title": "管理您的来源",
+        "description": "使用此详细视图彻底记录、分析并将这篇文献整合到您的研究项目中。"
+      }
+    },
+    "projectSettings": {
+      "configure": {
+        "title": "配置您的项目",
+        "description": "在此管理项目的基本设置、自定义设计和数据选项。"
+      },
+      "projectName": {
+        "title": "更新项目名称",
+        "description": "在此处更改项目名称，完成后点击保存更改。"
+      },
+      "customDesigns": {
+        "title": "管理自定义设计",
+        "description": "添加、编辑或删除您的研究设计的自定义选项。"
+      },
+      "dangerZone": {
+        "title": "危险区域",
+        "description": "此部分包含导出或永久删除项目等操作。"
+      },
+      "exportData": {
+        "title": "导出项目数据",
+        "description": "下载包含所有项目数据的 zip 文件。"
+      },
+      "deleteProject": {
+        "title": "删除项目",
+        "description": "永久删除此项目及其所有数据。"
+      }
+    },
+    "keywordAnalysis": {
+      "welcome": {
+        "title": "欢迎来到关键词分析",
+        "description": "此工具帮助您了解项目文献中的关键词频率和关系。"
+      },
+      "startFirst": {
+        "title": "开始您的首次分析",
+        "description": "您还没有运行任何分析。点击创建首次分析。"
+      },
+      "inputKeywords": {
+        "title": "输入您的关键词",
+        "description": "输入 2-10 个与您研究问题相关的关键词。"
+      },
+      "exploring": {
+        "title": "探索您的关键词分析",
+        "description": "此分析揭示了您选定的关键词在项目文献中的模式。"
+      },
+      "resultsOverview": {
+        "title": "分析结果概览",
+        "description": "在这里您将找到摘要、可视化和详细表格。"
+      },
+      "aiSummary": {
+        "title": "AI 生成的摘要",
+        "description": "阅读 AI 生成的关键词模式解释。"
+      },
+      "frequencyChart": {
+        "title": "频率分布图",
+        "description": "可视化每个关键词单独出现的频率。"
+      },
+      "vennDiagram": {
+        "title": "关键词重叠（维恩图）",
+        "description": "选择 2-3 个关键词以直观查看它们的共现。"
+      },
+      "frequencyTable": {
+        "title": "频率分布表",
+        "description": "查看每个关键词的确切计数和百分比。"
+      },
+      "crossTable": {
+        "title": "交叉分布表",
+        "description": "检查每对关键词的共现频率。"
+      },
+      "tripleTable": {
+        "title": "三重分布表",
+        "description": "探索三个关键词组合的共现。"
+      },
+      "previousAnalyses": {
+        "title": "之前的分析",
+        "description": "在此访问您过去的分析。"
+      },
+      "newAnalysis": {
+        "title": "运行新分析",
+        "description": "随时运行新分析来探索不同的关键词组合。"
+      }
+    }
+  }
+}

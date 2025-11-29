@@ -18,7 +18,7 @@
   import { get } from "svelte/store";
 
   // Helper for imperative translation access
-  const t = (key: string) => get(_)(key);
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   // Design types that match our existing components
   const designTypes = [

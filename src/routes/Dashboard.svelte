@@ -24,7 +24,7 @@
   import { get } from "svelte/store";
 
   // Helper to get translation value imperatively for driver.js
-  const t = (key: string) => get(_)(key);
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   let organizations = $state<Organization[]>([]);
   let currentOrg = $state<Organization | null>(null);

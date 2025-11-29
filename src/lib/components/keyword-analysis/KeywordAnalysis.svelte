@@ -17,7 +17,7 @@
   import { get } from "svelte/store";
 
   // Helper function for imperative translation access
-  const t = (key: string) => get(_)(key);
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   let loading = $state(false);
   let switching = $state(false);

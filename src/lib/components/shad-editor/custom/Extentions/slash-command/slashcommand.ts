@@ -2,7 +2,7 @@ import { Editor, Extension } from '@tiptap/core';
 import Suggestion, { type SuggestionProps, type SuggestionKeyDownProps } from '@tiptap/suggestion';
 import { PluginKey } from '@tiptap/pm/state';
 
-import { GROUPS } from './groups.js';
+import { getGroups } from './groups.js';
 import MenuList from './menu-list.svelte';
 import tippy from 'tippy.js';
 import SvelteRenderer from '../../../svelte-renderer.js';
@@ -80,7 +80,7 @@ export const SlashCommand = Extension.create({
 					view.focus();
 				},
 				items: ({ query }: { query: string }) => {
-					const withFilteredCommands = GROUPS.map((group) => ({
+					const withFilteredCommands = getGroups().map((group) => ({
 						...group,
 						commands: group.commands
 							.filter((item) => {

@@ -4,6 +4,7 @@
   import { Button } from "../button";
   import { CalendarDays } from "lucide-svelte";
   import { cn } from "$lib/utils";
+  import { _ } from "svelte-i18n";
 
   interface Props {
     value?: Date;
@@ -13,14 +14,16 @@
 
   let {
     value = $bindable(),
-    placeholder = "Select date",
+    placeholder = undefined,
     class: className = "",
   }: Props = $props();
+
+  const defaultPlaceholder = $derived($_("datePicker.selectDate"));
 
   let open = $state(false);
 
   function formatDate(date: Date | undefined): string {
-    if (!date) return placeholder;
+    if (!date) return placeholder ?? defaultPlaceholder;
     return date.toLocaleDateString();
   }
 

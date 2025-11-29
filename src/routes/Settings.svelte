@@ -12,8 +12,9 @@
     CardDescription,
     CardContent,
   } from "$lib/components/ui/card";
-  import { User, Building2, GraduationCap, CreditCard } from "lucide-svelte";
+  import { User, Building2, GraduationCap, CreditCard, Globe } from "lucide-svelte";
   import * as Tabs from "$lib/components/ui/tabs";
+  import * as Select from "$lib/components/ui/select";
   import TeamSettings from "$lib/components/TeamSettings.svelte";
   import ManageSubscription from "$lib/components/ManageSubscription.svelte";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
@@ -24,9 +25,11 @@
   import "driver.js/dist/driver.css";
   import { _ } from "svelte-i18n";
   import { get } from "svelte/store";
+  import { localeStore } from "$lib/stores/LocaleStore.svelte";
+  import { SUPPORTED_LOCALES, type SupportedLocale } from "$lib/i18n";
 
   // Helper to get translation value imperatively for driver.js
-  const t = (key: string) => get(_)(key);
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   let activeTab = $state("profile");
   let isLoading = $state(false);
@@ -41,6 +44,13 @@
   let lastName = $state(auth.user?.lastName || "");
   let email = $state(auth.user?.email || "");
   let orcidUrl = $state(auth.user?.orcidUrl || "");
+  let selectedLocale = $state<SupportedLocale>(localeStore.locale);
+
+  // Handle locale change
+  async function handleLocaleChange(newLocale: SupportedLocale) {
+    selectedLocale = newLocale;
+    await localeStore.setLocale(newLocale, auth.user?.id);
+  }
 
   // Validation state
   let orcidError = $state<string | null>(null);
@@ -472,6 +482,41 @@
                         </a>
                       </p>
                     {/if}
+                  </div>
+
+                  <!-- Language Selector -->
+                  <div class="space-y-2">
+                    <Label for="language">
+                      <Globe class="h-4 w-4 inline mr-1" />
+                      {$_('settings.language')}
+                    </Label>
+                    <Select.Root
+                      type="single"
+                      value={selectedLocale}
+                      onValueChange={(value) => value && handleLocaleChange(value as SupportedLocale)}
+                    >
+                      <Select.Trigger class="w-full border-2 dark:border-dark-border">
+                        <span class="truncate">
+                          {#if SUPPORTED_LOCALES.find(l => l.code === selectedLocale)}
+                            <span class="mr-2">{SUPPORTED_LOCALES.find(l => l.code === selectedLocale)?.flag}</span>
+                            {SUPPORTED_LOCALES.find(l => l.code === selectedLocale)?.name}
+                          {:else}
+                            {$_('settings.selectLanguage')}
+                          {/if}
+                        </span>
+                      </Select.Trigger>
+                      <Select.Content>
+                        {#each SUPPORTED_LOCALES as locale}
+                          <Select.Item value={locale.code}>
+                            <span class="mr-2">{locale.flag}</span>
+                            {locale.name}
+                          </Select.Item>
+                        {/each}
+                      </Select.Content>
+                    </Select.Root>
+                    <p class="text-sm text-muted-foreground">
+                      {$_('settings.languageDescription')}
+                    </p>
                   </div>
 
                   {#if message}

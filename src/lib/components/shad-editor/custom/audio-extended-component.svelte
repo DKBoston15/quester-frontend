@@ -220,18 +220,18 @@
 							onclick={() => {
 								if (node.attrs.title === null || node.attrs.title.trim() === '')
 									updateAttributes({
-										title: 'Audio Caption'
+										title: $_('editor.media.audioCaption')
 									});
 							}}
 						>
-							<Captions class="mr-1 size-4" /> Caption
+							<Captions class="mr-1 size-4" /> {$_('editor.media.caption')}
 						</DropdownMenu.Item>
 						<DropdownMenu.Item
 							onclick={() => {
 								duplicateContent(editor, node);
 							}}
 						>
-							<CopyIcon class="mr-1 size-4" /> Duplicate
+							<CopyIcon class="mr-1 size-4" /> {$_('editor.media.duplicate')}
 						</DropdownMenu.Item>
 						<DropdownMenu.Item
 							onclick={() => {
@@ -240,7 +240,7 @@
 								});
 							}}
 						>
-							<Fullscreen class="mr-1 size-4" /> Full Screen
+							<Fullscreen class="mr-1 size-4" /> {$_('editor.media.fullScreen')}
 						</DropdownMenu.Item>
 						<DropdownMenu.Item
 							onclick={() => {
@@ -248,7 +248,7 @@
 							}}
 							class="text-destructive"
 						>
-							<Trash class="mr-1 size-4" /> Delete
+							<Trash class="mr-1 size-4" /> {$_('common.delete')}
 						</DropdownMenu.Item>
 					</DropdownMenu.Content>
 				</DropdownMenu.Root>

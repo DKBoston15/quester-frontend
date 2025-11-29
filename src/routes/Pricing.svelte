@@ -18,7 +18,7 @@
   import { get } from "svelte/store";
 
   // Helper to get translation value imperatively
-  const t = (key: string) => get(_)(key);
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   const props = $props<{
     organizationId: string;
@@ -102,7 +102,7 @@
         // For organization mode, add enterprise plan and use consistent colors
         const enterprisePlan: SubscriptionPlan = {
           id: "enterprise",
-          name: "Enterprise",
+          name: t("pricing.enterprise"),
           productId: "enterprise",
           monthlyPriceId: "",
           yearlyPriceId: "",

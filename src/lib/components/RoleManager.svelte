@@ -5,7 +5,10 @@
   import { auth } from "$lib/stores/AuthStore";
   import { UserCog, X, Info } from "lucide-svelte";
   import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
   import { api } from "$lib/services/api-client";
+
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   const props = $props<{
     userId: string;
@@ -90,8 +93,8 @@
         } else {
           // If we couldn't extract roles, use hardcoded ones as a last resort
           availableRoles = [
-            { id: "admin", name: "Admin" },
-            { id: "member", name: "Member" },
+            { id: "admin", name: t("teamManagement.roles.admin") },
+            { id: "member", name: t("teamManagement.roles.member") },
           ];
         }
       }
@@ -115,8 +118,8 @@
         } else {
           // If we couldn't extract roles, use hardcoded ones as a last resort
           availableRoles = [
-            { id: "manager", name: "Manager" },
-            { id: "member", name: "Member" },
+            { id: "manager", name: t("teamManagement.roles.manager") },
+            { id: "member", name: t("teamManagement.roles.member") },
           ];
         }
       }
@@ -137,9 +140,9 @@
         } else {
           // If we couldn't extract roles, use correct hardcoded roles as a last resort
           availableRoles = [
-            { id: "owner", name: "Owner" },
-            { id: "admin", name: "Admin" },
-            { id: "member", name: "Member" },
+            { id: "owner", name: t("teamManagement.roles.owner") },
+            { id: "admin", name: t("teamManagement.roles.admin") },
+            { id: "member", name: t("teamManagement.roles.member") },
           ];
         }
       }

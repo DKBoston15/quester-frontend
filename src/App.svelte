@@ -147,7 +147,14 @@
   });
 </script>
 
-{#if isCheckingAuth || !i18nReady}
+{#if !i18nReady}
+  <!-- Simple loading state before i18n is ready -->
+  <div class="fixed inset-0 flex flex-col items-center justify-center bg-background text-foreground">
+    <div
+      class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-4"
+    ></div>
+  </div>
+{:else if isCheckingAuth}
   <div class="fixed inset-0 flex flex-col items-center justify-center bg-background text-foreground">
     <div
       class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-4"

@@ -18,7 +18,7 @@
   import { get } from "svelte/store";
 
   // Helper function for imperative translation access
-  const t = (key: string) => get(_)(key);
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
   // Props
   const { literatureId = undefined } = $props();
 
@@ -198,13 +198,13 @@
     if (!projectStore.currentProject?.id) return;
 
     const newNote = await notesStore.createNote({
-      name: "Untitled Note",
+      name: t("notes.untitledNote"),
       content: "",
       user_id: auth.user?.id,
       projectId: projectStore.currentProject.id,
       literatureId: selectedTab === "literature" ? literatureId : undefined,
       type: selectedTab === "literature" ? "LITERATURE" : "RESEARCH",
-      section_type: { value: "Other", label: "Other" },
+      section_type: { value: "Other", label: t("notes.sections.other") },
     });
     if (newNote) {
       notesStore.setActiveNote(newNote.id);

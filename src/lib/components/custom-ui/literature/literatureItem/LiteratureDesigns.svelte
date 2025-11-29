@@ -33,13 +33,33 @@
     analytic: "",
   });
 
+  // Helper to extract design value (handles both string and object formats)
+  function getDesignValue(design: unknown): string {
+    if (!design) return "";
+    if (typeof design === "string") return design;
+    if (typeof design === "object") {
+      // Handle { selections: string[], description?: string } format
+      if ("selections" in design) {
+        const selections = (design as { selections: string[] }).selections;
+        if (Array.isArray(selections) && selections.length > 0) {
+          return selections[0]; // Return first selection for the dropdown
+        }
+      }
+      // Handle { name: string } format (legacy)
+      if ("name" in design) {
+        return (design as { name: string }).name || "";
+      }
+    }
+    return "";
+  }
+
   $effect(() => {
     if (literature) {
       localDesigns = {
-        research: literature.researchDesign ?? "",
-        sampling: literature.samplingDesign ?? "",
-        measurement: literature.measurementDesign ?? "",
-        analytic: literature.analyticDesign ?? "",
+        research: getDesignValue(literature.researchDesign),
+        sampling: getDesignValue(literature.samplingDesign),
+        measurement: getDesignValue(literature.measurementDesign),
+        analytic: getDesignValue(literature.analyticDesign),
       };
     }
   });
@@ -56,12 +76,14 @@
 
     isPending = true;
     try {
-      await literatureStore.updateLiterature(literature.id, {
-        researchDesign: localDesigns.research,
-        samplingDesign: localDesigns.sampling,
-        measurementDesign: localDesigns.measurement,
-        analyticDesign: localDesigns.analytic,
-      });
+      // Only include fields that have values (non-empty strings)
+      const updateData: Record<string, string> = {};
+      if (localDesigns.research) updateData.researchDesign = localDesigns.research;
+      if (localDesigns.sampling) updateData.samplingDesign = localDesigns.sampling;
+      if (localDesigns.measurement) updateData.measurementDesign = localDesigns.measurement;
+      if (localDesigns.analytic) updateData.analyticDesign = localDesigns.analytic;
+
+      await literatureStore.updateLiterature(literature.id, updateData);
       editMode = false;
     } catch (error) {
       console.error("Failed to update designs:", error);
@@ -103,9 +125,9 @@
         {#each designTypes as type}
           <Tabs.Trigger
             value={type}
-            class="capitalize px-4 data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]: dark:data-[state=active]:border-dark-border data-[state=active]:font-medium"
+            class="px-4 data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]: dark:data-[state=active]:border-dark-border data-[state=active]:font-medium"
           >
-            {type}
+            {$_(`designTypes.${type}`)}
           </Tabs.Trigger>
         {/each}
       </Tabs.List>

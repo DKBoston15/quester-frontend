@@ -40,7 +40,7 @@
     getEventTypeConfig,
   } from "$lib/config/custom-event-types";
 
-  const t = (key: string) => get(_)(key);
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   const dispatch = createEventDispatcher<{
     close: void;

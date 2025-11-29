@@ -3,9 +3,10 @@
  */
 export const SUPPORTED_LOCALES = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
-  // Add more locales here as needed:
-  // { code: 'es', name: 'Español', flag: '🇪🇸' },
-  // { code: 'fr', name: 'Français', flag: '🇫🇷' },
+  { code: 'fr', name: 'Français', flag: '🇫🇷' },
+  { code: 'es', name: 'Español', flag: '🇪🇸' },
+  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+  { code: 'zh', name: '中文 (Chinese)', flag: '🇨🇳' },
 ] as const;
 
 export const DEFAULT_LOCALE = 'en';

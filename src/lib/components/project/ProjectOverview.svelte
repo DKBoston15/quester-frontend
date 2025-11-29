@@ -19,7 +19,7 @@
   import { get } from 'svelte/store';
   import { _ } from "svelte-i18n";
 
-  const t = (key: string) => get(_)(key);
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   const projectStatusOptions = [
     { value: "Planning", label: t('projectStatus.planning') },

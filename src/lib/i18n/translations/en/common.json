@@ -18,7 +18,18 @@
     "none": "None",
     "untitled": "Untitled",
     "continue": "Continue",
-    "add": "Add"
+    "add": "Add",
+    "settings": "Settings",
+    "tour": "Tour"
+  },
+  "designTypes": {
+    "research": "Research",
+    "sampling": "Sampling",
+    "measurement": "Measurement",
+    "analytic": "Analytic"
+  },
+  "datePicker": {
+    "selectDate": "Select date"
   },
   "auth": {
     "signIn": "Sign In",
@@ -127,7 +138,10 @@
     "noPlan": "No plan",
     "subscribeToPlan": "Subscribe to a Plan",
     "subscribeDescription": "Choose a subscription plan to continue using Quester",
-    "viewPlans": "View Plans"
+    "viewPlans": "View Plans",
+    "language": "Language",
+    "selectLanguage": "Select language",
+    "languageDescription": "Choose your preferred language for the application interface. Changes take effect immediately."
   },
   "team": {
     "title": "Team Management",
@@ -759,7 +773,13 @@
     "toggleYearsTimePeriods": "Toggle between individual years and time periods",
     "viewChartFullscreen": "View chart in fullscreen",
     "loadingData": "Loading data...",
-    "noDataToAnalyze": "No data to analyze yet!"
+    "noDataToAnalyze": "No data to analyze yet!",
+    "tabs": {
+      "overview": "Overview",
+      "notesAnalysis": "Notes Analysis",
+      "literatureAnalysis": "Literature Analysis",
+      "designsAnalysis": "Designs Analysis"
+    }
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",
@@ -1439,7 +1459,68 @@
     "archiveNotImplemented": "Archive functionality not yet implemented",
     "deletedEvents": "Deleted {count} events",
     "noCustomEventsSelected": "No custom events selected for bulk action",
-    "unknownModel": "Unknown Model"
+    "unknownModel": "Unknown Model",
+    "levels": {
+      "sparkOfCuriosity": {
+        "name": "Spark of Curiosity",
+        "description": "Your research journey begins"
+      },
+      "illuminator": {
+        "name": "Illuminator",
+        "description": "Shedding light on new knowledge"
+      },
+      "knowledgeWeaver": {
+        "name": "Knowledge Weaver",
+        "description": "Connecting ideas and insights"
+      },
+      "insightArchitect": {
+        "name": "Insight Architect",
+        "description": "Building frameworks of understanding"
+      },
+      "wisdomSculptor": {
+        "name": "Wisdom Sculptor",
+        "description": "Shaping knowledge into wisdom"
+      },
+      "enlightenmentExplorer": {
+        "name": "Enlightenment Explorer",
+        "description": "Venturing into the depths of discovery"
+      },
+      "sageOfScholars": {
+        "name": "Sage of Scholars",
+        "description": "Master of research excellence"
+      }
+    },
+    "eventTitles": {
+      "projectStatusChanged": "Project Status Changed",
+      "designUpdated": "Design Updated",
+      "modelCreatedAndUpdated": "Model Created and Updated",
+      "modelActivity": "{count} Model Activities",
+      "modelCreated": "Model Created",
+      "modelCreatedMultiple": "{count} Models Created",
+      "modelUpdated": "Model Updated",
+      "modelUpdatedMultiple": "{count} Models Updated",
+      "outcomeCreatedAndUpdated": "Outcome Created and Updated",
+      "outcomeActivity": "{count} Outcome Activities",
+      "outcomeCreated": "Outcome Created",
+      "outcomeCreatedMultiple": "{count} Outcomes Created",
+      "outcomeUpdated": "Outcome Updated",
+      "outcomeUpdatedMultiple": "{count} Outcomes Updated",
+      "createdInsight": "Insight Created",
+      "createdInsights": "{count} Insights Created",
+      "addedLiteratureItem": "Literature Item Added",
+      "addedLiteratureItems": "{count} Literature Items Added",
+      "createdNote": "Note Created",
+      "createdNotes": "{count} Notes Created"
+    },
+    "achievementGroups": {
+      "noteTaking": "Note Taking",
+      "literatureCollection": "Literature Collection",
+      "consistency": "Consistency",
+      "keywordResearch": "Keyword Research",
+      "researchDesign": "Research Design",
+      "customDesigns": "Custom Designs",
+      "visualization": "Visualization"
+    }
   },
   "time": {
     "justNow": "Just now",
@@ -2138,7 +2219,15 @@
     "groupByDays": "Group by days",
     "groupByWeeks": "Group by weeks",
     "groupByMonths": "Group by months",
-    "weekOf": "Week of {start} - {end}"
+    "weekOf": "Week of {start} - {end}",
+    "days": "Days",
+    "weeks": "Weeks",
+    "months": "Months",
+    "filters": "Filters",
+    "export": "Export",
+    "exportSelected": "Export Selected",
+    "exportFormat": "Export Format",
+    "addEvent": "Add Event"
   },
   "editor": {
     "placeholder": {
@@ -2183,6 +2272,7 @@
     "removeColor": "Remove Color",
     "orderedList": "Ordered List",
     "bulletList": "Bullet List (⌘⇧8)",
+    "pickAColor": "Pick a color",
     "fontSize": {
       "title": "Font Size",
       "tiny": "Tiny",
@@ -2253,7 +2343,13 @@
         "or": "OR",
         "pickAudio": "Pick a Audio",
         "addAudio": "Add Audio"
-      }
+      },
+      "caption": "Caption",
+      "duplicate": "Duplicate",
+      "fullScreen": "Full Screen",
+      "imageCaption": "Image Caption",
+      "videoCaption": "Video Caption",
+      "audioCaption": "Audio Caption"
     },
     "export": {
       "html": "Export as HTML",
@@ -2515,7 +2611,8 @@
     },
     "notes": {
       "untitledNote": "Untitled Note",
-      "other": "Other"
+      "other": "Other",
+      "noProjectId": "No project ID provided"
     }
   },
   "resourceUserManager": {
