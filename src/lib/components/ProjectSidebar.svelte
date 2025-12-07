@@ -672,7 +672,9 @@
       </Sidebar.Group>
     </Sidebar.Content>
 
-    <div class="mt-auto">
+    <div class="mt-auto flex flex-col pt-3">
+      <Sidebar.Separator />
+
       <Sidebar.Group>
         <Sidebar.GroupContent>
           <Sidebar.Menu>
@@ -686,7 +688,7 @@
                   <Tooltip.Root>
                     <Tooltip.Trigger>
                       <div
-                        class="flex items-center gap-3 px-4 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
+                        class="flex items-center gap-3 px-4 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
                       >
                         <Building2 class="h-4 w-4 flex-shrink-0" />
                         <span class="group-data-[collapsible=icon]:hidden"

@@ -17,7 +17,6 @@
     CheckCircle,
     AlertCircle,
     Calendar,
-    Eye,
     EyeOff,
   } from "lucide-svelte";
   import { formatDistanceToNow } from "date-fns";
@@ -141,9 +140,7 @@
                         class="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2"
                       >
                         {announcement.title}
-                        {#if hasUserViewed(announcement)}
-                          <Eye class="w-4 h-4 text-gray-400" />
-                        {:else}
+                        {#if !hasUserViewed(announcement)}
                           <div
                             class="w-2 h-2 bg-blue-500 rounded-full"
                             title="Unread"

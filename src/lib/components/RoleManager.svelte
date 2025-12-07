@@ -28,18 +28,20 @@
   let availableRoles = $state<{ id: string; name: string }[]>([]);
 
   // When the component mounts, get roles from the current structure
-  onMount(async () => {
-    // Try to fetch roles from the backend first
-    await fetchRolesFromBackend();
+  onMount(() => {
+    void (async () => {
+      // Try to fetch roles from the backend first
+      await fetchRolesFromBackend();
 
-    // If we couldn't get roles from the backend, fall back to the current structure
-    if (availableRoles.length === 0) {
-      // Get roles from the appropriate structure based on resource type
-      updateAvailableRoles();
-    }
+      // If we couldn't get roles from the backend, fall back to the current structure
+      if (availableRoles.length === 0) {
+        // Get roles from the appropriate structure based on resource type
+        updateAvailableRoles();
+      }
 
-    // Check if we're using elevated permissions
-    checkForElevatedPermissions();
+      // Check if we're using elevated permissions
+      checkForElevatedPermissions();
+    })();
   });
 
   // Try to fetch the roles directly from the backend

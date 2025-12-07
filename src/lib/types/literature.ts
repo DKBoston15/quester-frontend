@@ -1,3 +1,5 @@
+import type { DesignDetail } from '$lib/utils/design'
+
 export interface Literature {
   id: string;
   userId: string;
@@ -17,10 +19,10 @@ export interface Literature {
   startPage: string;
   status: string;
   volume: string;
-  researchDesign: string;
-  analyticDesign: string;
-  samplingDesign: string;
-  measurementDesign: string;
+  researchDesign: DesignDetail;
+  analyticDesign: DesignDetail;
+  samplingDesign: DesignDetail;
+  measurementDesign: DesignDetail;
   secondName: string;
   city: string;
   startDate: string;

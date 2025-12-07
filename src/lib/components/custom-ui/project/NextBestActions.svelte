@@ -52,6 +52,11 @@
   let statusFilter = $state<string>("all");
   let severityFilter = $state<string>("all");
 
+  const statusLabelId = "next-best-actions-status-label";
+  const statusTriggerId = "next-best-actions-status-trigger";
+  const severityLabelId = "next-best-actions-severity-label";
+  const severityTriggerId = "next-best-actions-severity-trigger";
+
   const statusOptions = [
     { value: "all", label: "All Statuses" },
     { value: "Note Taking", label: "Note Taking" },
@@ -133,6 +138,17 @@
     handleLiteratureClick(literature);
   }
 
+  function handleCardKeydown(event: KeyboardEvent, literature: Literature) {
+    if (
+      event.key === "Enter" ||
+      event.key === " " ||
+      event.key === "Spacebar"
+    ) {
+      event.preventDefault();
+      handleLiteratureClick(literature);
+    }
+  }
+
   // Watch for project changes
   $effect(() => {
     if (projectStore.currentProject) {
@@ -151,9 +167,7 @@
   });
 </script>
 
-<Card.Root
-  class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] min-w-0"
->
+<Card.Root>
   <Card.Header class="space-y-1.5 p-4 sm:p-6">
     <div
       class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
@@ -185,7 +199,13 @@
               </Card.Header>
               <Card.Content class="space-y-4">
                 <div class="space-y-2">
-                  <label class="text-sm font-medium">Status</label>
+                  <label
+                    id={statusLabelId}
+                    class="text-sm font-medium"
+                    for={statusTriggerId}
+                  >
+                    Status
+                  </label>
                   <Select
                     type="single"
                     value={statusFilter}
@@ -193,7 +213,11 @@
                       statusFilter = value;
                     }}
                   >
-                    <SelectTrigger class="w-full">
+                    <SelectTrigger
+                      id={statusTriggerId}
+                      aria-labelledby={statusLabelId}
+                      class="w-full"
+                    >
                       <span class="truncate">
                         {statusOptions.find((opt) => opt.value === statusFilter)
                           ?.label}
@@ -209,7 +233,13 @@
                   </Select>
                 </div>
                 <div class="space-y-2">
-                  <label class="text-sm font-medium">Severity</label>
+                  <label
+                    id={severityLabelId}
+                    class="text-sm font-medium"
+                    for={severityTriggerId}
+                  >
+                    Severity
+                  </label>
                   <Select
                     type="single"
                     value={severityFilter}
@@ -217,7 +247,11 @@
                       severityFilter = value;
                     }}
                   >
-                    <SelectTrigger class="w-full">
+                    <SelectTrigger
+                      id={severityTriggerId}
+                      aria-labelledby={severityLabelId}
+                      class="w-full"
+                    >
                       <span class="truncate">
                         {severityOptions.find(
                           (opt) => opt.value === severityFilter
@@ -246,17 +280,17 @@
     onValueChange={(value: any) => (activeTab = value)}
   >
     <Tabs.List
-      class="grid grid-cols-2 mx-8 border dark:bg-background  dark:border-dark-border rounded-lg overflow-hidden"
+      class="grid grid-cols-2 mx-8 border dark:bg-background dark:border rounded-lg overflow-hidden"
     >
       <Tabs.Trigger
         value="needs-attention"
-        class="capitalize px-4 data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]: dark:data-[state=active]:border-dark-border data-[state=active]:font-medium"
+        class="capitalize px-4 data-[state=active]:bg-background data-[state=active]:border-b-2 rounded-none data-[state=active]:font-medium"
       >
         Needs Attention
       </Tabs.Trigger>
       <Tabs.Trigger
         value="recent"
-        class="capitalize px-4 data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]: dark:data-[state=active]:border-dark-border data-[state=active]:font-medium"
+        class="capitalize px-4 data-[state=active]:bg-background data-[state=active]:border-b-2 rounded-none data-[state=active]:font-medium"
       >
         Recently Updated
       </Tabs.Trigger>
@@ -268,7 +302,7 @@
           <div class="flex items-center justify-center py-8">
             <div
               class="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"
-            />
+            ></div>
           </div>
         {:else if error}
           <div
@@ -292,7 +326,11 @@
               <div
                 class="group border-2 dark:border-dark-border p-3 sm:p-4 rounded-lg hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] transition-all duration-300 cursor-pointer min-w-0"
                 transition:slide={{ duration: 300 }}
-                on:click={() => handleLiteratureClick(action.literature)}
+                role="button"
+                tabindex="0"
+                onclick={() => handleLiteratureClick(action.literature)}
+                onkeydown={(event) =>
+                  handleCardKeydown(event, action.literature)}
               >
                 <div
                   class="flex flex-col sm:flex-row items-start gap-4 min-w-0"
@@ -366,7 +404,10 @@
               <div
                 class="group border-2 dark:border-dark-border p-3 sm:p-4 rounded-lg hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] transition-all duration-300 cursor-pointer min-w-0"
                 transition:slide={{ duration: 300 }}
-                on:click={() => handleLiteratureClick(literature)}
+                role="button"
+                tabindex="0"
+                onclick={() => handleLiteratureClick(literature)}
+                onkeydown={(event) => handleCardKeydown(event, literature)}
               >
                 <div
                   class="flex flex-col sm:flex-row items-start gap-4 min-w-0"

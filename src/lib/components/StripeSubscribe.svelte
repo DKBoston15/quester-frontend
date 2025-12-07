@@ -11,10 +11,19 @@
   export let isOwner: boolean;
 
   let stripe: Stripe | null = null;
+  let stripeError = false;
   let isLoading = false;
 
-  onMount(async () => {
-    stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+  onMount(() => {
+    void (async () => {
+      try {
+        stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+      } catch (error) {
+        console.error("Failed to load Stripe:", error);
+        stripe = null;
+        stripeError = true;
+      }
+    })();
   });
 
   async function handleSubscribe() {
@@ -48,7 +57,7 @@
 
 <button
   onclick={handleSubscribe}
-  disabled={isLoading || !stripe}
+  disabled={isLoading || !stripe || stripeError}
   class="w-full text-white font-bold"
 >
   {#if isLoading}
@@ -58,6 +67,8 @@
       ></div>
       <span>Processing...</span>
     </div>
+  {:else if stripeError}
+    Stripe Failed to Load
   {:else}
     Subscribe Now
   {/if}

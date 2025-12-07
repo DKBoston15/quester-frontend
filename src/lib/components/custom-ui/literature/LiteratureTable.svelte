@@ -20,6 +20,7 @@
     AlertCircle,
   } from "lucide-svelte";
   import { API_BASE_URL } from '$lib/config';
+  import { openUrlInNewTab } from '$lib/utils/browser';
 
   // Register required modules
   ModuleRegistry.registerModules([ClientSideRowModelModule]);
@@ -226,7 +227,14 @@
       field: "sourceFileId",
       headerName: "File",
       width: 100,
-      sortable: false,
+      sortable: true,
+      comparator: (a: string | undefined, b: string | undefined) => {
+        const aHas = !!a;
+        const bHas = !!b;
+        if (aHas === bHas) return 0;
+        // In ascending order: items without a file (false) come before those with a file (true)
+        return aHas ? 1 : -1;
+      },
       filter: false,
       suppressMenu: true,
       // Ensure content in this cell is vertically centered
@@ -326,41 +334,43 @@
     domLayout: "normal",
   };
 
+  import { toast } from 'svelte-sonner';
+
   async function previewDocument(fileId: string, filename: string) {
     try {
-      const response = await fetch(`${API_BASE_URL}/documents/${fileId}/download?preview=true`, {
+      const endpoint = `${API_BASE_URL}/documents/${fileId}/download?preview=true`;
+      const response = await fetch(endpoint, {
         credentials: 'include',
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get preview URL');
+        let message = 'Failed to get preview URL';
+        try {
+          const err = await response.json();
+          if (err?.message) message = err.message;
+        } catch {}
+        toast.error('Unable to preview document', { description: message });
+        // Fallback to download in case preview inline fails
+        await downloadDocument(fileId, filename);
+        return;
       }
 
       const data = await response.json();
-      
-      // Fetch the PDF through CORS-enabled request, then create blob URL
-      const pdfResponse = await fetch(data.downloadUrl, {
-        method: 'GET',
-        mode: 'cors', // Explicitly enable CORS
-      });
-      
-      if (!pdfResponse.ok) {
-        throw new Error('Failed to fetch PDF');
+
+      // Open the signed URL directly (no CORS fetch needed)
+      const url: unknown = data?.downloadUrl;
+      if (typeof url !== 'string' || url.length === 0) {
+        toast.error('Unable to preview document', { description: 'Missing download URL' });
+        // Fallback to download in case preview inline fails
+        await downloadDocument(fileId, filename);
+        return;
       }
-      
-      const pdfBlob = await pdfResponse.blob();
-      // Create blob with correct MIME type for PDF
-      const typedBlob = new Blob([pdfBlob], { type: 'application/pdf' });
-      const blobUrl = URL.createObjectURL(typedBlob);
-      
-      // Open blob URL (no CORS issues)
-      const newWindow = window.open(blobUrl, '_blank');
-      
-      // Clean up blob URL after a delay
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
-      
+      openUrlInNewTab(url);
     } catch (err) {
       console.error('Preview error:', err);
+      toast.error('Unable to preview document', {
+        description: err instanceof Error ? err.message : 'Unknown error',
+      });
       // Fallback to download
       await downloadDocument(fileId, filename);
     }
@@ -368,12 +378,18 @@
 
   async function downloadDocument(fileId: string, filename: string) {
     try {
-      const response = await fetch(`${API_BASE_URL}/documents/${fileId}/download`, {
+      const endpoint = `${API_BASE_URL}/documents/${fileId}/download`;
+      const response = await fetch(endpoint, {
         credentials: 'include',
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get download URL');
+        let message = 'Failed to get download URL';
+        try {
+          const err = await response.json();
+          if (err?.message) message = err.message;
+        } catch {}
+        throw new Error(message);
       }
 
       const data = await response.json();

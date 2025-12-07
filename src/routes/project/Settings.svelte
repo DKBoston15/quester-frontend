@@ -77,7 +77,9 @@
     isExporting = true;
     try {
       // Trigger download by navigating to the export URL
-      window.location.href = getApiUrl(`/projects/${projectStore.currentProject.id}/export`);
+      window.location.href = getApiUrl(
+        `/projects/${projectStore.currentProject.id}/export`
+      );
 
       // Optionally show a success toast, though the browser handles the download itself
       // toast.success("Project export started...");
@@ -208,15 +210,12 @@
   </div>
 
   <div class="grid gap-6">
-    <Card
-      id="general-settings-card"
-      class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
-    >
+    <Card id="general-settings-card">
       <CardHeader>
         <CardTitle class="">General Settings</CardTitle>
       </CardHeader>
       <CardContent>
-        <form class="space-y-4" on:submit={updateProjectName}>
+        <form class="space-y-4" onsubmit={updateProjectName}>
           <div class="space-y-2">
             <Label for="projectName">Project Name</Label>
             <Input
@@ -250,10 +249,7 @@
       <DesignManager />
     </div>
 
-    <Card
-      id="danger-zone-card"
-      class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
-    >
+    <Card id="danger-zone-card">
       <CardHeader>
         <CardTitle class="text-red-600">Danger Zone</CardTitle>
       </CardHeader>
@@ -316,15 +312,17 @@
       class="bg-white dark:bg-gray-800 p-8 rounded-lg max-w-md w-full shadow-xl"
     >
       <h2 class="text-2xl font-bold mb-4">Delete Project</h2>
-      <p class="text-base mb-6">
-        Are you sure you want to delete this project? This action cannot be
-        undone.
+      <div class="text-base mb-6">
+        <p>
+          Are you sure you want to delete this project? This action cannot be
+          undone.
+        </p>
         {#if projectStore.currentProject}
           <p class="font-medium mt-2">
             Project: {projectStore.currentProject.name}
           </p>
         {/if}
-      </p>
+      </div>
       <div class="flex justify-end space-x-2">
         <Button
           type="button"

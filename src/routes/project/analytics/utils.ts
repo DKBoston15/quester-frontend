@@ -2,6 +2,7 @@ import type { Literature } from "$lib/types/literature";
 import type { Note } from "$lib/types";
 import winkNLP from "wink-nlp";
 import model from "wink-eng-lite-web-model";
+import { designSelections } from "$lib/utils/design";
 
 const nlp = winkNLP(model);
 const its = nlp.its;
@@ -426,27 +427,34 @@ export async function analyzeLiterature(
         analysisData.publishers
       );
     }
-    if (lit.researchDesign) {
+    const researchDesignSelections = designSelections(lit.researchDesign);
+    if (researchDesignSelections.length > 0) {
       analysisData.countOccurrences(
-        [lit.researchDesign],
+        researchDesignSelections,
         analysisData.researchDesigns
       );
     }
-    if (lit.analyticDesign) {
+
+    const analyticDesignSelections = designSelections(lit.analyticDesign);
+    if (analyticDesignSelections.length > 0) {
       analysisData.countOccurrences(
-        [lit.analyticDesign],
+        analyticDesignSelections,
         analysisData.analyticDesigns
       );
     }
-    if (lit.samplingDesign) {
+
+    const samplingDesignSelections = designSelections(lit.samplingDesign);
+    if (samplingDesignSelections.length > 0) {
       analysisData.countOccurrences(
-        [lit.samplingDesign],
+        samplingDesignSelections,
         analysisData.samplingDesigns
       );
     }
-    if (lit.measurementDesign) {
+
+    const measurementDesignSelections = designSelections(lit.measurementDesign);
+    if (measurementDesignSelections.length > 0) {
       analysisData.countOccurrences(
-        [lit.measurementDesign],
+        measurementDesignSelections,
         analysisData.measurementDesigns
       );
     }

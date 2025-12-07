@@ -359,6 +359,7 @@
         </Sidebar.Menu>
       </Sidebar.GroupContent>
     </Sidebar.Group>
+
   </Sidebar.Content>
 
   <Sidebar.Footer class="border-t-2 border-black dark:border-dark-border">

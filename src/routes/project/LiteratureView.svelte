@@ -30,6 +30,7 @@
   import { toast } from "svelte-sonner";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import { ChevronDown } from "lucide-svelte";
+  import { openUrlInNewTab } from "$lib/utils/browser";
 
   const { literatureId } = $props<{ literatureId: string }>();
   let selectedTab = $state("details");
@@ -117,7 +118,7 @@
     }
   }
 
-  let citedPage: number | null = null;
+  let citedPage = $state<number | null>(null);
 
   // Read cited page from query (e.g., ?p=3)
   $effect(() => {
@@ -133,42 +134,42 @@
     if (!literature?.sourceFileId) return;
 
     try {
+      const endpoint = `${API_BASE_URL}/documents/${literature.sourceFileId}/download?preview=true`;
       const response = await fetch(
-        `${API_BASE_URL}/documents/${literature.sourceFileId}/download?preview=true`,
+        endpoint,
         {
           credentials: "include",
         }
       );
 
       if (!response.ok) {
-        throw new Error("Failed to get preview URL");
+        // Surface server message if available
+        let message = "Failed to get preview URL";
+        try {
+          const err = await response.json();
+          if (err?.message) message = err.message;
+        } catch {}
+        toast.error("Unable to preview document", { description: message });
+        return;
       }
 
       const data = await response.json();
 
-      // Fetch the PDF through CORS-enabled request, then create blob URL
-      const pdfResponse = await fetch(data.downloadUrl, {
-        method: "GET",
-        mode: "cors",
-      });
-
-      if (!pdfResponse.ok) {
-        throw new Error("Failed to fetch PDF");
+      // Open the signed URL directly (no CORS fetch needed)
+      const baseUrl: unknown = data?.downloadUrl;
+      if (typeof baseUrl !== "string" || baseUrl.length === 0) {
+        toast.error("Unable to preview document", { description: "Missing download URL" });
+        // Fallback to download in case preview inline fails
+        await downloadDocument();
+        return;
       }
-
-      const pdfBlob = await pdfResponse.blob();
-      // Create blob with correct MIME type for PDF
-      const typedBlob = new Blob([pdfBlob], { type: "application/pdf" });
-      const blobUrl = URL.createObjectURL(typedBlob);
-
-      // Open blob URL (no CORS issues). If a page was provided, append #page=
-      const urlWithAnchor = page ? `${blobUrl}#page=${page}` : blobUrl;
-      window.open(urlWithAnchor, "_blank");
-
-      // Clean up blob URL after a delay
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+      const url = page ? `${baseUrl}#page=${page}` : baseUrl;
+      openUrlInNewTab(url);
     } catch (err) {
       console.error("Preview error:", err);
+      toast.error("Unable to preview document", {
+        description: err instanceof Error ? err.message : "Unknown error",
+      });
     }
   }
 
@@ -176,15 +177,21 @@
     if (!literature?.sourceFileId) return;
 
     try {
+      const endpoint = `${API_BASE_URL}/documents/${literature.sourceFileId}/download`;
       const response = await fetch(
-        `${API_BASE_URL}/documents/${literature.sourceFileId}/download`,
+        endpoint,
         {
           credentials: "include",
         }
       );
 
       if (!response.ok) {
-        throw new Error("Failed to get download URL");
+        let message = "Failed to get download URL";
+        try {
+          const err = await response.json();
+          if (err?.message) message = err.message;
+        } catch {}
+        throw new Error(message);
       }
 
       const data = await response.json();
@@ -386,7 +393,7 @@
                 View Document
               </Button>
               <DropdownMenu.Root>
-                <DropdownMenu.Trigger asChild>
+                <DropdownMenu.Trigger>
                   {#snippet child({ props })}
                     <Button variant="outline" size="sm" {...props}>
                       Actions
@@ -419,15 +426,18 @@
               </Button>
             {/if}
             <AlertDialog.Root bind:open={showDeleteDialog}>
-              <AlertDialog.Trigger asChild>
-                <Button
-                  id="lit-view-delete-button"
-                  variant="destructive"
-                  size="sm"
-                >
-                  <Trash2 class="h-4 w-4 mr-2" />
-                  Delete Literature
-                </Button>
+              <AlertDialog.Trigger>
+                {#snippet child({ props })}
+                  <Button
+                    id="lit-view-delete-button"
+                    variant="destructive"
+                    size="sm"
+                    {...props}
+                  >
+                    <Trash2 class="h-4 w-4 mr-2" />
+                    Delete Literature
+                  </Button>
+                {/snippet}
               </AlertDialog.Trigger>
               <AlertDialog.Content class="border-2 dark:border-dark-border">
                 <AlertDialog.Header>
@@ -556,10 +566,7 @@
 
         <!-- Status Card -->
         <div class="mt-4 mb-6">
-          <Card.Root
-            id="lit-status-card"
-            class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
-          >
+          <Card.Root id="lit-status-card">
             <Card.Content class="py-4">
               <LiteratureStatus {literature} />
             </Card.Content>
@@ -663,10 +670,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Left Column: Details -->
         <div class="space-y-6">
-          <Card.Root
-            id="lit-details-card"
-            class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
-          >
+          <Card.Root id="lit-details-card">
             <Card.Header>
               <Card.Title>Details</Card.Title>
             </Card.Header>
@@ -701,10 +705,7 @@
           />
 
           <!-- Keywords -->
-          <Card.Root
-            id="lit-keywords-card"
-            class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
-          >
+          <Card.Root id="lit-keywords-card">
             <Card.Header>
               <Card.Title>Keywords</Card.Title>
             </Card.Header>

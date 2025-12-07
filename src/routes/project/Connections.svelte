@@ -12,11 +12,27 @@
   import { api } from "$lib/services/api-client";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
-  import { GraduationCap } from "lucide-svelte";
+  import { GraduationCap, ZoomIn, ZoomOut } from "lucide-svelte";
 
   let value = $state("2D");
   let isLoading = $state(true);
   let hasAccess = $state(false);
+
+  interface GraphControls {
+    zoomIn: () => void;
+    zoomOut: () => void;
+  }
+
+  let twoDControls = $state<GraphControls | null>(null);
+  let threeDControls = $state<GraphControls | null>(null);
+
+  function handleTwoDRegister(controls: GraphControls | null) {
+    twoDControls = controls;
+  }
+
+  function handleThreeDRegister(controls: GraphControls | null) {
+    threeDControls = controls;
+  }
 
   // Define the type for typeMap keys
   type TypeMapKey = keyof typeof typeMap;
@@ -24,7 +40,7 @@
   // Check if user has access to graph visualization features
   async function checkGraphAccessCapability() {
     try {
-      const data = await api.get('/capabilities/graph_access');
+      const data = await api.get("/capabilities/graph_access");
       hasAccess = data.allowed;
 
       // If user doesn't have access, redirect to overview
@@ -110,6 +126,26 @@
       {
         element: "#connections-header",
         popover: {
+          title: "Navigate to Literature",
+          description:
+            "Right-click on any literature node (book icons) to open a context menu with quick navigation options. You can instantly jump to the full literature details in a new tab without losing your place in the graph.",
+          side: "bottom",
+          align: "center",
+        },
+      },
+      {
+        element: "#connections-header",
+        popover: {
+          title: "Filter Connected Nodes",
+          description:
+            "Use the context menu to filter the graph and show only nodes connected to a specific literature item. This helps you focus on the immediate connections of a particular research piece. Use 'Reset Filter' to return to the full view.",
+          side: "bottom",
+          align: "center",
+        },
+      },
+      {
+        element: "#connections-header",
+        popover: {
           title: "Discover Insights",
           description:
             "Use this visualization to see how ideas connect, identify clusters of related work, spot potential research gaps, and gain a deeper understanding of your research landscape.",
@@ -119,6 +155,30 @@
       },
     ],
   });
+
+  function handleZoomIn() {
+    if (value === "2D") {
+      twoDControls?.zoomIn();
+    } else if (value === "3D") {
+      threeDControls?.zoomIn();
+    }
+  }
+
+  function handleZoomOut() {
+    if (value === "2D") {
+      twoDControls?.zoomOut();
+    } else if (value === "3D") {
+      threeDControls?.zoomOut();
+    }
+  }
+
+  function activeControlsReady() {
+    return value === "2D"
+      ? !!twoDControls
+      : value === "3D"
+        ? !!threeDControls
+        : false;
+  }
 </script>
 
 {#if isLoading}
@@ -141,7 +201,13 @@
           type="single"
           class=""
           onValueChange={(val) => {
-            if (val) value = val;
+            if (!val) return;
+            value = val;
+            if (val === "2D") {
+              threeDControls = null;
+            } else if (val === "3D") {
+              twoDControls = null;
+            }
           }}
         >
           <ToggleGroup.Item
@@ -161,6 +227,24 @@
         </ToggleGroup.Root>
       </div>
       <div class="flex space-x-2 items-center z-50">
+        <Button
+          aria-label="Zoom out"
+          variant="outline"
+          class="border-2 dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+          onclick={handleZoomOut}
+          disabled={!activeControlsReady()}
+        >
+          <ZoomOut class="h-4 w-4" />
+        </Button>
+        <Button
+          aria-label="Zoom in"
+          variant="outline"
+          class="border-2 dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+          onclick={handleZoomIn}
+          disabled={!activeControlsReady()}
+        >
+          <ZoomIn class="h-4 w-4" />
+        </Button>
         <Popover.Root>
           <Popover.Trigger>
             <Button
@@ -244,6 +328,10 @@
                         <li>
                           <strong>Left Click + Shift:</strong> Select multiple nodes
                         </li>
+                        <li>
+                          <strong>Right Click (Literature):</strong> Context menu
+                          (navigate, filter)
+                        </li>
                       </ul>
                     </div>
                   {:else if value === "3D"}
@@ -252,7 +340,11 @@
                       <ul class="text-xs space-y-1 text-muted-foreground">
                         <li><strong>Left Click:</strong> Rotate view</li>
                         <li><strong>Scroll Wheel:</strong> Zoom in/out</li>
-                        <li><strong>Right Click:</strong> Pan view</li>
+                        <li><strong>Right Click (Empty):</strong> Pan view</li>
+                        <li>
+                          <strong>Right Click (Literature):</strong> Context menu
+                          (navigate, filter)
+                        </li>
                       </ul>
                     </div>
                   {/if}
@@ -273,9 +365,9 @@
     </div>
     <div id="graph-container" class="flex-1 relative overflow-hidden">
       {#if value === "3D"}
-        <ThreeD />
+        <ThreeD registerControls={handleThreeDRegister} />
       {:else if value === "2D"}
-        <TwoD />
+        <TwoD registerControls={handleTwoDRegister} />
       {/if}
     </div>
   </div>

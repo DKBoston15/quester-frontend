@@ -200,6 +200,31 @@
     groupedNotes = groupNotesByDate(filteredNotes);
   });
 
+  // Ensure the active note is visible in the list
+  $effect(() => {
+    const activeId = notesStore.activeNoteId;
+    if (!activeId) return;
+
+    // If a search hides the active note, clear the search so the active note is shown
+    const activeVisible = filteredNotes.some((n) => n.id === activeId);
+    if (isSearchActive && !activeVisible) {
+      // Clear local search input and store query after current microtask
+      queueMicrotask(() => {
+        searchInput = "";
+        notesStore.setSearchQuery("");
+      });
+      return;
+    }
+
+    // Try to scroll the active note into view once it exists in DOM
+    queueMicrotask(() => {
+      try {
+        const el = document.querySelector<HTMLElement>(`[data-note-id="${CSS.escape(activeId)}"]`);
+        el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      } catch {}
+    });
+  });
+
   // Group notes by date
   function groupNotesByDate(notes: Note[]): [string, Note[]][] {
     // If search is active, don't group by date
@@ -609,7 +634,7 @@
             <div class="space-y-2">
               {#each notes as note (note.id)}
                 <div
-                  class="w-full text-left rounded-lg border hover:bg-accent transition-colors cursor-pointer"
+                  class="w-full text-left rounded-lg border hover:bg-accent transition-colors cursor-pointer overflow-hidden"
                   class:bg-accent={note.id === notesStore.activeNoteId}
                   transition:fade={{ duration: 150 }}
                   onclick={() => onNoteSelect(note, "left")}
@@ -621,15 +646,15 @@
                 >
                   <div class="p-3">
                     <div class="flex items-start justify-between">
-                      <div class="space-y-1 flex-1 mr-2">
-                        <h4 class="font-medium leading-none">
+                      <div class="space-y-1 flex-1 mr-2 min-w-0">
+                        <h4 class="font-medium leading-none break-words break-anywhere">
                           {#if isSearchActive && "highlightedName" in note}
                             {@html note.highlightedName}
                           {:else}
                             {note.name || "Untitled Note"}
                           {/if}
                         </h4>
-                        <p class="text-sm text-muted-foreground line-clamp-2">
+                        <p class="text-sm text-muted-foreground line-clamp-2 break-words break-anywhere">
                           {#if isSearchActive && "contentSnippet" in note}
                             {@html note.contentSnippet}
                           {:else}
@@ -777,5 +802,10 @@
     color: black;
     padding: 0 2px;
     border-radius: 2px;
+  }
+
+  /* Ensure extremely long, unbroken strings or &nbsp; sequences wrap within the card */
+  .break-anywhere {
+    overflow-wrap: anywhere;
   }
 </style>

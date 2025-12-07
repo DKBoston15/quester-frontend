@@ -8,8 +8,8 @@
     projectId: string;
   }>();
 
-  onMount(async () => {
-    await outcomeStore.loadOutcome(props.outcomeId);
+  onMount(() => {
+    void outcomeStore.loadOutcome(props.outcomeId);
   });
 </script>
 

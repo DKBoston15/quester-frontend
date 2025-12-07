@@ -321,17 +321,7 @@
         </p>
       </div>
 
-      <Card.Root
-        class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] relative overflow-hidden"
-      >
-        <!-- Decorative corners like in ProjectSidebar -->
-        <div
-          class="absolute -top-1 -right-1 w-2 h-2 bg-blue-400 dark:bg-dark-accent-blue border dark:border-dark-border"
-        ></div>
-        <div
-          class="absolute -bottom-1 -left-1 w-2 h-2 bg-yellow-400 dark:bg-dark-accent-yellow border dark:border-dark-border"
-        ></div>
-
+      <Card.Root class="relative overflow-hidden">
         <Card.Header class="pb-0">
           <div class="relative">
             <Search
@@ -385,7 +375,7 @@
                   }}
                 >
                   <Card.Root
-                    class="h-full pb-4 border-2  dark:border-dark-border bg-card dark:bg-dark-card shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all relative overflow-hidden"
+                    class="h-full pb-4 transition-all relative overflow-hidden"
                   >
                     <Card.Header class="pb-2">
                       <div class="flex justify-between items-start">
@@ -442,13 +432,6 @@
                         </div>
                       </Card.Description>
                     </Card.Header>
-
-                    <div
-                      class="absolute -top-1 -right-1 w-2 h-2 bg-green-400 dark:bg-dark-accent-green border dark:border-dark-border"
-                    ></div>
-                    <div
-                      class="absolute -bottom-1 -left-1 w-2 h-2 bg-pink-400 dark:bg-dark-accent-pink border dark:border-dark-border"
-                    ></div>
                   </Card.Root>
                 </button>
               {/each}

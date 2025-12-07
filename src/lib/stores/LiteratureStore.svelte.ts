@@ -1,6 +1,33 @@
 
   import { api } from "../services/api-client";
   import type { Literature } from "../types/literature";
+  import { normalizeDesignDetail } from "$lib/utils/design";
+
+  const DESIGN_FIELDS = [
+    "researchDesign",
+    "analyticDesign",
+    "samplingDesign",
+    "measurementDesign",
+  ] as const;
+
+  type DesignFieldKey = (typeof DESIGN_FIELDS)[number];
+
+function normalizeLiteratureDesignFields<T extends Partial<Literature>>(
+  literature: T
+): T {
+  const normalized: Partial<Literature> = { ...literature };
+
+  for (const field of DESIGN_FIELDS) {
+    const value = normalized[field];
+    if (value !== undefined) {
+      normalized[field] = normalizeDesignDetail(
+        value
+      ) as Literature[DesignFieldKey];
+    }
+  }
+
+  return normalized as T;
+}
 
   let literatureData = $state<Literature[]>([]);
   // Track which project the literature is loaded for
@@ -36,7 +63,9 @@
         const data = await api.get<Literature[]>(
           `/literature/project/${projectId}`
         );
-        literatureData = data;
+        literatureData = data.map((item) =>
+          normalizeLiteratureDesignFields(item)
+        );
         loadedProjectId = projectId;
       } catch (err) {
         console.error("Error loading literature:", err);
@@ -50,8 +79,17 @@
 
     async addLiterature(literature: Partial<Literature>) {
       try {
-        const newLiterature = await api.post(`/literature`, literature);
-        literatureData = [newLiterature.literature, ...literatureData];
+        const payload = normalizeLiteratureDesignFields({
+          ...literature,
+        });
+        const newLiterature = await api.post(`/literature`, payload);
+        const created = normalizeLiteratureDesignFields(
+          newLiterature.literature
+        );
+        literatureData = [
+          created,
+          ...literatureData,
+        ];
         return newLiterature;
       } catch (err) {
         console.error("Error adding literature:", err);
@@ -61,12 +99,18 @@
 
     async updateLiterature(id: string, updateData: Partial<Literature>) {
       try {
+        const payload = normalizeLiteratureDesignFields({
+          ...updateData,
+        });
         const updatedLiterature = await api.put(
           `/literature/${id}`,
-          updateData
+          payload
+        );
+        const updated = normalizeLiteratureDesignFields(
+          updatedLiterature.literature
         );
         literatureData = literatureData.map((item) =>
-          item.id === id ? updatedLiterature.literature : item
+          item.id === id ? updated : item
         );
         return updatedLiterature;
       } catch (err) {

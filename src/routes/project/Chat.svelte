@@ -13,7 +13,10 @@
   import { API_BASE_URL } from "$lib/config";
   import MarkdownIt from "markdown-it";
   import { navigate } from "svelte-routing";
-  
+  import ContextSelector from "$lib/components/ai/ContextSelector.svelte";
+  import type { ContextSelectionItem } from "$lib/types/context";
+  import { toast } from "svelte-sonner";
+
   // Icons
   import Send from "lucide-svelte/icons/send";
   import Loader from "lucide-svelte/icons/loader";
@@ -23,6 +26,7 @@
   import Clock from "lucide-svelte/icons/clock";
   import ExternalLink from "lucide-svelte/icons/external-link";
   import FileText from "lucide-svelte/icons/file-text";
+  import FilePlus from "lucide-svelte/icons/file-plus";
   import BookOpen from "lucide-svelte/icons/book-open";
   import Folder from "lucide-svelte/icons/folder";
   import Target from "lucide-svelte/icons/target";
@@ -32,6 +36,9 @@
   import History from "lucide-svelte/icons/history";
   import RefreshCcw from "lucide-svelte/icons/refresh-ccw";
   import Trash2 from "lucide-svelte/icons/trash-2";
+  import ChevronDown from "lucide-svelte/icons/chevron-down";
+  import { notesStore } from "$lib/stores/NotesStore";
+  import * as Tooltip from "$lib/components/ui/tooltip";
 
   // Types
   interface Source {
@@ -50,7 +57,13 @@
     sources?: Source[];
     timestamp: Date;
     streaming?: boolean;
-    metadata?: any;
+    metadata?: {
+      sources?: Source[];
+      tools_used?: string[];
+      project_context?: boolean;
+      context_selection?: ContextSelectionItem[];
+      [key: string]: any;
+    };
   }
 
   interface ChatSession {
@@ -58,6 +71,8 @@
     createdAt: string;
     messages?: Message[];
   }
+
+  type MessageMetadata = NonNullable<Message["metadata"]>;
 
   // State
   let messages = $state<Message[]>([]);
@@ -79,29 +94,30 @@
   let isDeleting = $state(false);
   let showDeleteDialog = $state(false);
   let sessionToDelete = $state<string | null>(null);
+  let selectedContextItems = $state<ContextSelectionItem[]>([]);
 
   // Research question suggestions
   const researchSuggestions = [
     {
       icon: Search,
       title: "Summarize my recent research findings",
-      description: "Get an overview of your latest research progress"
+      description: "Get an overview of your latest research progress",
     },
     {
       icon: TrendingUp,
       title: "What are the key themes in my literature?",
-      description: "Identify patterns and trends across your sources"
+      description: "Identify patterns and trends across your sources",
     },
     {
       icon: Lightbulb,
       title: "Help me find research gaps",
-      description: "Discover unexplored areas in your field"
+      description: "Discover unexplored areas in your field",
     },
     {
       icon: Target,
       title: "What are my next research steps?",
-      description: "Get recommendations for continuing your work"
-    }
+      description: "Get recommendations for continuing your work",
+    },
   ];
 
   // Initialize markdown renderer
@@ -110,15 +126,77 @@
     linkify: true,
     typographer: true,
     breaks: true,
-    highlight: function (str, lang) {
+  });
+
+  md.set({
+    highlight(str: string, lang: string): string {
+      const language = lang || "plaintext";
       // Basic code highlighting - you can enhance this later
-      return `<pre class="language-${lang}"><code>${md.utils.escapeHtml(str)}</code></pre>`;
-    }
+      return `<pre class="language-${language}"><code>${md.utils.escapeHtml(str)}</code></pre>`;
+    },
   });
 
   // Render markdown content for AI messages
   function renderMarkdown(content: string): string {
     return md.render(content);
+  }
+
+  // Convert message markdown to plain text for note content/title
+  function toPlainText(markdown: string): string {
+    try {
+      const html = renderMarkdown(markdown || "");
+      const div = document.createElement("div");
+      div.innerHTML = html;
+      return (div.textContent || div.innerText || "").trim();
+    } catch {
+      console.warn("Failed to parse markdown to plain text:", markdown);
+      return (markdown || "").trim();
+    }
+  }
+
+  async function createNoteFromMessage(message: Message) {
+    if (!projectStore.currentProject?.id) return;
+
+    try {
+      const plain = toPlainText(message.content || "");
+      const lines = (plain ?? "").split(/\r?\n/);
+      const firstLine =
+        lines.find((line) => line.trim().length > 0) || "Chat Note";
+      const title =
+        firstLine.length > 50 ? firstLine.slice(0, 47) + "..." : firstLine;
+
+      const paragraphs =
+        lines.length > 0
+          ? lines.map((line) => ({
+              type: "paragraph",
+              content: line ? [{ type: "text", text: line }] : [],
+            }))
+          : [{ type: "paragraph", content: [] }];
+
+      const tiptapDoc = {
+        type: "doc",
+        content: paragraphs,
+      } as const;
+
+      const newNote = await notesStore.createNote({
+        name: title,
+        content: JSON.stringify(tiptapDoc),
+        projectId: projectStore.currentProject.id,
+        type: "RESEARCH",
+        section_type: { value: "Other", label: "Other" },
+      });
+
+      if (newNote) {
+        navigate(
+          `/project/${projectStore.currentProject.id}/notes?tab=research&noteId=${newNote.id}`
+        );
+      }
+    } catch (e) {
+      console.error("Failed to create note from message:", e);
+      toast.error("Failed to create note", {
+        description: e instanceof Error ? e.message : "Unknown error",
+      });
+    }
   }
 
   // Auto-scroll to bottom when new messages arrive
@@ -172,7 +250,9 @@
 
     try {
       isLoadingHistory = true;
-      const data = await api.get(`/chat/history/${projectStore.currentProject.id}`);
+      const data = await api.get(
+        `/chat/history/${projectStore.currentProject.id}`
+      );
 
       // Load first message for each session
       const sessionsWithMessages = await Promise.all(
@@ -203,7 +283,6 @@
         (a: ChatSession, b: ChatSession) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
-      
     } catch (e) {
       console.error("Failed to load chat history:", e);
     } finally {
@@ -212,7 +291,7 @@
   }
 
   // Delete session functions
-  function handleDeleteSession(sessionId: string, event: Event) {
+  function handleDeleteSession(sessionId: string, event: MouseEvent) {
     event.stopPropagation();
     sessionToDelete = sessionId;
     showDeleteDialog = true;
@@ -227,20 +306,23 @@
 
       // Remove from local state
       recentSessions = recentSessions.filter(
-        session => session.chatSessionId !== sessionToDelete
+        (session) => session.chatSessionId !== sessionToDelete
       );
 
       // If we deleted the current session, clear the chat
       if (currentChatSession === sessionToDelete) {
         messages = [];
         currentChatSession = undefined;
+        selectedContextItems = [];
       }
 
       showDeleteDialog = false;
       sessionToDelete = null;
     } catch (error) {
-      console.error('Failed to delete session:', error);
-      alert('Failed to delete session: ' + (error as Error).message);
+      console.error("Failed to delete session:", error);
+      toast.error("Failed to delete session", {
+        description: (error as Error).message ?? "Unknown error",
+      });
     } finally {
       isDeleting = false;
     }
@@ -254,11 +336,13 @@
       const data = await api.get(
         `/chat/history/${projectStore.currentProject.id}?sessionId=${sessionId}`
       );
-      messages = data.messages.map((msg: any) => ({
+      const mappedMessages = data.messages.map((msg: any) => ({
         ...msg,
         timestamp: new Date(msg.createdAt),
         sources: msg.metadata?.sources || msg.sources,
       }));
+      messages = mappedMessages;
+      selectedContextItems = deriveLatestContextSelection(mappedMessages);
       currentChatSession = sessionId;
       showHistory = false;
     } catch (e) {
@@ -274,6 +358,7 @@
     currentChatSession = undefined;
     showHistory = false;
     error = null;
+    selectedContextItems = [];
   }
 
   // Handle typing indicator
@@ -320,10 +405,15 @@
 
     try {
       // Add user message immediately to local state
+      const userMetadata =
+        selectedContextItems.length > 0
+          ? { context_selection: selectedContextItems }
+          : undefined;
       const userMsg: Message = {
         role: "user" as const,
         content: userMessage,
         timestamp: new Date(),
+        ...(userMetadata ? { metadata: userMetadata } : {}),
       };
       messages = [...messages, userMsg];
 
@@ -335,6 +425,15 @@
             projectId: projectStore.currentProject.id,
             message: userMessage,
             provider: "openai",
+            contextSelection: selectedContextItems.map(
+              ({ id, type, title, subtitle, projectId }) => ({
+                id,
+                type,
+                ...(title ? { title } : {}),
+                ...(subtitle ? { subtitle } : {}),
+                ...(projectId ? { projectId } : {}),
+              })
+            ),
           },
           signal: currentAbortController.signal, // Add abort signal
         }
@@ -352,6 +451,12 @@
           content: "",
           timestamp: new Date(),
           streaming: true,
+          metadata: {
+            project_context: true,
+            ...(selectedContextItems.length > 0
+              ? { context_selection: selectedContextItems }
+              : {}),
+          },
         },
       ];
 
@@ -368,19 +473,57 @@
                 }
                 receivedSessionId = true;
               }
-              
-              // Attach sources to the last message (assistant message)
-              if (data.sources && data.sources.length > 0) {
-                messages = messages.map((msg, i) => {
-                  if (i === messages.length - 1) {
-                    return {
-                      ...msg,
-                      sources: data.sources,
-                      metadata: { ...msg.metadata, sources: data.sources }
-                    };
-                  }
+
+              let nextSelectedItems: ContextSelectionItem[] | undefined;
+              let shouldClearSelection = false;
+
+              messages = messages.map((msg, i) => {
+                if (i !== messages.length - 1) {
                   return msg;
-                });
+                }
+
+                const existingMetadata = msg.metadata || {};
+                const mergedSelection = mergeContextSelections(
+                  existingMetadata.context_selection,
+                  data.context_selection
+                );
+
+                const nextMetadata: MessageMetadata = {
+                  ...existingMetadata,
+                  ...(data.sources ? { sources: data.sources } : {}),
+                  ...(Array.isArray(data.tools_used)
+                    ? { tools_used: data.tools_used }
+                    : {}),
+                };
+
+                if (data.project_context !== undefined) {
+                  nextMetadata.project_context = data.project_context;
+                }
+
+                if (Array.isArray(data.context_selection)) {
+                  if (data.context_selection.length === 0) {
+                    delete nextMetadata.context_selection;
+                    shouldClearSelection = true;
+                    nextSelectedItems = [];
+                  } else {
+                    nextMetadata.context_selection = mergedSelection;
+                    nextSelectedItems = mergedSelection;
+                  }
+                } else if (mergedSelection.length > 0) {
+                  nextMetadata.context_selection = mergedSelection;
+                }
+
+                return {
+                  ...msg,
+                  sources: data.sources ?? msg.sources,
+                  metadata: nextMetadata,
+                };
+              });
+
+              if (shouldClearSelection) {
+                selectedContextItems = [];
+              } else if (nextSelectedItems) {
+                selectedContextItems = nextSelectedItems;
               }
             } else if (data.type === "content") {
               streamingContent += data.content;
@@ -406,7 +549,7 @@
         },
         onComplete: () => {
           console.log("Stream completed successfully");
-        }
+        },
       });
 
       // After streaming is complete, remove streaming state
@@ -418,16 +561,20 @@
       await loadRecentSessions();
     } catch (e) {
       // Don't show error for aborted requests
-      if (e instanceof Error && e.name === 'AbortError') {
+      if (e instanceof Error && e.name === "AbortError") {
         console.log("Chat request was cancelled");
         return;
       }
-      
+
       error = e instanceof Error ? e.message : "Failed to get response";
       console.error("Chat error:", e);
-      
+
       // Remove the failed assistant message if it was added
-      if (messages.length > 0 && messages[messages.length - 1].role === "assistant" && messages[messages.length - 1].streaming) {
+      if (
+        messages.length > 0 &&
+        messages[messages.length - 1].role === "assistant" &&
+        messages[messages.length - 1].streaming
+      ) {
         messages = messages.slice(0, -1);
       }
     } finally {
@@ -435,7 +582,7 @@
       isStreaming = false;
       streamingContent = "";
       currentAbortController = null; // Clean up abort controller
-      
+
       // Refocus input after submission
       if (chatInputRef) {
         chatInputRef.focus();
@@ -451,6 +598,77 @@
     }
   }
 
+  function addContextItem(item: ContextSelectionItem) {
+    const exists = selectedContextItems.some(
+      (existing) => existing.id === item.id && existing.type === item.type
+    );
+    if (exists) return;
+    selectedContextItems = [...selectedContextItems, item];
+  }
+
+  function removeContextItem(item: ContextSelectionItem) {
+    selectedContextItems = selectedContextItems.filter(
+      (existing) => !(existing.id === item.id && existing.type === item.type)
+    );
+  }
+
+  function clearContextItems() {
+    selectedContextItems = [];
+  }
+
+  function deriveLatestContextSelection(
+    items: Message[] | undefined | null
+  ): ContextSelectionItem[] {
+    if (!Array.isArray(items) || items.length === 0) {
+      return [];
+    }
+
+    for (let index = items.length - 1; index >= 0; index -= 1) {
+      const selection = items[index]?.metadata?.context_selection;
+      if (Array.isArray(selection)) {
+        if (selection.length === 0) {
+          return [];
+        }
+        return selection;
+      }
+    }
+
+    return [];
+  }
+
+  function mergeContextSelections(
+    existing?: ContextSelectionItem[],
+    incoming?: ContextSelectionItem[]
+  ): ContextSelectionItem[] {
+    const merged = new Map<string, ContextSelectionItem>();
+
+    if (Array.isArray(existing)) {
+      for (const item of existing) {
+        if (!item?.id || !item?.type) continue;
+        merged.set(`${item.type}:${item.id}`, { ...item });
+      }
+    }
+
+    if (Array.isArray(incoming)) {
+      for (const item of incoming) {
+        if (!item?.id || !item?.type) continue;
+        const key = `${item.type}:${item.id}`;
+        const current = merged.get(key);
+        if (current) {
+          merged.set(key, {
+            ...current,
+            ...item,
+            title: item.title || current.title,
+            subtitle: item.subtitle || current.subtitle,
+          });
+        } else {
+          merged.set(key, { ...item });
+        }
+      }
+    }
+
+    return Array.from(merged.values());
+  }
 
   function formatDate(dateStr: string): string {
     return new Intl.DateTimeFormat("en", {
@@ -477,7 +695,8 @@
 
   // Format timestamp for display
   function formatTimestamp(timestamp: Date | string): string {
-    const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
+    const date =
+      typeof timestamp === "string" ? new Date(timestamp) : timestamp;
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
@@ -488,7 +707,7 @@
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
-    
+
     return date.toLocaleDateString();
   }
 
@@ -512,25 +731,37 @@
 
   function getTypeLabel(type: string): string {
     switch (type) {
-      case 'document_chunk':
-        return 'Literature Page';
+      case "document_chunk":
+        return "Literature Page";
       default:
         return type.charAt(0).toUpperCase() + type.slice(1);
     }
   }
 
+  function formatContextItemLabel(item: ContextSelectionItem): string {
+    if (item.title && item.title.trim().length > 0) {
+      return item.title;
+    }
+    const shortId = item.id ? `${item.id.slice(0, 6)}…` : "";
+    const typeLabel = getTypeLabel(item.type);
+    return shortId ? `${typeLabel} (${shortId})` : typeLabel;
+  }
+
   // Transform tool names to friendly display names
   function getFriendlyToolName(toolName: string): string {
     const toolNames: Record<string, string> = {
-      'get_literature_count': 'Literature Counter',
-      'get_relevant_content': 'Content Search',
-      'semantic_search': 'Semantic Search',
-      'analyze_literature_gaps': 'Gap Analysis',
-      'suggest_research_directions': 'Research Suggestions',
-      'summarize_search_results': 'Search Summarizer',
-      'compare_methodologies': 'Methodology Comparison'
+      get_literature_count: "Literature Counter",
+      get_relevant_content: "Content Search",
+      semantic_search: "Semantic Search",
+      analyze_literature_gaps: "Gap Analysis",
+      suggest_research_directions: "Research Suggestions",
+      summarize_search_results: "Search Summarizer",
+      compare_methodologies: "Methodology Comparison",
     };
-    return toolNames[toolName] || toolName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    return (
+      toolNames[toolName] ||
+      toolName.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
+    );
   }
 
   // Handle source navigation based on type
@@ -538,17 +769,18 @@
     const projectId = projectStore.currentProject?.id;
     if (!projectId) return;
 
-    let path = '';
-    
+    let path = "";
+
     switch (source.type) {
-      case 'literature':
+      case "literature":
         path = `/project/${projectId}/literature/${source.id}`;
         break;
-      case 'document_chunk':
+      case "document_chunk":
         // Prefer deep linking to the literature item that was created for this document
         if (source.metadata?.literature_id) {
           const qp = new URLSearchParams();
-          if (source.metadata?.start_page) qp.set('p', String(source.metadata.start_page));
+          if (source.metadata?.start_page)
+            qp.set("p", String(source.metadata.start_page));
           path = `/project/${projectId}/literature/${source.metadata.literature_id}?${qp.toString()}`;
         } else if (source.metadata?.document_file_id) {
           path = `/project/${projectId}/literature`;
@@ -556,14 +788,14 @@
           path = `/project/${projectId}/literature`;
         }
         break;
-      case 'note':
+      case "note":
         // Notes don't have detail views, navigate to notes list
         path = `/project/${projectId}/notes`;
         break;
-      case 'outcome':
+      case "outcome":
         path = `/project/${projectId}/outcomes/${source.id}`;
         break;
-      case 'project':
+      case "project":
         path = `/project/${projectId}`;
         break;
       default:
@@ -571,55 +803,80 @@
         path = `/project/${projectId}`;
         break;
     }
-    
+
     if (path) {
       navigate(path);
     }
   }
 
+  function handleSourceKeydown(event: KeyboardEvent, handler: () => void) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handler();
+    }
+  }
+
   async function openDocumentPreview(fileId: string, page?: number) {
     try {
-      const res = await fetch(`${API_BASE_URL}/documents/${fileId}/download?preview=true`, {
-        credentials: 'include',
-      });
+      const res = await fetch(
+        `${API_BASE_URL}/documents/${fileId}/download?preview=true`,
+        {
+          credentials: "include",
+        }
+      );
       if (!res.ok) return;
       const data = await res.json();
-      const url = page ? `${data.downloadUrl}#page=${page}` : data.downloadUrl;
-      window.open(url, '_blank');
+      const baseUrl: unknown = data?.downloadUrl;
+      if (typeof baseUrl !== "string" || baseUrl.length === 0) {
+        toast.error("Unable to preview document", { description: "Missing download URL" });
+        return;
+      }
+      const url = page ? `${baseUrl}#page=${page}` : baseUrl;
+      const win = window.open(url, "_blank", "noopener,noreferrer");
+      if (!win) {
+        window.location.assign(url);
+      }
     } catch (e) {
-      console.error('Preview open failed', e);
+      console.error("Preview open failed", e);
     }
   }
 
   // Parse source citations from AI responses
-  function parseSourceCitations(content: string): { content: string; sources: Array<{ id: string; title: string; type: string }> } {
+  function parseSourceCitations(content: string): {
+    content: string;
+    sources: Array<{ id: string; title: string; type: string }>;
+  } {
     const sourcePattern = /\[Source: ([^\]]+)\]/g;
     const sources: Array<{ id: string; title: string; type: string }> = [];
     let match;
 
     while ((match = sourcePattern.exec(content)) !== null) {
-      const sourceInfo = match[1].split(' - ');
+      const sourceInfo = match[1].split(" - ");
       if (sourceInfo.length >= 2) {
         sources.push({
           id: sourceInfo[0],
           title: sourceInfo[1],
-          type: sourceInfo[2] || 'unknown'
+          type: sourceInfo[2] || "unknown",
         });
       }
     }
 
     // Remove source citations from content for display
-    const cleanContent = content.replace(sourcePattern, '').trim();
-    
+    const cleanContent = content.replace(sourcePattern, "").trim();
+
     return { content: cleanContent, sources };
   }
 </script>
 
 <Card.Root class="flex flex-col h-full border-2 dark:border-dark-border">
-  <Card.Header class="px-6 py-4 flex w-full justify-between border-b-2 dark:border-dark-border bg-background">
+  <Card.Header
+    class="px-6 py-4 flex w-full justify-between border-b-2 dark:border-dark-border bg-background"
+  >
     <div class="flex justify-between items-center gap-3">
       <div class="flex items-center gap-3">
-        <div class="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
+        <div
+          class="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg"
+        >
           <Bot class="h-6 w-6 text-white" />
         </div>
         <div class="flex items-center gap-2">
@@ -656,7 +913,10 @@
     <div class="flex h-full">
       <!-- Chat History Sidebar -->
       {#if showHistory}
-        <div class="w-80 border-r bg-background flex-shrink-0 p-4 overflow-y-auto" transition:slide={{ axis: 'x' }}>
+        <div
+          class="w-80 border-r bg-background flex-shrink-0 p-4 overflow-y-auto"
+          transition:slide={{ axis: "x" }}
+        >
           <div class="space-y-4">
             <div class="flex flex-col gap-2">
               <h3 class="font-semibold text-lg flex items-center gap-2">
@@ -685,10 +945,14 @@
             {:else if filteredSessions.length === 0}
               <div class="text-center py-8">
                 <p class="text-sm text-muted-foreground">
-                  {searchTerm ? "No matching conversations" : "No previous conversations"}
+                  {searchTerm
+                    ? "No matching conversations"
+                    : "No previous conversations"}
                 </p>
                 <p class="text-xs text-muted-foreground mt-1">
-                  {searchTerm ? "Try adjusting your search terms" : "Start a new conversation to begin"}
+                  {searchTerm
+                    ? "Try adjusting your search terms"
+                    : "Start a new conversation to begin"}
                 </p>
               </div>
             {:else}
@@ -726,7 +990,8 @@
                         <Button
                           variant="ghost"
                           size="sm"
-                          onclick={(e) => handleDeleteSession(session.chatSessionId, e)}
+                          onclick={(e: MouseEvent) =>
+                            handleDeleteSession(session.chatSessionId, e)}
                           class="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
                         >
                           <Trash2 class="size-3" />
@@ -749,12 +1014,20 @@
               <!-- Empty State with Suggestions -->
               <div class="text-center py-4">
                 <div class="mb-6">
-                  <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mb-4">
+                  <div
+                    class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mb-4"
+                  >
                     <Sparkles class="size-8 text-white" />
                   </div>
-                  <h3 class="font-semibold text-lg mb-2">AI Research Assistant</h3>
-                  <p class="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
-                    Ask questions about your research, get insights from your literature, or explore patterns in your data. I'm here to help accelerate your research process.
+                  <h3 class="font-semibold text-lg mb-2">
+                    AI Research Assistant
+                  </h3>
+                  <p
+                    class="text-sm text-muted-foreground mb-6 max-w-md mx-auto"
+                  >
+                    Ask questions about your research, get insights from your
+                    literature, or explore patterns in your data. I'm here to
+                    help accelerate your research process.
                   </p>
                 </div>
 
@@ -769,12 +1042,18 @@
                       onclick={() => selectSuggestion(suggestion.title)}
                     >
                       <div class="flex items-start gap-3 w-full">
-                        <div class="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                        <div
+                          class="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors"
+                        >
                           <Icon class="size-4 text-primary" />
                         </div>
                         <div class="flex-1 text-left">
-                          <div class="font-medium text-sm">{suggestion.title}</div>
-                          <div class="text-xs text-muted-foreground mt-1">{suggestion.description}</div>
+                          <div class="font-medium text-sm">
+                            {suggestion.title}
+                          </div>
+                          <div class="text-xs text-muted-foreground mt-1">
+                            {suggestion.description}
+                          </div>
                         </div>
                       </div>
                     </Button>
@@ -785,35 +1064,57 @@
               <!-- Chat Messages -->
               <div class="space-y-4">
                 {#each messages.filter((msg) => msg.role === "user" || msg.role === "assistant") as message, i (message.id || i)}
-                  {@const originalIndex = messages.findIndex(m => m === message)}
+                  {@const originalIndex = messages.findIndex(
+                    (m) => m === message
+                  )}
                   {@const showTimestamp = shouldShowTimestamp(originalIndex)}
                   {@const isUser = message.role === "user"}
                   {@const isAssistant = message.role === "assistant"}
-                  {@const sources = message.sources || message.metadata?.sources || []}
+                  {@const sources =
+                    message.sources || message.metadata?.sources || []}
                   {@const content = message.content}
-                  
+                  {@const toolsUsed = message.metadata?.tools_used ?? []}
+                  {@const hasTools = toolsUsed.length > 0}
+                  {@const focusedItems =
+                    message.metadata?.context_selection ?? []}
+                  {@const focusCount = focusedItems.length}
+                  {@const hasContextFocus = focusCount > 0}
+                  {@const hasSources = sources.length > 0}
+                  {@const hasProjectContext = Boolean(
+                    message.metadata?.project_context
+                  )}
+
                   <div
                     class="message-container"
                     animate:flip={{ duration: 300, easing: quintOut }}
                     transition:slide|local={{ duration: 200 }}
                   >
                     {#if showTimestamp}
-                      <div class="flex items-center justify-center my-4" transition:fade>
-                        <div class="flex items-center gap-2 px-3 py-1 bg-muted rounded-full text-xs text-muted-foreground">
+                      <div
+                        class="flex items-center justify-center my-4"
+                        transition:fade
+                      >
+                        <div
+                          class="flex items-center gap-2 px-3 py-1 bg-muted rounded-full text-xs text-muted-foreground"
+                        >
                           <Clock class="size-3" />
                           {formatTimestamp(message.timestamp)}
                         </div>
                       </div>
                     {/if}
 
-                    <div class="flex gap-3 {isUser ? 'flex-row-reverse' : 'flex-row'}">
+                    <div
+                      class="flex gap-3 {isUser
+                        ? 'flex-row-reverse'
+                        : 'flex-row'}"
+                    >
                       <!-- Avatar -->
                       <div class="flex-shrink-0">
-                        <div class="w-8 h-8 rounded-full flex items-center justify-center {
-                          isUser 
-                            ? 'bg-primary text-primary-foreground' 
-                            : 'bg-gradient-to-br from-blue-500 to-purple-600 text-white'
-                        }">
+                        <div
+                          class="w-8 h-8 rounded-full flex items-center justify-center {isUser
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-gradient-to-br from-blue-500 to-purple-600 text-white'}"
+                        >
                           {#if isUser}
                             <User class="size-4" />
                           {:else}
@@ -823,120 +1124,251 @@
                       </div>
 
                       <!-- Message Content -->
-                      <div class="flex-1 max-w-[85%] {isUser ? 'text-right' : 'text-left'}">
-                        <div class="inline-block rounded-2xl px-4 py-3 {
-                          isUser 
-                            ? 'bg-primary text-primary-foreground' 
-                            : 'bg-muted border border-border'
-                        } relative group">
+                      <div
+                        class="flex-1 max-w-[85%] {isUser
+                          ? 'text-right'
+                          : 'text-left'} group"
+                      >
+                        <div
+                          class="inline-block rounded-2xl px-4 py-3 bg-muted border border-border relative group dark:bg-muted/60 dark:border-border/70"
+                        >
                           <!-- Message Content -->
                           {#if isAssistant}
                             <div class="prose-chat text-sm leading-relaxed">
                               {@html renderMarkdown(content || message.content)}
                             </div>
                           {:else}
-                            <div class="whitespace-pre-wrap text-sm leading-relaxed">
+                            <div
+                              class="prose-chat text-sm leading-relaxed whitespace-pre-wrap"
+                            >
                               {content || message.content}
                             </div>
                           {/if}
 
                           <!-- Streaming Indicator -->
                           {#if message.streaming}
-                            <div class="flex items-center gap-1 mt-2 text-xs opacity-70" transition:fade>
+                            <div
+                              class="flex items-center gap-1 mt-2 text-xs opacity-70"
+                              transition:fade
+                            >
                               <div class="flex gap-1">
-                                <div class="w-1 h-1 bg-current rounded-full animate-pulse typing-dot"></div>
-                                <div class="w-1 h-1 bg-current rounded-full animate-pulse typing-dot" style="animation-delay: 0.2s;"></div>
-                                <div class="w-1 h-1 bg-current rounded-full animate-pulse typing-dot" style="animation-delay: 0.4s;"></div>
+                                <div
+                                  class="w-1 h-1 bg-current rounded-full animate-pulse typing-dot"
+                                ></div>
+                                <div
+                                  class="w-1 h-1 bg-current rounded-full animate-pulse typing-dot"
+                                  style="animation-delay: 0.2s;"
+                                ></div>
+                                <div
+                                  class="w-1 h-1 bg-current rounded-full animate-pulse typing-dot"
+                                  style="animation-delay: 0.4s;"
+                                ></div>
                               </div>
                               <span class="ml-2">AI is thinking...</span>
                             </div>
                           {/if}
 
-                          <!-- Enhanced Source Citations & Context -->
-                          {#if sources.length > 0 || (message.sources && message.sources.length > 0) || message.metadata?.tools_used}
-                            <div class="mt-3 pt-3 border-t border-border/50" transition:slide|local>
-                              <!-- Tools Used -->
-                              {#if message.metadata?.tools_used && message.metadata.tools_used.length > 0}
-                                <div class="mb-3">
-                                  <div class="text-xs text-muted-foreground mb-2 font-medium flex items-center gap-1">
-                                    <Sparkles class="size-3" />
-                                    AI Analysis Tools Used:
+                          {#if hasSources || hasTools || hasContextFocus || hasProjectContext}
+                            <details
+                              class="mt-3 border border-border/50 dark:border-border/70 rounded-md bg-muted/30 dark:bg-muted/50 references-panel"
+                              transition:slide|local
+                            >
+                              <summary
+                                class="flex items-center justify-between gap-2 text-xs font-medium text-muted-foreground cursor-pointer px-3 py-2"
+                              >
+                                <span class="flex items-center gap-2">
+                                  <BookOpen class="size-3" />
+                                  <span>Referenced context</span>
+                                  <span
+                                    class="text-[10px] uppercase tracking-wide text-muted-foreground/80"
+                                  >
+                                    {#if hasSources}
+                                      {sources.length} source{sources.length !==
+                                      1
+                                        ? "s"
+                                        : ""}
+                                    {/if}
+                                    {#if hasProjectContext && !hasSources && !hasContextFocus}
+                                      project context
+                                    {/if}
+                                  </span>
+                                </span>
+                                <span class="references-chevron">
+                                  <ChevronDown
+                                    class="size-4"
+                                    aria-hidden="true"
+                                  />
+                                </span>
+                              </summary>
+                              <div class="px-3 pb-3 pt-2 space-y-3">
+                                {#if hasContextFocus}
+                                  <div>
+                                    <div
+                                      class="text-xs text-muted-foreground mb-2 font-medium"
+                                    >
+                                      Focused context:
+                                    </div>
+                                    <div class="flex flex-wrap gap-2">
+                                      {#each focusedItems as item (item.type + item.id)}
+                                        <Badge
+                                          variant="outline"
+                                          class="text-xs"
+                                        >
+                                          {formatContextItemLabel(item)}
+                                        </Badge>
+                                      {/each}
+                                    </div>
                                   </div>
-                                  <div class="flex flex-wrap gap-2">
-                                    {#each message.metadata.tools_used as tool}
-                                      <Badge variant="secondary" class="text-xs">
-                                        {getFriendlyToolName(tool)}
-                                      </Badge>
-                                    {/each}
-                                  </div>
-                                </div>
-                              {/if}
+                                {/if}
 
-                              <!-- Referenced sources -->
-                              {#if message.sources && message.sources.length > 0}
-                                <div class="mb-2">
-                                  <div class="text-xs text-muted-foreground mb-2 font-medium">
-                                    Referenced sources:
+                                {#if hasTools}
+                                  <div>
+                                    <div
+                                      class="text-xs text-muted-foreground mb-2 font-medium flex items-center gap-1"
+                                    >
+                                      <Sparkles class="size-3" />
+                                      AI Analysis Tools Used:
+                                    </div>
+                                    <div class="flex flex-wrap gap-2">
+                                      {#each toolsUsed as tool}
+                                        <Badge
+                                          variant="secondary"
+                                          class="text-xs"
+                                        >
+                                          {getFriendlyToolName(tool)}
+                                        </Badge>
+                                      {/each}
+                                    </div>
                                   </div>
+                                {/if}
+
+                                {#if hasSources}
                                   <div class="space-y-2">
-                                    {#each message.sources as source}
+                                    {#each sources as source}
                                       {@const Icon = getResultIcon(source.type)}
-                                      <button 
+                                      <div
+                                        role="button"
+                                        tabindex="0"
                                         class="w-full border rounded-md p-2 bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer group text-left"
-                                        onclick={() => handleSourceClick(source)}
+                                        onclick={() =>
+                                          handleSourceClick(source)}
+                                        onkeydown={(event) =>
+                                          handleSourceKeydown(event, () =>
+                                            handleSourceClick(source)
+                                          )}
                                       >
                                         <div class="flex items-start gap-2">
-                                          <Icon class="size-3 mt-0.5 text-muted-foreground" />
+                                          <Icon
+                                            class="size-3 mt-0.5 text-muted-foreground"
+                                          />
                                           <div class="flex-1 min-w-0">
-                                            <div class="text-xs font-medium truncate">{source.title}</div>
+                                            <div
+                                              class="text-xs font-medium truncate"
+                                            >
+                                              {source.title}
+                                            </div>
                                             {#if source.snippet}
-                                              <div class="text-xs text-muted-foreground mt-1 line-clamp-2">{source.snippet}</div>
+                                              <div
+                                                class="text-xs text-muted-foreground mt-1 line-clamp-2"
+                                              >
+                                                {source.snippet}
+                                              </div>
                                             {/if}
-                                            <div class="flex items-center gap-2 mt-1">
-                                              <Badge variant="outline" class="text-xs">
+                                            <div
+                                              class="flex items-center gap-2 mt-1"
+                                            >
+                                              <Badge
+                                                variant="outline"
+                                                class="text-xs"
+                                              >
                                                 {getTypeLabel(source.type)}
                                               </Badge>
                                               {#if source.similarity}
-                                                <span class="text-xs text-muted-foreground">
-                                                  {Math.round(source.similarity * 100)}% relevance
+                                                <span
+                                                  class="text-xs text-muted-foreground"
+                                                >
+                                                  {Math.round(
+                                                    source.similarity * 100
+                                                  )}% relevance
                                                 </span>
                                               {/if}
                                             </div>
                                           </div>
-                                          {#if source.type === 'document_chunk' && source.metadata?.document_file_id}
-                                            <ExternalLink 
-                                              class="size-3 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground"
-                                              onclick={(e) => { e.stopPropagation(); openDocumentPreview(source.metadata.document_file_id, source.metadata?.start_page); }}
-                                            />
+                                          {#if source.type === "document_chunk" && source.metadata?.document_file_id}
+                                            <button
+                                              type="button"
+                                              class="opacity-0 group-hover:opacity-100 transition-opacity"
+                                              onclick={(e: MouseEvent) => {
+                                                e.stopPropagation();
+                                                openDocumentPreview(
+                                                  source.metadata
+                                                    .document_file_id,
+                                                  source.metadata?.start_page
+                                                );
+                                              }}
+                                              aria-label="Preview document"
+                                            >
+                                              <ExternalLink
+                                                class="size-3 text-muted-foreground"
+                                              />
+                                            </button>
                                           {/if}
                                         </div>
-                                      </button>
+                                      </div>
                                     {/each}
                                   </div>
-                                </div>
-                              {/if}
+                                  <div
+                                    class="flex items-center gap-2 text-xs text-muted-foreground"
+                                  >
+                                    <Search class="size-3" />
+                                    <span
+                                      >Used {sources.length} source{sources.length !==
+                                      1
+                                        ? "s"
+                                        : ""} from your research</span
+                                    >
+                                  </div>
+                                {/if}
 
-                              <!-- Search Context Indicator -->
-                              {#if message.sources && message.sources.length > 0}
-                                <div class="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-                                  <Search class="size-3" />
-                                  <span>Used {message.sources.length} sources from your research</span>
-                                </div>
-                              {/if}
-
-                              <!-- Project Context Indicator -->
-                              {#if message.metadata?.project_context}
-                                <div class="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-                                  <Folder class="size-3" />
-                                  <span>Using current project context</span>
-                                </div>
-                              {/if}
-                            </div>
+                                {#if hasProjectContext}
+                                  <div
+                                    class="flex items-center gap-2 text-xs text-muted-foreground"
+                                  >
+                                    <Folder class="size-3" />
+                                    <span>Using current project context</span>
+                                  </div>
+                                {/if}
+                              </div>
+                            </details>
                           {/if}
                         </div>
 
+                        <!-- Hover Actions Below Message -->
+                        <div
+                          class="mt-1 {isUser
+                            ? 'text-right'
+                            : 'text-left'} opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Tooltip.Root>
+                            <Tooltip.Trigger>
+                              <button
+                                class="inline-flex h-8 w-8 items-center justify-center rounded-md border bg-background text-muted-foreground hover:bg-muted"
+                                onclick={() => createNoteFromMessage(message)}
+                                aria-label="Create as note"
+                              >
+                                <FilePlus class="h-4 w-4" />
+                              </button>
+                            </Tooltip.Trigger>
+                            <Tooltip.Content>Create as note</Tooltip.Content>
+                          </Tooltip.Root>
+                        </div>
+
                         <!-- Message Timestamp -->
-                        <div class="text-xs text-muted-foreground mt-1 {isUser ? 'text-right' : 'text-left'}">
+                        <div
+                          class="text-xs text-muted-foreground mt-1 {isUser
+                            ? 'text-right'
+                            : 'text-left'}"
+                        >
                           {formatTimestamp(message.timestamp)}
                         </div>
                       </div>
@@ -947,7 +1379,10 @@
             {/if}
 
             {#if isLoading}
-              <div class="flex items-center gap-2 text-gray-500" transition:fade>
+              <div
+                class="flex items-center gap-2 text-gray-500"
+                transition:fade
+              >
                 <div
                   class="flex items-center gap-2 border-2 dark:border-dark-border px-4 py-2 rounded-lg transition-all duration-200 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
                 >
@@ -977,20 +1412,20 @@
 
         <!-- Input Area -->
         <Card.Footer class="p-0 border-t border-border bg-card">
-          <div class="p-4 w-full">
-            <div class="relative">
-              <!-- Typing Indicator -->
-              {#if isTyping}
-                <div 
-                  class="absolute -top-8 left-0 text-xs text-muted-foreground"
-                  transition:fade={{ duration: 200 }}
-                >
-                  You are typing...
-                </div>
-              {/if}
+          <div class="p-4 w-full space-y-4">
+            <ContextSelector
+              selectedItems={selectedContextItems}
+              projectId={projectStore.currentProject?.id || null}
+              scope="current"
+              disabled={isStreaming}
+              on:select={(event) => addContextItem(event.detail)}
+              on:remove={(event) => removeContextItem(event.detail)}
+              on:clear={clearContextItems}
+            />
 
+            <div class="relative">
               <!-- Input Container -->
-              <div class="flex gap-3 items-center">
+              <div class="flex gap-3">
                 <!-- Text Area -->
                 <div class="flex-1 relative">
                   <textarea
@@ -1001,13 +1436,15 @@
                     placeholder="Ask questions about your research, get insights, or explore your data..."
                     disabled={isLoading || isStreaming}
                     rows="1"
-                    class="w-full resize-none rounded-lg border-2 dark:border-dark-border bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:focus:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] max-h-32 overflow-y-auto transition-all duration-200"
+                    class="w-full resize-none rounded-lg border-2 dark:border-dark-border bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:focus:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] max-h-32 overflow-y-auto transition-all duration-200"
                     style="field-sizing: content;"
                   ></textarea>
-                  
+
                   <!-- Character count for long messages -->
                   {#if chatInput.length > 200}
-                    <div class="absolute -top-6 right-0 text-xs text-muted-foreground">
+                    <div
+                      class="absolute -top-6 right-0 text-xs text-muted-foreground"
+                    >
                       {chatInput.length}/1000
                     </div>
                   {/if}
@@ -1017,7 +1454,7 @@
                 <button
                   onclick={handleSubmit}
                   disabled={!chatInput.trim() || isLoading || isStreaming}
-                  class="flex items-center justify-center px-4 py-3 h-[44px] min-w-[44px] border-2 dark:border-dark-border bg-blue-500 text-white rounded-lg hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-none transition-all duration-200"
+                  class="flex items-center justify-center px-4 py-3 h-[48px] min-w-[48px] border-2 dark:border-dark-border bg-blue-500 text-white rounded-lg hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-none transition-all duration-200"
                   aria-label="Send message"
                 >
                   {#if isLoading || isStreaming}
@@ -1029,13 +1466,19 @@
               </div>
 
               <!-- Input Help Text -->
-              <div class="flex items-center justify-between mt-2 text-xs text-muted-foreground">
+              <div
+                class="flex items-center justify-between mt-2 text-xs text-muted-foreground"
+              >
                 <div class="flex items-center gap-4">
-                  <kbd class="inline-flex items-center gap-1 rounded border bg-muted px-1.5 py-0.5 font-mono">
+                  <kbd
+                    class="inline-flex items-center gap-1 rounded border bg-muted px-1.5 py-0.5 font-mono"
+                  >
                     Enter
                   </kbd>
                   <span>to send</span>
-                  <kbd class="inline-flex items-center gap-1 rounded border bg-muted px-1.5 py-0.5 font-mono">
+                  <kbd
+                    class="inline-flex items-center gap-1 rounded border bg-muted px-1.5 py-0.5 font-mono"
+                  >
                     Shift + Enter
                   </kbd>
                   <span>for new line</span>
@@ -1078,7 +1521,9 @@
 <style lang="postcss">
   /* Typing animation for dots */
   @keyframes typingDot {
-    0%, 60%, 100% {
+    0%,
+    60%,
+    100% {
       opacity: 0.3;
       transform: scale(0.8);
     }
@@ -1187,5 +1632,19 @@
   .message-container:hover .group {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  details.references-panel summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .references-panel .references-chevron {
+    display: inline-flex;
+    align-items: center;
+    transition: transform 0.2s ease;
+  }
+
+  .references-panel[open] .references-chevron {
+    transform: rotate(180deg);
   }
 </style>

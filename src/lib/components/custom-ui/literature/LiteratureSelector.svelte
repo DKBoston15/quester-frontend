@@ -66,16 +66,18 @@
   }
 
   // Load literature data and set initial selection
-  onMount(async () => {
-    if (literatureStore.data.length === 0) {
-      await literatureStore.loadLiterature(projectId);
-    }
+  onMount(() => {
+    void (async () => {
+      if (literatureStore.data.length === 0) {
+        await literatureStore.loadLiterature(projectId);
+      }
 
-    if (selectedLiteratureId) {
-      selectedLiterature = literatureStore.data.find(
-        (item) => item.id === selectedLiteratureId
-      );
-    }
+      if (selectedLiteratureId) {
+        selectedLiterature = literatureStore.data.find(
+          (item) => item.id === selectedLiteratureId
+        );
+      }
+    })();
   });
 
   // Update selected literature when selectedLiteratureId prop changes
