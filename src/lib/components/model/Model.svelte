@@ -10,7 +10,7 @@
     MarkerType,
     ConnectionMode,
   } from "@xyflow/svelte";
-  import { writable } from "svelte/store";
+  import { writable, get } from "svelte/store";
   import { onDestroy, onMount } from "svelte";
   import "@xyflow/svelte/dist/style.css";
   import { modelStore } from "$lib/stores/ModelStore";
@@ -42,6 +42,7 @@
   const showGrid = writable(true);
   const snapToGrid = writable(true);
   let initialLoadComplete = $state(false);
+  let skipNextEdgeSettingsUpdate = $state(false);
 
   // Track customized edges and selected edge
   const customizedEdges = new Set<string>();
@@ -413,7 +414,12 @@
 
           // Convert objects to arrays if needed (for new models that might have {} instead of [])
           const finalNodes = Array.isArray(parsedNodes) ? parsedNodes : [];
-          const finalEdges = Array.isArray(parsedEdges) ? parsedEdges : [];
+          const rawEdges = Array.isArray(parsedEdges) ? parsedEdges : [];
+
+          // JSON.stringify strips undefined values, so loaded edges may have no markerEnd/markerStart
+          // Edges without these properties should NOT get defaultEdgeOptions applied
+          // Instead, we explicitly keep them as-is (missing property = no marker)
+          const finalEdges = rawEdges;
 
           nodes.set(finalNodes);
           edges.set(finalEdges);
@@ -423,16 +429,18 @@
 
           // Apply loaded edge settings
           const firstEdge = finalEdges[0];
-          if (firstEdge && firstEdge.style) {
-            const colorMatch = firstEdge.style.match(
+          if (firstEdge) {
+            const colorMatch = firstEdge.style?.match(
               /stroke: (#[0-9a-fA-F]{6})/
             );
-            const widthMatch = firstEdge.style.match(/stroke-width: (\d+)px/);
+            const widthMatch = firstEdge.style?.match(/stroke-width: (\d+)px/);
 
+            // Skip the next edge settings update effect to prevent race condition
+            skipNextEdgeSettingsUpdate = true;
             edgeSettings.set({
               type: firstEdge.type || "default",
-              color: colorMatch ? colorMatch[1] : "#000000",
-              width: widthMatch ? parseInt(widthMatch[1]) : 1,
+              color: colorMatch ? colorMatch[1] : "#374151",
+              width: widthMatch ? parseInt(widthMatch[1]) : 3,
               animated: firstEdge.animated || false,
               markerStart: !!firstEdge.markerStart,
               markerEnd: !!firstEdge.markerEnd,
@@ -517,14 +525,21 @@
   });
 
   const onConnect = (params: any) => {
+    // Get current edge settings for the new edge
+    const currentSettings = get(edgeSettings);
     const newEdge: Edge = {
       ...params,
       id: `e${Date.now()}`,
       data: { customized: false },
-      // Remove default settings
-      style: "",
-      markerEnd: undefined,
-      markerStart: undefined,
+      type: currentSettings.type,
+      animated: currentSettings.animated,
+      style: `stroke: ${currentSettings.color}; stroke-width: ${currentSettings.width}px;`,
+      markerEnd: currentSettings.markerEnd
+        ? { type: MarkerType.ArrowClosed, color: currentSettings.color }
+        : undefined,
+      markerStart: currentSettings.markerStart
+        ? { type: MarkerType.ArrowClosed, color: currentSettings.color }
+        : undefined,
     };
 
     edges.update((eds) => {
@@ -598,6 +613,13 @@
   let lastEdgeSettings = $state($edgeSettings);
   $effect(() => {
     const currentSettings = $edgeSettings;
+
+    // Skip if we just loaded settings from saved edges (prevents race condition)
+    if (skipNextEdgeSettingsUpdate) {
+      skipNextEdgeSettingsUpdate = false;
+      lastEdgeSettings = { ...currentSettings };
+      return;
+    }
 
     // Only update if settings actually changed to prevent infinite loops
     if (
@@ -777,12 +799,8 @@
       type: $edgeSettings.type,
       animated: $edgeSettings.animated,
       style: `stroke: ${$edgeSettings.color}; stroke-width: ${$edgeSettings.width}px;`,
-      markerEnd: $edgeSettings.markerEnd
-        ? { type: MarkerType.ArrowClosed, color: $edgeSettings.color }
-        : undefined,
-      markerStart: $edgeSettings.markerStart
-        ? { type: MarkerType.ArrowClosed, color: $edgeSettings.color }
-        : undefined,
+      // Don't set markerEnd/markerStart in defaultEdgeOptions - they're applied explicitly
+      // in the edge update effect. This prevents SvelteFlow from overriding loaded edges.
     }}
     fitView
     snapGrid={$snapToGrid ? [10, 10] : [0.1, 0.1]}

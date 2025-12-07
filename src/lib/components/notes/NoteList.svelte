@@ -131,6 +131,20 @@
     isSearchActive = searchInput.trim().length > 0;
   });
 
+  // Update search results - MUST run BEFORE filtering effect
+  $effect(() => {
+    if (searchInput.trim()) {
+      localSearchResults = performLocalSearch(
+        notesStore.notes,
+        searchInput.trim()
+      );
+      notesStore.setSearchQuery(searchInput.trim());
+    } else {
+      localSearchResults = [];
+      notesStore.setSearchQuery("");
+    }
+  });
+
   // Update filtered notes
   $effect(() => {
     // Get base filtered notes
@@ -181,48 +195,28 @@
     }
   });
 
-  // Update search results
-  $effect(() => {
-    if (searchInput.trim()) {
-      localSearchResults = performLocalSearch(
-        notesStore.notes,
-        searchInput.trim()
-      );
-      notesStore.setSearchQuery(searchInput.trim());
-    } else {
-      localSearchResults = [];
-      notesStore.setSearchQuery("");
-    }
-  });
-
   // Update grouped notes
   $effect(() => {
     groupedNotes = groupNotesByDate(filteredNotes);
   });
 
-  // Ensure the active note is visible in the list
+  // Ensure the active note is visible in the list (scroll into view)
   $effect(() => {
     const activeId = notesStore.activeNoteId;
     if (!activeId) return;
 
-    // If a search hides the active note, clear the search so the active note is shown
+    // Don't auto-clear search - let the user control search behavior
+    // Just scroll to active note if it's visible
     const activeVisible = filteredNotes.some((n) => n.id === activeId);
-    if (isSearchActive && !activeVisible) {
-      // Clear local search input and store query after current microtask
+    if (activeVisible) {
+      // Try to scroll the active note into view once it exists in DOM
       queueMicrotask(() => {
-        searchInput = "";
-        notesStore.setSearchQuery("");
+        try {
+          const el = document.querySelector<HTMLElement>(`[data-note-id="${CSS.escape(activeId)}"]`);
+          el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        } catch {}
       });
-      return;
     }
-
-    // Try to scroll the active note into view once it exists in DOM
-    queueMicrotask(() => {
-      try {
-        const el = document.querySelector<HTMLElement>(`[data-note-id="${CSS.escape(activeId)}"]`);
-        el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      } catch {}
-    });
   });
 
   // Group notes by date

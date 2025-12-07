@@ -154,12 +154,6 @@
         originalTitle = titleToSave;
         titleChanged = false; // Reset the title changed flag
         lastSavedAt = Date.now();
-
-        // Trigger reactivity update through search query refresh
-        const currentQuery = notesStore.searchQuery;
-        if (currentQuery) {
-          notesStore.setSearchQuery(currentQuery);
-        }
       } catch (error) {
         console.error("Error updating title:", error);
         // Auth errors are handled automatically by the API client
@@ -206,12 +200,6 @@
 
         // Update last saved time for status UI
         lastSavedAt = Date.now();
-
-        // Refresh the notes list via search query to trigger reactivity
-        const currentQuery = notesStore.searchQuery;
-        if (currentQuery) {
-          notesStore.setSearchQuery(currentQuery);
-        }
       } catch (error) {
         console.error("Error updating literature connection:", error);
         // Auth errors are handled automatically by the API client
@@ -353,12 +341,6 @@
       // Update previousContent to match what was just saved to prevent duplicate saves
       previousContent = JSON.stringify(content);
 
-      // Trigger reactivity update through search query refresh
-      const currentQuery = notesStore.searchQuery;
-      if (currentQuery) {
-        notesStore.setSearchQuery(currentQuery);
-      }
-
       return; // Return successfully
     } catch (error) {
       console.error("Failed to save note:", error);
@@ -418,12 +400,6 @@
             storeNotes[i].updated_at = new Date().toISOString();
             break;
           }
-        }
-
-        // Trigger reactivity update through search query refresh
-        const currentQuery = notesStore.searchQuery;
-        if (currentQuery) {
-          notesStore.setSearchQuery(currentQuery);
         }
       } catch (error) {
         console.error("Error updating section type:", error);

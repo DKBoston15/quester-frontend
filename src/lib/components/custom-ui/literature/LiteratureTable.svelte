@@ -308,6 +308,7 @@
     },
     animateRows: true,
     rowSelection: "multiple",
+    suppressRowClickSelection: true,
     onRowClicked: (event) => {
       if (
         event.data &&
@@ -429,6 +430,16 @@
 <div bind:this={gridDiv} class="ag-theme-quartz w-full h-[600px]"></div>
 
 <style>
+  /* Remove checkbox focus ring */
+  :global(.ag-checkbox-input-wrapper),
+  :global(.ag-checkbox-input-wrapper:focus-within),
+  :global(.ag-checkbox-input-wrapper input),
+  :global(.ag-checkbox-input-wrapper input:focus),
+  :global(.ag-checkbox-input-wrapper input:focus-visible) {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
   /* Base styles */
   :global(.row-class),
   :global(.ag-body),
