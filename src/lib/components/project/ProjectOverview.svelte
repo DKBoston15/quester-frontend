@@ -216,6 +216,7 @@
       toast.success("Successfully rewrote purpose!", {
         id: toastId,
         description: "The new purpose has been saved.",
+        duration: 4000,
       });
     } catch (error) {
       console.error("Error during rewrite:", error);
@@ -225,6 +226,7 @@
           error instanceof Error
             ? error.message
             : "An unexpected error occurred",
+        duration: 5000,
       });
     } finally {
       isRewriting = false;
