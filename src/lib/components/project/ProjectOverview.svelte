@@ -102,6 +102,7 @@
         method: "POST",
         body: {
           projectId: projectStore.currentProject.id,
+          purpose: currentPurpose,
           command: customInstruction || undefined,
         },
       });

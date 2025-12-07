@@ -84,9 +84,8 @@
       selectedLiterature = literatureStore.data.find(
         (item) => item.id === selectedLiteratureId
       );
-    } else {
-      selectedLiterature = undefined;
     }
+    // Don't reset when prop becomes undefined - clearSelection() handles intentional clearing
   });
 
   // Handle literature selection

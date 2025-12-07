@@ -12,6 +12,11 @@
   import { quintOut } from "svelte/easing";
   import type { Project } from "$lib/types/auth";
 
+  type DesignDetail = {
+    selections?: string[];
+    description?: string | null;
+  };
+
   type InsightRule = {
     field: keyof Project | string;
     severity: "error" | "warning";
@@ -23,6 +28,16 @@
     };
     checkFn?: (project: Project) => boolean;
   };
+
+  function hasDesignContent(detail: DesignDetail | null | undefined): boolean {
+    if (!detail) return false;
+    const hasSelections =
+      Array.isArray(detail.selections) && detail.selections.length > 0;
+    const hasDescription =
+      typeof detail.description === "string" &&
+      detail.description.trim().length > 0;
+    return hasSelections || hasDescription;
+  }
 
   const insightRules: InsightRule[] = [
     {
@@ -66,10 +81,10 @@
       description:
         "Add design concepts and visual representations to communicate your project effectively.",
       checkFn: (project) =>
-        !project.researchDesign?.trim() &&
-        !project.samplingDesign?.trim() &&
-        !project.measurementDesign?.trim() &&
-        !project.analyticDesign?.trim(),
+        !hasDesignContent(project.researchDesign as DesignDetail) &&
+        !hasDesignContent(project.samplingDesign as DesignDetail) &&
+        !hasDesignContent(project.measurementDesign as DesignDetail) &&
+        !hasDesignContent(project.analyticDesign as DesignDetail),
       // action: {
       //   label: "Add Designs",
       //   route: "project_settings",

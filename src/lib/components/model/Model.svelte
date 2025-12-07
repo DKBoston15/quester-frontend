@@ -423,16 +423,16 @@
 
           // Apply loaded edge settings
           const firstEdge = finalEdges[0];
-          if (firstEdge && firstEdge.style) {
-            const colorMatch = firstEdge.style.match(
+          if (firstEdge) {
+            const colorMatch = firstEdge.style?.match(
               /stroke: (#[0-9a-fA-F]{6})/
             );
-            const widthMatch = firstEdge.style.match(/stroke-width: (\d+)px/);
+            const widthMatch = firstEdge.style?.match(/stroke-width: (\d+)px/);
 
             edgeSettings.set({
               type: firstEdge.type || "default",
-              color: colorMatch ? colorMatch[1] : "#000000",
-              width: widthMatch ? parseInt(widthMatch[1]) : 1,
+              color: colorMatch ? colorMatch[1] : "#374151",
+              width: widthMatch ? parseInt(widthMatch[1]) : 3,
               animated: firstEdge.animated || false,
               markerStart: !!firstEdge.markerStart,
               markerEnd: !!firstEdge.markerEnd,
