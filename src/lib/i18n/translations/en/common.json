@@ -4,6 +4,7 @@
     "save": "Save",
     "edit": "Edit",
     "delete": "Delete",
+    "deleting": "Deleting...",
     "loading": "Loading...",
     "search": "Search",
     "close": "Close",
@@ -20,7 +21,14 @@
     "continue": "Continue",
     "add": "Add",
     "settings": "Settings",
-    "tour": "Tour"
+    "tour": "Tour",
+    "refresh": "Refresh",
+    "join": "Join",
+    "move": "Move",
+    "actions": "Actions",
+    "project": "Project",
+    "department": "Department",
+    "organization": "Organization"
   },
   "designTypes": {
     "research": "Research",
@@ -195,7 +203,25 @@
     "restartTourHint": "You can restart the tour anytime using the \"Tour\" button in the header.",
     "successfullyJoined": "Successfully joined {resourceType}",
     "tourCompleted": "Tour completed! You're ready to manage your teams.",
-    "canRestartTour": "You can always restart the tour from the help menu"
+    "canRestartTour": "You can always restart the tour from the help menu",
+    "tourSteps": {
+      "chooseTeam": {
+        "title": "Choose Your Team",
+        "description": "Select an organization, department, or project from the sidebar to start managing its team members."
+      },
+      "teamMembers": {
+        "title": "Your Team Members",
+        "description": "Here you can see all team members, their roles, and manage their access permissions."
+      },
+      "inviteMembers": {
+        "title": "Invite New Members",
+        "description": "Send email invitations to add new people to your organization."
+      },
+      "addUsers": {
+        "title": "Add Existing Users",
+        "description": "Add people who are already in your organization to this specific project or department."
+      }
+    }
   },
   "teamManagement": {
     "title": "Team Management",
@@ -289,7 +315,26 @@
     "manageAndOrganize": "Manage and organize your project literature",
     "tooltip": "Manage and organize your project literature. Add sources, track reading status, and build your research library all in one place.",
     "loadingLiterature": "Loading literature...",
-    "noLiteratureAdded": "No literature added yet"
+    "noLiteratureAdded": "No literature added yet",
+    "previewDocument": "Preview document",
+    "downloadDocument": "Download document",
+    "tableHeaders": {
+      "title": "Title",
+      "authors": "Authors",
+      "status": "Status",
+      "publisher": "Publisher",
+      "year": "Year",
+      "type": "Type",
+      "addedOn": "Added On",
+      "file": "File"
+    },
+    "status": {
+      "notStarted": "Not Started",
+      "reading": "Reading",
+      "noteTaking": "Note Taking",
+      "completed": "Completed",
+      "archived": "Archived"
+    }
   },
   "insights": {
     "title": "Insights",
@@ -338,24 +383,24 @@
     "downloadDocument": "Download Document",
     "reportIssue": "Report Issue",
     "attachDocument": "Attach Document",
-    "deleteLiterature": "Delete Literature",
-    "deleteConfirm": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
-    "learnAbout": "Learn about Literature View",
+    "deleteLiterature": "Delete",
+    "deleteConfirmation": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
+    "tourAriaLabel": "Learn about Literature View",
     "citedFromPage": "This item was cited from page {page}.",
-    "openDocumentAtPage": "Open document at page {page}",
+    "openAtPage": "Open document at page {page}",
     "noAuthorsListed": "No authors listed",
     "editors": "Editors",
     "attachDocumentTo": "Attach Document to \"{name}\"",
-    "uploadFileTypes": "Upload a PDF, DOCX, DOC, or TXT. We will extract text and metadata.",
+    "attachDocumentDescription": "Upload a PDF, DOCX, DOC, or TXT. We will extract text and metadata.",
     "reportIssueDescription": "Help us improve by reporting issues with \"{name}\"",
     "whatWentWrong": "What went wrong? (optional)",
-    "describeIssuePlaceholder": "Describe the issue you noticed (e.g., incorrect metadata, missing text, wrong extraction)...",
-    "feedbackThanks": "Your feedback will help us improve. Thank you!",
+    "feedbackPlaceholder": "Describe the issue you noticed (e.g., incorrect metadata, missing text, wrong extraction)...",
+    "feedbackThankYou": "Your feedback will help us improve. Thank you!",
     "submitting": "Submitting...",
     "submitReport": "Submit Report",
     "loadingDetails": "Loading literature details...",
     "details": "Details",
-    "addedOn": "Added on:",
+    "addedOn": "Added on",
     "keywords": "Keywords"
   },
   "connections": {
@@ -1864,7 +1909,65 @@
     "noProductsAddedYet": "No products added yet. Add your first research product above.",
     "cancelEdit": "Cancel Edit",
     "updateProduct": "Update Product",
-    "addProduct": "Add Product"
+    "addProduct": "Add Product",
+    "addNewProduct": "Add New Product",
+    "editProductTitle": "Edit Product",
+    "remove": "Remove"
+  },
+  "aiRewrite": {
+    "shorten": "Shorten",
+    "shortenTooltip": "Make this 20–40% shorter without losing meaning.",
+    "plainLanguage": "Plain-Language",
+    "plainLanguageTooltip": "Swap jargon for everyday terms—keep the science.",
+    "smart": "SMART",
+    "smartTooltip": "Turn the goal into a measurable, time-bound objective.",
+    "journalReady": "Journal-Ready",
+    "journalReadyTooltip": "Concise, neutral, manuscript-style objective.",
+    "customPrompt": "Custom prompt",
+    "customPlaceholder": "e.g. highlight data sources and trim filler",
+    "rewriting": "Rewriting...",
+    "start": "Start",
+    "generating": "Generating...",
+    "purposeUpdated": "Purpose updated with Quester.",
+    "undo": "Undo",
+    "restoredPurpose": "Restored the previous purpose.",
+    "unableToRestore": "Unable to restore the previous purpose."
+  },
+  "projectReading": {
+    "title": "Project Reading",
+    "recentUpdates": "Recent Updates",
+    "filter": "Filter",
+    "filterActions": "Filter Actions",
+    "filterDescription": "Filter literature by status and severity",
+    "needsAttention": "Needs Attention",
+    "recentlyUpdated": "Recently Updated",
+    "status": "Status",
+    "severity": "Severity",
+    "allStatuses": "All Statuses",
+    "noteTaking": "Note Taking",
+    "reading": "Reading",
+    "notStarted": "Not Started",
+    "allSeverities": "All Severities",
+    "errorsOnly": "Errors Only",
+    "warningsOnly": "Warnings Only",
+    "viewDetails": "View Details",
+    "error": "Error",
+    "errors": "Errors",
+    "warning": "Warning",
+    "warnings": "Warnings",
+    "untitledLiterature": "Untitled Literature",
+    "noLiteratureNeedsAttention": "No Literature Needs Attention",
+    "noLiteratureNeedsAttentionDesc": "No literature needs attention right now.",
+    "noRecentUpdates": "No Recent Updates",
+    "noRecentUpdatesDesc": "No literature has been updated recently.",
+    "lastUpdated": "Last updated {date}",
+    "missingLiteratureTitle": "Missing Literature Title",
+    "missingAuthors": "Missing Authors",
+    "missingPublicationYear": "Missing Publication Year",
+    "missingPublisher": "Missing Publisher",
+    "noKeywordsIdentified": "No Keywords Identified",
+    "literatureTypeNotSet": "Literature Type Not Set",
+    "readingStatusNotSet": "Reading Status Not Set"
   },
   "citationFormats": {
     "apa": "APA",
@@ -2558,7 +2661,15 @@
       "outcomes": "Outcomes",
       "models": "Models",
       "keywordAnalyses": "Keyword Analyses"
-    }
+    },
+    "placeholder": "Search across all your projects, notes, and literature...",
+    "recentSearches": "Recent Searches",
+    "noResultsHint": "Try adjusting your search terms or check your spelling",
+    "updated": "Updated {date}",
+    "relevance": "Relevance: {percent}%",
+    "toSearch": "to search",
+    "toClose": "to close",
+    "noDate": "No date"
   },
   "forms": {
     "placeholder": {
@@ -2657,6 +2768,12 @@
     "processingIssueTitle": "Processing issue reported for \"{name}\""
   },
   "projectOverview": {
+    "title": "Project Overview",
+    "purposeStatement": "Purpose Statement",
+    "projectStatus": "Project Status",
+    "statusLabel": "Status",
+    "notSet": "Not set",
+    "noPurposeDefined": "No purpose defined",
     "rewriteGuide": "Optional: Guide the rewrite (e.g. 'Make it more concise' or 'Emphasize methodology')",
     "selectStatus": "Select status"
   },
@@ -2670,8 +2787,21 @@
     "secondTitle": "Second Title"
   },
   "researchDesigns": {
+    "title": "Project Designs",
     "edit": "Edit",
-    "defineMethodology": "Define your research methodology across different design types."
+    "defineMethodology": "Define your research methodology across different design types.",
+    "designsLabel": "{type} Designs",
+    "designDescription": "{type} Design Description",
+    "selectDesignsHelp": "Select all {type} designs that apply to this project.",
+    "noSavedDesigns": "No saved {type} designs yet. Add one below.",
+    "enterNewDesign": "Enter new {type} design name",
+    "addNewDesign": "+ Add new {type} design",
+    "noDesignSpecified": "No {type} design specified",
+    "descriptionHelp": "Use this space to capture context, assumptions, or rationale for the selected designs.",
+    "describeApproach": "Describe the {type} design approach for this project...",
+    "selectDesigns": "Select {type} designs",
+    "adding": "Adding…",
+    "addedDesign": "Added {type} design"
   },
   "projectInsights": {
     "allTasksCompleted": "All project setup tasks completed!",
@@ -2747,7 +2877,12 @@
   },
   "roles": {
     "selectRole": "Select a role",
-    "noRolesAvailable": "No roles available. Using hardcoded fallback roles."
+    "noRolesAvailable": "No roles available. Using hardcoded fallback roles.",
+    "owner": "Owner",
+    "admin": "Admin",
+    "member": "Member",
+    "viewer": "Viewer",
+    "editor": "Editor"
   },
   "printTemplate": {
     "noReferencesAvailable": "No references available.",

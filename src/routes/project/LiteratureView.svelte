@@ -251,130 +251,123 @@
     }
   }
 
-  const driverObj = driver({
-    showProgress: true,
-    popoverClass: "quester-driver-theme",
-    steps: [
-      {
-        element: "#lit-view-header",
-        popover: {
-          title: "Literature Item Details",
-          description:
-            "This page provides a detailed view of a single literature item. Here you can manage its details, track status, add keywords, view insights, and generate citations.",
-          side: "bottom",
-          align: "start",
+  // Function to create driver with translated steps
+  function createDriver() {
+    return driver({
+      showProgress: true,
+      popoverClass: "quester-driver-theme",
+      steps: [
+        {
+          element: "#lit-view-header",
+          popover: {
+            title: t("tours.literatureView.header.title"),
+            description: t("tours.literatureView.header.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#lit-view-back-button",
-        popover: {
-          title: "Go Back",
-          description: "Return to the main literature list for this project.",
-          side: "right",
-          align: "start",
+        {
+          element: "#lit-view-back-button",
+          popover: {
+            title: t("tours.literatureView.goBack.title"),
+            description: t("tours.literatureView.goBack.description"),
+            side: "right",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#lit-view-preview-button",
-        popover: {
-          title: "View Document",
-          description:
-            "Open the original document file in your browser for reading and review.",
-          side: "bottom",
-          align: "center",
+        {
+          element: "#lit-view-preview-button",
+          popover: {
+            title: t("tours.literatureView.viewDocument.title"),
+            description: t("tours.literatureView.viewDocument.description"),
+            side: "bottom",
+            align: "center",
+          },
         },
-      },
-      {
-        element: "#lit-view-download-button",
-        popover: {
-          title: "Download Document",
-          description: "Download the original document file to your computer.",
-          side: "bottom",
-          align: "center",
+        {
+          element: "#lit-view-download-button",
+          popover: {
+            title: t("tours.literatureView.downloadDocument.title"),
+            description: t("tours.literatureView.downloadDocument.description"),
+            side: "bottom",
+            align: "center",
+          },
         },
-      },
-      {
-        element: "#lit-view-delete-button",
-        popover: {
-          title: "Delete Item",
-          description:
-            "Permanently remove this literature item and all associated notes from your project.",
-          side: "left",
-          align: "end",
+        {
+          element: "#lit-view-delete-button",
+          popover: {
+            title: t("tours.literatureView.deleteItem.title"),
+            description: t("tours.literatureView.deleteItem.description"),
+            side: "left",
+            align: "end",
+          },
         },
-      },
-      {
-        element: "#lit-status-card",
-        popover: {
-          title: "Track Reading Status",
-          description:
-            "Monitor and update the progress of reading and processing this literature item. Click 'Change Status' to update.",
-          side: "bottom",
-          align: "start",
+        {
+          element: "#lit-status-card",
+          popover: {
+            title: t("tours.literatureView.trackStatus.title"),
+            description: t("tours.literatureView.trackStatus.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#lit-details-card",
-        popover: {
-          title: "Core Information",
-          description:
-            "View and edit the fundamental details of this literature item, such as title, authors, publication year, and type. Click 'Edit' to make changes.",
-          side: "right",
-          align: "start",
+        {
+          element: "#lit-details-card",
+          popover: {
+            title: t("tours.literatureView.coreInfo.title"),
+            description: t("tours.literatureView.coreInfo.description"),
+            side: "right",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#lit-designs-card",
-        popover: {
-          title: "Methodology Details",
-          description:
-            "Categorize the research, sampling, measurement, and analytic designs used in this literature according to your project's framework. Click 'Edit' to modify.",
-          side: "right",
-          align: "start",
+        {
+          element: "#lit-designs-card",
+          popover: {
+            title: t("tours.literatureView.methodology.title"),
+            description: t("tours.literatureView.methodology.description"),
+            side: "right",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#lit-insights-card",
-        popover: {
-          title: "Literature Health & Setup",
-          description:
-            "Check the completeness of this literature entry. Expand this section to see recommended fields to fill out for better organization and citation quality.",
-          side: "left",
-          align: "start",
+        {
+          element: "#lit-insights-card",
+          popover: {
+            title: t("tours.literatureView.health.title"),
+            description: t("tours.literatureView.health.description"),
+            side: "left",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#lit-keywords-card",
-        popover: {
-          title: "Add Keywords",
-          description:
-            "Tag this literature with relevant keywords. This helps in organizing your sources and identifying thematic connections across your research.",
-          side: "left",
-          align: "start",
+        {
+          element: "#lit-keywords-card",
+          popover: {
+            title: t("tours.literatureView.addKeywords.title"),
+            description: t("tours.literatureView.addKeywords.description"),
+            side: "left",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#lit-reference-card",
-        popover: {
-          title: "Generate Citations",
-          description:
-            "Quickly generate citations in various common styles (APA, MLA, etc.) based on the entered details. Use the dropdown to select a style and the button to copy.",
-          side: "left",
-          align: "start",
+        {
+          element: "#lit-reference-card",
+          popover: {
+            title: t("tours.literatureView.generateCitations.title"),
+            description: t("tours.literatureView.generateCitations.description"),
+            side: "left",
+            align: "start",
+          },
         },
-      },
-      {
-        element: ".container", // General overview
-        popover: {
-          title: "Manage Your Source",
-          description:
-            "Use this detailed view to thoroughly document, analyze, and integrate this piece of literature into your research project.",
-          side: "top",
-          align: "center",
+        {
+          element: ".container",
+          popover: {
+            title: t("tours.literatureView.manageSource.title"),
+            description: t("tours.literatureView.manageSource.description"),
+            side: "top",
+            align: "center",
+          },
         },
-      },
-    ],
-  });
+      ],
+    });
+  }
 </script>
 
 <div class="flex-1 w-full">
@@ -383,7 +376,7 @@
       <div class="flex items-center justify-between mb-4">
         <Button size="sm" onclick={handleBack} id="lit-view-back-button">
           <ArrowLeft class="h-4 w-4 mr-2" />
-          Back to Literature
+          {$_('literatureView.backToLiterature')}
         </Button>
         {#if literature}
           <div class="flex items-center gap-2">
@@ -395,13 +388,13 @@
                 id="lit-view-preview-button"
               >
                 <Eye class="h-4 w-4 mr-2" />
-                View Document
+                {$_('literatureView.viewDocument')}
               </Button>
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger>
                   {#snippet child({ props })}
                     <Button variant="outline" size="sm" {...props}>
-                      Actions
+                      {$_('literatureView.actions')}
                       <ChevronDown class="h-4 w-4 ml-2" />
                     </Button>
                   {/snippet}
@@ -409,14 +402,14 @@
                 <DropdownMenu.Content align="end">
                   <DropdownMenu.Item onclick={downloadDocument}>
                     <Download class="h-4 w-4 mr-2" />
-                    Download Document
+                    {$_('literatureView.downloadDocument')}
                   </DropdownMenu.Item>
                   <DropdownMenu.Item
                     onclick={() => (showFeedbackDialog = true)}
                     class="text-red-600 focus:text-red-600"
                   >
                     <Flag class="h-4 w-4 mr-2" />
-                    Report Issue
+                    {$_('literatureView.reportIssue')}
                   </DropdownMenu.Item>
                 </DropdownMenu.Content>
               </DropdownMenu.Root>
@@ -427,7 +420,7 @@
                 onclick={() => (showAttachDialog = true)}
               >
                 <Upload class="h-4 w-4 mr-2" />
-                Attach Document
+                {$_('literatureView.attachDocument')}
               </Button>
             {/if}
             <AlertDialog.Root bind:open={showDeleteDialog}>
@@ -440,16 +433,15 @@
                     {...props}
                   >
                     <Trash2 class="h-4 w-4 mr-2" />
-                    Delete Literature
+                    {$_('literatureView.deleteLiterature')}
                   </Button>
                 {/snippet}
               </AlertDialog.Trigger>
               <AlertDialog.Content class="border-2 dark:border-dark-border">
                 <AlertDialog.Header>
-                  <AlertDialog.Title>Delete Literature</AlertDialog.Title>
+                  <AlertDialog.Title>{$_('literatureView.deleteLiterature')}</AlertDialog.Title>
                   <AlertDialog.Description>
-                    Are you sure you want to delete "{literature?.name}"? This
-                    action cannot be undone.
+                    {$_('literatureView.deleteConfirmation', { values: { name: literature?.name } })}
                   </AlertDialog.Description>
                 </AlertDialog.Header>
                 <AlertDialog.Footer>
@@ -458,7 +450,7 @@
                       variant="outline"
                       onclick={() => (showDeleteDialog = false)}
                       class="border-2 dark:border-dark-border"
-                      disabled={isDeleting}>Cancel</Button
+                      disabled={isDeleting}>{$_('common.cancel')}</Button
                     >
                     <Button
                       variant="destructive"
@@ -467,9 +459,9 @@
                       disabled={isDeleting}
                     >
                       {#if isDeleting}
-                        Deleting...
+                        {$_('common.deleting')}
                       {:else}
-                        Delete
+                        {$_('common.delete')}
                       {/if}
                     </Button>
                   </div>
@@ -478,11 +470,11 @@
             </AlertDialog.Root>
             <Button
               variant="outline"
-              onclick={() => driverObj.drive()}
-              aria-label="Learn about Literature View"
+              onclick={() => createDriver().drive()}
+              aria-label={$_('literatureView.tourAriaLabel')}
             >
               <GraduationCap class="h-4 w-4 mr-2" />
-              Tour
+              {$_('common.tour')}
             </Button>
           </div>
         {/if}
@@ -493,7 +485,7 @@
           class="mb-4 p-3 rounded-md border bg-muted/40 text-sm flex items-center justify-between"
         >
           <div>
-            This item was cited from page {citedPage}.
+            {$_('literatureView.citedFromPage', { values: { page: citedPage } })}
           </div>
           {#if literature?.sourceFileId}
             <div class="flex items-center gap-2">
@@ -502,7 +494,7 @@
                 size="sm"
                 onclick={() => previewDocument(citedPage || undefined)}
               >
-                <Eye class="h-4 w-4 mr-2" /> Open document at page {citedPage}
+                <Eye class="h-4 w-4 mr-2" /> {$_('literatureView.openAtPage', { values: { page: citedPage } })}
               </Button>
             </div>
           {/if}
@@ -531,7 +523,7 @@
             }
             return authorList.length > 0
               ? authorList.join(", ")
-              : "No authors listed";
+              : $_('literatureView.noAuthorsListed');
           })()}
         </p>
         {#if (() => {
@@ -548,7 +540,7 @@
           return false;
         })()}
           <p class="text-muted-foreground mt-1">
-            Editors: {(() => {
+            {$_('literatureView.editors')}: {(() => {
               const editors = literature.editors;
               let list: string[] = [];
               if (Array.isArray(editors)) list = editors;
@@ -582,11 +574,10 @@
         <Dialog.Root bind:open={showAttachDialog}>
           <Dialog.Content class="max-w-2xl">
             <Dialog.Header>
-              <Dialog.Title>Attach Document to "{literature.name}"</Dialog.Title
+              <Dialog.Title>{$_('literatureView.attachDocumentTo', { values: { name: literature.name } })}</Dialog.Title
               >
               <Dialog.Description>
-                Upload a PDF, DOCX, DOC, or TXT. We will extract text and
-                metadata.
+                {$_('literatureView.attachDocumentDescription')}
               </Dialog.Description>
             </Dialog.Header>
             <div class="py-2">
@@ -600,7 +591,7 @@
             <Dialog.Footer class="justify-end">
               <Button
                 variant="outline"
-                onclick={() => (showAttachDialog = false)}>Close</Button
+                onclick={() => (showAttachDialog = false)}>{$_('common.close')}</Button
               >
             </Dialog.Footer>
           </Dialog.Content>
@@ -612,28 +603,28 @@
             <Dialog.Header>
               <Dialog.Title class="flex items-center gap-2">
                 <Flag class="h-5 w-5 text-red-600" />
-                Report Issue
+                {$_('literatureView.reportIssue')}
               </Dialog.Title>
               <Dialog.Description>
-                Help us improve by reporting issues with "{literature.name}"
+                {$_('literatureView.reportIssueDescription', { values: { name: literature.name } })}
               </Dialog.Description>
             </Dialog.Header>
             <div class="py-4 space-y-4">
               <div class="space-y-2">
                 <label for="feedback-comment" class="text-sm font-medium">
-                  What went wrong? (optional)
+                  {$_('literatureView.whatWentWrong')}
                 </label>
                 <textarea
                   id="feedback-comment"
                   bind:value={feedbackComment}
-                  placeholder="Describe the issue you noticed (e.g., incorrect metadata, missing text, wrong extraction)..."
+                  placeholder={$_('literatureView.feedbackPlaceholder')}
                   rows="4"
                   class="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent placeholder:text-muted-foreground"
                   disabled={isSubmittingFeedback}
                 ></textarea>
               </div>
               <div class="text-sm text-muted-foreground">
-                <p>Your feedback will help us improve. Thank you!</p>
+                <p>{$_('literatureView.feedbackThankYou')}</p>
               </div>
             </div>
             <Dialog.Footer class="flex justify-end gap-2">
@@ -642,7 +633,7 @@
                 onclick={() => (showFeedbackDialog = false)}
                 disabled={isSubmittingFeedback}
               >
-                Cancel
+                {$_('common.cancel')}
               </Button>
               <Button
                 onclick={submitFeedback}
@@ -650,9 +641,9 @@
                 class="bg-red-600 hover:bg-red-700 text-white"
               >
                 {#if isSubmittingFeedback}
-                  Submitting...
+                  {$_('literatureView.submitting')}
                 {:else}
-                  Submit Report
+                  {$_('literatureView.submitReport')}
                 {/if}
               </Button>
             </Dialog.Footer>
@@ -664,7 +655,7 @@
     {#if isLoading}
       <div class="flex justify-center items-center h-[400px]">
         <p class="text-lg text-muted-foreground">
-          Loading literature details...
+          {$_('literatureView.loadingDetails')}
         </p>
       </div>
     {:else if error}
@@ -677,7 +668,7 @@
         <div class="space-y-6">
           <Card.Root id="lit-details-card">
             <Card.Header>
-              <Card.Title>Details</Card.Title>
+              <Card.Title>{$_('literatureView.details')}</Card.Title>
             </Card.Header>
             <Card.Content>
               <LiteratureDetails
@@ -687,8 +678,8 @@
                 }}
               />
               <p class="text-sm text-muted-foreground mt-4">
-                Added on:
-                {new Date(literature.createdAt).toLocaleDateString("en-US", {
+                {$_('literatureView.addedOn')}:
+                {new Date(literature.createdAt).toLocaleDateString(undefined, {
                   year: "numeric",
                   month: "long",
                   day: "numeric",
@@ -712,7 +703,7 @@
           <!-- Keywords -->
           <Card.Root id="lit-keywords-card">
             <Card.Header>
-              <Card.Title>Keywords</Card.Title>
+              <Card.Title>{$_('literatureView.keywords')}</Card.Title>
             </Card.Header>
             <Card.Content>
               <Keywords {literature} />

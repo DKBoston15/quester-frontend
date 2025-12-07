@@ -136,10 +136,28 @@
     })
   );
 
+  // Helper function to translate role names
+  function translateRole(roleName: string): string {
+    const roleKey = roleName.toLowerCase();
+    const translationKey = `roles.${roleKey}`;
+    const translated = $_(translationKey);
+    // If translation key returns itself, fall back to original name
+    return translated === translationKey ? roleName : translated;
+  }
+
+  // Get raw role name for comparisons (untranslated)
+  function getRawRoleName(user: TeamMember): string {
+    if (user.$extras?.roleName) {
+      return user.$extras.roleName;
+    }
+    return "Unknown";
+  }
+
+  // Get translated role name for display
   function getRoleName(user: TeamMember): string {
     // Prioritize the roleName from $extras provided by the backend
     if (user.$extras?.roleName) {
-      return user.$extras.roleName;
+      return translateRole(user.$extras.roleName);
     }
 
     // Fallback if $extras.roleName is somehow missing (shouldn't happen with backend changes)
@@ -415,11 +433,11 @@
                     </Tooltip.Trigger>
                     <Tooltip.Content>
                       <p class="text-xs max-w-xs">
-                        {#if getRoleName(user) === "Owner"}
+                        {#if getRawRoleName(user) === "Owner"}
                           {$_("teamMembers.roleOwnerDescription", { values: { resourceType: props.resourceType } })}
-                        {:else if getRoleName(user) === "Admin"}
+                        {:else if getRawRoleName(user) === "Admin"}
                           {$_("teamMembers.roleAdminDescription", { values: { resourceType: props.resourceType } })}
-                        {:else if getRoleName(user) === "Member"}
+                        {:else if getRawRoleName(user) === "Member"}
                           {$_("teamMembers.roleMemberDescription", { values: { resourceType: props.resourceType } })}
                         {:else}
                           {$_("teamMembers.roleGenericDescription", { values: { role: getRoleName(user), resourceType: props.resourceType } })}
@@ -557,11 +575,11 @@
                       </Tooltip.Trigger>
                       <Tooltip.Content>
                         <p class="text-xs max-w-xs">
-                          {#if getRoleName(user) === "Owner"}
+                          {#if getRawRoleName(user) === "Owner"}
                             {$_("teamMembers.roleOwnerDescription", { values: { resourceType: props.resourceType } })}
-                          {:else if getRoleName(user) === "Admin"}
+                          {:else if getRawRoleName(user) === "Admin"}
                             {$_("teamMembers.roleAdminDescription", { values: { resourceType: props.resourceType } })}
-                          {:else if getRoleName(user) === "Member"}
+                          {:else if getRawRoleName(user) === "Member"}
                             {$_("teamMembers.roleMemberDescription", { values: { resourceType: props.resourceType } })}
                           {:else}
                             {$_("teamMembers.roleGenericDescription", { values: { role: getRoleName(user), resourceType: props.resourceType } })}

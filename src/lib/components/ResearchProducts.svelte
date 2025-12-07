@@ -232,10 +232,10 @@
         <h3 class=" font-bold flex items-center gap-2 text-lg">
           {#if editingProduct}
             <Pencil class="h-5 w-5" />
-            Edit Product
+            {$_('researchProducts.editProductTitle')}
           {:else}
             <Plus class="h-5 w-5" />
-            Add New Product
+            {$_('researchProducts.addNewProduct')}
           {/if}
         </h3>
         <div class="grid gap-4">
@@ -397,7 +397,7 @@
                         onclick={() => removeProduct(product.id)}
                         class="text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400"
                       >
-                        Remove
+                        {$_('researchProducts.remove')}
                       </Button>
                     </div>
                   </div>

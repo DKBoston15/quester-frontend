@@ -157,7 +157,12 @@ export const auth = {
     try {
       // Use centralized API client which handles auth errors automatically
       const updatedUser = await api.put(`/users/${user?.id}`, userData);
-      await this.setUser({ ...user!, ...updatedUser });
+      // Update user data directly without re-fetching organizations
+      // to avoid resetting app state
+      user = { ...user!, ...updatedUser };
+      // Re-identify user in FullStory with updated info
+      identifyUser(user);
+      syncPosthogIdentity();
       return { success: true, user: updatedUser };
     } catch (error) {
       console.error("Failed to update user:", error);

@@ -133,22 +133,21 @@
 
   // Format date
   function formatDate(dateString: string | undefined) {
-    if (!dateString) return "No date";
+    if (!dateString) return $_('globalSearch.noDate');
 
     try {
       const date = new Date(dateString);
       if (isNaN(date.getTime())) {
-        return "No date";
+        return $_('globalSearch.noDate');
       }
       return date.toLocaleDateString();
     } catch {
-      return "No date";
+      return $_('globalSearch.noDate');
     }
   }
 
-  // Get placeholder text for search mode
-  const placeholderText =
-    "Search across all your projects, notes, and literature...";
+  // Get placeholder text for search mode - using function for reactivity with locale changes
+  const getPlaceholderText = () => $_('globalSearch.placeholder');
 
   // Handle search result navigation
   function handleResultClick(result: any) {
@@ -256,7 +255,7 @@
           <input
             bind:this={searchInputRef}
             type="text"
-            placeholder={placeholderText}
+            placeholder={getPlaceholderText()}
             value={query}
             oninput={handleSearchInput}
             onkeydown={(e) => e.key === "Enter" && handleSearchSubmit()}
@@ -288,7 +287,7 @@
                 {#if recentSearches.length > 0}
                   <div class="space-y-2">
                     <h3 class="text-sm font-medium text-muted-foreground">
-                      Recent Searches
+                      {$_('globalSearch.recentSearches')}
                     </h3>
                     {#each recentSearches.slice(0, 5) as recentSearch}
                       <button
@@ -336,7 +335,7 @@
                   />
                   <h3 class="font-medium mb-2">{$_("globalSearchDialog.noResultsFound")}</h3>
                   <p class="text-sm text-muted-foreground">
-                    Try adjusting your search terms or check your spelling
+                    {$_('globalSearch.noResultsHint')}
                   </p>
                 </div>
               {:else}
@@ -391,20 +390,18 @@
                           <div
                             class="flex items-center gap-4 text-xs text-muted-foreground"
                           >
-                            <span
-                              >Updated {formatDate(
+                            <span>
+                              {$_('globalSearch.updated', { values: { date: formatDate(
                                 result.content?.updated_at ||
                                   result.content?.createdAt ||
                                   result.metadata?.updated_at ||
                                   result.metadata?.created_at
-                              )}</span
-                            >
+                              ) } })}
+                            </span>
                             {#if result.similarity}
-                              <span
-                                >Relevance: {Math.round(
-                                  result.similarity * 100
-                                )}%</span
-                              >
+                              <span>
+                                {$_('globalSearch.relevance', { values: { percent: Math.round(result.similarity * 100) } })}
+                              </span>
                             {/if}
                           </div>
                         </div>
@@ -430,13 +427,13 @@
               <CommandIcon class="size-3" />
               K
             </kbd>
-            <span>to search</span>
+            <span>{$_('globalSearch.toSearch')}</span>
             <kbd
               class="inline-flex items-center gap-1 rounded border bg-muted px-1.5 py-0.5 font-mono"
             >
               Esc
             </kbd>
-            <span>to close</span>
+            <span>{$_('globalSearch.toClose')}</span>
           </div>
         </div>
       </div>

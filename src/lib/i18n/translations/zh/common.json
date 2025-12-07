@@ -4,6 +4,7 @@
     "save": "保存",
     "edit": "编辑",
     "delete": "删除",
+    "deleting": "删除中...",
     "loading": "加载中...",
     "search": "搜索",
     "close": "关闭",
@@ -20,7 +21,14 @@
     "continue": "继续",
     "add": "添加",
     "settings": "设置",
-    "tour": "导览"
+    "tour": "导览",
+    "refresh": "刷新",
+    "join": "加入",
+    "move": "移动",
+    "actions": "操作",
+    "project": "项目",
+    "department": "部门",
+    "organization": "组织"
   },
   "designTypes": {
     "research": "研究",
@@ -195,7 +203,25 @@
     "restartTourHint": "您可以随时使用标题栏中的「导览」按钮重新开始导览。",
     "successfullyJoined": "成功加入 {resourceType}",
     "tourCompleted": "导览完成！您已准备好管理您的团队。",
-    "canRestartTour": "您可以随时从帮助菜单重新开始导览"
+    "canRestartTour": "您可以随时从帮助菜单重新开始导览",
+    "tourSteps": {
+      "chooseTeam": {
+        "title": "选择您的团队",
+        "description": "从侧边栏选择一个组织、部门或项目，开始管理其团队成员。"
+      },
+      "teamMembers": {
+        "title": "您的团队成员",
+        "description": "在这里，您可以查看所有团队成员、他们的角色，并管理他们的访问权限。"
+      },
+      "inviteMembers": {
+        "title": "邀请新成员",
+        "description": "发送电子邮件邀请，将新成员添加到您的组织。"
+      },
+      "addUsers": {
+        "title": "添加现有用户",
+        "description": "将已在您组织中的人员添加到此特定项目或部门。"
+      }
+    }
   },
   "teamManagement": {
     "title": "团队管理",
@@ -289,7 +315,26 @@
     "manageAndOrganize": "管理和组织您的项目文献",
     "tooltip": "管理和组织您的项目文献。添加来源、跟踪阅读状态，并在一个地方构建您的研究文库。",
     "loadingLiterature": "正在加载文献...",
-    "noLiteratureAdded": "尚未添加文献"
+    "noLiteratureAdded": "尚未添加文献",
+    "previewDocument": "预览文档",
+    "downloadDocument": "下载文档",
+    "tableHeaders": {
+      "title": "标题",
+      "authors": "作者",
+      "status": "状态",
+      "publisher": "出版社",
+      "year": "年份",
+      "type": "类型",
+      "addedOn": "添加日期",
+      "file": "文件"
+    },
+    "status": {
+      "notStarted": "未开始",
+      "reading": "阅读中",
+      "noteTaking": "笔记中",
+      "completed": "已完成",
+      "archived": "已归档"
+    }
   },
   "insights": {
     "title": "洞察",
@@ -338,24 +383,24 @@
     "downloadDocument": "下载文档",
     "reportIssue": "报告问题",
     "attachDocument": "附加文档",
-    "deleteLiterature": "删除文献",
-    "deleteConfirm": "您确定要删除「{name}」吗？此操作无法撤销。",
-    "learnAbout": "了解文献视图",
+    "deleteLiterature": "删除",
+    "deleteConfirmation": "您确定要删除「{name}」吗？此操作无法撤销。",
+    "tourAriaLabel": "了解文献视图",
     "citedFromPage": "此条目引用自第 {page} 页。",
-    "openDocumentAtPage": "在第 {page} 页打开文档",
+    "openAtPage": "在第 {page} 页打开文档",
     "noAuthorsListed": "未列出作者",
     "editors": "编辑",
     "attachDocumentTo": "将文档附加到「{name}」",
-    "uploadFileTypes": "上传 PDF、DOCX、DOC 或 TXT 文件。我们将提取文本和元数据。",
+    "attachDocumentDescription": "上传 PDF、DOCX、DOC 或 TXT 文件。我们将提取文本和元数据。",
     "reportIssueDescription": "通过报告「{name}」的问题来帮助我们改进",
     "whatWentWrong": "出了什么问题？（可选）",
-    "describeIssuePlaceholder": "描述您注意到的问题（例如：元数据不正确、文本缺失、提取错误）...",
-    "feedbackThanks": "您的反馈将帮助我们改进。谢谢！",
+    "feedbackPlaceholder": "描述您注意到的问题（例如：元数据不正确、文本缺失、提取错误）...",
+    "feedbackThankYou": "您的反馈将帮助我们改进。谢谢！",
     "submitting": "提交中...",
     "submitReport": "提交报告",
     "loadingDetails": "正在加载文献详情...",
     "details": "详情",
-    "addedOn": "添加时间：",
+    "addedOn": "添加时间",
     "keywords": "关键词"
   },
   "connections": {
@@ -1296,7 +1341,65 @@
     "noProductsAddedYet": "尚未添加成果。",
     "cancelEdit": "取消编辑",
     "updateProduct": "更新成果",
-    "addProduct": "添加成果"
+    "addProduct": "添加成果",
+    "addNewProduct": "添加新成果",
+    "editProductTitle": "编辑成果",
+    "remove": "删除"
+  },
+  "aiRewrite": {
+    "shorten": "缩短",
+    "shortenTooltip": "在不丢失含义的情况下缩短20-40%。",
+    "plainLanguage": "通俗语言",
+    "plainLanguageTooltip": "用日常用语替换术语，保留科学性。",
+    "smart": "SMART",
+    "smartTooltip": "将目标转化为可衡量、有时限的目标。",
+    "journalReady": "期刊就绪",
+    "journalReadyTooltip": "简洁、中立、手稿风格的目标。",
+    "customPrompt": "自定义指令",
+    "customPlaceholder": "例如：突出数据来源并删除填充内容",
+    "rewriting": "正在重写...",
+    "start": "开始",
+    "generating": "生成中...",
+    "purposeUpdated": "目的已通过Quester更新。",
+    "undo": "撤销",
+    "restoredPurpose": "已恢复之前的目的。",
+    "unableToRestore": "无法恢复之前的目的。"
+  },
+  "projectReading": {
+    "title": "项目阅读",
+    "recentUpdates": "最近更新",
+    "filter": "筛选",
+    "filterActions": "筛选操作",
+    "filterDescription": "按状态和严重程度筛选文献",
+    "needsAttention": "需要关注",
+    "recentlyUpdated": "最近更新",
+    "status": "状态",
+    "severity": "严重程度",
+    "allStatuses": "所有状态",
+    "noteTaking": "做笔记",
+    "reading": "阅读中",
+    "notStarted": "未开始",
+    "allSeverities": "所有严重程度",
+    "errorsOnly": "仅错误",
+    "warningsOnly": "仅警告",
+    "viewDetails": "查看详情",
+    "error": "错误",
+    "errors": "错误",
+    "warning": "警告",
+    "warnings": "警告",
+    "untitledLiterature": "无标题文献",
+    "noLiteratureNeedsAttention": "没有文献需要关注",
+    "noLiteratureNeedsAttentionDesc": "目前没有文献需要关注。",
+    "noRecentUpdates": "没有最近更新",
+    "noRecentUpdatesDesc": "最近没有更新文献。",
+    "lastUpdated": "最后更新 {date}",
+    "missingLiteratureTitle": "缺少文献标题",
+    "missingAuthors": "缺少作者",
+    "missingPublicationYear": "缺少出版年份",
+    "missingPublisher": "缺少出版商",
+    "noKeywordsIdentified": "未识别关键词",
+    "literatureTypeNotSet": "文献类型未设置",
+    "readingStatusNotSet": "阅读状态未设置"
   },
   "citationFormats": {
     "apa": "APA",
@@ -1990,7 +2093,15 @@
       "outcomes": "成果",
       "models": "模型",
       "keywordAnalyses": "关键词分析"
-    }
+    },
+    "placeholder": "搜索所有项目、笔记和文献...",
+    "recentSearches": "最近搜索",
+    "noResultsHint": "尝试调整搜索词或检查拼写",
+    "updated": "更新于 {date}",
+    "relevance": "相关性：{percent}%",
+    "toSearch": "搜索",
+    "toClose": "关闭",
+    "noDate": "无日期"
   },
   "forms": {
     "placeholder": {
@@ -2089,6 +2200,12 @@
     "processingIssueTitle": "已报告「{name}」的处理问题"
   },
   "projectOverview": {
+    "title": "项目概览",
+    "purposeStatement": "目的陈述",
+    "projectStatus": "项目状态",
+    "statusLabel": "状态",
+    "notSet": "未设置",
+    "noPurposeDefined": "未定义目的",
     "rewriteGuide": "可选：指导重写",
     "selectStatus": "选择状态"
   },
@@ -2102,8 +2219,21 @@
     "secondTitle": "第二标题"
   },
   "researchDesigns": {
+    "title": "项目设计",
     "edit": "编辑",
-    "defineMethodology": "在不同设计类型中定义您的研究方法论。"
+    "defineMethodology": "在不同设计类型中定义您的研究方法论。",
+    "designsLabel": "{type}设计",
+    "designDescription": "{type}设计说明",
+    "selectDesignsHelp": "选择适用于此项目的所有{type}设计。",
+    "noSavedDesigns": "尚未保存{type}设计。请在下方添加。",
+    "enterNewDesign": "输入新的{type}设计名称",
+    "addNewDesign": "+ 添加新{type}设计",
+    "noDesignSpecified": "未指定{type}设计",
+    "descriptionHelp": "使用此空间记录所选设计的背景、假设或理由。",
+    "describeApproach": "描述此项目的{type}设计方法...",
+    "selectDesigns": "选择{type}设计",
+    "adding": "添加中…",
+    "addedDesign": "已添加{type}设计"
   },
   "projectInsights": {
     "allTasksCompleted": "所有项目设置任务已完成！",
@@ -2179,7 +2309,12 @@
   },
   "roles": {
     "selectRole": "选择角色",
-    "noRolesAvailable": "没有可用的角色。"
+    "noRolesAvailable": "没有可用的角色。",
+    "owner": "所有者",
+    "admin": "管理员",
+    "member": "成员",
+    "viewer": "查看者",
+    "editor": "编辑者"
   },
   "printTemplate": {
     "noReferencesAvailable": "没有可用的参考文献。",

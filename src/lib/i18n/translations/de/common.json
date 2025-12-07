@@ -4,6 +4,7 @@
     "save": "Speichern",
     "edit": "Bearbeiten",
     "delete": "Löschen",
+    "deleting": "Wird gelöscht...",
     "loading": "Wird geladen...",
     "search": "Suchen",
     "close": "Schließen",
@@ -20,7 +21,14 @@
     "continue": "Fortfahren",
     "add": "Hinzufügen",
     "settings": "Einstellungen",
-    "tour": "Führung"
+    "tour": "Führung",
+    "refresh": "Aktualisieren",
+    "join": "Beitreten",
+    "move": "Verschieben",
+    "actions": "Aktionen",
+    "project": "Projekt",
+    "department": "Abteilung",
+    "organization": "Organisation"
   },
   "designTypes": {
     "research": "Forschung",
@@ -61,7 +69,7 @@
     "settings": "Einstellungen",
     "teamManagement": "Teamverwaltung",
     "pricing": "Preise",
-    "organizationAnalytics": "Organisationsanalysen",
+    "organizationAnalytics": "Analysen",
     "switchOrganization": "Organisation wechseln",
     "userMenu": "Benutzermenü",
     "mainMenu": "Hauptmenü",
@@ -195,7 +203,25 @@
     "restartTourHint": "Sie können die Tour jederzeit über die Schaltfläche \"Tour\" in der Kopfzeile neu starten.",
     "successfullyJoined": "Erfolgreich {resourceType} beigetreten",
     "tourCompleted": "Tour abgeschlossen! Sie sind bereit, Ihre Teams zu verwalten.",
-    "canRestartTour": "Sie können die Tour jederzeit über das Hilfemenü neu starten"
+    "canRestartTour": "Sie können die Tour jederzeit über das Hilfemenü neu starten",
+    "tourSteps": {
+      "chooseTeam": {
+        "title": "Wählen Sie Ihr Team",
+        "description": "Wählen Sie eine Organisation, Abteilung oder ein Projekt aus der Seitenleiste aus, um mit der Verwaltung der Teammitglieder zu beginnen."
+      },
+      "teamMembers": {
+        "title": "Ihre Teammitglieder",
+        "description": "Hier können Sie alle Teammitglieder, ihre Rollen und Zugriffsberechtigungen sehen und verwalten."
+      },
+      "inviteMembers": {
+        "title": "Neue Mitglieder einladen",
+        "description": "Senden Sie E-Mail-Einladungen, um neue Personen zu Ihrer Organisation hinzuzufügen."
+      },
+      "addUsers": {
+        "title": "Vorhandene Benutzer hinzufügen",
+        "description": "Fügen Sie Personen hinzu, die bereits in Ihrer Organisation sind, zu diesem spezifischen Projekt oder dieser Abteilung."
+      }
+    }
   },
   "teamManagement": {
     "title": "Teamverwaltung",
@@ -289,7 +315,26 @@
     "manageAndOrganize": "Verwalten und organisieren Sie Ihre Projektliteratur",
     "tooltip": "Verwalten und organisieren Sie Ihre Projektliteratur. Fügen Sie Quellen hinzu, verfolgen Sie den Lesestatus und bauen Sie Ihre Forschungsbibliothek an einem Ort auf.",
     "loadingLiterature": "Literatur wird geladen...",
-    "noLiteratureAdded": "Noch keine Literatur hinzugefügt"
+    "noLiteratureAdded": "Noch keine Literatur hinzugefügt",
+    "previewDocument": "Dokument-Vorschau",
+    "downloadDocument": "Dokument herunterladen",
+    "tableHeaders": {
+      "title": "Titel",
+      "authors": "Autoren",
+      "status": "Status",
+      "publisher": "Verlag",
+      "year": "Jahr",
+      "type": "Typ",
+      "addedOn": "Hinzugefügt am",
+      "file": "Datei"
+    },
+    "status": {
+      "notStarted": "Nicht begonnen",
+      "reading": "Lesen",
+      "noteTaking": "Notizen machen",
+      "completed": "Abgeschlossen",
+      "archived": "Archiviert"
+    }
   },
   "insights": {
     "title": "Erkenntnisse",
@@ -338,24 +383,24 @@
     "downloadDocument": "Dokument herunterladen",
     "reportIssue": "Problem melden",
     "attachDocument": "Dokument anhängen",
-    "deleteLiterature": "Literatur löschen",
-    "deleteConfirm": "Sind Sie sicher, dass Sie \"{name}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
-    "learnAbout": "Mehr über die Literaturansicht erfahren",
+    "deleteLiterature": "Löschen",
+    "deleteConfirmation": "Sind Sie sicher, dass Sie \"{name}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "tourAriaLabel": "Mehr über die Literaturansicht erfahren",
     "citedFromPage": "Dieses Element wurde von Seite {page} zitiert.",
-    "openDocumentAtPage": "Dokument auf Seite {page} öffnen",
+    "openAtPage": "Dokument auf Seite {page} öffnen",
     "noAuthorsListed": "Keine Autoren aufgeführt",
     "editors": "Herausgeber",
     "attachDocumentTo": "Dokument an \"{name}\" anhängen",
-    "uploadFileTypes": "Laden Sie eine PDF-, DOCX-, DOC- oder TXT-Datei hoch. Wir extrahieren Text und Metadaten.",
+    "attachDocumentDescription": "Laden Sie eine PDF-, DOCX-, DOC- oder TXT-Datei hoch. Wir extrahieren Text und Metadaten.",
     "reportIssueDescription": "Helfen Sie uns, uns zu verbessern, indem Sie Probleme mit \"{name}\" melden",
     "whatWentWrong": "Was ist schiefgelaufen? (optional)",
-    "describeIssuePlaceholder": "Beschreiben Sie das aufgetretene Problem (z.B. falsche Metadaten, fehlender Text, falsche Extraktion)...",
-    "feedbackThanks": "Ihr Feedback hilft uns, uns zu verbessern. Vielen Dank!",
+    "feedbackPlaceholder": "Beschreiben Sie das aufgetretene Problem (z.B. falsche Metadaten, fehlender Text, falsche Extraktion)...",
+    "feedbackThankYou": "Ihr Feedback hilft uns, uns zu verbessern. Vielen Dank!",
     "submitting": "Wird gesendet...",
     "submitReport": "Bericht senden",
     "loadingDetails": "Literaturdetails werden geladen...",
     "details": "Details",
-    "addedOn": "Hinzugefügt am:",
+    "addedOn": "Hinzugefügt am",
     "keywords": "Schlüsselwörter"
   },
   "connections": {
@@ -708,7 +753,7 @@
   "analytics": {
     "title": "Analysen",
     "projectAnalyticsTooltip": "Visualisieren und analysieren Sie die Literatursammlung und Notizeninhalte Ihres Projekts. Verfolgen Sie Trends in Veröffentlichungen, identifizieren Sie gemeinsame Themen und gewinnen Sie Einblicke in Ihre Forschungslandschaft.",
-    "organizationAnalytics": "Organisationsanalysen",
+    "organizationAnalytics": "Analysen",
     "overview": "Übersicht",
     "projects": "Projekte",
     "members": "Mitglieder",
@@ -1864,7 +1909,65 @@
     "noProductsAddedYet": "Noch keine Produkte hinzugefügt. Fügen Sie oben Ihr erstes Forschungsprodukt hinzu.",
     "cancelEdit": "Bearbeitung abbrechen",
     "updateProduct": "Produkt aktualisieren",
-    "addProduct": "Produkt hinzufügen"
+    "addProduct": "Produkt hinzufügen",
+    "addNewProduct": "Neues Produkt hinzufügen",
+    "editProductTitle": "Produkt bearbeiten",
+    "remove": "Entfernen"
+  },
+  "aiRewrite": {
+    "shorten": "Kürzen",
+    "shortenTooltip": "20-40% kürzer ohne Bedeutungsverlust.",
+    "plainLanguage": "Einfache Sprache",
+    "plainLanguageTooltip": "Fachjargon durch alltägliche Begriffe ersetzen – die Wissenschaft beibehalten.",
+    "smart": "SMART",
+    "smartTooltip": "Das Ziel in ein messbares, zeitgebundenes Ziel umwandeln.",
+    "journalReady": "Publikationsreif",
+    "journalReadyTooltip": "Prägnantes, neutrales Ziel im Manuskriptstil.",
+    "customPrompt": "Benutzerdefinierte Anweisung",
+    "customPlaceholder": "z.B. Datenquellen hervorheben und Fülltext kürzen",
+    "rewriting": "Wird umgeschrieben...",
+    "start": "Starten",
+    "generating": "Wird generiert...",
+    "purposeUpdated": "Zweck mit Quester aktualisiert.",
+    "undo": "Rückgängig",
+    "restoredPurpose": "Der vorherige Zweck wurde wiederhergestellt.",
+    "unableToRestore": "Der vorherige Zweck konnte nicht wiederhergestellt werden."
+  },
+  "projectReading": {
+    "title": "Projektlektüre",
+    "recentUpdates": "Aktuelle Updates",
+    "filter": "Filtern",
+    "filterActions": "Aktionen filtern",
+    "filterDescription": "Literatur nach Status und Schweregrad filtern",
+    "needsAttention": "Erfordert Aufmerksamkeit",
+    "recentlyUpdated": "Kürzlich aktualisiert",
+    "status": "Status",
+    "severity": "Schweregrad",
+    "allStatuses": "Alle Status",
+    "noteTaking": "Notizen machen",
+    "reading": "Lesen",
+    "notStarted": "Nicht gestartet",
+    "allSeverities": "Alle Schweregrade",
+    "errorsOnly": "Nur Fehler",
+    "warningsOnly": "Nur Warnungen",
+    "viewDetails": "Details anzeigen",
+    "error": "Fehler",
+    "errors": "Fehler",
+    "warning": "Warnung",
+    "warnings": "Warnungen",
+    "untitledLiterature": "Unbenannte Literatur",
+    "noLiteratureNeedsAttention": "Keine Literatur erfordert Aufmerksamkeit",
+    "noLiteratureNeedsAttentionDesc": "Derzeit erfordert keine Literatur Aufmerksamkeit.",
+    "noRecentUpdates": "Keine aktuellen Updates",
+    "noRecentUpdatesDesc": "Kürzlich wurde keine Literatur aktualisiert.",
+    "lastUpdated": "Zuletzt aktualisiert {date}",
+    "missingLiteratureTitle": "Literaturtitel fehlt",
+    "missingAuthors": "Autoren fehlen",
+    "missingPublicationYear": "Publikationsjahr fehlt",
+    "missingPublisher": "Verlag fehlt",
+    "noKeywordsIdentified": "Keine Schlüsselwörter identifiziert",
+    "literatureTypeNotSet": "Literaturtyp nicht festgelegt",
+    "readingStatusNotSet": "Lesestatus nicht festgelegt"
   },
   "citationFormats": {
     "apa": "APA",
@@ -2558,7 +2661,15 @@
       "outcomes": "Ergebnisse",
       "models": "Modelle",
       "keywordAnalyses": "Schlüsselwortanalysen"
-    }
+    },
+    "placeholder": "Alle Ihre Projekte, Notizen und Literatur durchsuchen...",
+    "recentSearches": "Letzte Suchen",
+    "noResultsHint": "Versuchen Sie, Ihre Suchbegriffe anzupassen oder überprüfen Sie die Rechtschreibung",
+    "updated": "Aktualisiert {date}",
+    "relevance": "Relevanz: {percent}%",
+    "toSearch": "zum Suchen",
+    "toClose": "zum Schließen",
+    "noDate": "Kein Datum"
   },
   "forms": {
     "placeholder": {
@@ -2657,6 +2768,12 @@
     "processingIssueTitle": "Verarbeitungsproblem gemeldet für \"{name}\""
   },
   "projectOverview": {
+    "title": "Projektübersicht",
+    "purposeStatement": "Zweckerklärung",
+    "projectStatus": "Projektstatus",
+    "statusLabel": "Status",
+    "notSet": "Nicht festgelegt",
+    "noPurposeDefined": "Kein Zweck definiert",
     "rewriteGuide": "Optional: Die Umschreibung leiten (z.B. 'Kürzer fassen' oder 'Methodologie betonen')",
     "selectStatus": "Status auswählen"
   },
@@ -2670,8 +2787,21 @@
     "secondTitle": "Zweiter Titel"
   },
   "researchDesigns": {
+    "title": "Projektdesigns",
     "edit": "Bearbeiten",
-    "defineMethodology": "Definieren Sie Ihre Forschungsmethodologie über verschiedene Designtypen hinweg."
+    "defineMethodology": "Definieren Sie Ihre Forschungsmethodologie über verschiedene Designtypen hinweg.",
+    "designsLabel": "{type}-Designs",
+    "designDescription": "{type}-Designbeschreibung",
+    "selectDesignsHelp": "Wählen Sie alle {type}-Designs aus, die für dieses Projekt gelten.",
+    "noSavedDesigns": "Noch keine {type}-Designs gespeichert. Fügen Sie unten eines hinzu.",
+    "enterNewDesign": "Neuen {type}-Designnamen eingeben",
+    "addNewDesign": "+ Neues {type}-Design hinzufügen",
+    "noDesignSpecified": "Kein {type}-Design angegeben",
+    "descriptionHelp": "Verwenden Sie diesen Bereich, um Kontext, Annahmen oder Begründungen für die ausgewählten Designs zu erfassen.",
+    "describeApproach": "Beschreiben Sie den {type}-Designansatz für dieses Projekt...",
+    "selectDesigns": "{type}-Designs auswählen",
+    "adding": "Wird hinzugefügt…",
+    "addedDesign": "{type}-Design hinzugefügt"
   },
   "projectInsights": {
     "allTasksCompleted": "Alle Projekteinrichtungsaufgaben abgeschlossen!",
@@ -2747,7 +2877,12 @@
   },
   "roles": {
     "selectRole": "Rolle auswählen",
-    "noRolesAvailable": "Keine Rollen verfügbar. Verwende festcodierte Ersatzrollen."
+    "noRolesAvailable": "Keine Rollen verfügbar. Verwende festcodierte Ersatzrollen.",
+    "owner": "Eigentümer",
+    "admin": "Administrator",
+    "member": "Mitglied",
+    "viewer": "Betrachter",
+    "editor": "Bearbeiter"
   },
   "printTemplate": {
     "noReferencesAvailable": "Keine Referenzen verfügbar.",

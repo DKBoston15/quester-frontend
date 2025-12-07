@@ -505,6 +505,15 @@
     return departmentCreationCapabilities[orgId]?.allowed || false;
   }
 
+  // Helper function to translate role names
+  function translateRole(roleName: string): string {
+    const roleKey = roleName.toLowerCase();
+    const translationKey = `roles.${roleKey}`;
+    const translated = $_(translationKey);
+    // If translation key returns itself, fall back to original name
+    return translated === translationKey ? roleName : translated;
+  }
+
   // Helper function to get user's role for a specific project
   function getUserRoleForProject(project: Project): string {
     if (!auth.user) return $_('common.unknown');
@@ -512,7 +521,8 @@
     if (!resources?.projects) return $_('common.unknown');
 
     const resource = resources.projects.find((r: any) => r.id === project.id);
-    return resource?.$extras?.roleName || $_('common.unknown');
+    const roleName = resource?.$extras?.roleName;
+    return roleName ? translateRole(roleName) : $_('common.unknown');
   }
 
   // Handle toggle change
@@ -1169,10 +1179,10 @@
         <div
           class="bg-muted/70 px-4 py-2 grid grid-cols-[auto_1fr_auto_auto] gap-4 items-center font-medium text-sm border-b"
         >
-          <span>Project</span>
-          <span>Department</span>
-          <span>Organization</span>
-          <span>Actions</span>
+          <span>{$_('common.project')}</span>
+          <span>{$_('common.department')}</span>
+          <span>{$_('common.organization')}</span>
+          <span>{$_('common.actions')}</span>
         </div>
 
         <!-- Project items -->
@@ -1210,7 +1220,7 @@
                     }}
                   >
                     <UserPlus class="h-3 w-3" />
-                    Join
+                    {$_('common.join')}
                   </Button>
                 {:else}
                   <!-- Use the specific role name -->
@@ -1229,7 +1239,7 @@
                   }}
                 >
                   <FolderInput class="h-4 w-4" />
-                  Move
+                  {$_('common.move')}
                 </Button>
               </div>
             </div>
