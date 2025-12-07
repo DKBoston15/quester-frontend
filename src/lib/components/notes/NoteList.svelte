@@ -29,6 +29,30 @@
   import { tick } from "svelte";
   import { EmptyState } from "$lib/components/ui/empty-state";
   import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper for imperative translation access
+  const t = (key: string) => get(_)(key);
+
+  // Map section type values to translation keys
+  const sectionTypeTranslationKeys: Record<string, string> = {
+    "Introduction": "notes.sections.introduction",
+    "Methods": "notes.sections.methods",
+    "Results": "notes.sections.results",
+    "Discussion": "notes.sections.discussion",
+    "Conclusion": "notes.sections.conclusion",
+    "References": "notes.sections.references",
+    "Other": "notes.sections.other",
+  };
+
+  // Get translated section type label
+  function getTranslatedSectionType(sectionType: string | { value: string; label: string } | null | undefined): string {
+    if (!sectionType) return t("notes.sections.other");
+
+    const value = typeof sectionType === "object" ? sectionType.value : sectionType;
+    const key = sectionTypeTranslationKeys[value];
+    return key ? t(key) : value;
+  }
 
   // Props
   const { onNoteSelect, showSecondPanelOption = false } = $props<{
@@ -724,9 +748,7 @@
                             {#if isSearchActive && "highlightedSectionType" in note}
                               {@html note.highlightedSectionType}
                             {:else}
-                              {typeof note.section_type === "object"
-                                ? note.section_type.label
-                                : note.section_type}
+                              {getTranslatedSectionType(note.section_type)}
                             {/if}
                           </Badge>
                         {/if}

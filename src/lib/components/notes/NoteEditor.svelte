@@ -19,6 +19,10 @@
   import LiteratureSelector from "$lib/components/custom-ui/literature/LiteratureSelector.svelte";
   import { isAuthError, api } from "$lib/services/api-client";
   import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper for imperative translation access
+  const t = (key: string) => get(_)(key);
 
   // Props
   const { note, onDelete } = $props<{
@@ -82,16 +86,18 @@
   // Track auth errors to stop auto-save when session expires
   let authErrorOccurred = $state(false);
 
-  // Add section type options
-  const sectionTypeOptions = [
-    { value: "Introduction", label: "Introduction" },
-    { value: "Methods", label: "Methods" },
-    { value: "Results", label: "Results" },
-    { value: "Discussion", label: "Discussion" },
-    { value: "Conclusion", label: "Conclusion" },
-    { value: "References", label: "References" },
-    { value: "Other", label: "Other" },
-  ];
+  // Add section type options - use function to get translated labels
+  function getSectionTypeOptions() {
+    return [
+      { value: "Introduction", label: t("notes.sections.introduction") },
+      { value: "Methods", label: t("notes.sections.methods") },
+      { value: "Results", label: t("notes.sections.results") },
+      { value: "Discussion", label: t("notes.sections.discussion") },
+      { value: "Conclusion", label: t("notes.sections.conclusion") },
+      { value: "References", label: t("notes.sections.references") },
+      { value: "Other", label: t("notes.sections.other") },
+    ];
+  }
 
   // Ensure literature data is loaded
   onMount(() => {
@@ -380,7 +386,7 @@
 
   // Add function to handle section type change
   async function handleSectionTypeChange(value: string) {
-    const selectedType = sectionTypeOptions.find(
+    const selectedType = getSectionTypeOptions().find(
       (option) => option.value === value
     );
 
@@ -484,7 +490,7 @@
           <Input
             bind:ref={titleInputRef}
             type="text"
-            placeholder="Untitled note"
+            placeholder={$_('notes.editor.untitledNote')}
             class="w-full bg-transparent cursor-text border-0 border-b border-border/50 px-0 py-1 h-auto text-2xl font-semibold rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-ring/60"
             bind:value={title}
             onfocus={(e) => {
@@ -528,11 +534,11 @@
             }}
             aria-label="Note title"
           />
-          <Button size="sm" onclick={async () => { if (title !== originalTitle) { await saveTitle(); } isEditingTitle = false; }} aria-label="Save title" disabled={isSaving}>
-            Save
+          <Button size="sm" onclick={async () => { if (title !== originalTitle) { await saveTitle(); } isEditingTitle = false; }} aria-label={$_('notes.editor.saveTitle')} disabled={isSaving}>
+            {$_('common.save')}
           </Button>
-          <Button variant="ghost" size="sm" onclick={() => { isCancellingTitle = true; title = originalTitle; isEditingTitle = false; setTimeout(() => (isCancellingTitle = false), 0); }} aria-label="Cancel rename">
-            Cancel
+          <Button variant="ghost" size="sm" onclick={() => { isCancellingTitle = true; title = originalTitle; isEditingTitle = false; setTimeout(() => (isCancellingTitle = false), 0); }} aria-label={$_('notes.editor.cancelRename')}>
+            {$_('common.cancel')}
           </Button>
         </div>
       {:else}
@@ -540,7 +546,7 @@
           <h1
             class="text-2xl font-semibold truncate cursor-text"
             title={title}
-            aria-label="Note title. Click to edit"
+            aria-label={$_('notes.editor.renameTitle')}
             onclick={() => {
               // Guard against accidental click carried over from note selection
               if (Date.now() < enableTitleClickAt) return;
@@ -548,30 +554,30 @@
               setTimeout(() => titleInputRef?.focus(), 0);
             }}
           >
-            {title || "Untitled note"}
+            {title || $_('notes.editor.untitledNote')}
           </h1>
         </div>
       {/if}
       <div class="flex items-center gap-2 shrink-0">
         {#if authErrorOccurred}
-          <span class="text-sm text-destructive">Session expired — not saving</span>
+          <span class="text-sm text-destructive">{$_('notes.editor.sessionExpired')}</span>
         {:else if isSaving}
-          <span class="text-sm text-muted-foreground flex items-center gap-1"><Save class="h-3 w-3 animate-spin" /> Saving…</span>
+          <span class="text-sm text-muted-foreground flex items-center gap-1"><Save class="h-3 w-3 animate-spin" /> {$_('notes.editor.saving')}…</span>
         {:else}
-          <span class="text-sm text-muted-foreground">{lastSavedAt ? `Saved ${new Date(lastSavedAt).toLocaleTimeString()}` : ""}</span>
+          <span class="text-sm text-muted-foreground">{lastSavedAt ? $_('notes.editor.saved', { values: { time: new Date(lastSavedAt).toLocaleTimeString() } }) : ""}</span>
         {/if}
         {#if (titleChanged || contentChanged) && !authErrorOccurred && !isEditingTitle}
-          <Button size="sm" class="min-w-[96px] justify-center" onclick={() => saveNote(true)} aria-label="Save changes" disabled={isSaving}>
-            Save
+          <Button size="sm" class="min-w-[96px] justify-center" onclick={() => saveNote(true)} aria-label={$_('notes.editor.saveChanges')} disabled={isSaving}>
+            {$_('common.save')}
           </Button>
         {/if}
         {#if !isEditingTitle}
-          <Button variant="outline" size="sm" class="min-w-[96px] justify-center" aria-label="Rename title" title="Rename title" onclick={() => { isEditingTitle = true; setTimeout(() => titleInputRef?.focus(), 0); }}>
-            <Pencil class="h-4 w-4 mr-1" /> Rename
+          <Button variant="outline" size="sm" class="min-w-[96px] justify-center" aria-label={$_('notes.editor.renameTitle')} title={$_('notes.editor.renameTitle')} onclick={() => { isEditingTitle = true; setTimeout(() => titleInputRef?.focus(), 0); }}>
+            <Pencil class="h-4 w-4 mr-1" /> {$_('notes.editor.rename')}
           </Button>
         {/if}
-        <Button variant="destructive" size="sm" class="min-w-[96px] justify-center" onclick={() => confirmDelete()} aria-label="Delete note">
-          <Trash2 class="h-4 w-4 mr-1" /> Delete
+        <Button variant="destructive" size="sm" class="min-w-[96px] justify-center" onclick={() => confirmDelete()} aria-label={$_('notes.editor.deleteNote')}>
+          <Trash2 class="h-4 w-4 mr-1" /> {$_('common.delete')}
         </Button>
       </div>
     </div>
@@ -587,13 +593,13 @@
             onLiteratureSelect={handleLiteratureSelect}
           />
           <div class="flex items-center gap-2">
-            <label for="section-type-select" class="text-sm text-muted-foreground">Section</label>
+            <label for="section-type-select" class="text-sm text-muted-foreground">{$_('notes.editor.section')}</label>
             <Select type="single" value={currentSectionType.value} onValueChange={handleSectionTypeChange}>
               <SelectTrigger id="section-type-select" class="h-8 w-[180px]">
-                <span>{currentSectionType.label}</span>
+                <span>{getSectionTypeOptions().find(o => o.value === currentSectionType.value)?.label || currentSectionType.label}</span>
               </SelectTrigger>
               <SelectContent>
-                {#each sectionTypeOptions as option}
+                {#each getSectionTypeOptions() as option}
                   <SelectItem value={option.value}>{option.label}</SelectItem>
                 {/each}
               </SelectContent>
@@ -617,7 +623,7 @@ on:contentChange={(e) => {
           contentChanged = true;
           scheduleSave();
         }}
-        placeholder="Start writing..."
+        placeholder={t('notes.editor.startWriting')}
       />
     </div>
   {/if}
@@ -627,18 +633,18 @@ on:contentChange={(e) => {
 <AlertDialog.Root bind:open={showDeleteDialog}>
   <AlertDialog.Content>
     <AlertDialog.Header>
-      <AlertDialog.Title>Delete Note</AlertDialog.Title>
+      <AlertDialog.Title>{$_('notes.editor.deleteNote')}</AlertDialog.Title>
       <AlertDialog.Description>
-        Are you sure you want to delete this note? This action cannot be undone.
+        {$_('notes.editor.deleteConfirm')}
       </AlertDialog.Description>
     </AlertDialog.Header>
     <AlertDialog.Footer>
-      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+      <AlertDialog.Cancel>{$_('common.cancel')}</AlertDialog.Cancel>
       <AlertDialog.Action
         onclick={handleDeleteConfirm}
         class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
       >
-        Delete Note
+        {$_('notes.editor.deleteNote')}
       </AlertDialog.Action>
     </AlertDialog.Footer>
   </AlertDialog.Content>
