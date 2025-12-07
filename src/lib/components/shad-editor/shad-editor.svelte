@@ -58,6 +58,9 @@
   import { AudioPlaceholder } from "./custom/Extentions/AudioPlaceHolder.js";
   import { AudioExtention } from "./custom/Extentions/AudioExtended.js";
   import BubbleMenu from "./menus/bubble-menu.svelte";
+  import { ParagraphIndent } from "./custom/Extentions/ParagraphIndent";
+  import TrailingNode from "./custom/Extentions/TrailingNode";
+  // Tab handling is implemented via editorProps.handleKeyDown below
 
   const lowlight = createLowlight(all);
 
@@ -102,49 +105,85 @@
             "m-auto p-2 px-6 focus:outline-none flex-1 prose text-foreground min-w-full max-h-full overflow-auto dark:prose-invert *:my-2",
         },
         handleKeyDown: (view, event) => {
-          // Handle Tab key specifically to prevent browser focus change
-          if (event.key === 'Tab') {
-            const { state } = view;
-            const { selection } = state;
+          const key = event.key;
+
+          // Tab handling
+          if (key === "Tab") {
+            const { selection } = view.state as any;
             const fromPos = selection.$from;
 
-            // Check if we're in a list item
-            let depth = fromPos.depth;
-            let listItem = null;
-            let parentList = null;
-            
-            for (let i = depth; i > 0; i--) {
+            let inListItem = false;
+            let inList = false;
+            let inCodeBlock = false;
+            let inTable = false;
+
+            for (let i = fromPos.depth; i >= 0; i--) {
               const node = fromPos.node(i);
-              if (node.type.name === 'listItem' && !listItem) {
-                listItem = node;
-              }
-              if ((node.type.name === 'orderedList' || node.type.name === 'bulletList') && !parentList) {
-                parentList = node;
-                break;
-              }
+              const name = node.type.name;
+              if (name === "listItem") inListItem = true;
+              if (name === "orderedList" || name === "bulletList") inList = true;
+              if (name === "codeBlock") inCodeBlock = true;
+              if (name === "table" || name === "tableCell" || name === "tableHeader") inTable = true;
+              if (inListItem && inList) break;
             }
-            
-            if (listItem && parentList) {
-              // Prevent the default tab behavior
-              event.preventDefault();
-              event.stopPropagation();
-              
-              if (event.shiftKey) {
-                // Shift+Tab: outdent
-                editor?.commands.liftListItem('listItem');
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            // Table cell navigation: Tab -> next cell, Shift+Tab -> previous cell
+            if (inTable) {
+              if ((event as KeyboardEvent).shiftKey) {
+                editor?.commands.goToPreviousCell?.();
               } else {
-                // Tab: indent
-                editor?.commands.sinkListItem('listItem');
+                editor?.commands.goToNextCell?.();
               }
               return true;
             }
-            
-            // Even if not in a list, prevent tab from leaving the editor
-            event.preventDefault();
-            event.stopPropagation();
+
+            if (inListItem && inList) {
+              if ((event as KeyboardEvent).shiftKey) {
+                editor?.commands.liftListItem("listItem");
+              } else {
+                editor?.commands.sinkListItem("listItem");
+              }
+              return true;
+            }
+
+            if (inCodeBlock) {
+              editor?.chain().focus().insertContent("\t").run();
+              return true;
+            }
+
+            // For non-list paragraphs: increase or decrease paragraph indent
+            if ((event as KeyboardEvent).shiftKey) {
+              editor?.commands.decreaseIndent();
+            } else {
+              editor?.commands.increaseIndent();
+            }
             return true;
           }
-          
+
+          // Backspace handling on empty, indented paragraph: decrease indent instead of deleting line
+          if (key === "Backspace") {
+            const { selection } = view.state as any;
+            if (!selection.empty) return false;
+            const fromPos = selection.$from;
+            const parent = fromPos.parent;
+            const atStart = fromPos.parentOffset === 0;
+            const isParagraph = parent.type?.name === "paragraph";
+            const isEmpty = parent.content?.size === 0;
+            const indentLevel = Number(parent.attrs?.indent || 0);
+
+            if (isParagraph && isEmpty && atStart && indentLevel > 0) {
+              event.preventDefault();
+              event.stopPropagation();
+              editor?.commands.decreaseIndent();
+              return true;
+            }
+
+            return false;
+          }
+
           return false;
         },
       },
@@ -196,7 +235,8 @@
         Superscript,
         Subscript,
         Link.configure({
-          openOnClick: false,
+          // Make hyperlinks clickable directly in the editor
+          openOnClick: true,
           autolink: true,
           defaultProtocol: "https",
           HTMLAttributes: {
@@ -234,6 +274,14 @@
         FontSize,
         AudioPlaceholder,
         AudioExtention,
+        ParagraphIndent.configure({
+          types: ['paragraph'],
+          maxIndent: 8,
+          indentStep: 1,
+          indentUnit: '2em',
+        }),
+        // Ensure there is always a paragraph after block nodes like tables
+        TrailingNode,
       ],
       autofocus: true,
       onUpdate: (transaction) => {
@@ -243,11 +291,46 @@
       },
     });
 
+    // Preserve existing editorProps (including handleKeyDown/attributes) when adding handlePaste
     editor.setOptions({
       editorProps: {
+        ...(editor.options.editorProps || {}),
         handlePaste: getHandlePaste(editor),
       },
     });
+  });
+
+  // Keep the internal editor in sync if the incoming `content` prop changes.
+  // This fixes cases where the component is reused (not remounted) with a new note
+  // — for example, in split view when switching the right-hand note.
+  $effect(() => {
+    if (!editor) return;
+    try {
+      // Do not reset content (and thereby selection) while the user is typing
+      if (editor.isFocused || editor.view?.hasFocus?.()) return;
+
+      const current = editor.getJSON();
+      const next = content;
+      // Avoid unnecessary updates and infinite loops by comparing JSON
+      if (JSON.stringify(current) !== JSON.stringify(next)) {
+        // Try to preserve selection/caret where possible
+        const { from, to } = editor.state.selection;
+        editor.commands.setContent(next, false);
+        try {
+          // Restore selection best-effort after content sync
+          if (typeof from === 'number' && typeof to === 'number') {
+            editor.commands.setTextSelection({ from, to });
+          }
+        } catch (restoreErr) {
+          // eslint-disable-next-line no-console
+          console.warn("ShadEditor: failed to restore selection after sync", restoreErr);
+        }
+      }
+    } catch (e) {
+      // Swallow errors to avoid breaking typing if malformed content arrives
+      // eslint-disable-next-line no-console
+      console.warn("ShadEditor: failed to sync external content", e);
+    }
   });
 
   onDestroy(() => {

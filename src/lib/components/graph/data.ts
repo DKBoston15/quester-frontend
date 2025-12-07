@@ -3,6 +3,7 @@ import { literatureStore } from "$lib/stores/LiteratureStore";
 import { notesStore } from "$lib/stores/NotesStore";
 import { get } from "svelte/store";
 import { _ } from "svelte-i18n";
+import { designSelections } from "$lib/utils/design";
 
 // Helper function for runtime translation
 const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
@@ -144,6 +145,7 @@ export async function createGraphData(urlProjectId: string) {
     icon: string;
     val: number;
     createdAt: string;
+    literatureId?: string; // For literature nodes, store the actual ID for navigation
   }> = [];
   const links: Array<{ source: string; target: string; value: number }> = [];
 
@@ -152,10 +154,11 @@ export async function createGraphData(urlProjectId: string) {
     group: number,
     icon: string,
     val: number,
-    createdAt: string
+    createdAt: string,
+    literatureId?: string
   ) => {
     if (!nodes.find((node) => node.id === id)) {
-      nodes.push({ id, group, icon, val, createdAt });
+      nodes.push({ id, group, icon, val, createdAt, literatureId });
     }
   };
 
@@ -174,7 +177,8 @@ export async function createGraphData(urlProjectId: string) {
       3,
       "literature",
       getNodeSize("literature"),
-      literature.createdAt || ""
+      literature.createdAt || "",
+      literature.id // Store the actual literature ID for navigation
     );
 
     if (literature.authors) {
@@ -253,49 +257,49 @@ export async function createGraphData(urlProjectId: string) {
       addLink(literature.name, literature.publisherName, 1);
     }
 
-    if (literature.researchDesign) {
+    designSelections(literature.researchDesign).forEach((design) => {
       addNode(
-        literature.researchDesign,
+        design,
         6,
         "research_design",
         getNodeSize("research_design"),
         literature.createdAt || ""
       );
-      addLink(literature.name, literature.researchDesign, 1);
-    }
+      addLink(literature.name, design, 1);
+    });
 
-    if (literature.analyticDesign) {
+    designSelections(literature.analyticDesign).forEach((design) => {
       addNode(
-        literature.analyticDesign,
+        design,
         7,
         "analytic_design",
         getNodeSize("analytic_design"),
         literature.createdAt || ""
       );
-      addLink(literature.name, literature.analyticDesign, 1);
-    }
+      addLink(literature.name, design, 1);
+    });
 
-    if (literature.samplingDesign) {
+    designSelections(literature.samplingDesign).forEach((design) => {
       addNode(
-        literature.samplingDesign,
+        design,
         7,
         "sampling_design",
         getNodeSize("sampling_design"),
         literature.createdAt || ""
       );
-      addLink(literature.name, literature.samplingDesign, 1);
-    }
+      addLink(literature.name, design, 1);
+    });
 
-    if (literature.measurementDesign) {
+    designSelections(literature.measurementDesign).forEach((design) => {
       addNode(
-        literature.measurementDesign,
+        design,
         7,
         "measurement_design",
         getNodeSize("measurement_design"),
         literature.createdAt || ""
       );
-      addLink(literature.name, literature.measurementDesign, 1);
-    }
+      addLink(literature.name, design, 1);
+    });
   });
 
   const getNodeLabel = (note: any) => {

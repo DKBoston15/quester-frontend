@@ -45,68 +45,74 @@
   import { api } from "$lib/services/api-client";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
-  import { _ } from "svelte-i18n";
-  import { get } from "svelte/store";
-
-  // Helper function for imperative translation access
-  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
   import {
     Timeline,
     TimelineControls,
     type TimelineEvent,
     type FilterOptions,
   } from "$lib/components/custom-ui/timeline";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper for imperative translation access
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   // Level definitions with colors
   const levels = [
     {
-      nameKey: "progress.levels.sparkOfCuriosity.name",
+      name: "Spark of Curiosity",
       minXP: 0,
       maxXP: 1000,
       color: "from-amber-500 to-orange-600",
-      descriptionKey: "progress.levels.sparkOfCuriosity.description",
+      description:
+        "The beginning of your research journey, where questions start to form.",
     },
     {
-      nameKey: "progress.levels.illuminator.name",
+      name: "Illuminator",
       minXP: 1001,
       maxXP: 2000,
       color: "from-blue-500 to-indigo-600",
-      descriptionKey: "progress.levels.illuminator.description",
+      description:
+        "Shedding light on new ideas and connections within your research.",
     },
     {
-      nameKey: "progress.levels.knowledgeWeaver.name",
+      name: "Knowledge Weaver",
       minXP: 2001,
       maxXP: 3000,
       color: "from-purple-500 to-fuchsia-600",
-      descriptionKey: "progress.levels.knowledgeWeaver.description",
+      description:
+        "Connecting threads of information into a cohesive understanding.",
     },
     {
-      nameKey: "progress.levels.insightArchitect.name",
+      name: "Insight Architect",
       minXP: 3001,
       maxXP: 4000,
       color: "from-emerald-500 to-teal-600",
-      descriptionKey: "progress.levels.insightArchitect.description",
+      description:
+        "Building frameworks of understanding from collected knowledge.",
     },
     {
-      nameKey: "progress.levels.wisdomSculptor.name",
+      name: "Wisdom Sculptor",
       minXP: 4001,
       maxXP: 5000,
       color: "from-rose-500 to-pink-600",
-      descriptionKey: "progress.levels.wisdomSculptor.description",
+      description:
+        "Shaping raw information into refined insights and theories.",
     },
     {
-      nameKey: "progress.levels.enlightenmentExplorer.name",
+      name: "Enlightenment Explorer",
       minXP: 5001,
       maxXP: 6000,
       color: "from-cyan-500 to-blue-600",
-      descriptionKey: "progress.levels.enlightenmentExplorer.description",
+      description: "Venturing beyond established knowledge into new territory.",
     },
     {
-      nameKey: "progress.levels.sageOfScholars.name",
+      name: "Sage of Scholars",
       minXP: 6001,
       maxXP: Infinity,
       color: "from-violet-500 to-purple-600",
-      descriptionKey: "progress.levels.sageOfScholars.description",
+      description:
+        "The pinnacle of research mastery, where expertise guides others.",
     },
   ];
 
@@ -167,54 +173,76 @@
     achievements: Achievement[];
   };
 
+  const hoverShadowMap: Record<string, string> = {
+    "from-blue-500": "hover:shadow-[0_12px_24px_rgba(37,99,235,0.35)]",
+    "from-purple-500": "hover:shadow-[0_12px_24px_rgba(168,85,247,0.35)]",
+    "from-green-500": "hover:shadow-[0_12px_24px_rgba(34,197,94,0.35)]",
+    "from-amber-500": "hover:shadow-[0_12px_24px_rgba(245,158,11,0.35)]",
+    "from-rose-500": "hover:shadow-[0_12px_24px_rgba(244,63,94,0.35)]",
+    "from-indigo-500": "hover:shadow-[0_12px_24px_rgba(99,102,241,0.35)]",
+    "from-cyan-500": "hover:shadow-[0_12px_24px_rgba(34,211,238,0.35)]",
+  };
+
+  function getHoverShadowClass(color: string) {
+    const baseColor = color.split(" ")[0];
+    return hoverShadowMap[baseColor] || "";
+  }
+
   // Achievement categories for grouping with colors
-  const achievementGroups = $derived<Record<
+  const achievementGroups: Record<
     string,
-    AchievementGroup & { color: string }
-  >>({
+    AchievementGroup & { color: string; hoverShadowClass: string }
+  > = {
     "Note-Taking Master": {
-      name: t("progress.achievementGroups.noteTaking"),
+      name: "Note Taking",
       icon: PenTool,
       achievements: [],
       color: "from-blue-500 to-blue-600",
+      hoverShadowClass: getHoverShadowClass("from-blue-500 to-blue-600"),
     },
     Collector: {
-      name: t("progress.achievementGroups.literatureCollection"),
+      name: "Literature Collection",
       icon: Book,
       achievements: [],
       color: "from-purple-500 to-purple-600",
+      hoverShadowClass: getHoverShadowClass("from-purple-500 to-purple-600"),
     },
     Consistency: {
-      name: t("progress.achievementGroups.consistency"),
+      name: "Consistency",
       icon: Calendar,
       achievements: [],
       color: "from-green-500 to-green-600",
+      hoverShadowClass: getHoverShadowClass("from-green-500 to-green-600"),
     },
     "Keyword Researcher": {
-      name: t("progress.achievementGroups.keywordResearch"),
+      name: "Keyword Research",
       icon: Search,
       achievements: [],
       color: "from-amber-500 to-amber-600",
+      hoverShadowClass: getHoverShadowClass("from-amber-500 to-amber-600"),
     },
     Explorer: {
-      name: t("progress.achievementGroups.researchDesign"),
+      name: "Research Design",
       icon: Expand,
       achievements: [],
       color: "from-rose-500 to-rose-600",
+      hoverShadowClass: getHoverShadowClass("from-rose-500 to-rose-600"),
     },
     "Expanding Horizons": {
-      name: t("progress.achievementGroups.customDesigns"),
+      name: "Custom Designs",
       icon: Star,
       achievements: [],
       color: "from-indigo-500 to-indigo-600",
+      hoverShadowClass: getHoverShadowClass("from-indigo-500 to-indigo-600"),
     },
     "Visualization Expert": {
-      name: t("progress.achievementGroups.visualization"),
+      name: "Visualization",
       icon: Network,
       achievements: [],
       color: "from-cyan-500 to-cyan-600",
+      hoverShadowClass: getHoverShadowClass("from-cyan-500 to-cyan-600"),
     },
-  });
+  };
 
   // Timeline event types for filtering
   let availableEventTypes = $derived(() => {
@@ -227,39 +255,39 @@
     return [
       {
         id: "project",
-        label: t("progress.eventTypes.project"),
+        label: "Project",
         count: typeCounts.get("project") || 0,
       },
       {
         id: "literature",
-        label: t("progress.eventTypes.literature"),
+        label: "Literature",
         count: typeCounts.get("literature") || 0,
       },
-      { id: "notes", label: t("progress.eventTypes.notes"), count: typeCounts.get("notes") || 0 },
-      { id: "models", label: t("progress.eventTypes.models"), count: typeCounts.get("models") || 0 },
+      { id: "notes", label: "Notes", count: typeCounts.get("notes") || 0 },
+      { id: "models", label: "Models", count: typeCounts.get("models") || 0 },
       {
         id: "outcomes",
-        label: t("progress.eventTypes.outcomes"),
+        label: "Outcomes",
         count: typeCounts.get("outcomes") || 0,
       },
       {
         id: "status",
-        label: t("progress.eventTypes.statusChanges"),
+        label: "Status Changes",
         count: typeCounts.get("status") || 0,
       },
       {
         id: "design",
-        label: t("progress.eventTypes.designChanges"),
+        label: "Design Changes",
         count: typeCounts.get("design") || 0,
       },
       {
         id: "insights",
-        label: t("progress.eventTypes.insights"),
+        label: "Insights",
         count: typeCounts.get("insights") || 0,
       },
       {
         id: "custom",
-        label: t("progress.eventTypes.customEvents"),
+        label: "Custom Events",
         count: typeCounts.get("custom") || 0,
       },
     ].filter((type) => type.count > 0);
@@ -339,9 +367,11 @@
     return filtered;
   });
 
-  onMount(async () => {
-    await loadTimelineData();
-    await loadAchievements();
+  onMount(() => {
+    void (async () => {
+      await loadTimelineData();
+      await loadAchievements();
+    })();
   });
 
   onDestroy(() => {
@@ -369,10 +399,10 @@
       const projectDate = new Date(currentProject.createdAt || Date.now());
       events.push({
         id: "project_creation",
-        title: get(_)("progressPage.projectCreated", { values: { name: currentProject.name } }),
+        title: `Project Created: ${currentProject.name}`,
         timestamp: projectDate,
         type: "project",
-        description: get(_)("progressPage.projectInitialized"),
+        description: "Project was initialized",
       });
 
       // Fetch and add status changes
@@ -383,14 +413,14 @@
         statusChanges.forEach((change: any) => {
           events.push({
             id: `status_${change.id}`,
-            title: t("progress.eventTitles.projectStatusChanged"),
-            description: `${change.data.previousStatus || t("common.none")} → ${change.data.newStatus}`,
+            title: "Project Status Changed",
+            description: `${change.data.previousStatus || "None"} → ${change.data.newStatus}`,
             timestamp: new Date(change.createdAt),
             type: "project",
             data: change.data,
             details: [
-              t("progress.eventDetails.previousStatus", { values: { status: change.data.previousStatus || t("common.none") } }),
-              t("progress.eventDetails.newStatus", { values: { status: change.data.newStatus } }),
+              `Previous Status: ${change.data.previousStatus || "None"}`,
+              `New Status: ${change.data.newStatus}`,
             ],
           });
         });
@@ -408,40 +438,17 @@
             .replace(/([A-Z])/g, " $1")
             .replace(/^./, (str: string) => str.toUpperCase());
 
-          // Format design values - they may be objects with selections array or strings
-          const formatDesignValue = (value: unknown): string => {
-            if (!value) return t("common.none");
-            if (typeof value === 'string') return value;
-            if (typeof value === 'object' && value !== null) {
-              // Handle { selections: string[], description?: string } format
-              if ('selections' in value) {
-                const selections = (value as { selections: string[] }).selections;
-                if (Array.isArray(selections) && selections.length > 0) {
-                  return selections.join(", ");
-                }
-              }
-              // Handle { name: string } format (legacy)
-              if ('name' in value) {
-                return (value as { name: string }).name || t("common.none");
-              }
-            }
-            return String(value);
-          };
-
-          const prevValue = formatDesignValue(change.data.previousValue);
-          const newValue = formatDesignValue(change.data.newValue);
-
           events.push({
             id: `design_${change.id}`,
-            title: t("progress.eventTitles.designUpdated"),
-            description: `${fieldName}: ${prevValue} → ${newValue}`,
+            title: "Design Updated",
+            description: `${fieldName}: ${change.data.previousValue || "None"} → ${change.data.newValue}`,
             timestamp: new Date(change.createdAt),
             type: "design",
             data: { ...change.data, fieldName },
             details: [
-              t("progress.eventDetails.designType", { values: { type: fieldName } }),
-              t("progress.eventDetails.previousValue", { values: { value: prevValue } }),
-              t("progress.eventDetails.newValue", { values: { value: newValue } }),
+              `Design Type: ${fieldName}`,
+              `Previous: ${change.data.previousValue || "None"}`,
+              `New: ${change.data.newValue}`,
             ],
           });
         });
@@ -471,7 +478,7 @@
         const modelsByDateAndName = new Map<string, any[]>();
         allModelEvents.forEach((event: any) => {
           const date = new Date(event.createdAt);
-          const modelName = event.data.name || t("progress.unknownModel");
+          const modelName = event.data.name || "Unknown Model";
           const dateKey = date.toDateString();
           const groupKey = `${dateKey}_${modelName}`;
 
@@ -505,24 +512,24 @@
 
           if (hasCreated && hasUpdated) {
             if (sortedEvents.length === 2) {
-              title = t("progress.eventTitles.modelCreatedAndUpdated");
-              description = t("progress.eventDescriptions.createdAndUpdatedModel", { values: { name: firstEvent.data.name } });
+              title = "Model Created & Updated";
+              description = `Created and updated model: ${firstEvent.data.name}`;
             } else {
-              title = t("progress.eventTitles.modelActivity", { values: { count: sortedEvents.length } });
-              description = t("progress.eventDescriptions.createdAndUpdatedModel", { values: { name: firstEvent.data.name } });
+              title = `Model Activity (${sortedEvents.length} events)`;
+              description = `Created and updated model: ${firstEvent.data.name}`;
             }
           } else if (hasCreated) {
             title =
               sortedEvents.length === 1
-                ? t("progress.eventTitles.modelCreated")
-                : t("progress.eventTitles.modelCreatedMultiple", { values: { count: sortedEvents.length } });
-            description = t("progress.eventDescriptions.createdModel", { values: { name: firstEvent.data.name } });
+                ? "Model Created"
+                : `Model Created (${sortedEvents.length} events)`;
+            description = `Created model: ${firstEvent.data.name}`;
           } else {
             title =
               sortedEvents.length === 1
-                ? t("progress.eventTitles.modelUpdated")
-                : t("progress.eventTitles.modelUpdatedMultiple", { values: { count: sortedEvents.length } });
-            description = t("progress.eventDescriptions.updatedModel", { values: { name: firstEvent.data.name } });
+                ? "Model Updated"
+                : `Model Updated (${sortedEvents.length} times)`;
+            description = `Updated model: ${firstEvent.data.name}`;
           }
 
           events.push({
@@ -536,8 +543,8 @@
               events: sortedEvents,
             },
             details: [
-              t("progress.eventDetails.modelName", { values: { name: lastEvent.data.name } }),
-              t("progress.eventDetails.events", { values: { events: sortedEvents.map((e) => e.eventType).join(", ") } }),
+              `Model Name: ${lastEvent.data.name}`,
+              `Events: ${sortedEvents.map((e) => e.eventType).join(", ")}`,
             ],
           });
         });
@@ -605,24 +612,24 @@
 
           if (hasCreated && hasUpdated) {
             if (sortedEvents.length === 2) {
-              title = t("progress.eventTitles.outcomeCreatedAndUpdated");
-              description = t("progress.eventDescriptions.createdAndUpdatedOutcome", { values: { type: firstEvent.data.type, name: firstEvent.data.name } });
+              title = "Outcome Created & Updated";
+              description = `Created and updated ${firstEvent.data.type} outcome: ${firstEvent.data.name}`;
             } else {
-              title = t("progress.eventTitles.outcomeActivity", { values: { count: sortedEvents.length } });
-              description = t("progress.eventDescriptions.createdAndUpdatedOutcome", { values: { type: firstEvent.data.type, name: firstEvent.data.name } });
+              title = `Outcome Activity (${sortedEvents.length} events)`;
+              description = `Created and updated ${firstEvent.data.type} outcome: ${firstEvent.data.name}`;
             }
           } else if (hasCreated) {
             title =
               sortedEvents.length === 1
-                ? t("progress.eventTitles.outcomeCreated")
-                : t("progress.eventTitles.outcomeCreatedMultiple", { values: { count: sortedEvents.length } });
-            description = t("progress.eventDescriptions.createdOutcome", { values: { type: firstEvent.data.type, name: firstEvent.data.name } });
+                ? "Outcome Created"
+                : `Outcome Created (${sortedEvents.length} events)`;
+            description = `Created ${firstEvent.data.type} outcome: ${firstEvent.data.name}`;
           } else {
             title =
               sortedEvents.length === 1
-                ? t("progress.eventTitles.outcomeUpdated")
-                : t("progress.eventTitles.outcomeUpdatedMultiple", { values: { count: sortedEvents.length } });
-            description = t("progress.eventDescriptions.updatedOutcome", { values: { type: firstEvent.data.type, name: firstEvent.data.name } });
+                ? "Outcome Updated"
+                : `Outcome Updated (${sortedEvents.length} times)`;
+            description = `Updated ${firstEvent.data.type} outcome: ${firstEvent.data.name}`;
           }
 
           events.push({
@@ -636,12 +643,12 @@
               events: sortedEvents,
             },
             details: [
-              t("progress.eventDetails.name", { values: { name: lastEvent.data.name } }),
-              t("progress.eventDetails.type", { values: { type: lastEvent.data.type } }),
+              `Name: ${lastEvent.data.name}`,
+              `Type: ${lastEvent.data.type}`,
               ...(lastEvent.data.sectionType
-                ? [t("progress.eventDetails.section", { values: { section: lastEvent.data.sectionType } })]
+                ? [`Section: ${lastEvent.data.sectionType}`]
                 : []),
-              t("progress.eventDetails.events", { values: { events: sortedEvents.map((e) => e.eventType).join(", ") } }),
+              `Events: ${sortedEvents.map((e) => e.eventType).join(", ")}`,
             ],
           });
         });
@@ -676,15 +683,13 @@
           events.push({
             id: `insight_${dateKey}`,
             title:
-              count === 1 ? t("progress.eventTitles.createdInsight") : t("progress.eventTitles.createdInsights", { values: { count } }),
-            description: count === 1
-              ? t("progress.eventDescriptions.createdInsight")
-              : t("progress.eventDescriptions.createdInsights", { values: { count } }),
+              count === 1 ? "Created Insight" : `Created ${count} Insights`,
+            description: `${count} keyword analysis insight${count !== 1 ? "s" : ""} created`,
             timestamp: earliestTime,
             type: "insights",
             data: insights,
             details: insights.map((insight: any) => {
-              return t("progress.eventDetails.keywords", { values: { keywords: insight.keywords } });
+              return `Keywords: ${insight.keywords}`;
             }),
           });
         });
@@ -714,17 +719,15 @@
           id: `lit_${dateKey}`,
           title:
             count === 1
-              ? t("progress.eventTitles.addedLiteratureItem")
-              : t("progress.eventTitles.addedLiteratureItems", { values: { count } }),
-          description: count === 1
-            ? t("progress.eventDescriptions.addedLiteratureItem")
-            : t("progress.eventDescriptions.addedLiteratureItems", { values: { count } }),
+              ? "Added Literature Item"
+              : `Added ${count} Literature Items`,
+          description: `${count} literature item${count !== 1 ? "s" : ""} added to the project`,
           timestamp: earliestTime,
           type: "literature",
           data: lits,
           details: lits.map((lit: any) => {
-            const title = lit.title || lit.name || t("common.untitled");
-            let authorText = t("progress.eventDetails.noAuthors");
+            const title = lit.title || lit.name || "Untitled";
+            let authorText = "No authors";
             if (lit.authors) {
               if (Array.isArray(lit.authors)) {
                 authorText = lit.authors.join(", ");
@@ -757,16 +760,14 @@
 
         events.push({
           id: `note_${dateKey}`,
-          title: count === 1 ? t("progress.eventTitles.createdNote") : t("progress.eventTitles.createdNotes", { values: { count } }),
-          description: count === 1
-            ? t("progress.eventDescriptions.createdNote")
-            : t("progress.eventDescriptions.createdNotes", { values: { count } }),
+          title: count === 1 ? "Created Note" : `Created ${count} Notes`,
+          description: `${count} note${count !== 1 ? "s" : ""} created`,
           timestamp: earliestTime,
           type: "notes",
           data: notes,
           details: notes.map((note: any) => {
-            const type = note.type?.toLowerCase() || t("progress.eventDetails.researchType");
-            return `${note.name || t("progress.eventDetails.untitledNote")} (${type})`;
+            const type = note.type?.toLowerCase() || "research";
+            return `${note.name || "Untitled Note"} (${type})`;
           }),
         });
       });
@@ -806,7 +807,7 @@
     selectedEvent = event;
     dialogTitle = event.title;
     dialogContent = event.details || [
-      event.description || t("progress.noAdditionalDetails"),
+      event.description || "No additional details",
     ];
     showDialog = true;
   }
@@ -852,7 +853,7 @@
           if (selectedEvent) {
             dialogTitle = selectedEvent.title;
             dialogContent = selectedEvent.details || [
-              selectedEvent.description || t("progress.noAdditionalDetails"),
+              selectedEvent.description || "No additional details",
             ];
             showDialog = true;
           }
@@ -898,7 +899,7 @@
           action,
           eventIds,
           success: false,
-          message: t("progress.noCustomEventsSelected"),
+          message: "No custom events selected for bulk action",
         };
       }
 
@@ -914,7 +915,7 @@
             action,
             eventIds: customEventIds,
             success: true,
-            message: t("progress.deletedEvents", { values: { count: customEventIds.length } }),
+            message: `Deleted ${customEventIds.length} events`,
           };
 
         case "archive":
@@ -924,7 +925,7 @@
             action,
             eventIds: customEventIds,
             success: false,
-            message: t("progress.archiveNotImplemented"),
+            message: "Archive functionality not yet implemented",
           };
 
         case "export":
@@ -933,7 +934,7 @@
             action,
             eventIds: customEventIds,
             success: true,
-            message: t("progress.exportInitiated"),
+            message: "Export initiated",
           };
 
         default:
@@ -941,7 +942,7 @@
             action,
             eventIds,
             success: false,
-            message: t("progress.unknownBulkAction", { values: { action } }),
+            message: `Unknown bulk action: ${action}`,
           };
       }
     } catch (error) {
@@ -950,7 +951,7 @@
         action,
         eventIds,
         success: false,
-        message: error instanceof Error ? error.message : t("common.unknown"),
+        message: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
@@ -1101,7 +1102,7 @@
       error = null;
     } catch (err) {
       console.error("Error loading achievements:", err);
-      error = get(_)("errors.failedToLoadAchievements");
+      error = "Failed to load achievements. Please try again later.";
     } finally {
       isAchievementsLoading = false;
     }
@@ -1111,93 +1112,99 @@
     return new Intl.NumberFormat().format(num);
   }
 
-  // Define driverObj factory function for the guided tour
-  function createDriverObj() {
-    return driver({
-      showProgress: true,
-      popoverClass: "quester-driver-theme",
-      steps: [
-        {
-          element: "#progress-header",
-          popover: {
-            title: t("tours.progress.header.title"),
-            description: t("tours.progress.header.description"),
-            side: "bottom",
-            align: "start",
-          },
+  // Define driverObj for the guided tour
+  const driverObj = driver({
+    showProgress: true,
+    popoverClass: "quester-driver-theme",
+    steps: [
+      {
+        element: "#progress-header",
+        popover: {
+          title: "Track Your Research Journey",
+          description:
+            "This page visualizes your project's activity, milestones, and achievements, helping you understand your progress over time.",
+          side: "bottom",
+          align: "start",
         },
-        {
-          element: "#research-level-card",
-          popover: {
-            title: t("tours.progress.researchLevel.title"),
-            description: t("tours.progress.researchLevel.description"),
-            side: "bottom",
-            align: "center",
-          },
+      },
+      {
+        element: "#research-level-card",
+        popover: {
+          title: "Your Research Level",
+          description:
+            "Gain Experience Points (XP) by completing research activities and achievements. Level up to unlock new titles reflecting your mastery!",
+          side: "bottom",
+          align: "center",
         },
-        {
-          element: "#view-levels-button",
-          popover: {
-            title: t("tours.progress.viewLevels.title"),
-            description: t("tours.progress.viewLevels.description"),
-            side: "left",
-            align: "start",
-          },
+      },
+      {
+        element: "#view-levels-button",
+        popover: {
+          title: "Explore All Levels",
+          description:
+            "Click here to see all the available research levels, their XP requirements, and descriptions.",
+          side: "left",
+          align: "start",
         },
-        {
-          element: "#progress-tabs",
-          popover: {
-            title: t("tours.progress.tabs.title"),
-            description: t("tours.progress.tabs.description"),
-            side: "bottom",
-            align: "center",
-          },
+      },
+      {
+        element: "#progress-tabs",
+        popover: {
+          title: "Navigate Progress Views",
+          description:
+            "Switch between the 'Project Timeline' view, showing chronological events, and the 'Achievements' view, tracking specific milestones.",
+          side: "bottom",
+          align: "center",
         },
-        {
-          element: "#timeline-content",
-          popover: {
-            title: t("tours.progress.timeline.title"),
-            description: t("tours.progress.timeline.description"),
-            side: "top",
-            align: "start",
-          },
-          onHighlighted: () => {
-            if (activeTab !== "timeline") activeTab = "timeline";
-          },
+      },
+      {
+        element: "#timeline-content",
+        popover: {
+          title: "Project Timeline",
+          description:
+            "See key project events like creation, status changes, literature additions, and note creation laid out chronologically. Click items for more details.",
+          side: "top",
+          align: "start",
         },
-        {
-          element: "#progress-tabs",
-          popover: {
-            title: t("tours.progress.switchToAchievements.title"),
-            description: t("tours.progress.switchToAchievements.description"),
-            side: "bottom",
-            align: "center",
-          },
-          onHighlighted: () => {
-            if (activeTab !== "achievements") activeTab = "achievements";
-          },
+        onHighlighted: () => {
+          if (activeTab !== "timeline") activeTab = "timeline";
         },
-        {
-          element: "#achievements-content",
-          popover: {
-            title: t("tours.progress.achievements.title"),
-            description: t("tours.progress.achievements.description"),
-            side: "top",
-            align: "start",
-          },
+      },
+      {
+        element: "#progress-tabs",
+        popover: {
+          title: "Switch to Achievements",
+          description:
+            "Now let's look at the specific achievements you can unlock.",
+          side: "bottom",
+          align: "center",
         },
-        {
-          element: "#progress-header",
-          popover: {
-            title: t("tours.progress.monitor.title"),
-            description: t("tours.progress.monitor.description"),
-            side: "bottom",
-            align: "start",
-          },
+        onHighlighted: () => {
+          if (activeTab !== "achievements") activeTab = "achievements";
         },
-      ],
-    });
-  }
+      },
+      {
+        element: "#achievements-content",
+        popover: {
+          title: "Achievements",
+          description:
+            "Unlock achievements by performing specific actions like adding literature, writing notes, or using features consistently. Completed achievements award XP towards your Research Level.",
+          side: "top",
+          align: "start",
+        },
+      },
+      {
+        element: "#progress-header",
+        popover: {
+          title: "Monitor Your Momentum",
+          description:
+            "Check this page regularly to visualize your research activity, celebrate milestones, and stay motivated on your journey!",
+          side: "bottom",
+          align: "start",
+        },
+      },
+    ],
+  });
 
   // Calculate total XP from achievements
   let totalXP = $derived(
@@ -1317,10 +1324,7 @@
 
 <div class="container mx-auto py-8 space-y-8" id="progress-header">
   <!-- Research Level Card -->
-  <Card
-    class="research-level-card border-0 shadow-xl shadow-black/10 dark:shadow-black/20"
-    id="research-level-card"
-  >
+  <Card class="research-level-card" id="research-level-card">
     <CardHeader class="pb-4 relative overflow-hidden">
       <div
         class="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5"
@@ -1332,7 +1336,7 @@
           >
             <GraduationCap class="h-6 w-6 text-foreground" />
           </div>
-          <span class="text-xl font-semibold">{$_("progress.researchLevel")}</span>
+          <span class="text-xl font-semibold">Research Level</span>
         </CardTitle>
         <Button
           variant="outline"
@@ -1342,7 +1346,7 @@
           class="view-all-button"
         >
           <Info class="h-4 w-4 mr-2" />
-          {$_("progress.viewAll")}
+          View All
         </Button>
       </div>
     </CardHeader>
@@ -1363,10 +1367,10 @@
             class="level-name bg-gradient-to-r {currentLevel.current
               .color} bg-clip-text text-transparent"
           >
-            {$_(currentLevel.current.nameKey)}
+            {currentLevel.current.name}
           </h3>
           <p class="level-description">
-            {$_(currentLevel.current.descriptionKey)}
+            {currentLevel.current.description}
           </p>
           <div class="xp-info">
             <span class="current-xp">{formatNumber(totalXP)}</span>
@@ -1384,7 +1388,7 @@
         <div class="progress-section">
           <div class="progress-header">
             <span class="progress-label"
-              >{$_("progress.progressTo", { values: { level: $_(currentLevel.next.nameKey) } })}</span
+              >Progress to {currentLevel.next.name}</span
             >
             <div class="progress-percentage">
               <span class="percentage-value"
@@ -1401,7 +1405,8 @@
           </div>
           <div class="progress-footer">
             <span class="points-needed">
-              {$_("progress.pointsUntilNext", { values: { points: formatNumber(currentLevel.next.minXP - totalXP) } })}
+              {formatNumber(currentLevel.next.minXP - totalXP)} points until next
+              level
             </span>
           </div>
         </div>
@@ -1415,10 +1420,10 @@
               class="achievement-title bg-gradient-to-r {currentLevel.current
                 .color} bg-clip-text text-transparent"
             >
-              {$_("progress.maximumLevelAchieved")}
+              Maximum Level Achieved!
             </h4>
             <p class="achievement-description">
-              {$_("progress.pinnacleOfMastery")}
+              You've reached the pinnacle of research mastery
             </p>
           </div>
         </div>
@@ -1438,18 +1443,18 @@
     >
       <Tabs.Trigger value="timeline" class="tab-button">
         <Calendar class="h-4 w-4 mr-2" />
-        {$_("progress.projectTimeline")}
+        Project Timeline
       </Tabs.Trigger>
       <Tabs.Trigger value="achievements" class="tab-button">
         <Trophy class="h-4 w-4 mr-2" />
-        {$_("progress.achievements")}
+        Achievements
       </Tabs.Trigger>
     </Tabs.List>
 
     <Tabs.Content value="timeline" class="space-y-4" id="timeline-content">
-      <Card class="border-2">
+      <Card>
         <CardHeader>
-          <CardTitle>{$_("progress.projectTimeline")}</CardTitle>
+          <CardTitle>Project Timeline</CardTitle>
         </CardHeader>
         <CardContent>
           <TimelineControls
@@ -1495,9 +1500,9 @@
           </CardContent>
         </Card>
       {:else}
-        {#each Object.entries(achievementGroups).sort( ([, a], [, b]) => a.name.localeCompare(b.name) ) as [category, { name, icon: Icon, achievements, color }]}
+        {#each Object.entries(achievementGroups).sort( ([, a], [, b]) => a.name.localeCompare(b.name) ) as [category, { name, icon: Icon, achievements, color, hoverShadowClass }]}
           {#if achievements.length > 0}
-            <div class="achievement-group" in:fade={{ duration: 300 }}>
+            <Card class="achievement-group p-4">
               <div class="flex items-center gap-3 mb-4">
                 <div
                   class={`h-8 w-8 rounded-lg bg-gradient-to-br ${color} text-white flex items-center justify-center shadow-lg`}
@@ -1507,7 +1512,7 @@
                 <h2 class="text-xl font-semibold">{name}</h2>
                 <div class="text-sm text-muted-foreground ml-auto">
                   {achievements.filter((a) => a.completed)
-                    .length}/{achievements.length} {$_("progress.complete")}
+                    .length}/{achievements.length} Complete
                 </div>
               </div>
 
@@ -1515,7 +1520,7 @@
                 {#each achievements as achievement (achievement.id)}
                   <div in:fade={{ duration: 300 }}>
                     <Card
-                      class={`achievement-card ${achievement.completed ? "completed" : ""} hover:shadow-${color.split("-")[1]}/20`}
+                      class={`achievement-card ${achievement.completed ? "completed" : ""} ${hoverShadowClass}`}
                     >
                       {#if achievement.completed}
                         <div
@@ -1546,7 +1551,7 @@
                               class={`h-2 achievement-progress ${achievement.completed ? "completed" : color}`}
                             />
                             <div class="flex justify-between text-sm">
-                              <span class="text-muted-foreground">{$_('progressPage.progress')}</span
+                              <span class="text-muted-foreground">Progress</span
                               >
                               <span class="font-medium">
                                 {achievement.progress.current}/{achievement
@@ -1568,7 +1573,7 @@
                   </div>
                 {/each}
               </div>
-            </div>
+            </Card>
           {/if}
         {/each}
       {/if}
@@ -1580,14 +1585,12 @@
   <Dialog.Content class="sm:max-w-[600px] max-h-[85vh] overflow-hidden">
     {#if selectedEvent}
       {@const eventStyling = getEventStyling(selectedEvent)}
+      {@const EventIcon = eventStyling.icon}
       <!-- Enhanced Header -->
       <div class="event-modal-header">
         <div class="header-content">
           <div class="event-icon-container {eventStyling.colors.icon}">
-            <svelte:component
-              this={eventStyling.icon}
-              class="w-5 h-5 text-white"
-            />
+            <EventIcon class="w-5 h-5 text-white" />
           </div>
           <div class="header-text">
             <div class="title-and-badges">
@@ -1596,7 +1599,7 @@
               >
               {#if selectedEvent.isCustom}
                 <div class="custom-badges">
-                  <span class="custom-badge">{$_('progressPage.custom')}</span>
+                  <span class="custom-badge">Custom</span>
                   {#if selectedEvent.customEventType}
                     <span class="custom-type-badge"
                       >{selectedEvent.customEventType.charAt(0).toUpperCase() +
@@ -1617,14 +1620,14 @@
           {#if selectedEvent.isCustom && selectedEvent.data}
             <div class="custom-event-details">
               <h4 class="custom-event-section-title">
-                <svelte:component this={eventStyling.icon} class="w-4 h-4" />
-                {$_("progress.eventDetailsTitle")}
+                <EventIcon class="w-4 h-4" />
+                Event Details
               </h4>
 
               <!-- Event metadata -->
               <div class="event-meta-grid">
                 <div class="meta-item">
-                  <span class="meta-label">{$_("progress.type")}</span>
+                  <span class="meta-label">Type</span>
                   <span class="meta-value"
                     >{selectedEvent.customEventType
                       ? selectedEvent.customEventType.charAt(0).toUpperCase() +
@@ -1633,7 +1636,7 @@
                   >
                 </div>
                 <div class="meta-item">
-                  <span class="meta-label">{$_("progress.created")}</span>
+                  <span class="meta-label">Created</span>
                   <span class="meta-value"
                     >{new Date(
                       selectedEvent.data.createdAt
@@ -1642,7 +1645,7 @@
                 </div>
                 {#if selectedEvent.data.creator}
                   <div class="meta-item">
-                    <span class="meta-label">{$_("progress.createdBy")}</span>
+                    <span class="meta-label">Created by</span>
                     <span class="meta-value"
                       >{selectedEvent.data.creator.name ||
                         selectedEvent.data.creator.email}</span
@@ -1650,7 +1653,7 @@
                   </div>
                 {/if}
                 <div class="meta-item">
-                  <span class="meta-label">{$_("progress.eventTime")}</span>
+                  <span class="meta-label">Event Time</span>
                   <span class="meta-value"
                     >{formatTime(selectedEvent.timestamp)}</span
                   >
@@ -1660,7 +1663,7 @@
               <!-- Description -->
               {#if selectedEvent.description}
                 <div class="custom-detail-section">
-                  <h5 class="detail-section-title">{$_("progress.description")}</h5>
+                  <h5 class="detail-section-title">Description</h5>
                   <p class="detail-text">{selectedEvent.description}</p>
                 </div>
               {/if}
@@ -1668,7 +1671,7 @@
               <!-- Details -->
               {#if selectedEvent.details && selectedEvent.details.length > 0}
                 <div class="custom-detail-section">
-                  <h5 class="detail-section-title">{$_("progress.additionalDetails")}</h5>
+                  <h5 class="detail-section-title">Additional Details</h5>
                   <ul class="detail-list">
                     {#each selectedEvent.details as detail}
                       <li class="detail-list-item">{detail}</li>
@@ -1680,7 +1683,7 @@
               <!-- Tags -->
               {#if selectedEvent.tags && selectedEvent.tags.length > 0}
                 <div class="custom-detail-section">
-                  <h5 class="detail-section-title">{$_("progress.tags")}</h5>
+                  <h5 class="detail-section-title">Tags</h5>
                   <div class="tag-container">
                     {#each selectedEvent.tags as tag}
                       <span class="custom-event-tag">#{tag}</span>
@@ -1694,7 +1697,7 @@
             <div class="literature-items-container">
               <h4 class="literature-section-title">
                 <Book class="w-4 h-4" />
-                {$_("progress.literatureAdded", { values: { count: selectedEvent.data.length } })}
+                Literature Added ({selectedEvent.data.length} items)
               </h4>
               <div class="literature-items-grid">
                 {#each selectedEvent.data as item, index}
@@ -1704,7 +1707,7 @@
                   >
                     <div class="literature-item-header">
                       <h5 class="literature-title">
-                        {item.title || item.name || t("common.untitled")}
+                        {item.title || item.name || "Untitled"}
                       </h5>
                       {#if item.type}
                         <span class="literature-type-badge">{item.type}</span>
@@ -1712,7 +1715,7 @@
                     </div>
                     {#if item.authors}
                       <div class="literature-authors">
-                        <span class="authors-label">{$_("progress.authors")}:</span>
+                        <span class="authors-label">Authors:</span>
                         <span class="authors-text">
                           {Array.isArray(item.authors)
                             ? item.authors.join(", ")
@@ -1722,13 +1725,13 @@
                     {/if}
                     {#if item.publishYear}
                       <div class="literature-year">
-                        <span class="year-label">{$_("progress.year")}:</span>
+                        <span class="year-label">Year:</span>
                         <span class="year-text">{item.publishYear}</span>
                       </div>
                     {/if}
                     {#if item.publisherName}
                       <div class="literature-publisher">
-                        <span class="publisher-label">{$_("progress.publisher")}:</span>
+                        <span class="publisher-label">Publisher:</span>
                         <span class="publisher-text">{item.publisherName}</span>
                       </div>
                     {/if}
@@ -1823,7 +1826,7 @@
           <div class="no-details">
             <FileText class="w-8 h-8 text-muted-foreground/60" />
             <p class="text-sm text-muted-foreground">
-              {$_("progress.noAdditionalDetails")}
+              No additional details available
             </p>
           </div>
         {/if}
@@ -1833,12 +1836,12 @@
           <div class="data-section">
             <h4 class="data-section-title">
               <Info class="w-4 h-4" />
-              {$_("progress.additionalInfo")}
+              Additional Information
             </h4>
             <div class="data-grid">
               {#if selectedEvent.data.nodeCount !== undefined}
                 <div class="data-item">
-                  <span class="data-label">{$_("progress.nodes")}</span>
+                  <span class="data-label">Nodes</span>
                   <span class="data-value numeric"
                     >{selectedEvent.data.nodeCount}</span
                   >
@@ -1846,7 +1849,7 @@
               {/if}
               {#if selectedEvent.data.edgeCount !== undefined}
                 <div class="data-item">
-                  <span class="data-label">{$_("progress.edges")}</span>
+                  <span class="data-label">Edges</span>
                   <span class="data-value numeric"
                     >{selectedEvent.data.edgeCount}</span
                   >
@@ -1854,7 +1857,7 @@
               {/if}
               {#if selectedEvent.data.updatedFields && selectedEvent.data.updatedFields.length > 0}
                 <div class="data-item span-full">
-                  <span class="data-label">{$_("progress.updatedFields")}</span>
+                  <span class="data-label">Updated Fields</span>
                   <div class="tag-container">
                     {#each selectedEvent.data.updatedFields as field}
                       <span class="field-tag">{capitalizeTag(field)}</span>
@@ -1874,9 +1877,9 @@
 <Dialog.Root bind:open={showLevelsDialog}>
   <Dialog.Content class="sm:max-w-[800px]">
     <div class="flex flex-col space-y-1.5 p-4">
-      <Dialog.Title class="text-2xl">{$_("progress.researchLevels")}</Dialog.Title>
+      <Dialog.Title class="text-2xl">Research Levels</Dialog.Title>
       <Dialog.Description class="text-muted-foreground">
-        {$_("progress.yourJourney")}
+        Your journey through research mastery
       </Dialog.Description>
     </div>
     <div class="px-4 pb-4 pt-3 max-h-[70vh] overflow-y-auto">
@@ -1918,7 +1921,7 @@
                     <span
                       class={`font-medium bg-gradient-to-r ${level.color} bg-clip-text text-transparent`}
                     >
-                      {$_("progress.andBeyond")}
+                      and beyond
                     </span>
                   {/if}
                 </div>
@@ -1930,13 +1933,13 @@
     </div>
     <div class="flex justify-end p-4 pt-0">
       <Button variant="outline" onclick={() => (showLevelsDialog = false)}
-        >{$_("progress.close")}</Button
+        >Close</Button
       >
     </div>
   </Dialog.Content>
 </Dialog.Root>
 
-<style>
+<style lang="postcss">
   .achievement-group {
     @apply bg-card/50 backdrop-blur-sm rounded-lg p-6 border-2;
     border-image: linear-gradient(
@@ -1977,7 +1980,12 @@
   }
 
   .tab-button {
-    @apply inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-muted-foreground hover:text-foreground data-[state=active]:text-foreground data-[state=active]:font-semibold;
+    @apply inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-muted-foreground hover:text-foreground;
+  }
+
+  /* @svelte-ignore css-unused-selector */
+  :global(.tab-button[data-state="active"]) {
+    @apply text-foreground font-semibold;
   }
 
   :global([role="dialog"]) {
@@ -2332,7 +2340,7 @@
 
   /* No Details State */
   .no-details {
-    @apply flex flex-col items-center justify-center py-8 text-center space-y-3;
+    @apply flex flex-col items-center justify-center py-8 text-center gap-3;
   }
 
   /* Data Section */
@@ -2399,7 +2407,7 @@
     }
 
     .header-text {
-      @apply space-y-2;
+      @apply flex flex-col gap-2;
     }
   }
 

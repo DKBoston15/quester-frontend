@@ -132,6 +132,20 @@
     isSearchActive = searchInput.trim().length > 0;
   });
 
+  // Update search results - MUST run BEFORE filtering effect
+  $effect(() => {
+    if (searchInput.trim()) {
+      localSearchResults = performLocalSearch(
+        notesStore.notes,
+        searchInput.trim()
+      );
+      notesStore.setSearchQuery(searchInput.trim());
+    } else {
+      localSearchResults = [];
+      notesStore.setSearchQuery("");
+    }
+  });
+
   // Update filtered notes
   $effect(() => {
     // Get base filtered notes
@@ -182,23 +196,28 @@
     }
   });
 
-  // Update search results
-  $effect(() => {
-    if (searchInput.trim()) {
-      localSearchResults = performLocalSearch(
-        notesStore.notes,
-        searchInput.trim()
-      );
-      notesStore.setSearchQuery(searchInput.trim());
-    } else {
-      localSearchResults = [];
-      notesStore.setSearchQuery("");
-    }
-  });
-
   // Update grouped notes
   $effect(() => {
     groupedNotes = groupNotesByDate(filteredNotes);
+  });
+
+  // Ensure the active note is visible in the list (scroll into view)
+  $effect(() => {
+    const activeId = notesStore.activeNoteId;
+    if (!activeId) return;
+
+    // Don't auto-clear search - let the user control search behavior
+    // Just scroll to active note if it's visible
+    const activeVisible = filteredNotes.some((n) => n.id === activeId);
+    if (activeVisible) {
+      // Try to scroll the active note into view once it exists in DOM
+      queueMicrotask(() => {
+        try {
+          const el = document.querySelector<HTMLElement>(`[data-note-id="${CSS.escape(activeId)}"]`);
+          el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        } catch {}
+      });
+    }
   });
 
   // Group notes by date
@@ -610,7 +629,7 @@
             <div class="space-y-2">
               {#each notes as note (note.id)}
                 <div
-                  class="w-full text-left rounded-lg border hover:bg-accent transition-colors cursor-pointer"
+                  class="w-full text-left rounded-lg border hover:bg-accent transition-colors cursor-pointer overflow-hidden"
                   class:bg-accent={note.id === notesStore.activeNoteId}
                   transition:fade={{ duration: 150 }}
                   onclick={() => onNoteSelect(note, "left")}
@@ -622,15 +641,15 @@
                 >
                   <div class="p-3">
                     <div class="flex items-start justify-between">
-                      <div class="space-y-1 flex-1 mr-2">
-                        <h4 class="font-medium leading-none">
+                      <div class="space-y-1 flex-1 mr-2 min-w-0">
+                        <h4 class="font-medium leading-none break-words break-anywhere">
                           {#if isSearchActive && "highlightedName" in note}
                             {@html note.highlightedName}
                           {:else}
                             {note.name || $_('noteList.untitledNote')}
                           {/if}
                         </h4>
-                        <p class="text-sm text-muted-foreground line-clamp-2">
+                        <p class="text-sm text-muted-foreground line-clamp-2 break-words break-anywhere">
                           {#if isSearchActive && "contentSnippet" in note}
                             {@html note.contentSnippet}
                           {:else}
@@ -778,5 +797,10 @@
     color: black;
     padding: 0 2px;
     border-radius: 2px;
+  }
+
+  /* Ensure extremely long, unbroken strings or &nbsp; sequences wrap within the card */
+  .break-anywhere {
+    overflow-wrap: anywhere;
   }
 </style>

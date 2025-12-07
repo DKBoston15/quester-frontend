@@ -3275,5 +3275,34 @@
   },
   "documentUploadPanel": {
     "uploadFailed": "Échec du téléchargement"
+  },
+  "contextSelector": {
+    "contextFocus": "Focus du contexte",
+    "contextFocusDescription": "Sélectionnez des éléments spécifiques pour ancrer le contexte de l'assistant. L'assistant conservera les métadonnées légères du projet.",
+    "clear": "Effacer",
+    "noContextSelected": "Aucun élément de contexte sélectionné. L'assistant considérera le contenu plus large du projet.",
+    "removeFromContext": "Supprimer {title} du contexte",
+    "searchAllProjects": "Rechercher des éléments dans tous les projets accessibles",
+    "searchThisProject": "Rechercher dans ce projet des notes, de la littérature, des résultats...",
+    "chooseProject": "Choisissez un projet pour cibler les sélections de contexte.",
+    "searching": "Recherche en cours…",
+    "noMatchingItems": "Aucun élément correspondant pour l'instant. Essayez un autre terme de recherche.",
+    "selected": "Sélectionné",
+    "literature": "Littérature",
+    "note": "Note",
+    "outcome": "Résultat",
+    "model": "Modèle",
+    "keywordAnalysis": "Analyse de mots-clés",
+    "document": "Document",
+    "documentChunk": "Fragment de document",
+    "project": "Projet",
+    "selectProjectError": "Sélectionnez un projet pour cibler le contexte de l'assistant.",
+    "failedToLoadContext": "Échec du chargement des suggestions de contexte"
+  },
+  "graphContextMenu": {
+    "node": "Nœud",
+    "navigateToLiterature": "Naviguer vers la littérature",
+    "filterConnectedNodes": "Filtrer les nœuds connectés",
+    "resetFilter": "Réinitialiser le filtre"
   }
 }

@@ -4,101 +4,179 @@
   import { ModeToggle } from "$lib/components/ui/darkmode-toggle";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { _ } from "svelte-i18n";
+
+  function handleGoogleSignIn() {
+    onLogin();
+  }
+
+  function handleEmailSignIn() {
+    onLogin();
+  }
 </script>
 
 <div
-  class="relative min-h-screen bg-gray-50 dark:bg-dark-background transition-colors duration-300"
+  class="relative min-h-screen overflow-hidden bg-background text-foreground transition-colors animate-fade-in dark:bg-bg dark:text-textPrimary"
 >
-  <!-- Background pattern -->
   <div
-    class="absolute inset-0"
-    style="background-image: radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.05) 1px, transparent 0) dark:radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.03) 1px, transparent 0); background-size: 20px 20px;"
+    aria-hidden="true"
+    class="pointer-events-none absolute inset-0 hidden opacity-[0.12] dark:block"
+    style="background: radial-gradient(circle at center, rgba(76, 140, 245, 0.45) 0%, transparent 55%);"
   ></div>
 
-  <!-- Dark mode toggle -->
-  <div class="absolute top-8 right-8">
+  <header
+    class="relative z-10 flex items-center justify-between px-6 py-6 sm:px-10 lg:py-8"
+  >
+    <div class="flex items-center gap-3 opacity-90">
+      <div
+        class="flex h-10 w-10 items-center justify-center rounded-lg bg-card shadow-sm dark:bg-surface"
+      >
+        <img src={logo} alt="Quester logo" class="h-6 w-6" />
+      </div>
+      <div>
+        <p class="text-sm font-semibold text-foreground dark:text-textPrimary">
+          Quester
+        </p>
+      </div>
+    </div>
+
     <Tooltip.Provider>
       <Tooltip.Root>
         <Tooltip.Trigger>
           <div
-            class="border-2 dark:border-dark-border bg-card dark:bg-dark-card text-card-foreground p-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] transition-all duration-300 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,1)]"
+            class="rounded-full border border-border bg-card/80 p-1 shadow-sm transition hover:border-brand/70 dark:border-stroke dark:bg-surface/80 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08)]"
           >
-            <ModeToggle />
+            <ModeToggle class="h-9 w-9" />
           </div>
         </Tooltip.Trigger>
-        <Tooltip.Content
-          class="max-w-[20rem] dark:bg-dark-card dark:text-dark-text-primary"
-        >
-          <p>{$_('signIn.changeTheme')}</p>
+        <Tooltip.Content class="text-xs">
+          <p>Toggle theme</p>
         </Tooltip.Content>
       </Tooltip.Root>
     </Tooltip.Provider>
-  </div>
+  </header>
 
-  <!-- Decorative elements -->
-  <div
-    class="absolute top-20 right-20 w-4 h-4 border-2 dark:border-dark-border bg-yellow-400 dark:bg-dark-accent-yellow rotate-12"
-  ></div>
-  <div
-    class="absolute bottom-20 left-20 w-4 h-4 border-2 dark:border-dark-border bg-blue-400 dark:bg-dark-accent-blue -rotate-12"
-  ></div>
-
-  <div class="relative mx-auto max-w-7xl px-6">
-    <!-- Top bar with enhanced animation -->
-    <div class="pt-8 flex gap-4 items-center">
-      <div
-        class="border-2 dark:border-dark-border bg-card dark:bg-dark-card p-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] transition-all duration-300 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,1)]"
-      >
-        <img
-          class="w-8 hover:rotate-12 transition-transform dark:opacity-90"
-          alt="Quester Logo"
-          src={logo}
-        />
-      </div>
-      <a
-        href="/"
-        class="text-2xl font-bold hover:-translate-y-0.5 transition-transform relative group text-black dark:text-dark-text-primary"
-      >
-        Quester
-        <div
-          class="absolute bottom-0 left-0 w-full h-2 bg-yellow-200 dark:bg-dark-accent-yellow/20 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"
-        ></div>
-      </a>
-    </div>
-
-    <!-- Sign in content -->
-    <div class="flex min-h-[calc(100vh-160px)] items-center justify-center">
-      <div class="w-full max-w-sm">
-        <div
-          class="border-2 dark:border-dark-border bg-card dark:bg-dark-card p-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] transition-all duration-300 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,1)]"
+  <main
+    class="relative z-10 flex min-h-[calc(100vh-160px)] items-center px-6 pb-16 sm:px-10 lg:pb-24"
+  >
+    <div
+      class="mx-auto flex w-full max-w-[520px] flex-col items-center gap-10 text-center lg:max-w-[560px]"
+    >
+      <div class="space-y-4">
+        <h1
+          class="text-[38px] font-extrabold leading-[46px] tracking-[-0.02em] text-foreground dark:text-textPrimary sm:text-[40px] sm:leading-[48px]"
         >
-          <div class="mb-8 relative">
-            <h2
-              class=" text-4xl font-bold text-black dark:text-dark-text-primary mb-3"
+          Built for Academic Research
+        </h1>
+        <p
+          class="text-base font-medium leading-[24px] text-muted-foreground dark:text-textSecondary"
+        >
+          Manage literature, notes, analysis, and outcomes in one place.
+        </p>
+      </div>
+
+      <section
+        class="w-full rounded-[16px] border border-border bg-card p-6 text-left shadow-md transition duration-150 backdrop-blur-sm dark:border-stroke dark:bg-surface/95 dark:shadow-[0_10px_32px_rgba(0,0,0,0.4)] lg:p-7"
+      >
+        <div class="space-y-2 text-center">
+          <h2
+            class="text-[20px] font-bold leading-[28px] text-foreground dark:text-textPrimary"
+          >
+            Sign in to Quester
+          </h2>
+          <p
+            class="text-[13px] leading-[20px] text-muted-foreground dark:text-textSecondary"
+          >
+            Choose a sign-in method below to continue.
+          </p>
+        </div>
+
+        <div class="mt-6 space-y-5">
+          <button
+            id="btn-google"
+            class="flex h-11 w-full items-center justify-center gap-3 rounded-[12px] bg-white text-[15px] font-bold leading-[24px] text-[#0B0E13] shadow-sm transition duration-150 hover:-translate-y-[1px] hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-card dark:bg-[#F2F5F9] dark:hover:shadow-[0_14px_44px_rgba(0,0,0,0.25)] dark:focus-visible:ring-offset-surface"
+            type="button"
+            on:click={handleGoogleSignIn}
+          >
+            <img
+              src="/icons/google.svg"
+              alt=""
+              aria-hidden="true"
+              class="h-5 w-5"
+            />
+            Continue with Google
+          </button>
+
+          <div
+            class="relative text-center text-[13px] leading-[20px] text-muted-foreground dark:text-textSecondary"
+            role="separator"
+            aria-label="or"
+          >
+            <div class="h-px bg-border dark:bg-stroke"></div>
+            <span
+              class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-2 text-[12px] text-muted-foreground dark:bg-surface dark:text-textSecondary"
             >
-              {$_('signIn.welcome')}
-            </h2>
-            <p class="text-lg text-blue-800 dark:text-dark-text-blue">
-              {$_('signIn.subtitle')}
-            </p>
-            <div
-              class="mt-4 h-1 w-12 bg-yellow-400 dark:bg-dark-accent-yellow"
-            ></div>
+              or
+            </span>
           </div>
 
-          <div class="relative group">
-            <div
-              class="absolute -inset-1 rounded-lg bg-gradient-to-r from-yellow-400 via-blue-500 to-yellow-400 dark:from-dark-accent-yellow dark:via-dark-accent-blue dark:to-dark-accent-yellow blur-sm opacity-70 transition-all animate-gradient-x"
-            ></div>
-            <button
-              onclick={onLogin}
-              class="relative w-full border-2 dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)]"
+          <button
+            id="btn-email-password"
+            class="flex h-11 w-full items-center justify-center gap-2 rounded-[12px] border border-border bg-muted/60 text-[15px] font-bold leading-[24px] text-foreground transition duration-150 hover:-translate-y-[1px] hover:bg-muted hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-card dark:border-stroke dark:bg-surfaceAlt dark:text-textPrimary dark:hover:bg-[#1A2130] dark:hover:shadow-[0_14px_44px_rgba(0,0,0,0.35)] dark:focus-visible:ring-offset-surface"
+            type="button"
+            on:click={handleEmailSignIn}
+          >
+            Use email &amp; password
+          </button>
+        </div>
+
+        <div
+          class="mt-6 space-y-3 text-center text-[13px] leading-[20px] text-muted-foreground dark:text-textSecondary"
+        >
+          <p>
+            Having trouble?
+            <a
+              class="text-brand transition hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-card dark:focus-visible:ring-offset-surface"
+              href="mailto:support@quester.ai"
             >
-              {$_('signIn.openWorkspace')}
-            </button>
-          </div>
+              Contact support
+            </a>
+          </p>
+          <p>
+            <a
+              class="transition hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-card dark:focus-visible:ring-offset-surface"
+              href="https://www.quester.tech/privacy_policy">Privacy Policy</a
+            >
+          </p>
+          <p
+            class="text-[12px] leading-[18px] text-muted-foreground/75 dark:text-textSecondary/75"
+          >
+            By continuing you agree to our Privacy Policy.
+          </p>
+        </div>
+      </section>
+
+      <div class="w-full">
+        <div
+          class="rounded-lg bg-muted/70 px-4 py-3 text-[13px] leading-[20px] text-muted-foreground dark:bg-gradient-to-r dark:from-[#111827] dark:to-[#0F1724] dark:text-textSecondary"
+        >
+          Trusted by researchers at
+          <span class="font-semibold text-foreground dark:text-textPrimary/85"
+            >Harvard</span
+          >,
+          <span class="font-semibold text-foreground dark:text-textPrimary/85"
+            >Johns Hopkins</span
+          >,
+          <span class="font-semibold text-foreground dark:text-textPrimary/85"
+            >UCLA</span
+          >,
+          <span class="font-semibold text-foreground dark:text-textPrimary/85"
+            >NYU</span
+          >,
+          <span class="font-semibold text-foreground dark:text-textPrimary/85"
+            >USC</span
+          >.
         </div>
       </div>
     </div>
-  </div>
+  </main>
 </div>

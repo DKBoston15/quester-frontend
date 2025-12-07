@@ -3275,5 +3275,34 @@
   },
   "documentUploadPanel": {
     "uploadFailed": "Upload fehlgeschlagen"
+  },
+  "contextSelector": {
+    "contextFocus": "Kontextfokus",
+    "contextFocusDescription": "Wählen Sie bestimmte Elemente aus, um den Kontext des Assistenten zu verankern. Der Assistent behält weiterhin leichte Projektmetadaten bei.",
+    "clear": "Löschen",
+    "noContextSelected": "Keine Kontextelemente ausgewählt. Der Assistent berücksichtigt den breiteren Projektinhalt.",
+    "removeFromContext": "{title} aus dem Kontext entfernen",
+    "searchAllProjects": "Elemente in allen zugänglichen Projekten suchen",
+    "searchThisProject": "In diesem Projekt nach Notizen, Literatur, Ergebnissen suchen...",
+    "chooseProject": "Wählen Sie ein Projekt, um Kontextauswahlen zu zielen.",
+    "searching": "Suchen…",
+    "noMatchingItems": "Noch keine passenden Elemente. Versuchen Sie einen anderen Suchbegriff.",
+    "selected": "Ausgewählt",
+    "literature": "Literatur",
+    "note": "Notiz",
+    "outcome": "Ergebnis",
+    "model": "Modell",
+    "keywordAnalysis": "Schlüsselwortanalyse",
+    "document": "Dokument",
+    "documentChunk": "Dokumentfragment",
+    "project": "Projekt",
+    "selectProjectError": "Wählen Sie ein Projekt, um den Assistentenkontext zu zielen.",
+    "failedToLoadContext": "Kontextvorschläge konnten nicht geladen werden"
+  },
+  "graphContextMenu": {
+    "node": "Knoten",
+    "navigateToLiterature": "Zur Literatur navigieren",
+    "filterConnectedNodes": "Verbundene Knoten filtern",
+    "resetFilter": "Filter zurücksetzen"
   }
 }

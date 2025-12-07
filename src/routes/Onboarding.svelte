@@ -58,75 +58,77 @@
   // Define the Owner Role ID (consider fetching this or using role name if more stable)
   const OWNER_ROLE_ID = "e820de49-d7bd-42d7-8b05-49279cee686f";
 
-  onMount(async () => {
-    try {
-      // Check if we have a step in the navigation state
-      const state = history.state;
-      if (state?.step) {
-        currentStep = state.step;
+  onMount(() => {
+    void (async () => {
+      try {
+        // Check if we have a step in the navigation state
+        const state = history.state;
+        if (state?.step) {
+          currentStep = state.step;
+        }
+
+        const data = await api.get(
+          `/organizations/by-user?userId=${auth.user?.id}`
+        );
+        organizations = data.data;
+
+        // Check if user has any organizations with active subscriptions
+        const hasActiveSubscription = organizations.some(
+          (org) => org.billingProviderId != null && org.subscription != null
+        );
+
+        if (organizations.length > 0) {
+          // If they have an org, set it as the current workspace
+          const lastOrg = organizations[organizations.length - 1];
+          createdOrganization = {
+            id: lastOrg.id,
+            name: lastOrg.name,
+            slug: lastOrg.slug,
+          };
+          orgName = lastOrg.name;
+          hasExistingWorkspace = true;
+
+          // Determine if the user is the owner of this organization
+          if (
+            lastOrg.organizationRoles &&
+            lastOrg.organizationRoles.length > 0 &&
+            // Access roleId directly if role object isn't guaranteed
+            // Or prefer checking the nested role.id if backend always preloads it
+            lastOrg.organizationRoles[0].role?.id === OWNER_ROLE_ID
+          ) {
+            isOrgOwner = true;
+          } else {
+            isOrgOwner = false;
+          }
+
+          // Set subscription type based on organization's subscription
+          if (lastOrg.subscriptionType === "organization") {
+            subscriptionType = "organization";
+          } else {
+            subscriptionType = "personal";
+          }
+
+          // --- Navigation Logic ---
+          if (!isOrgOwner && hasActiveSubscription && !state?.step) {
+            // If user is NOT the owner and the org has an active subscription, go straight to dashboard
+            navigate("/dashboard");
+          } else if (hasActiveSubscription && !state?.step) {
+            // If user IS the owner and has active subscription, also go to dashboard (assuming setup is complete)
+            // This handles owners returning after completing onboarding.
+            navigate("/dashboard");
+          } else if (!state?.step) {
+            // If they have an org but no subscription or billing provider,
+            // OR if they are a non-owner joining an org without subscription,
+            // go to subscription step (Step 2). Owners will proceed from here.
+            // Non-owners will be redirected after this step.
+            currentStep = 2;
+          }
+          // If state?.step exists, respect the navigation state (e.g., coming back from Pricing)
+        }
+      } catch (err) {
+        console.error("Failed to fetch organizations:", err);
       }
-
-      const data = await api.get(
-        `/organizations/by-user?userId=${auth.user?.id}`
-      );
-      organizations = data.data;
-
-      // Check if user has any organizations with active subscriptions
-      const hasActiveSubscription = organizations.some(
-        (org) => org.billingProviderId != null && org.subscription != null
-      );
-
-      if (organizations.length > 0) {
-        // If they have an org, set it as the current workspace
-        const lastOrg = organizations[organizations.length - 1];
-        createdOrganization = {
-          id: lastOrg.id,
-          name: lastOrg.name,
-          slug: lastOrg.slug,
-        };
-        orgName = lastOrg.name;
-        hasExistingWorkspace = true;
-
-        // Determine if the user is the owner of this organization
-        if (
-          lastOrg.organizationRoles &&
-          lastOrg.organizationRoles.length > 0 &&
-          // Access roleId directly if role object isn't guaranteed
-          // Or prefer checking the nested role.id if backend always preloads it
-          lastOrg.organizationRoles[0].role?.id === OWNER_ROLE_ID
-        ) {
-          isOrgOwner = true;
-        } else {
-          isOrgOwner = false;
-        }
-
-        // Set subscription type based on organization's subscription
-        if (lastOrg.subscriptionType === "organization") {
-          subscriptionType = "organization";
-        } else {
-          subscriptionType = "personal";
-        }
-
-        // --- Navigation Logic ---
-        if (!isOrgOwner && hasActiveSubscription && !state?.step) {
-          // If user is NOT the owner and the org has an active subscription, go straight to dashboard
-          navigate("/dashboard");
-        } else if (hasActiveSubscription && !state?.step) {
-          // If user IS the owner and has active subscription, also go to dashboard (assuming setup is complete)
-          // This handles owners returning after completing onboarding.
-          navigate("/dashboard");
-        } else if (!state?.step) {
-          // If they have an org but no subscription or billing provider,
-          // OR if they are a non-owner joining an org without subscription,
-          // go to subscription step (Step 2). Owners will proceed from here.
-          // Non-owners will be redirected after this step.
-          currentStep = 2;
-        }
-        // If state?.step exists, respect the navigation state (e.g., coming back from Pricing)
-      }
-    } catch (error) {
-      console.error("Failed to fetch organizations:", error);
-    }
+    })();
   });
 
   function handleSubscriptionChoice(type: "personal" | "organization") {

@@ -1,13 +1,14 @@
 import { format, formatDistance, formatRelative } from 'date-fns';
-import { enUS } from 'date-fns/locale';
+import { enUS, es, fr, de, zhCN } from 'date-fns/locale';
 import type { SupportedLocale } from './locales';
 
 // Map of supported locales to date-fns locale objects
 const dateFnsLocales: Record<SupportedLocale, typeof enUS> = {
   en: enUS,
-  // Add more locales here as needed:
-  // es: es,
-  // fr: fr,
+  es: es,
+  fr: fr,
+  de: de,
+  zh: zhCN,
 };
 
 /**

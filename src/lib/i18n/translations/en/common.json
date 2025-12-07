@@ -3275,5 +3275,34 @@
   },
   "documentUploadPanel": {
     "uploadFailed": "Upload failed"
+  },
+  "contextSelector": {
+    "contextFocus": "Context Focus",
+    "contextFocusDescription": "Select specific items to anchor the assistant's context. The assistant will still keep lightweight project metadata.",
+    "clear": "Clear",
+    "noContextSelected": "No context items selected. The assistant will consider the broader project content.",
+    "removeFromContext": "Remove {title} from context",
+    "searchAllProjects": "Search items across accessible projects",
+    "searchThisProject": "Search this project for notes, literature, outcomes...",
+    "chooseProject": "Choose a project to target context selections.",
+    "searching": "Searching…",
+    "noMatchingItems": "No matching items yet. Try another search term.",
+    "selected": "Selected",
+    "literature": "Literature",
+    "note": "Note",
+    "outcome": "Outcome",
+    "model": "Model",
+    "keywordAnalysis": "Keyword Analysis",
+    "document": "Document",
+    "documentChunk": "Document Chunk",
+    "project": "Project",
+    "selectProjectError": "Select a project to target the assistant context.",
+    "failedToLoadContext": "Failed to load context suggestions"
+  },
+  "graphContextMenu": {
+    "node": "Node",
+    "navigateToLiterature": "Navigate to Literature",
+    "filterConnectedNodes": "Filter Connected Nodes",
+    "resetFilter": "Reset Filter"
   }
 }

@@ -66,16 +66,18 @@
     return !hasViewedInteraction && !hasDismissedInteraction
   })
 
-  onMount(async () => {
-    // Load dismissed announcements first
-    loadDismissedAnnouncements()
-    
-    // Load both unread and all announcements
-    await Promise.all([
-      announcementStore.loadUnreadAnnouncements(),
-      announcementStore.loadAllAnnouncements()
-    ])
-    isInitialized = true
+  onMount(() => {
+    void (async () => {
+      // Load dismissed announcements first
+      loadDismissedAnnouncements()
+      
+      // Load both unread and all announcements
+      await Promise.all([
+        announcementStore.loadUnreadAnnouncements(),
+        announcementStore.loadAllAnnouncements()
+      ])
+      isInitialized = true
+    })()
   })
 
   function openLatestAnnouncement() {

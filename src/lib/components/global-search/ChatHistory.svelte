@@ -124,10 +124,12 @@
   );
 
   // Load chat history on mount
-  onMount(async () => {
-    if (sessions.length === 0) {
-      await globalSearchStore.loadChatHistory();
-    }
+  onMount(() => {
+    void (async () => {
+      if (sessions.length === 0) {
+        await globalSearchStore.loadChatHistory();
+      }
+    })();
   });
 
   // Handle session selection

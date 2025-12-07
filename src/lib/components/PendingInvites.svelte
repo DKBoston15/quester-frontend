@@ -39,9 +39,9 @@
   let isLoading = $state(true);
   let error = $state<string | null>(null);
 
-  onMount(async () => {
+  onMount(() => {
     if (!auth.user?.email) return;
-    await loadInvitations();
+    void loadInvitations();
   });
 
   async function loadInvitations() {

@@ -47,7 +47,7 @@
   import { _ } from "svelte-i18n";
   import { get } from "svelte/store";
 
-  // Helper to get translation value imperatively for driver.js
+  // Helper for imperative translation access
   const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   // Reactive state
@@ -80,60 +80,60 @@
   let showTourPrompt = $state(false);
   let tourCompleted = $state(false);
 
-  function createDriverObj() {
-    return driver({
-      showProgress: true,
-      showButtons: ["next", "previous", "close"],
-      popoverClass: "quester-driver-theme",
-      steps: driveSteps,
-      onDestroyed: () => {
-        tourCompleted = true;
-        toast.success(t("team.tourCompleted"));
-      },
-    });
-  }
-
-  let driverObj = createDriverObj();
+  const driverObj = driver({
+    showProgress: true,
+    showButtons: ["next", "previous", "close"],
+    popoverClass: "quester-driver-theme",
+    steps: driveSteps,
+    onDestroyed: () => {
+      tourCompleted = true;
+      toast.success("Tour completed! You're ready to manage your teams.");
+    },
+  });
 
   // Load data on mount
-  onMount(async () => {
-    try {
-      // Check URL parameters for resource selection
-      const urlParams = new URLSearchParams(window.location.search);
-      const resourceType = urlParams.get("type");
-      const resourceId = urlParams.get("id");
+  onMount(() => {
+    void (async () => {
+      try {
+        // Check URL parameters for resource selection
+        const urlParams = new URLSearchParams(window.location.search);
+        const resourceType = urlParams.get("type");
+        const resourceId = urlParams.get("id");
 
-      // Initialize team management store
-      await teamManagement.initialize();
+        // Initialize team management store
+        await teamManagement.initialize();
 
-      // Check subscription limits
-      await checkSubscriptionLimits();
+        // Check subscription limits
+        await checkSubscriptionLimits();
 
-      // If URL contains valid resource parameters, select that resource
-      if (
-        resourceType &&
-        ["organization", "department", "project"].includes(resourceType) &&
-        resourceId
-      ) {
-        teamManagement.setSelectedResource(
-          resourceType as "organization" | "department" | "project",
+        // If URL contains valid resource parameters, select that resource
+        if (
+          resourceType &&
+          ["organization", "department", "project"].includes(resourceType) &&
           resourceId
+        ) {
+          teamManagement.setSelectedResource(
+            resourceType as "organization" | "department" | "project",
+            resourceId
+          );
+        }
+
+        // Check if user should see tour prompt (first time or no resource selected)
+        const hasSeenTour = localStorage.getItem(
+          "teamManagement-tour-completed"
         );
-      }
+        if (!hasSeenTour && !teamManagement.selectedResourceId) {
+          showTourPrompt = true;
+        }
 
-      // Check if user should see tour prompt (first time or no resource selected)
-      const hasSeenTour = localStorage.getItem("teamManagement-tour-completed");
-      if (!hasSeenTour && !teamManagement.selectedResourceId) {
-        showTourPrompt = true;
+        // Build simplified tour steps
+        buildTourSteps();
+      } catch (err) {
+        console.error("Error initializing team management:", err);
+      } finally {
+        isLoading = false;
       }
-
-      // Build simplified tour steps
-      buildTourSteps();
-    } catch (error) {
-      console.error("Error initializing team management:", error);
-    } finally {
-      isLoading = false;
-    }
+    })();
   });
 
   // Rebuild tour when resource selection changes (with guard to prevent infinite loops)
@@ -158,8 +158,9 @@
     steps.push({
       element: ".w-80.border-r",
       popover: {
-        title: t("tours.teamManagement.chooseTeam.title"),
-        description: t("tours.teamManagement.chooseTeam.description"),
+        title: "Choose Your Team",
+        description:
+          "Select an organization, department, or project from the sidebar to start managing its team members.",
         side: "right",
         align: "start",
       },
@@ -170,8 +171,9 @@
       steps.push({
         element: "[data-tour='team-members']",
         popover: {
-          title: t("tours.teamManagement.teamMembers.title"),
-          description: t("tours.teamManagement.teamMembers.description"),
+          title: "Your Team Members",
+          description:
+            "Here you can see all team members, their roles, and manage their access permissions.",
           side: "top",
           align: "start",
         },
@@ -182,8 +184,9 @@
         steps.push({
           element: "[data-tour='invitations']",
           popover: {
-            title: t("tours.teamManagement.invitations.title"),
-            description: t("tours.teamManagement.invitations.description"),
+            title: "Invite New Members",
+            description:
+              "Send email invitations to add new people to your organization.",
             side: "top",
             align: "start",
           },
@@ -194,8 +197,9 @@
         steps.push({
           element: "[data-tour='add-users']",
           popover: {
-            title: t("tours.teamManagement.addUsers.title"),
-            description: t("tours.teamManagement.addUsers.description"),
+            title: "Add Existing Users",
+            description:
+              "Add people who are already in your organization to this specific project or department.",
             side: "top",
             align: "start",
           },
@@ -204,7 +208,6 @@
     }
 
     driveSteps = steps;
-    driverObj = createDriverObj();
     driverObj.setSteps(driveSteps);
   }
 
@@ -219,7 +222,7 @@
   function dismissTour() {
     showTourPrompt = false;
     localStorage.setItem("teamManagement-tour-completed", "true");
-    toast.info(t("team.canRestartTour"));
+    toast.info("You can always restart the tour from the help menu");
   }
 
   // Public function to restart tour
@@ -275,19 +278,19 @@
       teamManagement.selectedResourceType === "organization" &&
       teamManagement.organizationStructure
     ) {
-      return teamManagement.organizationStructure.name || $_('teamManagement.organization');
+      return teamManagement.organizationStructure.name || "Organization";
     } else if (
       teamManagement.selectedResourceType === "department" &&
       teamManagement.departmentStructure
     ) {
-      return teamManagement.departmentStructure.name || $_('teamManagement.department');
+      return teamManagement.departmentStructure.name || "Department";
     } else if (
       teamManagement.selectedResourceType === "project" &&
       teamManagement.projectTeam
     ) {
-      return teamManagement.projectTeam.name || $_('teamManagement.project');
+      return teamManagement.projectTeam.name || "Project";
     }
-    return $_('teamManagement.title');
+    return "Team Management";
   }
 
   function getResourceIcon() {
@@ -426,17 +429,17 @@
         // Refresh the data to show the updated team
         refreshData();
         toast.success(
-          t("team.successfullyJoined").replace("{resourceType}", teamManagement.selectedResourceType || "")
+          `Successfully joined ${teamManagement.selectedResourceType}`
         );
       } else {
         const errorMessage =
-          teamManagement.error || $_('teamManagement.failedToJoin');
+          teamManagement.error || "Failed to join. Please try again.";
         toast.error(errorMessage);
         selfAssignError = errorMessage;
       }
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : $_('common.unexpectedError');
+        err instanceof Error ? err.message : "An unexpected error occurred";
       toast.error(errorMessage);
       selfAssignError = errorMessage;
     } finally {
@@ -530,7 +533,7 @@
       return user.role.name;
     }
 
-    return $_('common.unknown');
+    return "Unknown";
   }
 
   // Check if user is an owner of the current organization
@@ -591,9 +594,9 @@
               class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"
             ></div>
             <div class="space-y-2">
-              <p class="text-lg font-medium">{$_('team.settingUp')}</p>
+              <p class="text-lg font-medium">Setting up Team Management</p>
               <p class="text-sm text-muted-foreground">
-                {$_('team.loadingResources')}
+                Loading your resources and permissions...
               </p>
             </div>
           </div>
@@ -606,20 +609,21 @@
           >
             <div class="mb-6">
               <div class="flex items-center gap-2 mb-2">
-                <h2 class="text-xl font-semibold">{$_('team.title')}</h2>
+                <h2 class="text-xl font-semibold">Team Management</h2>
                 <Tooltip.Root>
                   <Tooltip.Trigger>
                     <Info class="h-4 w-4 text-muted-foreground" />
                   </Tooltip.Trigger>
                   <Tooltip.Content>
                     <p class="text-sm max-w-xs">
-                      {$_('team.selectResourceTooltip')}
+                      Select a resource to manage its team members, roles, and
+                      permissions.
                     </p>
                   </Tooltip.Content>
                 </Tooltip.Root>
               </div>
               <p class="text-sm text-muted-foreground">
-                {$_('team.selectResourceToManage')}
+                Select a resource to manage its team
               </p>
             </div>
 
@@ -632,7 +636,7 @@
                     <h3
                       class="text-sm font-medium text-muted-foreground px-2 py-1"
                     >
-                      {$_('team.organizations')}
+                      Organizations
                     </h3>
                     {#each teamManagement.userResources.organizations as org}
                       <button
@@ -662,7 +666,7 @@
                     <h3
                       class="text-sm font-medium text-muted-foreground px-2 py-1"
                     >
-                      {$_('team.departments')}
+                      Departments
                     </h3>
                     {#each teamManagement.userResources.departments as dept}
                       <button
@@ -692,7 +696,7 @@
                     <h3
                       class="text-sm font-medium text-muted-foreground px-2 py-1"
                     >
-                      {$_('team.projects')}
+                      Projects
                     </h3>
                     {#each teamManagement.userResources.projects as project}
                       <button
@@ -729,9 +733,10 @@
                   in:fly={{ y: 20, duration: 400, delay: 100 }}
                 >
                   <Users class="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                  <h3 class="text-lg font-medium mb-2">{$_('team.selectResource')}</h3>
+                  <h3 class="text-lg font-medium mb-2">Select a Resource</h3>
                   <p class="text-muted-foreground max-w-md">
-                    {$_('team.selectResourceDescription')}
+                    Choose an organization, department, or project from the
+                    sidebar to manage its team members and permissions.
                   </p>
                 </div>
               </div>
@@ -748,7 +753,7 @@
                         class="bg-primary/10 text-primary border-primary/25"
                       >
                         <Info class="h-3 w-3 mr-1" />
-                        {$_('team.organizationAccess')}
+                        Organization Access
                       </Badge>
                     {/if}
                   </div>
@@ -763,34 +768,35 @@
                           <div
                             class="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-current"
                           ></div>
-                          {$_('team.joining')}
+                          Joining...
                         {:else}
                           <UserPlus class="h-4 w-4 mr-2" />
-                          {teamManagement.selectedResourceType === "project"
-                            ? $_('team.joinProject')
-                            : $_('team.joinDepartment')}
+                          Join {teamManagement.selectedResourceType ===
+                          "project"
+                            ? "Project"
+                            : "Department"}
                         {/if}
                       </Button>
                     {/if}
                     <Button variant="outline" onclick={refreshData}>
                       <RefreshCw class="h-4 w-4 mr-2" />
-                      {$_('common.refresh')}
+                      Refresh
                     </Button>
                     <Button variant="outline" onclick={restartTour}>
                       <GraduationCap class="h-4 w-4 mr-2" />
-                      {$_('team.tour')}
+                      Tour
                     </Button>
                   </div>
                 </div>
                 <p class="text-muted-foreground mt-1">
-                  {$_('team.manageTeamFor', { values: { resourceType: teamManagement.selectedResourceType || '' } })}
+                  Manage team members and their roles for this {teamManagement.selectedResourceType}
                 </p>
               </div>
-              <!-- Error Display -->
+              <!-- Error Display - Only show errors that aren't settings-related -->
               {#if teamManagement.error && teamManagement.error !== teamManagement.settingsError}
                 <Alert variant="destructive" class="mb-6">
                   <Info class="h-4 w-4" />
-                  <AlertTitle>{$_('common.error')}</AlertTitle>
+                  <AlertTitle>Error</AlertTitle>
                   <AlertDescription>{teamManagement.error}</AlertDescription>
                 </Alert>
               {/if}
@@ -805,14 +811,14 @@
                         <div class="flex items-center gap-2">
                           <Users class="h-5 w-5" />
                           <CardTitle
-                            >{$_('team.teamMembers')} ({getUsersForCurrentResource()
+                            >Team Members ({getUsersForCurrentResource()
                               .length})</CardTitle
                           >
                         </div>
                         {#if !showInvitationsTab && (teamManagement.permissions.canInviteUsers || isOrganizationOwner() || teamManagement.settings?.allowMemberInvitations)}
                           <Button onclick={() => (showInviteModal = true)}>
                             <UserPlus class="h-4 w-4 mr-2" />
-                            {$_('team.inviteTeam')}
+                            Invite Team
                           </Button>
                         {/if}
                       </div>
@@ -852,10 +858,11 @@
                       <CardHeader>
                         <div class="flex items-center gap-2">
                           <Mail class="h-5 w-5" />
-                          <CardTitle>{$_('team.teamInvitations')}</CardTitle>
+                          <CardTitle>Team Invitations</CardTitle>
                         </div>
                         <CardDescription>
-                          {$_('team.sendInvitationsDescription')}
+                          Send invitations to add new team members to this
+                          organization
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
@@ -881,10 +888,11 @@
                       <CardHeader>
                         <div class="flex items-center gap-2">
                           <UserCog class="h-5 w-5" />
-                          <CardTitle>{$_('team.addExistingUsers')}</CardTitle>
+                          <CardTitle>Add Existing Users</CardTitle>
                         </div>
                         <CardDescription>
-                          {$_('team.addExistingUsersDescription')}
+                          Add users who are already members of the parent
+                          organization
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
@@ -923,7 +931,7 @@
                     class="bg-background border rounded-lg p-6 max-w-md w-full mx-4"
                   >
                     <div class="flex items-center justify-between mb-4">
-                      <h2 class="text-lg font-semibold">{$_('team.inviteTeamMembers')}</h2>
+                      <h2 class="text-lg font-semibold">Invite Team Members</h2>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -933,7 +941,9 @@
                       </Button>
                     </div>
                     <p class="text-sm text-muted-foreground mb-4">
-                      {$_('team.inviteModalDescription', { values: { resourceType: teamManagement.selectedResourceType || '' } })}
+                      For {teamManagement.selectedResourceType}s, you can add
+                      existing organization members or use the main organization
+                      invitation feature.
                     </p>
                     <div class="flex gap-2">
                       <Button
@@ -950,10 +960,10 @@
                           }
                         }}
                       >
-                        {$_('team.addExistingUsers')}
+                        Add Existing Users
                       </Button>
                       <Button onclick={() => (showInviteModal = false)}
-                        >{$_('common.close')}</Button
+                        >Close</Button
                       >
                     </div>
                   </div>
@@ -978,24 +988,26 @@
         <CardHeader>
           <div class="flex items-center gap-2">
             <GraduationCap class="h-5 w-5 text-primary" />
-            <CardTitle>{$_('team.welcomeToTeamManagement')}</CardTitle>
+            <CardTitle>Welcome to Team Management!</CardTitle>
           </div>
           <CardDescription>
-            {$_('team.tourPrompt')}
+            Would you like a quick tour to learn how to manage your teams
+            effectively?
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div class="flex gap-2">
             <Button onclick={startTour} class="flex-1">
               <GraduationCap class="h-4 w-4 mr-2" />
-              {$_('team.startTour')}
+              Start Tour
             </Button>
             <Button variant="outline" onclick={dismissTour} class="flex-1">
-              {$_('team.skipForNow')}
+              Skip for now
             </Button>
           </div>
           <p class="text-xs text-muted-foreground mt-2">
-            {$_('team.restartTourHint')}
+            You can restart the tour anytime using the "Tour" button in the
+            header.
           </p>
         </CardContent>
       </Card>

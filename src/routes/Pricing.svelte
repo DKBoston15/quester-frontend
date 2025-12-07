@@ -15,10 +15,6 @@
   import { Label } from "$lib/components/ui/label";
   import { api } from "$lib/services/api-client";
   import { _ } from "svelte-i18n";
-  import { get } from "svelte/store";
-
-  // Helper to get translation value imperatively
-  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   const props = $props<{
     organizationId: string;
@@ -56,96 +52,98 @@
     companyUniversity: "",
   });
 
-  onMount(async () => {
-    try {
-      const allPlans = await api.get(`/subscription-plans`);
+  onMount(() => {
+    void (async () => {
+      try {
+        const allPlans = await api.get(`/subscription-plans`);
 
-      if (!Array.isArray(allPlans)) {
-        throw new Error(
-          "Expected array of plans but received: " + typeof allPlans
-        );
-      }
-
-      // Add additional UI properties to plans and infer type from name
-      const enhancedPlans = allPlans.map((plan) => {
-        // Infer plan type from name
-        let type: "free" | "pro" | "team" | "enterprise";
-        if (plan.priceMonthly === "0.00") {
-          type = "free";
-        } else if (plan.name.toLowerCase().includes("pro")) {
-          type = "pro";
-        } else if (plan.name.toLowerCase().includes("team")) {
-          type = "team";
-        } else {
-          type = "enterprise";
+        if (!Array.isArray(allPlans)) {
+          throw new Error(
+            "Expected array of plans but received: " + typeof allPlans
+          );
         }
 
-        return {
-          ...plan,
-          type,
-          priceMonthly: parseFloat(plan.priceMonthly),
-          priceYearly: parseFloat(plan.priceYearly),
-          accentColor:
-            type === "free" || type === "team" ? "yellow-400" : "blue-400",
-          tag: getTagForPlan(type),
-          highlight: type === "pro" || type === "team",
-          description: getDescriptionForPlan(type),
-        };
-      });
+        // Add additional UI properties to plans and infer type from name
+        const enhancedPlans = allPlans.map((plan) => {
+          // Infer plan type from name
+          let type: "free" | "pro" | "team" | "enterprise";
+          if (plan.priceMonthly === "0.00") {
+            type = "free";
+          } else if (plan.name.toLowerCase().includes("pro")) {
+            type = "pro";
+          } else if (plan.name.toLowerCase().includes("team")) {
+            type = "team";
+          } else {
+            type = "enterprise";
+          }
 
-      // Filter plans based on mode
-      if (props.mode === "personal") {
-        plans = enhancedPlans.filter(
-          (plan) => plan.type === "free" || plan.type === "pro"
-        );
-      } else {
-        // For organization mode, add enterprise plan and use consistent colors
-        const enterprisePlan: SubscriptionPlan = {
-          id: "enterprise",
-          name: t("pricing.enterprise"),
-          productId: "enterprise",
-          monthlyPriceId: "",
-          yearlyPriceId: "",
-          features: [
-            t("pricing.everythingInTeamPlan"),
-            t("pricing.customUserLimit"),
-            t("pricing.prioritySupport"),
-            t("pricing.slaGuarantees"),
-          ],
-          maxUsers: null,
-          priceMonthly: 0,
-          priceYearly: 0,
-          type: "enterprise",
-          tag: t("pricing.customSolution"),
-          accentColor: "blue-400",
-          highlight: false,
-          description: t("pricing.customizedSolutions"),
-        };
+          return {
+            ...plan,
+            type,
+            priceMonthly: parseFloat(plan.priceMonthly),
+            priceYearly: parseFloat(plan.priceYearly),
+            accentColor:
+              type === "free" || type === "team" ? "yellow-400" : "blue-400",
+            tag: getTagForPlan(type),
+            highlight: type === "pro" || type === "team",
+            description: getDescriptionForPlan(type),
+          };
+        });
 
-        plans = [
-          ...enhancedPlans.filter((plan) => plan.type === "team"),
-          enterprisePlan,
-        ].map((plan) => ({
-          ...plan,
-          accentColor: "blue-400", // Make all organization plans use blue accent
-        }));
+        // Filter plans based on mode
+        if (props.mode === "personal") {
+          plans = enhancedPlans.filter(
+            (plan) => plan.type === "free" || plan.type === "pro"
+          );
+        } else {
+          // For organization mode, add enterprise plan and use consistent colors
+          const enterprisePlan: SubscriptionPlan = {
+            id: "enterprise",
+            name: "Enterprise",
+            productId: "enterprise",
+            monthlyPriceId: "",
+            yearlyPriceId: "",
+            features: [
+              "Everything in Team plan",
+              "Custom user limit",
+              "Priority support",
+              "SLA guarantees",
+            ],
+            maxUsers: null,
+            priceMonthly: 0,
+            priceYearly: 0,
+            type: "enterprise",
+            tag: "Custom Solution",
+            accentColor: "blue-400",
+            highlight: false,
+            description: "Customized solutions for teams and institutions",
+          };
+
+          plans = [
+            ...enhancedPlans.filter((plan) => plan.type === "team"),
+            enterprisePlan,
+          ].map((plan) => ({
+            ...plan,
+            accentColor: "blue-400", // Make all organization plans use blue accent
+          }));
+        }
+      } catch (err) {
+        error = err instanceof Error ? err.message : "Failed to fetch plans";
+        console.error("Failed to fetch plans:", err);
       }
-    } catch (err) {
-      error = err instanceof Error ? err.message : $_('pricing.failedToFetchPlans');
-      console.error("Failed to fetch plans:", err);
-    }
+    })();
   });
 
   function getTagForPlan(type: string): string {
     switch (type) {
       case "free":
-        return t("pricing.getStarted");
+        return "Get Started";
       case "pro":
-        return t("pricing.mostPopular");
+        return "Most Popular";
       case "team":
-        return t("pricing.teamValue");
+        return "Team Value";
       case "enterprise":
-        return t("pricing.customSolution");
+        return "Custom Solution";
       default:
         return "";
     }
@@ -154,13 +152,13 @@
   function getDescriptionForPlan(type: string): string {
     switch (type) {
       case "free":
-        return t("pricing.perfectForTrying");
+        return "Perfect for trying out Quester";
       case "pro":
-        return t("pricing.fullFeaturedIndividual");
+        return "Full-featured plan for individuals";
       case "team":
-        return t("pricing.fullFeaturedTeam");
+        return "Full-featured plan for teams";
       case "enterprise":
-        return t("pricing.customizedSolutions");
+        return "Customized solutions for teams and institutions";
       default:
         return "";
     }
@@ -198,7 +196,7 @@
     <div class="flex items-center space-x-6 mb-4 sm:mb-0">
       <span
         class={`text-xl  text-black dark:text-dark-text-primary ${!isYearly ? "font-bold" : ""}`}
-        >{$_('pricing.monthly')}</span
+        >Monthly</span
       >
       <div
         class="border-2 dark:border-dark-border p-1.5 flex items-center justify-center bg-card dark:bg-dark-card shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,1)]"
@@ -207,17 +205,17 @@
       </div>
       <span
         class={`text-xl  text-black dark:text-dark-text-primary ${isYearly ? "font-bold" : ""}`}
-        >{$_('pricing.yearly')}</span
+        >Yearly</span
       >
       <span
         class="hidden sm:inline-block text-base font-bold bg-blue-400 dark:bg-dark-accent-blue dark:text-black px-3 py-1.5 border-2 dark:border-dark-border"
-        >{$_('pricing.saveUpTo', { values: { percent: '17' } })}</span
+        >Save up to 17%</span
       >
     </div>
     <div class="flex items-center space-x-2">
       <span
         class="text-sm font-medium text-gray-600 dark:text-dark-text-secondary"
-        >{$_('pricing.workspace')}:</span
+        >Workspace:</span
       >
       <span
         class=" font-bold text-black dark:text-dark-text-primary px-2 py-1 bg-blue-400/20 dark:bg-dark-accent-blue/20 border-2 dark:border-dark-border text-sm"
@@ -230,7 +228,7 @@
   <div class="sm:hidden flex justify-center mb-8">
     <span
       class="text-base font-bold bg-blue-400 dark:bg-dark-accent-blue dark:text-black px-3 py-1.5 border-2 dark:border-dark-border"
-      >{$_('pricing.saveUpTo', { values: { percent: '17' } })}</span
+      >Save up to 17%</span
     >
   </div>
 
@@ -247,7 +245,7 @@
     {#if plans.length === 0}
       <div class="col-span-2 text-center py-12">
         <p class="text-xl text-black dark:text-dark-text-primary">
-          {$_('pricing.noPlansAvailable')}
+          No subscription plans available.
         </p>
       </div>
     {:else}
@@ -290,7 +288,7 @@
                   <p
                     class="text-4xl font-bold text-black dark:text-dark-text-primary"
                   >
-                    {$_('pricing.customPricing')}
+                    Custom Pricing
                   </p>
                 {:else}
                   <p
@@ -299,13 +297,16 @@
                     ${getPrice(plan)}
                     <span
                       class="text-xl text-gray-600 dark:text-dark-text-secondary"
-                      >{isYearly ? " / " + $_('pricing.perYear').replace('per ', '') : " / " + $_('pricing.perMonth').replace('per ', '')}</span
+                      >{isYearly ? " / year" : " / month"}</span
                     >
                     {#if isYearly && plan.type !== "free"}
                       <span
                         class="text-base font-bold bg-{plan.accentColor} dark:bg-dark-accent-blue px-2 py-1 border dark:border-dark-border ml-2"
                       >
-                        {$_('pricing.save', { values: { percent: calculateSavings(plan.priceMonthly, plan.priceYearly) } })}
+                        Save {calculateSavings(
+                          plan.priceMonthly,
+                          plan.priceYearly
+                        )}%
                       </span>
                     {/if}
                   </p>
@@ -345,7 +346,7 @@
                                      shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] hover:translate-x-0.5
                                      hover:translate-y-0.5 hover:shadow-none transition-all"
                     >
-                      {$_('pricing.contactUs')}
+                      Contact Us
                     </button>
                   </AlertDialog.Trigger>
                   <AlertDialog.Content
@@ -356,12 +357,13 @@
                         <h3
                           class="text-2xl font-bold mb-4 text-black dark:text-dark-text-primary"
                         >
-                          {$_('pricing.thankYouInterest')}
+                          Thank you for your interest!
                         </h3>
                         <p
                           class="text-base text-gray-600 dark:text-dark-text-secondary mb-6"
                         >
-                          {$_('pricing.teamWillReach')}
+                          Someone from our team will reach out to you soon to
+                          schedule a demo.
                         </p>
                         <AlertDialog.Cancel class="w-full">
                           <button
@@ -378,7 +380,7 @@
                               };
                             }}
                           >
-                            {$_('common.close')}
+                            Close
                           </button>
                         </AlertDialog.Cancel>
                       </div>
@@ -386,7 +388,7 @@
                       <AlertDialog.Header>
                         <AlertDialog.Title
                           class="text-black dark:text-dark-text-primary"
-                          >{$_('pricing.getFullDemo')}</AlertDialog.Title
+                          >Get a full demo of how Quester works</AlertDialog.Title
                         >
                       </AlertDialog.Header>
                       <form onsubmit={handleSubmit} class="space-y-4">
@@ -394,7 +396,7 @@
                           <Label
                             for="email"
                             class="text-black dark:text-dark-text-primary"
-                            >{$_('pricing.businessEmail')}</Label
+                            >Business Email</Label
                           >
                           <Input
                             id="email"
@@ -409,12 +411,12 @@
                           <Label
                             for="firstName"
                             class="text-black dark:text-dark-text-primary"
-                            >{$_('settings.firstName')}</Label
+                            >First Name</Label
                           >
                           <Input
                             id="firstName"
                             type="text"
-                            placeholder={$_('pricing.placeholders.firstName')}
+                            placeholder="John"
                             bind:value={formData.firstName}
                             required
                             class="border-2  dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary"
@@ -424,12 +426,12 @@
                           <Label
                             for="lastName"
                             class="text-black dark:text-dark-text-primary"
-                            >{$_('settings.lastName')}</Label
+                            >Last Name</Label
                           >
                           <Input
                             id="lastName"
                             type="text"
-                            placeholder={$_('pricing.placeholders.lastName')}
+                            placeholder="Doe"
                             bind:value={formData.lastName}
                             required
                             class="border-2  dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary"
@@ -439,12 +441,12 @@
                           <Label
                             for="companyUniversity"
                             class="text-black dark:text-dark-text-primary"
-                            >{$_('pricing.companyUniversity')}</Label
+                            >Company/University Name</Label
                           >
                           <Input
                             id="companyUniversity"
                             type="text"
-                            placeholder={$_('pricing.placeholders.company')}
+                            placeholder="Acme Inc."
                             bind:value={formData.companyUniversity}
                             required
                             class="border-2  dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary"
@@ -456,7 +458,7 @@
                                                      shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] hover:translate-x-0.5
                                                      hover:translate-y-0.5 hover:shadow-none transition-all"
                         >
-                          {$_('common.submit')}
+                          Submit
                         </button>
                       </form>
                     {/if}
@@ -517,7 +519,7 @@
         <path d="m12 19-7-7 7-7" />
         <path d="M19 12H5" />
       </svg>
-      {$_('pricing.backToWorkspace')}
+      Back to Workspace Selection
     </button>
   </div>
 </div>

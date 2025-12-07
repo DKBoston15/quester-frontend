@@ -14,13 +14,19 @@
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
   import { GraduationCap } from "lucide-svelte";
+  import { useLocation } from "svelte-routing";
   import { _ } from "svelte-i18n";
   import { get } from "svelte/store";
 
-  // Helper function for imperative translation access
+  // Helper for imperative translation access
   const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
+
   // Props
   const { literatureId = undefined } = $props();
+  const location = useLocation();
+  // Track whether params from URL have already been applied to prevent re-applying
+  let appliedNoteId: string | null = null;
+  let appliedTabParam = false;
 
   // State
   let focusMode = $state(false);
@@ -28,87 +34,92 @@
   let selectedTab = $state("literature"); // Default to literature notes
   let rightPanelNote = $state<Note | null>(null);
 
-  // Driver.js tour - factory function for i18n support
-  function createDriverObj() {
-    return driver({
-      showProgress: true,
-      popoverClass: "quester-driver-theme",
-      steps: [
-        {
-          element: "#notes-header-controls",
-          popover: {
-            title: t("tours.notes.welcome.title"),
-            description: t("tours.notes.welcome.description"),
-            side: "bottom",
-            align: "center",
-          },
+  const driverObj = driver({
+    showProgress: true,
+    popoverClass: "quester-driver-theme",
+    steps: [
+      {
+        element: "#notes-header-controls",
+        popover: {
+          title: "Welcome to Notes",
+          description:
+            "Capture, organize, and manage your research and literature notes. Use the controls here to manage your view and create new notes.",
+          side: "bottom",
+          align: "center",
         },
-        {
-          element: "#note-type-tabs",
-          popover: {
-            title: t("tours.notes.filterType.title"),
-            description: t("tours.notes.filterType.description"),
-            side: "bottom",
-            align: "end",
-          },
+      },
+      {
+        element: "#note-type-tabs",
+        popover: {
+          title: "Filter by Note Type",
+          description:
+            "Switch between viewing notes specifically linked to literature items and general research notes for your project.",
+          side: "bottom",
+          align: "end",
         },
-        {
-          element: "#note-list-sidebar",
-          popover: {
-            title: t("tours.notes.notesList.title"),
-            description: t("tours.notes.notesList.description"),
-            side: "right",
-            align: "start",
-          },
+      },
+      {
+        element: "#note-list-sidebar",
+        popover: {
+          title: "Your Notes List",
+          description:
+            "All your notes for the selected type appear here. Use the search bar at the top to filter them instantly.",
+          side: "right",
+          align: "start",
         },
-        {
-          element: "#new-note-button",
-          popover: {
-            title: t("tours.notes.createNote.title"),
-            description: t("tours.notes.createNote.description"),
-            side: "bottom",
-            align: "end",
-          },
+      },
+      {
+        element: "#new-note-button",
+        popover: {
+          title: "Create a New Note",
+          description:
+            "Click here to start a new note. It will be automatically saved as you type.",
+          side: "bottom",
+          align: "end",
         },
-        {
-          element: "#note-editor-area",
-          popover: {
-            title: t("tours.notes.editor.title"),
-            description: t("tours.notes.editor.description"),
-            side: "left",
-            align: "start",
-          },
+      },
+      {
+        element: "#note-editor-area",
+        popover: {
+          title: "Rich Text Editor",
+          description:
+            "Write and format your notes here. Changes are saved automatically. You can attach notes to literature entries from within the editor.",
+          side: "left",
+          align: "start",
         },
-        {
-          element: "#view-toggle-button",
-          popover: {
-            title: t("tours.notes.splitView.title"),
-            description: t("tours.notes.splitView.description"),
-            side: "bottom",
-            align: "end",
-          },
+      },
+      {
+        element: "#view-toggle-button",
+        popover: {
+          title: "Toggle Split View",
+          description:
+            "Switch between viewing one note or two notes side-by-side for comparison or referencing.",
+          side: "bottom",
+          align: "end",
         },
-        {
-          element: "#focus-toggle-button",
-          popover: {
-            title: t("tours.notes.focusMode.title"),
-            description: t("tours.notes.focusMode.description"),
-            side: "bottom",
-            align: "end",
-          },
+      },
+      {
+        element: "#focus-toggle-button",
+        popover: {
+          title: "Toggle Focus Mode",
+          description:
+            "Hide the sidebar to focus solely on the editor. Use the button or Cmd/Ctrl+B to toggle.",
+          side: "bottom",
+          align: "end",
         },
-        {
-          element: ".container",
-          popover: {
-            title: t("tours.notes.ready.title"),
-            description: t("tours.notes.ready.description"),
-            side: "top",
-            align: "center",
-          },
+      },
+      {
+        element: ".container", // Target a stable element
+        popover: {
+          title: "Ready to Take Notes?",
+          description:
+            "Use these features to keep your thoughts organized and connected to your research sources.",
+          side: "top",
+          align: "center",
         },
-      ],
-    });
-  }
+      },
+    ],
+  });
 
   // Effect to sync rightPanelNote with store updates
   $effect(() => {
@@ -141,6 +152,57 @@
   onMount(() => {
     loadNotes();
     return () => notesStore.reset();
+  });
+
+  // Respect URL query for tab and note selection, e.g. ?tab=research&noteId=abc
+  $effect(() => {
+    const search = $location.search || "";
+    const params = new URLSearchParams(search);
+    const tab = params.get("tab");
+    const pid = projectStore.currentProject?.id;
+    if (
+      !appliedTabParam &&
+      (tab === "research" || tab === "literature") &&
+      pid &&
+      notesStore.loadedProjectId === pid
+    ) {
+      if (selectedTab !== tab) {
+        selectedTab = tab as "literature" | "research";
+        // Update filter without clearing active note selection
+        notesStore.setFilter({ type: selectedTab });
+      }
+      appliedTabParam = true;
+      // Remove tab param after applying so it doesn't override user switching
+      if (typeof window !== "undefined") {
+        queueMicrotask(() => {
+          try {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("tab");
+            window.history.replaceState({}, "", url.toString());
+          } catch {}
+        });
+      }
+    }
+
+    const noteId = params.get("noteId");
+    if (noteId && pid && notesStore.loadedProjectId === pid && appliedNoteId !== noteId) {
+      // Set active note once the correct project's notes are loaded
+      if (notesStore.activeNoteId !== noteId) {
+        notesStore.setActiveNote(noteId);
+      }
+      // Mark as applied to avoid re-applying on future reactive passes
+      appliedNoteId = noteId;
+      // Remove noteId param so it only affects initial navigation
+      if (typeof window !== "undefined") {
+        queueMicrotask(() => {
+          try {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("noteId");
+            window.history.replaceState({}, "", url.toString());
+          } catch {}
+        });
+      }
+    }
   });
 
   // Reload notes when switching projects without a full page refresh
@@ -198,13 +260,13 @@
     if (!projectStore.currentProject?.id) return;
 
     const newNote = await notesStore.createNote({
-      name: t("notes.untitledNote"),
+      name: "Untitled Note",
       content: "",
       user_id: auth.user?.id,
       projectId: projectStore.currentProject.id,
       literatureId: selectedTab === "literature" ? literatureId : undefined,
       type: selectedTab === "literature" ? "LITERATURE" : "RESEARCH",
-      section_type: { value: "Other", label: t("notes.sections.other") },
+      section_type: { value: "Other", label: "Other" },
     });
     if (newNote) {
       notesStore.setActiveNote(newNote.id);
@@ -262,20 +324,22 @@
         <!-- Left Side: Title & Description -->
         <div class="flex-1 min-w-0 mr-4">
           <div class="flex items-center gap-2 mb-1">
-            <h1 class="text-3xl font-bold truncate">{$_("notes.title")}</h1>
+            <h1 class="text-3xl font-bold truncate">Notes</h1>
             <Tooltip.Root delayDuration={300}>
               <Tooltip.Trigger>
                 <Info class="h-5 w-5 text-muted-foreground flex-shrink-0" />
               </Tooltip.Trigger>
               <Tooltip.Content>
                 <p class="text-sm max-w-xs">
-                  {$_("notes.tooltip")}
+                  Create, manage, and organize your research and literature
+                  notes. Use split view and focus mode for enhanced
+                  productivity. (Toggle focus mode: Cmd/Ctrl+B)
                 </p>
               </Tooltip.Content>
             </Tooltip.Root>
           </div>
           <p class="text-muted-foreground text-sm truncate">
-            {$_("notes.description")}
+            Create, manage, and organize your research and literature notes
           </p>
         </div>
 
@@ -289,7 +353,7 @@
             onclick={() =>
               handleViewChange(selectedView === "split" ? "single" : "split")}
             class={selectedView === "split" ? "bg-secondary h-8" : "h-8"}
-            title={$_("notesView.toggleSplitView")}
+            title="Toggle split view"
           >
             <Layout class="h-4 w-4" />
           </Button>
@@ -301,7 +365,7 @@
             onclick={() => {
               focusMode = !focusMode;
             }}
-            title={$_("notesView.toggleFocusMode")}
+            title="Toggle focus mode (Cmd/Ctrl+B)"
           >
             {#if focusMode}
               <Minimize2 class="h-4 w-4" />
@@ -313,8 +377,8 @@
           <!-- Tabs -->
           <Tabs value={selectedTab} onValueChange={handleTabChange}>
             <TabsList id="note-type-tabs">
-              <TabsTrigger value="literature">{$_("notes.literatureNotes")}</TabsTrigger>
-              <TabsTrigger value="research">{$_("notes.researchNotes")}</TabsTrigger>
+              <TabsTrigger value="literature">Literature Notes</TabsTrigger>
+              <TabsTrigger value="research">Research Notes</TabsTrigger>
             </TabsList>
           </Tabs>
 
@@ -325,19 +389,19 @@
             disabled={!projectStore.currentProject}
           >
             <Plus class="h-4 w-4 mr-2" />
-            {$_("notes.newNote")}
+            New Note
           </Button>
           <!-- Learn Button -->
           <Tooltip.Provider>
             <Tooltip.Root>
               <Tooltip.Trigger>
-                <Button variant="outline" onclick={() => createDriverObj().drive()}>
+                <Button variant="outline" onclick={() => driverObj.drive()}>
                   <GraduationCap class="h-4 w-4 mr-2" />
-                  {$_("dashboard.tour")}
+                  Tour
                 </Button>
               </Tooltip.Trigger>
               <Tooltip.Content>
-                <p>{$_("common.tutorial")}</p>
+                <p>Tutorial</p>
               </Tooltip.Content>
             </Tooltip.Root>
           </Tooltip.Provider>
@@ -349,7 +413,7 @@
   <!-- Main Content -->
   {#if notesStore.isLoading}
     <div class="flex-1 flex items-center justify-center">
-      <div class="text-center text-muted-foreground">{$_("notes.loadingNotes")}</div>
+      <div class="text-center text-muted-foreground">Loading notes...</div>
     </div>
   {:else}
     <div class="flex-1 flex overflow-hidden">
@@ -382,10 +446,10 @@
               {/each}
             {:else}
               <EmptyState
-                title={$_("notes.noNoteSelected")}
-                description={$_("notes.selectOrCreateNote")}
+                title="No Note Selected"
+                description="Select a note from the sidebar or create a new one"
                 variant="data-empty"
-                ctaText={$_("notes.createNewNote")}
+                ctaText="Create New Note"
                 ctaAction={createNote}
                 ctaDisabled={!projectStore.currentProject}
               />
@@ -404,10 +468,10 @@
               />
             {:else}
               <EmptyState
-                title={$_("notes.noNoteSelected")}
-                description={$_("notes.selectOrCreateNote")}
+                title="No Note Selected"
+                description="Select a note from the sidebar or create a new one"
                 variant="data-empty"
-                ctaText={$_("notes.createNewNote")}
+                ctaText="Create New Note"
                 ctaAction={createNote}
                 ctaDisabled={!projectStore.currentProject}
               />
@@ -422,10 +486,10 @@
               {/each}
             {:else}
               <EmptyState
-                title={$_("notes.noNoteSelected")}
-                description={$_("notes.selectOrCreateNote")}
+                title="No Note Selected"
+                description="Select a note from the sidebar or create a new one"
                 variant="data-empty"
-                ctaText={$_("notes.createNewNote")}
+                ctaText="Create New Note"
                 ctaAction={createNote}
                 ctaDisabled={!projectStore.currentProject}
               />

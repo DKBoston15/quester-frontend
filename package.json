@@ -101,6 +101,7 @@
     "lodash": "^4.17.21",
     "luxon": "^3.6.1",
     "markdown-it": "^14.1.0",
+    "posthog-js": "^1.276.0",
     "string-strip-html": "^13.4.8",
     "svelte-dnd-action": "^0.9.57",
     "svelte-i18n": "^4.0.1",

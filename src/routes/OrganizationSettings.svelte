@@ -28,24 +28,26 @@
   let isLoading = $state(true);
 
   // Load data on mount
-  onMount(async () => {
-    try {
-      // Initialize team management store
-      await teamManagement.initialize();
+  onMount(() => {
+    void (async () => {
+      try {
+        // Initialize team management store
+        await teamManagement.initialize();
 
-      // If no resource is selected, select the first organization
-      if (
-        !teamManagement.selectedResourceId &&
-        teamManagement.userResources?.organizations?.length > 0
-      ) {
-        const firstOrg = teamManagement.userResources.organizations[0];
-        teamManagement.setSelectedResource("organization", firstOrg.id);
+        // If no resource is selected, select the first organization
+        if (
+          !teamManagement.selectedResourceId &&
+          teamManagement.userResources?.organizations?.length > 0
+        ) {
+          const firstOrg = teamManagement.userResources.organizations[0];
+          teamManagement.setSelectedResource("organization", firstOrg.id);
+        }
+      } catch (err) {
+        console.error("Error initializing settings:", err);
+      } finally {
+        isLoading = false;
       }
-    } catch (error) {
-      console.error("Error initializing settings:", error);
-    } finally {
-      isLoading = false;
-    }
+    })();
   });
 
   function refreshData() {

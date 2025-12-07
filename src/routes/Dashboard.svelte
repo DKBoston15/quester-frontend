@@ -118,27 +118,29 @@
     });
   }
 
-  onMount(async () => {
-    try {
-      // Wait for auth store to finish loading
-      if (auth.isLoading) {
-        // Wait for auth to complete loading
-      }
+  onMount(() => {
+    void (async () => {
+      try {
+        // Wait for auth store to finish loading
+        if (auth.isLoading) {
+          // Wait for auth to complete loading
+        }
 
-      if (!auth.isAuthenticated) {
-        navigate("/");
-        return;
-      }
+        if (!auth.isAuthenticated) {
+          navigate("/");
+          return;
+        }
 
-      await loadOrganizations();
-    } catch (error) {
-      error =
-        error instanceof Error
-          ? error.message
-          : t("dashboard.failedToInitialize");
-    } finally {
-      isLoading = false;
-    }
+        await loadOrganizations();
+      } catch (err) {
+        error =
+          err instanceof Error
+            ? err.message
+            : t("dashboard.failedToInitialize");
+      } finally {
+        isLoading = false;
+      }
+    })();
   });
 
   async function loadOrganizations() {
@@ -347,10 +349,7 @@
           </div>
           <!-- Workspace Overview -->
           {#if currentOrg}
-            <Card
-              id="organization-structure-card"
-              class="mt-6 border dark:border-dark-border shadow-md dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-lg dark:hover:shadow-[6px_6px_0px_0px_rgba(44,46,51,0.1)] transition-all"
-            >
+            <Card id="organization-structure-card" class="mt-6">
               <CardHeader>
                 <div class="flex items-center gap-2">
                   <FolderTree class="h-5 w-5" />

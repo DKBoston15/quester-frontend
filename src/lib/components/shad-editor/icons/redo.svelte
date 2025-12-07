@@ -13,24 +13,46 @@
   // Local reactive state for disabled status
   let isDisabled = $state(true);
 
-  // Effect to update isDisabled when editor state changes
-  $effect(() => {
-    function updateDisabledState() {
-      const canRedo = editor?.can().chain().focus().redo().run();
+  // Safely update disabled state (avoid synchronous state mutation during render)
+  function updateDisabledState() {
+    const canRedo = editor?.can().redo() ?? false;
+    // Defer state change to avoid mutating during template/derived evaluation
+    queueMicrotask(() => {
       isDisabled = !canRedo;
-    }
+    });
+  }
 
-    // Initial check
-    if (editor) {
-      updateDisabledState();
-      // Listen for transaction updates
-      editor.on("transaction", updateDisabledState);
-    }
+  import { onMount } from "svelte";
+  let detach: (() => void) | null = null;
 
-    // Cleanup function
-    return () => {
-      editor?.off("transaction", updateDisabledState);
+  function attachListeners() {
+    const currentEditor = editor;
+    if (!currentEditor) return;
+    // Run after current tick to avoid state mutation during template evaluation
+    queueMicrotask(() => updateDisabledState());
+    currentEditor.on("transaction", updateDisabledState);
+    detach = () => {
+      currentEditor.off("transaction", updateDisabledState);
+      detach = null;
     };
+  }
+
+  onMount(() => {
+    attachListeners();
+    return () => {
+      detach?.();
+      detach = null;
+    };
+  });
+
+  // React if editor instance changes
+  $effect(() => {
+    // Access editor for dependency tracking
+    const ed = editor;
+    // Detach previous listeners and reattach for new instance
+    detach?.();
+    detach = null;
+    attachListeners();
   });
 </script>
 

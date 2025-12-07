@@ -12,6 +12,7 @@
   import { quintOut } from "svelte/easing";
   import type { Project } from "$lib/types/auth";
   import { _ } from "svelte-i18n";
+  import { hasDesignContent } from "$lib/utils/design";
 
   type InsightRule = {
     field: keyof Project | string;
@@ -62,28 +63,11 @@
       severity: "warning",
       message: $_('projectInsights.missingProjectDesigns'),
       description: $_('projectInsights.addDesigns'),
-      checkFn: (project) => {
-        // Design fields can be strings or objects with selections array
-        const getDesignValue = (design: unknown): string => {
-          if (typeof design === 'string') return design;
-          if (design && typeof design === 'object') {
-            // Handle { selections: string[], description?: string } format
-            if ('selections' in design) {
-              const selections = (design as { selections: string[] }).selections;
-              if (Array.isArray(selections) && selections.length > 0) {
-                return selections.join(", ");
-              }
-            }
-            // Handle { name: string } format (legacy)
-            if ('name' in design) return (design as { name: string }).name || '';
-          }
-          return '';
-        };
-        return !getDesignValue(project.researchDesign)?.trim() &&
-          !getDesignValue(project.samplingDesign)?.trim() &&
-          !getDesignValue(project.measurementDesign)?.trim() &&
-          !getDesignValue(project.analyticDesign)?.trim();
-      },
+      checkFn: (project) =>
+        !hasDesignContent(project.researchDesign) &&
+        !hasDesignContent(project.samplingDesign) &&
+        !hasDesignContent(project.measurementDesign) &&
+        !hasDesignContent(project.analyticDesign),
       // action: {
       //   label: "Add Designs",
       //   route: "project_settings",
@@ -169,11 +153,9 @@
   });
 </script>
 
-<Card.Root
-  class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
->
+<Card.Root>
   <Accordion.Root value={accordionValue} type="multiple" class="w-full">
-    <Accordion.Item value="insights">
+    <Accordion.Item value="insights" class="border-none">
       <div class="flex items-center justify-between px-6 pt-6">
         <div class="flex items-center gap-2">
           <Card.Title class="text-xl flex items-center gap-2">

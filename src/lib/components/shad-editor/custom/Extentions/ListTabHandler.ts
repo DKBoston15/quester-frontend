@@ -20,10 +20,14 @@ export const ListTabHandler = Extension.create({
         let depth = $from.depth;
         let listItem = null;
         let parentList = null;
+        let inCodeBlock = false;
         
         // Walk up the document tree to find list context
         for (let i = depth; i > 0; i--) {
           const node = $from.node(i);
+          if (node.type.name === 'codeBlock') {
+            inCodeBlock = true;
+          }
           if (node.type.name === 'listItem' && !listItem) {
             listItem = node;
           }
@@ -33,7 +37,12 @@ export const ListTabHandler = Extension.create({
           }
         }
         
-        if (listItem && parentList) {
+        if (inCodeBlock) {
+          editor.chain().focus().insertContent('\t').run();
+          return true;
+        }
+
+        if (!inCodeBlock && listItem && parentList) {
           // We're in a list, try to indent
           return editor.commands.sinkListItem('listItem');
         }
@@ -52,10 +61,14 @@ export const ListTabHandler = Extension.create({
         let depth = $from.depth;
         let listItem = null;
         let parentList = null;
+        let inCodeBlock = false;
         
         // Walk up the document tree to find list context
         for (let i = depth; i > 0; i--) {
           const node = $from.node(i);
+          if (node.type.name === 'codeBlock') {
+            inCodeBlock = true;
+          }
           if (node.type.name === 'listItem' && !listItem) {
             listItem = node;
           }
@@ -65,7 +78,13 @@ export const ListTabHandler = Extension.create({
           }
         }
         
-        if (listItem && parentList) {
+        // In code block: insert a tab character as well (no outdent support)
+        if (inCodeBlock) {
+          editor.chain().focus().insertContent('\t').run();
+          return true;
+        }
+
+        if (!inCodeBlock && listItem && parentList) {
           // We're in a list, try to outdent
           return editor.commands.liftListItem('listItem');
         }
@@ -96,9 +115,13 @@ export const ListTabHandler = Extension.create({
                 let depth = $from.depth;
                 let listItem = null;
                 let parentList = null;
+                let inCodeBlock = false;
                 
                 for (let i = depth; i > 0; i--) {
                   const node = $from.node(i);
+                  if (node.type.name === 'codeBlock') {
+                    inCodeBlock = true;
+                  }
                   if (node.type.name === 'listItem' && !listItem) {
                     listItem = node;
                   }
@@ -108,7 +131,13 @@ export const ListTabHandler = Extension.create({
                   }
                 }
                 
-                if (listItem && parentList) {
+                if (inCodeBlock) {
+                  event.preventDefault();
+                  extension.editor.chain().focus().insertContent('\t').run();
+                  return true;
+                }
+
+                if (!inCodeBlock && listItem && parentList) {
                   event.preventDefault();
                   
                   if (event.shiftKey) {

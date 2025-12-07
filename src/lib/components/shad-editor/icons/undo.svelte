@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { Undo } from "lucide-svelte";
   import * as Tooltip from "$lib/components/ui/tooltip/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
@@ -13,24 +14,45 @@
   // Local reactive state for disabled status
   let isDisabled = $state(true);
 
-  // Effect to update isDisabled when editor state changes
-  $effect(() => {
-    function updateDisabledState() {
-      const canUndo = editor?.can().chain().focus().undo().run();
+  // Safely update disabled state (avoid synchronous state mutation during render)
+  function updateDisabledState() {
+    const canUndo = editor?.can()?.undo?.() ?? false;
+    // Defer state change to avoid mutating during template/derived evaluation
+    queueMicrotask(() => {
       isDisabled = !canUndo;
-    }
+    });
+  }
 
-    // Initial check
-    if (editor) {
-      updateDisabledState();
-      // Listen for transaction updates
-      editor.on("transaction", updateDisabledState);
-    }
+  // Attach listeners on mount and when editor changes
+  let detach: (() => void) | null = null;
 
-    // Cleanup function
-    return () => {
-      editor?.off("transaction", updateDisabledState);
+  function attachListeners() {
+    // Clean up any existing listener before attaching a new one
+    detach?.();
+    detach = null;
+    const currentEditor = editor;
+    // Run after current tick to avoid state mutation during template evaluation
+    queueMicrotask(() => updateDisabledState());
+    if (!currentEditor) return;
+    currentEditor.on("transaction", updateDisabledState);
+    detach = () => {
+      currentEditor.off("transaction", updateDisabledState);
+      detach = null;
     };
+  }
+
+  onMount(() => {
+    return () => {
+      detach?.();
+      detach = null;
+    };
+  });
+
+  // React if editor instance changes
+  $effect(() => {
+    // Access editor for dependency tracking
+    const ed = editor;
+    attachListeners();
   });
 </script>
 

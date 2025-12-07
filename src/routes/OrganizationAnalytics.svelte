@@ -383,18 +383,19 @@
       return aggregated;
     }
 
-    const now = DateTime.now();
+    const now = DateTime.now().startOf("day");
     let startDate: DateTime | null = null;
 
     switch (range) {
       case "7":
-        startDate = now.minus({ days: 7 });
+        // Include today and previous 6 days (max 7 days)
+        startDate = now.minus({ days: 6 });
         break;
       case "14":
-        startDate = now.minus({ days: 14 });
+        startDate = now.minus({ days: 13 });
         break;
       case "30":
-        startDate = now.minus({ days: 30 });
+        startDate = now.minus({ days: 29 });
         break;
       case "all":
         // No start date needed, include all
@@ -406,7 +407,7 @@
 
     for (const [dateStr, counts] of Object.entries(safeDailyCounts)) {
       try {
-        const activityDate = DateTime.fromISO(dateStr);
+        const activityDate = DateTime.fromISO(dateStr).startOf("day");
         if (
           !activityDate.isValid || // Skip invalid dates
           (startDate && activityDate < startDate) // Skip if before start date for ranges other than 'all'
@@ -1682,8 +1683,7 @@
                               <TableRow>
                                 <TableCell>
                                   <div class="font-medium">
-                                    {row.firstName || ""}
-                                    {row.lastName || ""}
+                                    {`${row.firstName || ""} ${row.lastName || ""}`.trim() || row.email}
                                   </div>
                                   <div class="text-sm text-muted-foreground">
                                     {row.email}

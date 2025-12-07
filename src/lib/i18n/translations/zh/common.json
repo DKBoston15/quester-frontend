@@ -3275,5 +3275,34 @@
         "description": "随时运行新分析来探索不同的关键词组合。"
       }
     }
+  },
+  "contextSelector": {
+    "contextFocus": "上下文焦点",
+    "contextFocusDescription": "选择特定项目以锚定助手的上下文。助手仍将保留轻量级项目元数据。",
+    "clear": "清除",
+    "noContextSelected": "未选择上下文项目。助手将考虑更广泛的项目内容。",
+    "removeFromContext": "从上下文中移除 {title}",
+    "searchAllProjects": "在所有可访问的项目中搜索项目",
+    "searchThisProject": "在此项目中搜索笔记、文献、成果...",
+    "chooseProject": "选择一个项目以定位上下文选择。",
+    "searching": "搜索中…",
+    "noMatchingItems": "暂无匹配项目。请尝试其他搜索词。",
+    "selected": "已选择",
+    "literature": "文献",
+    "note": "笔记",
+    "outcome": "成果",
+    "model": "模型",
+    "keywordAnalysis": "关键词分析",
+    "document": "文档",
+    "documentChunk": "文档片段",
+    "project": "项目",
+    "selectProjectError": "请选择一个项目以定位助手上下文。",
+    "failedToLoadContext": "加载上下文建议失败"
+  },
+  "graphContextMenu": {
+    "node": "节点",
+    "navigateToLiterature": "导航至文献",
+    "filterConnectedNodes": "筛选相连节点",
+    "resetFilter": "重置筛选"
   }
 }

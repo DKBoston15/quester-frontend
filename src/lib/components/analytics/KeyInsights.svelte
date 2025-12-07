@@ -62,13 +62,15 @@
   }
 
   // Load insights on component mount
-  onMount(async () => {
-    // Run these sequentially to avoid race conditions with button state
-    await loadInsights();
-    if (projectId) {
-      // Don't await this - let it run in background without blocking UI
-      insightsStore.checkGenerationLimit(projectId);
-    }
+  onMount(() => {
+    void (async () => {
+      // Run these sequentially to avoid race conditions with button state
+      await loadInsights();
+      if (projectId) {
+        // Don't await this - let it run in background without blocking UI
+        void insightsStore.checkGenerationLimit(projectId);
+      }
+    })();
   });
 
 

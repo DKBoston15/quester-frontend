@@ -73,11 +73,13 @@
     }
   }
 
-  onMount(async () => {
-    const hasModelAccess = await checkModelAccessCapability();
-    if (hasModelAccess) {
-      await modelStore.loadModel(props.modelId);
-    }
+  onMount(() => {
+    void (async () => {
+      const hasModelAccess = await checkModelAccessCapability();
+      if (hasModelAccess) {
+        await modelStore.loadModel(props.modelId);
+      }
+    })();
   });
 
   // Enhanced interactive tutorial with auto-demos - factory function for i18n

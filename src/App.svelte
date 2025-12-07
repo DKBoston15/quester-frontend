@@ -33,64 +33,89 @@
   let isCheckingAuth = $state(true);
   let i18nReady = $state(false);
 
-  onMount(async () => {
+  onMount(() => {
+    let destroyed = false;
+
     // Initialize theme early so auth-check respects dark mode
     initializeTheme();
 
     // Initialize i18n
-    await setupI18n();
-    i18nReady = true;
-    localeStore.setInitialized();
+    setupI18n().then(() => {
+      i18nReady = true;
+      localeStore.setInitialized();
+    });
 
     // Initialize FullStory
     initializeFullStory();
 
     // Safety timeout - force loading to false after 10 seconds
     const safetyTimeout = setTimeout(() => {
+      if (destroyed) {
+        return;
+      }
+
       isCheckingAuth = false;
       // Force a re-render
       document.dispatchEvent(new Event("forceRerender"));
     }, 10000);
 
+    const { promise: timeoutPromise, cancel: cancelTimeout } = createTimeoutPromise(
+      10000,
+      "Auth verification timed out after 10 seconds"
+    );
+
     // Create a promise that rejects after a timeout
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => {
-        reject(new Error("Auth verification timed out after 10 seconds"));
-      }, 10000); // 10 second timeout
-    });
+    const runAuthCheck = async () => {
+      try {
+        // Race the auth verification against the timeout
+        await Promise.race([auth.verifySession(), timeoutPromise]);
 
-    try {
-      // Race the auth verification against the timeout
-      await Promise.race([auth.verifySession(), timeoutPromise]);
+        if (destroyed) {
+          return;
+        }
 
-      isCheckingAuth = false;
+        if (!auth.isAuthenticated && window.location.pathname !== "/") {
+          console.error(
+            'App.svelte onMount: <<< REDIRECTING TO / >>> Condition met: !auth.isAuthenticated && window.location.pathname !== "/"'
+          );
+          navigate("/", { replace: true });
+        } else if (auth.isAuthenticated && window.location.pathname === "/") {
+          navigate("/dashboard", { replace: true });
+        }
+        // Initialize locale from user preference if authenticated
+        if (auth.isAuthenticated && auth.user?.metadata?.locale) {
+          localeStore.initializeFromUser(auth.user.metadata.locale);
+        }
+      } catch (err) {
+        if (destroyed) {
+          return;
+        }
 
-      // Initialize locale from user preference if authenticated
-      if (auth.isAuthenticated && auth.user?.metadata?.locale) {
-        localeStore.initializeFromUser(auth.user.metadata.locale);
-      }
-
-      if (!auth.isAuthenticated && window.location.pathname !== "/") {
-        console.error(
-          'App.svelte onMount: <<< REDIRECTING TO / >>> Condition met: !auth.isAuthenticated && window.location.pathname !== "/"'
-        );
+        console.error("Error during auth verification:", err);
+        // If we timeout or have another error, force isCheckingAuth to false
+        // and clear user to reset auth state
+        isCheckingAuth = false;
+        auth.clearUser(); // This internally sets isLoading to false
         navigate("/", { replace: true });
-      } else if (auth.isAuthenticated && window.location.pathname === "/") {
-        navigate("/dashboard", { replace: true });
+      } finally {
+        cancelTimeout();
+
+        if (!destroyed) {
+          // Ensure the safety timeout is cleared
+          clearTimeout(safetyTimeout);
+          // Double-check the isCheckingAuth state
+          isCheckingAuth = false;
+        }
       }
-    } catch (err) {
-      console.error("Error during auth verification:", err);
-      // If we timeout or have another error, force isCheckingAuth to false
-      // and clear user to reset auth state
-      isCheckingAuth = false;
-      auth.clearUser(); // This internally sets isLoading to false
-      navigate("/", { replace: true });
-    } finally {
-      // Ensure the safety timeout is cleared
+    };
+
+    void runAuthCheck();
+
+    return () => {
+      destroyed = true;
       clearTimeout(safetyTimeout);
-      // Double-check the isCheckingAuth state
-      isCheckingAuth = false;
-    }
+      cancelTimeout();
+    };
   });
 
   function login() {
@@ -145,6 +170,26 @@
       announcementStore.reset();
     }
   });
+
+  function createTimeoutPromise(durationMs: number, message: string) {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    const promise = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(() => {
+        reject(new Error(message));
+      }, durationMs);
+    });
+
+    return {
+      promise,
+      cancel() {
+        if (timeoutId !== null) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+      },
+    };
+  }
 </script>
 
 {#if !i18nReady}

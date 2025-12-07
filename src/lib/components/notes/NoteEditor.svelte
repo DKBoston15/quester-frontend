@@ -47,6 +47,25 @@
   // Initialize to null to avoid passing undefined to bind:ref
   let titleInputRef: HTMLInputElement | null = null;
   let showDeleteDialog = $state(false);
+  // Avoid accidental click-to-edit immediately after switching notes
+  let enableTitleClickAt = $state(0);
+
+  // Sticky toolbar offset handling
+  let headerEl: HTMLElement | null = null;
+  let headerHeight = $state(0);
+  function updateHeaderHeight() {
+    headerHeight = headerEl?.offsetHeight ?? 0;
+  }
+  onMount(() => {
+    updateHeaderHeight();
+    const ro = new ResizeObserver(() => updateHeaderHeight());
+    if (headerEl) ro.observe(headerEl);
+    window.addEventListener('resize', updateHeaderHeight);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', updateHeaderHeight);
+    };
+  });
 
   // Track section type locally to avoid remounting
   let currentSectionType = $state(
@@ -64,29 +83,31 @@
   let authErrorOccurred = $state(false);
 
   // Add section type options
-  const sectionTypeOptions = $derived([
-    { value: "Introduction", label: $_('notes.sections.introduction') },
-    { value: "Methods", label: $_('notes.sections.methods') },
-    { value: "Results", label: $_('notes.sections.results') },
-    { value: "Discussion", label: $_('notes.sections.discussion') },
-    { value: "Conclusion", label: $_('notes.sections.conclusion') },
-    { value: "References", label: $_('notes.sections.references') },
-    { value: "Other", label: $_('notes.sections.other') },
-  ]);
+  const sectionTypeOptions = [
+    { value: "Introduction", label: "Introduction" },
+    { value: "Methods", label: "Methods" },
+    { value: "Results", label: "Results" },
+    { value: "Discussion", label: "Discussion" },
+    { value: "Conclusion", label: "Conclusion" },
+    { value: "References", label: "References" },
+    { value: "Other", label: "Other" },
+  ];
 
   // Ensure literature data is loaded
-  onMount(async () => {
+  onMount(() => {
+    enableTitleClickAt = Date.now() + 800;
     // For new notes, switch to edit mode and focus title to encourage renaming
-    const untitledNoteText = $_("notes.editor.untitledNote");
-    if (note.name === untitledNoteText && title === untitledNoteText) {
+    if (note.name === "Untitled Note" && title === "Untitled Note") {
       isEditingTitle = true;
       setTimeout(() => titleInputRef?.focus(), 0);
     }
 
     // Load literature data if needed
-    if (literatureStore.data.length === 0 && note.projectId) {
-      await literatureStore.loadLiterature(note.projectId);
-    }
+    void (async () => {
+      if (literatureStore.data.length === 0 && note.projectId) {
+        await literatureStore.loadLiterature(note.projectId);
+      }
+    })();
   });
 
   // Keyboard shortcut: Cmd/Ctrl + S to force save
@@ -104,8 +125,7 @@
   // Direct function to save title
   async function saveTitle() {
     // If the title is still the default and hasn't been changed, don't save
-    const untitledNoteText = $_("notes.editor.untitledNote");
-    if (title === untitledNoteText && originalTitle === untitledNoteText) {
+    if (title === "Untitled Note" && originalTitle === "Untitled Note") {
       return;
     }
 
@@ -135,12 +155,6 @@
         originalTitle = titleToSave;
         titleChanged = false; // Reset the title changed flag
         lastSavedAt = Date.now();
-
-        // Trigger reactivity update through search query refresh
-        const currentQuery = notesStore.searchQuery;
-        if (currentQuery) {
-          notesStore.setSearchQuery(currentQuery);
-        }
       } catch (error) {
         console.error("Error updating title:", error);
         // Auth errors are handled automatically by the API client
@@ -187,12 +201,6 @@
 
         // Update last saved time for status UI
         lastSavedAt = Date.now();
-
-        // Refresh the notes list via search query to trigger reactivity
-        const currentQuery = notesStore.searchQuery;
-        if (currentQuery) {
-          notesStore.setSearchQuery(currentQuery);
-        }
       } catch (error) {
         console.error("Error updating literature connection:", error);
         // Auth errors are handled automatically by the API client
@@ -219,11 +227,13 @@
     }
 
     // Only update content if switching to a new note or if we're not currently editing
-    // This prevents interference with user typing
+    // Additionally, avoid resetting content if it is effectively identical to prevent cursor jumps
     if (isNewNote || !contentChanged) {
       const newContent = parseNoteContent(note.content);
-      content = newContent;
-      previousContent = JSON.stringify(newContent);
+      if (JSON.stringify(newContent) !== JSON.stringify(content)) {
+        content = newContent;
+        previousContent = JSON.stringify(newContent);
+      }
     }
 
     // Update section type
@@ -238,6 +248,8 @@
     if (isNewNote) {
       contentChanged = false;
       titleChanged = false;
+      // Delay click-to-edit after switching notes to prevent accidental activation
+      enableTitleClickAt = Date.now() + 800;
     }
   });
 
@@ -330,12 +342,6 @@
       // Update previousContent to match what was just saved to prevent duplicate saves
       previousContent = JSON.stringify(content);
 
-      // Trigger reactivity update through search query refresh
-      const currentQuery = notesStore.searchQuery;
-      if (currentQuery) {
-        notesStore.setSearchQuery(currentQuery);
-      }
-
       return; // Return successfully
     } catch (error) {
       console.error("Failed to save note:", error);
@@ -395,12 +401,6 @@
             storeNotes[i].updated_at = new Date().toISOString();
             break;
           }
-        }
-
-        // Trigger reactivity update through search query refresh
-        const currentQuery = notesStore.searchQuery;
-        if (currentQuery) {
-          notesStore.setSearchQuery(currentQuery);
         }
       } catch (error) {
         console.error("Error updating section type:", error);
@@ -476,7 +476,7 @@
 
 <div class="flex flex-col">
   <!-- Editor Header -->
-  <header class="sticky top-0 z-10 border-b p-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+  <header bind:this={headerEl} class="sticky top-0 z-10 border-b p-4 bg-background">
     <!-- Row 1: Title and save status -->
     <div class="flex items-center justify-between gap-3">
       {#if isEditingTitle}
@@ -484,14 +484,13 @@
           <Input
             bind:ref={titleInputRef}
             type="text"
-            placeholder={$_("notes.editor.untitledNote")}
+            placeholder="Untitled note"
             class="w-full bg-transparent cursor-text border-0 border-b border-border/50 px-0 py-1 h-auto text-2xl font-semibold rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-ring/60"
             bind:value={title}
             onfocus={(e) => {
               isUserEditingTitle = true;
               isTitleFocused = true;
-              const untitledNoteText = $_("notes.editor.untitledNote");
-              if (title === untitledNoteText) {
+              if (title === "Untitled Note" || title === "Untitled note") {
                 const target = e.target as HTMLInputElement;
                 setTimeout(() => target.select(), 0);
               }
@@ -527,38 +526,53 @@
                 setTimeout(() => (isCancellingTitle = false), 0);
               }
             }}
-            aria-label={$_("notes.noteTitle")}
+            aria-label="Note title"
           />
-          <Button size="sm" onclick={async () => { if (title !== originalTitle) { await saveTitle(); } isEditingTitle = false; }} aria-label={$_("notes.editor.saveTitle")} disabled={isSaving}>
-            {$_("common.save")}
+          <Button size="sm" onclick={async () => { if (title !== originalTitle) { await saveTitle(); } isEditingTitle = false; }} aria-label="Save title" disabled={isSaving}>
+            Save
           </Button>
-          <Button variant="ghost" size="sm" onclick={() => { isCancellingTitle = true; title = originalTitle; isEditingTitle = false; setTimeout(() => (isCancellingTitle = false), 0); }} aria-label={$_("notes.editor.cancelRename")}>
-            {$_("common.cancel")}
+          <Button variant="ghost" size="sm" onclick={() => { isCancellingTitle = true; title = originalTitle; isEditingTitle = false; setTimeout(() => (isCancellingTitle = false), 0); }} aria-label="Cancel rename">
+            Cancel
           </Button>
         </div>
       {:else}
         <div class="flex-1 min-w-0">
-          <h1 class="text-2xl font-semibold truncate" title={title}>{title || $_("notes.editor.untitledNote")}</h1>
+          <h1
+            class="text-2xl font-semibold truncate cursor-text"
+            title={title}
+            aria-label="Note title. Click to edit"
+            onclick={() => {
+              // Guard against accidental click carried over from note selection
+              if (Date.now() < enableTitleClickAt) return;
+              isEditingTitle = true;
+              setTimeout(() => titleInputRef?.focus(), 0);
+            }}
+          >
+            {title || "Untitled note"}
+          </h1>
         </div>
       {/if}
       <div class="flex items-center gap-2 shrink-0">
         {#if authErrorOccurred}
-          <span class="text-sm text-destructive">{$_("notes.editor.sessionExpired")}</span>
+          <span class="text-sm text-destructive">Session expired — not saving</span>
         {:else if isSaving}
-          <span class="text-sm text-muted-foreground flex items-center gap-1"><Save class="h-3 w-3 animate-spin" /> {$_("notes.editor.saving")}…</span>
+          <span class="text-sm text-muted-foreground flex items-center gap-1"><Save class="h-3 w-3 animate-spin" /> Saving…</span>
         {:else}
-          <span class="text-sm text-muted-foreground">{lastSavedAt ? $_("notes.editor.saved", { values: { time: new Date(lastSavedAt).toLocaleTimeString() } }) : ""}</span>
+          <span class="text-sm text-muted-foreground">{lastSavedAt ? `Saved ${new Date(lastSavedAt).toLocaleTimeString()}` : ""}</span>
         {/if}
         {#if (titleChanged || contentChanged) && !authErrorOccurred && !isEditingTitle}
-          <Button size="sm" class="min-w-[96px] justify-center" onclick={() => saveNote(true)} aria-label={$_("notes.editor.saveChanges")} disabled={isSaving}>
-            {$_("common.save")}
+          <Button size="sm" class="min-w-[96px] justify-center" onclick={() => saveNote(true)} aria-label="Save changes" disabled={isSaving}>
+            Save
           </Button>
         {/if}
         {#if !isEditingTitle}
-          <Button variant="outline" size="sm" class="min-w-[96px] justify-center" aria-label={$_("notes.editor.renameTitle")} title={$_("notes.editor.renameTitle")} onclick={() => { isEditingTitle = true; setTimeout(() => titleInputRef?.focus(), 0); }}>
-            <Pencil class="h-4 w-4 mr-1" /> {$_("notes.editor.rename")}
+          <Button variant="outline" size="sm" class="min-w-[96px] justify-center" aria-label="Rename title" title="Rename title" onclick={() => { isEditingTitle = true; setTimeout(() => titleInputRef?.focus(), 0); }}>
+            <Pencil class="h-4 w-4 mr-1" /> Rename
           </Button>
         {/if}
+        <Button variant="destructive" size="sm" class="min-w-[96px] justify-center" onclick={() => confirmDelete()} aria-label="Delete note">
+          <Trash2 class="h-4 w-4 mr-1" /> Delete
+        </Button>
       </div>
     </div>
 
@@ -573,7 +587,7 @@
             onLiteratureSelect={handleLiteratureSelect}
           />
           <div class="flex items-center gap-2">
-            <label for="section-type-select" class="text-sm text-muted-foreground">{$_("notes.editor.section")}</label>
+            <label for="section-type-select" class="text-sm text-muted-foreground">Section</label>
             <Select type="single" value={currentSectionType.value} onValueChange={handleSectionTypeChange}>
               <SelectTrigger id="section-type-select" class="h-8 w-[180px]">
                 <span>{currentSectionType.label}</span>
@@ -587,23 +601,23 @@
           </div>
         {/if}
       </div>
-      <div class="flex items-center gap-2">
-        <Button variant="destructive" size="sm" class="min-w-[96px] justify-center" onclick={() => confirmDelete()} aria-label={$_("notes.editor.deleteNote")}>
-          <Trash2 class="h-4 w-4 mr-1" /> {$_("common.delete")}
-        </Button>
-      </div>
+      <div class="flex items-center gap-2"></div>
     </div>
   </header>
 
   <!-- Editor Content -->
   {#if note}
-    <div class="flex-1">
+    <div class="flex-1" style={`--note-header-offset: ${headerHeight}px`}>
       <ShadEditor
         {content}
 on:contentChange={(e) => {
+          // Update local content from editor
           content = e.detail;
+          // Ensure autosave is scheduled immediately on user input
+          contentChanged = true;
+          scheduleSave();
         }}
-        placeholder={$_("notes.editor.startWriting")}
+        placeholder="Start writing..."
       />
     </div>
   {/if}
@@ -613,18 +627,18 @@ on:contentChange={(e) => {
 <AlertDialog.Root bind:open={showDeleteDialog}>
   <AlertDialog.Content>
     <AlertDialog.Header>
-      <AlertDialog.Title>{$_("notes.editor.deleteNote")}</AlertDialog.Title>
+      <AlertDialog.Title>Delete Note</AlertDialog.Title>
       <AlertDialog.Description>
-        {$_("notes.editor.deleteConfirm")}
+        Are you sure you want to delete this note? This action cannot be undone.
       </AlertDialog.Description>
     </AlertDialog.Header>
     <AlertDialog.Footer>
-      <AlertDialog.Cancel>{$_("common.cancel")}</AlertDialog.Cancel>
+      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
       <AlertDialog.Action
         onclick={handleDeleteConfirm}
         class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
       >
-        {$_("notes.editor.deleteNote")}
+        Delete Note
       </AlertDialog.Action>
     </AlertDialog.Footer>
   </AlertDialog.Content>
