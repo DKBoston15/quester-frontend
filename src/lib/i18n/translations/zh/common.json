@@ -833,6 +833,29 @@
       "notesAnalysis": "笔记分析",
       "literatureAnalysis": "文献分析",
       "designsAnalysis": "设计分析"
+    },
+    "chartTitles": {
+      "prevalentPublishers": "主要出版商",
+      "prevalentKeywords": "主要关键词",
+      "distributionOfPublicationYears": "出版年份分布",
+      "publicationYearFrequencyDistribution": "出版年份频率分布",
+      "typesOfLiterature": "文献类型",
+      "literatureTypesByPublicationYear": "按出版年份分类的文献类型",
+      "noteSectionTypes": "笔记章节类型",
+      "notesPrevalentNouns": "笔记 - 主要名词",
+      "notesPrevalentVerbs": "笔记 - 主要动词",
+      "notesPrevalentAdjectives": "笔记 - 主要形容词",
+      "literatureTitlesPrevalentNouns": "文献标题 - 主要名词",
+      "literatureTitlesPrevalentVerbs": "文献标题 - 主要动词",
+      "literatureTitlesPrevalentAdjectives": "文献标题 - 主要形容词",
+      "prevalentResearchDesigns": "主要研究设计",
+      "prevalentSamplingDesigns": "主要抽样设计",
+      "prevalentMeasurementDesigns": "主要测量设计",
+      "prevalentAnalyticDesigns": "主要分析设计"
+    },
+    "chartLabels": {
+      "individual": "单独",
+      "timePeriods": "时间段"
     }
   },
   "errors": {

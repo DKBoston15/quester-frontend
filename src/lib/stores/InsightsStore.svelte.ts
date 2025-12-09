@@ -1,6 +1,7 @@
 import { api } from '$lib/services/api-client';
 import { _ } from 'svelte-i18n';
 import { get } from 'svelte/store';
+import { localeStore } from './LocaleStore.svelte';
 
 const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
@@ -108,11 +109,14 @@ class InsightsStore {
     this.state.error[projectId] = null;
 
     try {
-      const payload: any = { force };
+      const payload: any = {
+        force,
+        language: localeStore.locale // Pass user's current language preference
+      };
       if (analyticsData) {
         payload.analyticsData = analyticsData;
       }
-      
+
       const response = await api.post(`/projects/${projectId}/insights/generate`, payload);
       
       if (response.success) {

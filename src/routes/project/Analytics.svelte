@@ -26,6 +26,9 @@
   import { get } from "svelte/store";
   import { _ } from "svelte-i18n";
 
+  // Helper function to get translated text
+  const t = (key: string) => get(_)(key);
+
   // Watch for theme changes and update charts
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
@@ -333,10 +336,10 @@
 
     // Check if this is the years chart or stacked chart
     const isYearsChart =
-      activeChart.title === "Distribution of Publication Years" ||
-      activeChart.title === "Publication Year Frequency Distribution";
+      activeChart.title === t("analytics.chartTitles.distributionOfPublicationYears") ||
+      activeChart.title === t("analytics.chartTitles.publicationYearFrequencyDistribution");
     const isStackedChart =
-      activeChart.title === "Literature Types by Publication Year";
+      activeChart.title === t("analytics.chartTitles.literatureTypesByPublicationYear");
 
     if (isStackedChart) {
       const stackedData = data.summary?.yearTypeMatrix;
@@ -535,7 +538,7 @@
                     if (typeof label !== "string") return value;
 
                     const title = activeChart?.title || "";
-                    if (title === "Prevalent Publishers" && label.length > 10) {
+                    if (title === t("analytics.chartTitles.prevalentPublishers") && label.length > 10) {
                       return label.slice(0, 10) + "...";
                     }
                     if (label.length > 35) {
@@ -730,7 +733,7 @@
             callback: function (this: any, value: any) {
               const label = labels[value];
               // For publisher chart, truncate to 10 characters
-              if (title === "Prevalent Publishers" && label?.length > 10) {
+              if (title === t("analytics.chartTitles.prevalentPublishers") && label?.length > 10) {
                 return label.slice(0, 10) + "...";
               }
               // For other charts, use standard length
@@ -929,8 +932,8 @@
       ? summary.publicationYearFrequency || { names: [], counts: [] }
       : summary.publicationYears;
     const chartTitle = isFrequencyMode
-      ? "Publication Year Frequency Distribution"
-      : "Distribution of Publication Years";
+      ? t("analytics.chartTitles.publicationYearFrequencyDistribution")
+      : t("analytics.chartTitles.distributionOfPublicationYears");
     const chartColor = isFrequencyMode
       ? "rgb(147, 197, 253)"
       : "rgb(255, 206, 86)";
@@ -1089,8 +1092,8 @@
     if (
       fullscreenChart &&
       activeChart &&
-      (activeChart.title === "Distribution of Publication Years" ||
-        activeChart.title === "Publication Year Frequency Distribution")
+      (activeChart.title === t("analytics.chartTitles.distributionOfPublicationYears") ||
+        activeChart.title === t("analytics.chartTitles.publicationYearFrequencyDistribution"))
     ) {
       fullscreenChart.destroy();
       fullscreenChart = null;
@@ -1120,7 +1123,7 @@
         canvasRefs.publishers,
         summary.topPublishers.names,
         summary.topPublishers.counts,
-        "Prevalent Publishers",
+        t("analytics.chartTitles.prevalentPublishers"),
         "rgb(54, 162, 235)"
       );
     }
@@ -1130,7 +1133,7 @@
         canvasRefs.keywords,
         summary.keywords.names,
         summary.keywords.counts,
-        "Prevalent Keywords",
+        t("analytics.chartTitles.prevalentKeywords"),
         "rgb(54, 162, 235)"
       );
     }
@@ -1143,7 +1146,7 @@
         canvasRefs.types,
         summary.literatureTypes.names,
         summary.literatureTypes.counts,
-        "Types of Literature",
+        t("analytics.chartTitles.typesOfLiterature"),
         "rgb(255, 206, 86)"
       );
     }
@@ -1154,7 +1157,7 @@
         canvasRefs.noteTypes,
         noteTypesData.names,
         noteTypesData.counts,
-        "Note Section Types",
+        t("analytics.chartTitles.noteSectionTypes"),
         "rgb(34, 197, 94)"
       );
     }
@@ -1165,7 +1168,7 @@
         canvasRefs.notesNouns,
         summary.nounsWordCounts.names,
         summary.nounsWordCounts.counts,
-        "Notes - Prevalent Nouns",
+        t("analytics.chartTitles.notesPrevalentNouns"),
         "rgb(54, 162, 235)"
       );
     }
@@ -1175,7 +1178,7 @@
         canvasRefs.notesVerbs,
         summary.verbsWordCounts.names,
         summary.verbsWordCounts.counts,
-        "Notes - Prevalent Verbs",
+        t("analytics.chartTitles.notesPrevalentVerbs"),
         "rgb(54, 162, 235)"
       );
     }
@@ -1185,7 +1188,7 @@
         canvasRefs.notesAdjectives,
         summary.adjectivesWordCounts.names,
         summary.adjectivesWordCounts.counts,
-        "Notes - Prevalent Adjectives",
+        t("analytics.chartTitles.notesPrevalentAdjectives"),
         "rgb(54, 162, 235)"
       );
     }
@@ -1196,7 +1199,7 @@
         canvasRefs.litNouns,
         summary.literatureNounsWordCounts.names,
         summary.literatureNounsWordCounts.counts,
-        "Literature Titles - Prevalent Nouns",
+        t("analytics.chartTitles.literatureTitlesPrevalentNouns"),
         "rgb(54, 162, 235)"
       );
     }
@@ -1206,7 +1209,7 @@
         canvasRefs.litVerbs,
         summary.literatureVerbsWordCounts.names,
         summary.literatureVerbsWordCounts.counts,
-        "Literature Titles - Prevalent Verbs",
+        t("analytics.chartTitles.literatureTitlesPrevalentVerbs"),
         "rgb(54, 162, 235)"
       );
     }
@@ -1216,7 +1219,7 @@
         canvasRefs.litAdjectives,
         summary.literatureAdjectivesWordCounts.names,
         summary.literatureAdjectivesWordCounts.counts,
-        "Literature Titles - Prevalent Adjectives",
+        t("analytics.chartTitles.literatureTitlesPrevalentAdjectives"),
         "rgb(54, 162, 235)"
       );
     }
@@ -1227,7 +1230,7 @@
         canvasRefs.researchDesigns,
         summary.researchDesigns.names,
         summary.researchDesigns.counts,
-        "Prevalent Research Designs",
+        t("analytics.chartTitles.prevalentResearchDesigns"),
         "rgb(180, 30, 50)"
       );
     }
@@ -1237,7 +1240,7 @@
         canvasRefs.samplingDesigns,
         summary.samplingDesigns.names,
         summary.samplingDesigns.counts,
-        "Prevalent Sampling Designs",
+        t("analytics.chartTitles.prevalentSamplingDesigns"),
         "rgb(180, 30, 50)"
       );
     }
@@ -1247,7 +1250,7 @@
         canvasRefs.measurementDesigns,
         summary.measurementDesigns.names,
         summary.measurementDesigns.counts,
-        "Prevalent Measurement Designs",
+        t("analytics.chartTitles.prevalentMeasurementDesigns"),
         "rgb(180, 30, 50)"
       );
     }
@@ -1257,7 +1260,7 @@
         canvasRefs.analyticDesigns,
         summary.analyticDesigns.names,
         summary.analyticDesigns.counts,
-        "Prevalent Analytic Designs",
+        t("analytics.chartTitles.prevalentAnalyticDesigns"),
         "rgb(180, 30, 50)"
       );
     }
@@ -1276,7 +1279,7 @@
       charts.yearTypeStacked = createStackedBarChart(
         canvasRefs.yearTypeStacked,
         plainYearTypeData,
-        "Literature Types by Publication Year"
+        t("analytics.chartTitles.literatureTypesByPublicationYear")
       );
     }
   }
@@ -1318,7 +1321,7 @@
   >
     <Dialog.Content class="fullscreen-dialog">
       <div class="fullscreen-canvas-container">
-        {#if activeChart && (activeChart.title === "Distribution of Publication Years" || activeChart.title === "Publication Year Frequency Distribution")}
+        {#if activeChart && (activeChart.title === t("analytics.chartTitles.distributionOfPublicationYears") || activeChart.title === t("analytics.chartTitles.publicationYearFrequencyDistribution"))}
           <div class="fullscreen-controls">
             <div
               class="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2"
@@ -1328,7 +1331,7 @@
                   ? 'text-foreground'
                   : 'text-muted-foreground'}"
               >
-                Individual
+                {$_('analytics.chartLabels.individual')}
               </span>
               <Switch
                 bind:pressed={switchPressed}
@@ -1338,8 +1341,8 @@
                   if (activeChart) {
                     activeChart.title =
                       yearChartMode === "individual"
-                        ? "Distribution of Publication Years"
-                        : "Publication Year Frequency Distribution";
+                        ? t("analytics.chartTitles.distributionOfPublicationYears")
+                        : t("analytics.chartTitles.publicationYearFrequencyDistribution");
                     activeChart.color =
                       yearChartMode === "individual"
                         ? "rgb(255, 206, 86)"
@@ -1367,7 +1370,7 @@
                   ? 'text-foreground'
                   : 'text-muted-foreground'}"
               >
-                Time Periods
+                {$_('analytics.chartLabels.timePeriods')}
               </span>
             </div>
           </div>
@@ -1434,7 +1437,7 @@
               onclick={() =>
                 openFullscreen(
                   canvasRefs.publishers,
-                  "Prevalent Publishers",
+                  t("analytics.chartTitles.prevalentPublishers"),
                   "rgb(54, 162, 235)"
                 )}
             >
@@ -1464,7 +1467,7 @@
               onclick={() =>
                 openFullscreen(
                   canvasRefs.keywords,
-                  "Prevalent Keywords",
+                  t("analytics.chartTitles.prevalentKeywords"),
                   "rgb(54, 162, 235)"
                 )}
             >
@@ -1497,7 +1500,7 @@
                     ? 'text-foreground'
                     : 'text-muted-foreground'}"
                 >
-                  Individual
+                  {$_('analytics.chartLabels.individual')}
                 </span>
                 <Switch
                   bind:pressed={switchPressed}
@@ -1511,7 +1514,7 @@
                     ? 'text-foreground'
                     : 'text-muted-foreground'}"
                 >
-                  Time Periods
+                  {$_('analytics.chartLabels.timePeriods')}
                 </span>
               </div>
               <button
@@ -1521,8 +1524,8 @@
                   openFullscreen(
                     canvasRefs.years,
                     yearChartMode === "individual"
-                      ? "Distribution of Publication Years"
-                      : "Publication Year Frequency Distribution",
+                      ? t("analytics.chartTitles.distributionOfPublicationYears")
+                      : t("analytics.chartTitles.publicationYearFrequencyDistribution"),
                     yearChartMode === "individual"
                       ? "rgb(255, 206, 86)"
                       : "rgb(147, 197, 253)"
@@ -1555,7 +1558,7 @@
               onclick={() =>
                 openFullscreen(
                   canvasRefs.types,
-                  "Types of Literature",
+                  t("analytics.chartTitles.typesOfLiterature"),
                   "rgb(255, 206, 86)"
                 )}
             >
@@ -1585,7 +1588,7 @@
               onclick={() =>
                 openFullscreen(
                   canvasRefs.yearTypeStacked,
-                  "Literature Types by Publication Year",
+                  t("analytics.chartTitles.literatureTypesByPublicationYear"),
                   "rgb(54, 162, 235)"
                 )}
             >
@@ -1620,7 +1623,7 @@
               onclick={() =>
                 openFullscreen(
                   canvasRefs.noteTypes,
-                  "Note Section Types",
+                  t("analytics.chartTitles.noteSectionTypes"),
                   "rgb(34, 197, 94)"
                 )}
             >
@@ -1650,7 +1653,7 @@
               onclick={() =>
                 openFullscreen(
                   canvasRefs.notesNouns,
-                  "Notes - Prevalent Nouns",
+                  t("analytics.chartTitles.notesPrevalentNouns"),
                   "rgb(54, 162, 235)"
                 )}
             >
@@ -1680,7 +1683,7 @@
               onclick={() =>
                 openFullscreen(
                   canvasRefs.notesVerbs,
-                  "Notes - Prevalent Verbs",
+                  t("analytics.chartTitles.notesPrevalentVerbs"),
                   "rgb(54, 162, 235)"
                 )}
             >
@@ -1710,7 +1713,7 @@
               onclick={() =>
                 openFullscreen(
                   canvasRefs.notesAdjectives,
-                  "Notes - Prevalent Adjectives",
+                  t("analytics.chartTitles.notesPrevalentAdjectives"),
                   "rgb(54, 162, 235)"
                 )}
             >
@@ -1745,7 +1748,7 @@
               onclick={() =>
                 openFullscreen(
                   canvasRefs.litNouns,
-                  "Literature Titles - Prevalent Nouns",
+                  t("analytics.chartTitles.literatureTitlesPrevalentNouns"),
                   "rgb(54, 162, 235)"
                 )}
             >
@@ -1775,7 +1778,7 @@
               onclick={() =>
                 openFullscreen(
                   canvasRefs.litVerbs,
-                  "Literature Titles - Prevalent Verbs",
+                  t("analytics.chartTitles.literatureTitlesPrevalentVerbs"),
                   "rgb(54, 162, 235)"
                 )}
             >
@@ -1805,7 +1808,7 @@
               onclick={() =>
                 openFullscreen(
                   canvasRefs.litAdjectives,
-                  "Literature Titles - Prevalent Adjectives",
+                  t("analytics.chartTitles.literatureTitlesPrevalentAdjectives"),
                   "rgb(54, 162, 235)"
                 )}
             >
@@ -1840,7 +1843,7 @@
               onclick={() =>
                 openFullscreen(
                   canvasRefs.researchDesigns,
-                  "Prevalent Research Designs",
+                  t("analytics.chartTitles.prevalentResearchDesigns"),
                   "rgb(180, 30, 50)"
                 )}
             >
@@ -1870,7 +1873,7 @@
               onclick={() =>
                 openFullscreen(
                   canvasRefs.samplingDesigns,
-                  "Prevalent Sampling Designs",
+                  t("analytics.chartTitles.prevalentSamplingDesigns"),
                   "rgb(180, 30, 50)"
                 )}
             >
@@ -1900,7 +1903,7 @@
               onclick={() =>
                 openFullscreen(
                   canvasRefs.measurementDesigns,
-                  "Prevalent Measurement Designs",
+                  t("analytics.chartTitles.prevalentMeasurementDesigns"),
                   "rgb(180, 30, 50)"
                 )}
             >
@@ -1930,7 +1933,7 @@
               onclick={() =>
                 openFullscreen(
                   canvasRefs.analyticDesigns,
-                  "Prevalent Analytic Designs",
+                  t("analytics.chartTitles.prevalentAnalyticDesigns"),
                   "rgb(180, 30, 50)"
                 )}
             >

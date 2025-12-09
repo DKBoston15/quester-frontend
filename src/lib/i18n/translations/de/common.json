@@ -833,6 +833,29 @@
       "notesAnalysis": "Notizen-Analyse",
       "literatureAnalysis": "Literatur-Analyse",
       "designsAnalysis": "Design-Analyse"
+    },
+    "chartTitles": {
+      "prevalentPublishers": "Häufige Verlage",
+      "prevalentKeywords": "Häufige Schlüsselwörter",
+      "distributionOfPublicationYears": "Verteilung der Publikationsjahre",
+      "publicationYearFrequencyDistribution": "Häufigkeitsverteilung nach Publikationsjahr",
+      "typesOfLiterature": "Literaturtypen",
+      "literatureTypesByPublicationYear": "Literaturtypen nach Publikationsjahr",
+      "noteSectionTypes": "Arten von Notizenabschnitten",
+      "notesPrevalentNouns": "Notizen - Häufige Substantive",
+      "notesPrevalentVerbs": "Notizen - Häufige Verben",
+      "notesPrevalentAdjectives": "Notizen - Häufige Adjektive",
+      "literatureTitlesPrevalentNouns": "Literaturtitel - Häufige Substantive",
+      "literatureTitlesPrevalentVerbs": "Literaturtitel - Häufige Verben",
+      "literatureTitlesPrevalentAdjectives": "Literaturtitel - Häufige Adjektive",
+      "prevalentResearchDesigns": "Häufige Forschungsdesigns",
+      "prevalentSamplingDesigns": "Häufige Stichprobendesigns",
+      "prevalentMeasurementDesigns": "Häufige Messdesigns",
+      "prevalentAnalyticDesigns": "Häufige Analysedesigns"
+    },
+    "chartLabels": {
+      "individual": "Einzeln",
+      "timePeriods": "Zeiträume"
     }
   },
   "errors": {
