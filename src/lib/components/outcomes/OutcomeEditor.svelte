@@ -152,24 +152,16 @@
         {/if}
         {#if currentOutcome?.type}
           <Badge class={getTypeColor(currentOutcome.type)}>
-            {currentOutcome.type}
+            {$_(`outcomes.outcomeTypes.${currentOutcome.type}`)}
           </Badge>
         {/if}
       </div>
     </div>
     {#if currentOutcome?.createdAt && currentOutcome?.updatedAt}
       <div class="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-        <span
-          >Created {new Date(
-            currentOutcome.createdAt
-          ).toLocaleDateString()}</span
-        >
+        <span>{$_('outcomes.createdDate', { values: { date: new Date(currentOutcome.createdAt).toLocaleDateString() }})}</span>
         <span>•</span>
-        <span
-          >Updated {new Date(
-            currentOutcome.updatedAt
-          ).toLocaleDateString()}</span
-        >
+        <span>{$_('outcomes.updatedDate', { values: { date: new Date(currentOutcome.updatedAt).toLocaleDateString() }})}</span>
       </div>
     {/if}
   </header>

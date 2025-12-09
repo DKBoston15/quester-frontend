@@ -569,7 +569,7 @@
             </Select.Trigger>
             <Select.Content>
               <Select.Group>
-                <div class="px-2 py-1.5 text-sm font-medium">{$_("outcomes.type")}</div>
+                <Select.GroupHeading class="px-2 py-1.5 text-sm font-medium">{$_("outcomes.type")}</Select.GroupHeading>
                 <Select.Item value="QUESTION">{$_("outcomes.researchOutcome")}</Select.Item>
                 <Select.Item value="LINK">{$_("outcomes.link")}</Select.Item>
               </Select.Group>
@@ -608,10 +608,10 @@
               </Select.Trigger>
               <Select.Content>
                 <Select.Group>
-                  <div class="px-2 py-1.5 text-sm font-medium">{$_("outcomes.templates")}</div>
+                  <Select.GroupHeading class="px-2 py-1.5 text-sm font-medium">{$_("outcomes.templatesLabel")}</Select.GroupHeading>
                   {#each outcomeStore.templates.filter((t) => t.type !== "LINK") as template}
                     <Select.Item value={template.name}>
-                      {template.name}
+                      {$_(`outcomes.templateNames.${template.name.replace(/\s+/g, '')}`)}
                     </Select.Item>
                   {/each}
                 </Select.Group>
