@@ -407,11 +407,14 @@
     "title": "Verbindungen",
     "legend": "Legende",
     "controls": "Steuerung",
+    "tour": "Tour",
     "interactionControls": "Interaktionssteuerung",
     "2dGraphControls": "2D-Graph-Steuerung",
     "3dGraphControls": "3D-Graph-Steuerung",
     "leftClick": "Linksklick",
     "rightClick": "Rechtsklick",
+    "rightClickEmpty": "Rechtsklick (leer)",
+    "rightClickLiterature": "Rechtsklick (Literatur)",
     "scrollWheel": "Scrollrad",
     "leftClickShift": "Linksklick + Umschalt",
     "panSelectDrag": "Schwenken/Auswählen/Knoten ziehen",
@@ -420,7 +423,13 @@
     "rotateView": "Ansicht drehen",
     "panView": "Ansicht schwenken",
     "toggle2D": "2D umschalten",
-    "toggle3D": "3D umschalten"
+    "toggle3D": "3D umschalten",
+    "contextMenu": "Kontextmenü (navigieren, filtern)",
+    "filterDescription": "Sichtbarkeit verschiedener Knotentypen umschalten",
+    "navigateToLiterature": "Zur Literatur navigieren",
+    "filterConnectedNodes": "Verbundene Knoten filtern",
+    "resetFilter": "Filter zurücksetzen",
+    "literature": "Literatur"
   },
   "models": {
     "title": "Modelle",
@@ -1198,6 +1207,14 @@
       "interact": {
         "title": "Mit dem Graphen interagieren",
         "description": "Erkunden Sie den Graphbereich unten! Verwenden Sie Ihre Maus zum Zoomen, Schwenken und Auswählen von Knoten. In 2D können Sie Knoten ziehen; in 3D drehen Sie die Ansicht. Überprüfen Sie die Steuerungshinweise bei Bedarf."
+      },
+      "navigate": {
+        "title": "Zur Literatur navigieren",
+        "description": "Klicken Sie mit der rechten Maustaste auf einen beliebigen Literaturknoten (Buchsymbole), um ein Kontextmenü mit Schnellnavigationsoptionen zu öffnen. Sie können sofort zu den vollständigen Literaturdetails in einem neuen Tab springen, ohne Ihren Platz im Graphen zu verlieren."
+      },
+      "filter": {
+        "title": "Verbundene Knoten filtern",
+        "description": "Verwenden Sie das Kontextmenü, um den Graphen zu filtern und nur Knoten anzuzeigen, die mit einem bestimmten Literaterelement verbunden sind. Dies hilft Ihnen, sich auf die unmittelbaren Verbindungen eines bestimmten Forschungsstücks zu konzentrieren. Verwenden Sie 'Filter zurücksetzen', um zur vollständigen Ansicht zurückzukehren."
       },
       "discover": {
         "title": "Erkenntnisse entdecken",

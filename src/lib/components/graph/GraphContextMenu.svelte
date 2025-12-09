@@ -5,6 +5,8 @@
   import { Button } from "$lib/components/ui/button";
   import { Separator } from "$lib/components/ui/separator";
   import { ExternalLink, Filter, RotateCcw } from "lucide-svelte";
+  import { _ } from "svelte-i18n";
+  import { getTypeLabel } from "./data";
 
   interface GraphNode {
     id: string;
@@ -176,7 +178,7 @@
         <div class="node-info">
           <div class="node-title">{node?.id || 'Node'}</div>
           <div class="node-meta">
-            <span class="node-type">{node?.icon ? node.icon.charAt(0).toUpperCase() + node.icon.slice(1).replace('_', ' ') : 'Node'}</span>
+            <span class="node-type">{node?.icon ? getTypeLabel(node.icon) : 'Node'}</span>
           </div>
         </div>
       </div>
@@ -191,12 +193,12 @@
             class="menu-option"
             onclick={handleNavigate}
             role="menuitem"
-            aria-label="Navigate to literature details"
+            aria-label={$_('connections.navigateToLiterature')}
           >
             <div class="option-icon">
               <ExternalLink class="w-4 h-4" />
             </div>
-            <span class="option-label">Navigate to Literature</span>
+            <span class="option-label">{$_('connections.navigateToLiterature')}</span>
           </button>
         {/if}
 
@@ -206,12 +208,12 @@
             class="menu-option"
             onclick={handleFilter}
             role="menuitem"
-            aria-label="Filter to show only connected nodes"
+            aria-label={$_('connections.filterConnectedNodes')}
           >
             <div class="option-icon">
               <Filter class="w-4 h-4" />
             </div>
-            <span class="option-label">Filter Connected Nodes</span>
+            <span class="option-label">{$_('connections.filterConnectedNodes')}</span>
           </button>
         {:else}
           <button
@@ -219,12 +221,12 @@
             class="menu-option"
             onclick={handleReset}
             role="menuitem"
-            aria-label="Reset filter to show all nodes"
+            aria-label={$_('connections.resetFilter')}
           >
             <div class="option-icon">
               <RotateCcw class="w-4 h-4" />
             </div>
-            <span class="option-label">Reset Filter</span>
+            <span class="option-label">{$_('connections.resetFilter')}</span>
           </button>
         {/if}
       </div>

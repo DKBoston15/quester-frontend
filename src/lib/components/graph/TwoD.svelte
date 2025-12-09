@@ -828,7 +828,7 @@
                 <Card.Header>
                   <Card.Title>{$_('graph.filterTitle')}</Card.Title>
                   <Card.Description>
-                    Toggle visibility of different node types
+                    {$_('connections.filterDescription')}
                   </Card.Description>
                 </Card.Header>
                 <Card.Content

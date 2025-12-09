@@ -407,11 +407,14 @@
     "title": "关联",
     "legend": "图例",
     "controls": "控制",
+    "tour": "导览",
     "interactionControls": "交互控制",
     "2dGraphControls": "2D 图形控制",
     "3dGraphControls": "3D 图形控制",
     "leftClick": "左键点击",
     "rightClick": "右键点击",
+    "rightClickEmpty": "右键点击（空白处）",
+    "rightClickLiterature": "右键点击（文献）",
     "scrollWheel": "滚轮",
     "leftClickShift": "左键点击 + Shift",
     "panSelectDrag": "平移/选择/拖动节点",
@@ -420,7 +423,13 @@
     "rotateView": "旋转视图",
     "panView": "平移视图",
     "toggle2D": "切换 2D",
-    "toggle3D": "切换 3D"
+    "toggle3D": "切换 3D",
+    "contextMenu": "上下文菜单（导航、筛选）",
+    "filterDescription": "切换不同节点类型的可见性",
+    "navigateToLiterature": "导航至文献",
+    "filterConnectedNodes": "筛选关联节点",
+    "resetFilter": "重置筛选",
+    "literature": "文献"
   },
   "models": {
     "title": "模型",
@@ -3213,27 +3222,35 @@
     "connections": {
       "visualize": {
         "title": "可视化您的研究关联",
-        "description": "此视图绘制出您的文献、笔记、关键词和概念之间的关系。"
+        "description": "此视图绘制出您的文献、笔记、关键词和概念之间的关系。它帮助您发现隐藏的模式，识别研究空白，并理解项目的结构。"
       },
       "dimensions": {
         "title": "切换维度",
-        "description": "在 2D 网络图和沉浸式 3D 视图之间切换。"
+        "description": "在 2D 网络图和沉浸式 3D 视图之间切换，从不同角度探索您的关联。"
       },
       "legend": {
         "title": "了解符号",
-        "description": "点击此处打开图例。"
+        "description": "点击此处打开图例，了解图中每个图标（节点）代表什么（例如：文献、笔记、关键词）。"
       },
       "controls": {
         "title": "显示/隐藏交互提示",
-        "description": "切换此选项以显示或隐藏有关如何导航的有用提示。"
+        "description": "切换此选项以显示或隐藏有关如何导航和与图形交互（缩放、平移、选择）的有用提示。"
       },
       "interact": {
         "title": "与图形交互",
-        "description": "探索下方的图形区域！"
+        "description": "探索下方的图形区域！使用鼠标缩放、平移和选择节点。在 2D 中，您可以拖动节点；在 3D 中，旋转视图。如需帮助，请查看控制提示。"
+      },
+      "navigate": {
+        "title": "导航至文献",
+        "description": "右键点击任何文献节点（书籍图标）以打开带有快速导航选项的上下文菜单。您可以在新标签页中立即跳转到完整的文献详情，而不会丢失在图中的位置。"
+      },
+      "filter": {
+        "title": "筛选关联节点",
+        "description": "使用上下文菜单筛选图形，仅显示与特定文献条目相连的节点。这有助于您关注特定研究作品的直接关联。使用"重置筛选"返回完整视图。"
       },
       "discover": {
         "title": "发现洞察",
-        "description": "使用此可视化查看想法如何连接、识别相关工作的集群。"
+        "description": "使用此可视化查看想法如何连接、识别相关工作的集群、发现潜在的研究空白，并更深入地了解您的研究领域。"
       }
     },
     "notes": {

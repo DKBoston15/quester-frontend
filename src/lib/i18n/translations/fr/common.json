@@ -407,11 +407,14 @@
     "title": "Connexions",
     "legend": "Légende",
     "controls": "Contrôles",
+    "tour": "Visite",
     "interactionControls": "Contrôles d'interaction",
     "2dGraphControls": "Contrôles du graphique 2D",
     "3dGraphControls": "Contrôles du graphique 3D",
     "leftClick": "Clic gauche",
     "rightClick": "Clic droit",
+    "rightClickEmpty": "Clic droit (vide)",
+    "rightClickLiterature": "Clic droit (littérature)",
     "scrollWheel": "Molette de défilement",
     "leftClickShift": "Clic gauche + Maj",
     "panSelectDrag": "Panoramique/Sélectionner/Déplacer les nœuds",
@@ -420,7 +423,13 @@
     "rotateView": "Rotation de la vue",
     "panView": "Panoramique",
     "toggle2D": "Basculer en 2D",
-    "toggle3D": "Basculer en 3D"
+    "toggle3D": "Basculer en 3D",
+    "contextMenu": "Menu contextuel (naviguer, filtrer)",
+    "filterDescription": "Basculer la visibilité des différents types de nœuds",
+    "navigateToLiterature": "Naviguer vers la littérature",
+    "filterConnectedNodes": "Filtrer les nœuds connectés",
+    "resetFilter": "Réinitialiser le filtre",
+    "literature": "Littérature"
   },
   "models": {
     "title": "Modèles",
@@ -1198,6 +1207,14 @@
       "interact": {
         "title": "Interagir avec le graphique",
         "description": "Explorez la zone du graphique ci-dessous ! Utilisez votre souris pour zoomer, faire un panoramique et sélectionner des nœuds. En 2D, vous pouvez faire glisser les nœuds ; en 3D, faites pivoter la vue. Consultez les conseils de contrôle si nécessaire."
+      },
+      "navigate": {
+        "title": "Naviguer vers la littérature",
+        "description": "Faites un clic droit sur n'importe quel nœud de littérature (icônes de livre) pour ouvrir un menu contextuel avec des options de navigation rapide. Vous pouvez accéder instantanément aux détails complets de la littérature dans un nouvel onglet sans perdre votre place dans le graphique."
+      },
+      "filter": {
+        "title": "Filtrer les nœuds connectés",
+        "description": "Utilisez le menu contextuel pour filtrer le graphique et afficher uniquement les nœuds connectés à un élément de littérature spécifique. Cela vous aide à vous concentrer sur les connexions immédiates d'une pièce de recherche particulière. Utilisez 'Réinitialiser le filtre' pour revenir à la vue complète."
       },
       "discover": {
         "title": "Découvrir des insights",

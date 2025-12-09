@@ -407,11 +407,14 @@
     "title": "Conexiones",
     "legend": "Leyenda",
     "controls": "Controles",
+    "tour": "Tour",
     "interactionControls": "Controles de interacción",
     "2dGraphControls": "Controles de gráfico 2D",
     "3dGraphControls": "Controles de gráfico 3D",
     "leftClick": "Clic izquierdo",
     "rightClick": "Clic derecho",
+    "rightClickEmpty": "Clic derecho (vacío)",
+    "rightClickLiterature": "Clic derecho (literatura)",
     "scrollWheel": "Rueda de desplazamiento",
     "leftClickShift": "Clic izquierdo + Shift",
     "panSelectDrag": "Desplazar/Seleccionar/Arrastrar nodos",
@@ -420,7 +423,13 @@
     "rotateView": "Rotar vista",
     "panView": "Desplazar vista",
     "toggle2D": "Alternar 2D",
-    "toggle3D": "Alternar 3D"
+    "toggle3D": "Alternar 3D",
+    "contextMenu": "Menú contextual (navegar, filtrar)",
+    "filterDescription": "Alternar visibilidad de diferentes tipos de nodos",
+    "navigateToLiterature": "Navegar a literatura",
+    "filterConnectedNodes": "Filtrar nodos conectados",
+    "resetFilter": "Restablecer filtro",
+    "literature": "Literatura"
   },
   "models": {
     "title": "Modelos",
@@ -1198,6 +1207,14 @@
       "interact": {
         "title": "Interactuar con el gráfico",
         "description": "¡Explore el área del gráfico a continuación! Use su ratón para acercar, desplazar y seleccionar nodos. En 2D, puede arrastrar nodos; en 3D, rotar la vista. Consulte las sugerencias de controles si es necesario."
+      },
+      "navigate": {
+        "title": "Navegar a literatura",
+        "description": "Haga clic derecho en cualquier nodo de literatura (íconos de libro) para abrir un menú contextual con opciones de navegación rápida. Puede saltar instantáneamente a los detalles completos de la literatura en una nueva pestaña sin perder su lugar en el gráfico."
+      },
+      "filter": {
+        "title": "Filtrar nodos conectados",
+        "description": "Use el menú contextual para filtrar el gráfico y mostrar solo los nodos conectados a un elemento de literatura específico. Esto le ayuda a enfocarse en las conexiones inmediatas de una pieza de investigación particular. Use 'Restablecer filtro' para volver a la vista completa."
       },
       "discover": {
         "title": "Descubrir perspectivas",

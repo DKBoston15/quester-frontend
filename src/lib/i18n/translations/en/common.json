@@ -407,11 +407,14 @@
     "title": "Connections",
     "legend": "Legend",
     "controls": "Controls",
+    "tour": "Tour",
     "interactionControls": "Interaction Controls",
     "2dGraphControls": "2D Graph Controls",
     "3dGraphControls": "3D Graph Controls",
     "leftClick": "Left Click",
     "rightClick": "Right Click",
+    "rightClickEmpty": "Right Click (Empty)",
+    "rightClickLiterature": "Right Click (Literature)",
     "scrollWheel": "Scroll Wheel",
     "leftClickShift": "Left Click + Shift",
     "panSelectDrag": "Pan/Select/Drag nodes",
@@ -420,7 +423,13 @@
     "rotateView": "Rotate view",
     "panView": "Pan view",
     "toggle2D": "Toggle 2D",
-    "toggle3D": "Toggle 3D"
+    "toggle3D": "Toggle 3D",
+    "contextMenu": "Context menu (navigate, filter)",
+    "filterDescription": "Toggle visibility of different node types",
+    "navigateToLiterature": "Navigate to Literature",
+    "filterConnectedNodes": "Filter Connected Nodes",
+    "resetFilter": "Reset Filter",
+    "literature": "Literature"
   },
   "models": {
     "title": "Models",
@@ -1198,6 +1207,14 @@
       "interact": {
         "title": "Interact with the Graph",
         "description": "Explore the graph area below! Use your mouse to zoom, pan, and select nodes. In 2D, you can drag nodes; in 3D, rotate the view. Check the controls hints if needed."
+      },
+      "navigate": {
+        "title": "Navigate to Literature",
+        "description": "Right-click on any literature node (book icons) to open a context menu with quick navigation options. You can instantly jump to the full literature details in a new tab without losing your place in the graph."
+      },
+      "filter": {
+        "title": "Filter Connected Nodes",
+        "description": "Use the context menu to filter the graph and show only nodes connected to a specific literature item. This helps you focus on the immediate connections of a particular research piece. Use 'Reset Filter' to return to the full view."
       },
       "discover": {
         "title": "Discover Insights",
