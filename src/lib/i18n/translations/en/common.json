@@ -770,7 +770,20 @@
     "nextStepsDescription": "Get recommendations for continuing your work",
     "relevance": "{percent}% relevance",
     "literaturePage": "Literature Page",
-    "failedToDeleteSession": "Failed to delete session"
+    "failedToDeleteSession": "Failed to delete session",
+    "justNow": "Just now",
+    "createAsNote": "Create as note",
+    "previewDocument": "Preview document",
+    "welcomeDescription": "Ask questions about your research, get insights from your literature, or explore patterns in your data. I'm here to help accelerate your research process.",
+    "toolNames": {
+      "get_literature_count": "Literature Counter",
+      "get_relevant_content": "Content Search",
+      "semantic_search": "Semantic Search",
+      "analyze_literature_gaps": "Gap Analysis",
+      "suggest_research_directions": "Research Suggestions",
+      "summarize_search_results": "Search Summarizer",
+      "compare_methodologies": "Methodology Comparison"
+    }
   },
   "onboarding": {
     "welcome": "Welcome to Quester",
@@ -3602,26 +3615,28 @@
   },
   "contextSelector": {
     "contextFocus": "Context Focus",
-    "contextFocusDescription": "Select specific items to anchor the assistant's context. The assistant will still keep lightweight project metadata.",
+    "contextFocusDescription": "Select items to focus the AI's responses on specific parts of your research.",
     "clear": "Clear",
-    "noContextSelected": "No context items selected. The assistant will consider the broader project content.",
+    "noContextSelected": "No context items selected. The AI will use your entire project.",
     "removeFromContext": "Remove {title} from context",
     "searchAllProjects": "Search items across accessible projects",
     "searchThisProject": "Search this project for notes, literature, outcomes...",
     "chooseProject": "Choose a project to target context selections.",
-    "searching": "Searching…",
+    "searching": "Searching...",
     "noMatchingItems": "No matching items yet. Try another search term.",
     "selected": "Selected",
-    "literature": "Literature",
-    "note": "Note",
-    "outcome": "Outcome",
-    "model": "Model",
-    "keywordAnalysis": "Keyword Analysis",
-    "document": "Document",
-    "documentChunk": "Document Chunk",
-    "project": "Project",
     "selectProjectError": "Select a project to target the assistant context.",
-    "failedToLoadContext": "Failed to load context suggestions"
+    "failedToLoadContext": "Failed to load context suggestions",
+    "types": {
+      "literature": "Literature",
+      "note": "Note",
+      "outcome": "Outcome",
+      "model": "Model",
+      "keywordAnalysis": "Keyword Analysis",
+      "document": "Document",
+      "documentChunk": "Document Chunk",
+      "project": "Project"
+    }
   },
   "graphContextMenu": {
     "node": "Node",

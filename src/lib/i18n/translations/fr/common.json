@@ -770,7 +770,20 @@
     "nextStepsDescription": "Obtenez des recommandations pour poursuivre votre travail",
     "relevance": "{percent}% de pertinence",
     "literaturePage": "Page de littérature",
-    "failedToDeleteSession": "Échec de la suppression de la session"
+    "failedToDeleteSession": "Échec de la suppression de la session",
+    "justNow": "À l'instant",
+    "createAsNote": "Créer comme note",
+    "previewDocument": "Aperçu du document",
+    "welcomeDescription": "Posez des questions sur votre recherche, obtenez des informations de votre littérature ou explorez des modèles dans vos données. Je suis là pour accélérer votre processus de recherche.",
+    "toolNames": {
+      "get_literature_count": "Compteur de littérature",
+      "get_relevant_content": "Recherche de contenu",
+      "semantic_search": "Recherche sémantique",
+      "analyze_literature_gaps": "Analyse des lacunes",
+      "suggest_research_directions": "Suggestions de recherche",
+      "summarize_search_results": "Résumé de recherche",
+      "compare_methodologies": "Comparaison des méthodologies"
+    }
   },
   "onboarding": {
     "welcome": "Bienvenue sur Quester",
@@ -3602,26 +3615,28 @@
   },
   "contextSelector": {
     "contextFocus": "Focus du contexte",
-    "contextFocusDescription": "Sélectionnez des éléments spécifiques pour ancrer le contexte de l'assistant. L'assistant conservera les métadonnées légères du projet.",
+    "contextFocusDescription": "Sélectionnez des éléments pour concentrer les réponses de l'IA sur des parties spécifiques de votre recherche.",
     "clear": "Effacer",
-    "noContextSelected": "Aucun élément de contexte sélectionné. L'assistant considérera le contenu plus large du projet.",
-    "removeFromContext": "Supprimer {title} du contexte",
+    "noContextSelected": "Aucun élément de contexte sélectionné. L'IA utilisera l'ensemble de votre projet.",
+    "removeFromContext": "Retirer {title} du contexte",
     "searchAllProjects": "Rechercher des éléments dans tous les projets accessibles",
-    "searchThisProject": "Rechercher dans ce projet des notes, de la littérature, des résultats...",
+    "searchThisProject": "Rechercher dans ce projet des notes, littérature, résultats...",
     "chooseProject": "Choisissez un projet pour cibler les sélections de contexte.",
-    "searching": "Recherche en cours…",
-    "noMatchingItems": "Aucun élément correspondant pour l'instant. Essayez un autre terme de recherche.",
+    "searching": "Recherche en cours...",
+    "noMatchingItems": "Aucun élément correspondant. Essayez un autre terme de recherche.",
     "selected": "Sélectionné",
-    "literature": "Littérature",
-    "note": "Note",
-    "outcome": "Résultat",
-    "model": "Modèle",
-    "keywordAnalysis": "Analyse de mots-clés",
-    "document": "Document",
-    "documentChunk": "Fragment de document",
-    "project": "Projet",
     "selectProjectError": "Sélectionnez un projet pour cibler le contexte de l'assistant.",
-    "failedToLoadContext": "Échec du chargement des suggestions de contexte"
+    "failedToLoadContext": "Échec du chargement des suggestions de contexte",
+    "types": {
+      "literature": "Littérature",
+      "note": "Note",
+      "outcome": "Résultat",
+      "model": "Modèle",
+      "keywordAnalysis": "Analyse de mots-clés",
+      "document": "Document",
+      "documentChunk": "Fragment de document",
+      "project": "Projet"
+    }
   },
   "graphContextMenu": {
     "node": "Nœud",

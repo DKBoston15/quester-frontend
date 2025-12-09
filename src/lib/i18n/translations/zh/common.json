@@ -770,7 +770,20 @@
     "nextStepsDescription": "获取继续您工作的建议",
     "relevance": "{percent}% 相关性",
     "literaturePage": "文献页面",
-    "failedToDeleteSession": "删除会话失败"
+    "failedToDeleteSession": "删除会话失败",
+    "justNow": "刚刚",
+    "createAsNote": "创建为笔记",
+    "previewDocument": "预览文档",
+    "welcomeDescription": "询问有关您的研究的问题，从您的文献中获取见解，或探索数据中的模式。我在这里帮助加速您的研究过程。",
+    "toolNames": {
+      "get_literature_count": "文献计数器",
+      "get_relevant_content": "内容搜索",
+      "semantic_search": "语义搜索",
+      "analyze_literature_gaps": "空白分析",
+      "suggest_research_directions": "研究建议",
+      "summarize_search_results": "搜索摘要",
+      "compare_methodologies": "方法比较"
+    }
   },
   "onboarding": {
     "welcome": "欢迎使用 Quester",
@@ -3360,7 +3373,7 @@
       },
       "filter": {
         "title": "筛选关联节点",
-        "description": "使用上下文菜单筛选图形，仅显示与特定文献条目相连的节点。这有助于您关注特定研究作品的直接关联。使用"重置筛选"返回完整视图。"
+        "description": "使用上下文菜单筛选图形，仅显示与特定文献条目相连的节点。这有助于您关注特定研究作品的直接关联。使用「重置筛选」返回完整视图。"
       },
       "discover": {
         "title": "发现洞察",
@@ -3602,26 +3615,28 @@
   },
   "contextSelector": {
     "contextFocus": "上下文焦点",
-    "contextFocusDescription": "选择特定项目以锚定助手的上下文。助手仍将保留轻量级项目元数据。",
+    "contextFocusDescription": "选择项目以将AI的回复集中在您研究的特定部分。",
     "clear": "清除",
-    "noContextSelected": "未选择上下文项目。助手将考虑更广泛的项目内容。",
+    "noContextSelected": "未选择上下文项目。AI将使用您的整个项目。",
     "removeFromContext": "从上下文中移除 {title}",
-    "searchAllProjects": "在所有可访问的项目中搜索项目",
+    "searchAllProjects": "在所有可访问的项目中搜索",
     "searchThisProject": "在此项目中搜索笔记、文献、成果...",
-    "chooseProject": "选择一个项目以定位上下文选择。",
-    "searching": "搜索中…",
-    "noMatchingItems": "暂无匹配项目。请尝试其他搜索词。",
+    "chooseProject": "选择一个项目来定位上下文选择。",
+    "searching": "搜索中...",
+    "noMatchingItems": "没有匹配的项目。请尝试其他搜索词。",
     "selected": "已选择",
-    "literature": "文献",
-    "note": "笔记",
-    "outcome": "成果",
-    "model": "模型",
-    "keywordAnalysis": "关键词分析",
-    "document": "文档",
-    "documentChunk": "文档片段",
-    "project": "项目",
     "selectProjectError": "请选择一个项目以定位助手上下文。",
-    "failedToLoadContext": "加载上下文建议失败"
+    "failedToLoadContext": "加载上下文建议失败",
+    "types": {
+      "literature": "文献",
+      "note": "笔记",
+      "outcome": "成果",
+      "model": "模型",
+      "keywordAnalysis": "关键词分析",
+      "document": "文档",
+      "documentChunk": "文档片段",
+      "project": "项目"
+    }
   },
   "graphContextMenu": {
     "node": "节点",

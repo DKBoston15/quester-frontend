@@ -92,7 +92,7 @@
     "overview": "Resumen",
     "literature": "Literatura",
     "notes": "Notas",
-    "researchAssistant": "Asistente de investigación",
+    "researchAssistant": "Asistente IA",
     "insights": "Perspectivas",
     "models": "Modelos",
     "outcomes": "Resultados",
@@ -770,7 +770,20 @@
     "nextStepsDescription": "Obtener recomendaciones para continuar su trabajo",
     "relevance": "{percent}% de relevancia",
     "literaturePage": "Página de literatura",
-    "failedToDeleteSession": "Error al eliminar la sesión"
+    "failedToDeleteSession": "Error al eliminar la sesión",
+    "justNow": "Ahora mismo",
+    "createAsNote": "Crear como nota",
+    "previewDocument": "Vista previa del documento",
+    "welcomeDescription": "Haz preguntas sobre tu investigación, obtén información de tu literatura o explora patrones en tus datos. Estoy aquí para acelerar tu proceso de investigación.",
+    "toolNames": {
+      "get_literature_count": "Contador de literatura",
+      "get_relevant_content": "Búsqueda de contenido",
+      "semantic_search": "Búsqueda semántica",
+      "analyze_literature_gaps": "Análisis de brechas",
+      "suggest_research_directions": "Sugerencias de investigación",
+      "summarize_search_results": "Resumen de búsqueda",
+      "compare_methodologies": "Comparación de metodologías"
+    }
   },
   "onboarding": {
     "welcome": "Bienvenido a Quester",
@@ -3602,26 +3615,28 @@
   },
   "contextSelector": {
     "contextFocus": "Enfoque de contexto",
-    "contextFocusDescription": "Seleccione elementos específicos para anclar el contexto del asistente. El asistente aún mantendrá metadatos ligeros del proyecto.",
+    "contextFocusDescription": "Seleccione elementos para enfocar las respuestas de la IA en partes específicas de su investigación.",
     "clear": "Limpiar",
-    "noContextSelected": "No hay elementos de contexto seleccionados. El asistente considerará el contenido más amplio del proyecto.",
+    "noContextSelected": "No hay elementos de contexto seleccionados. La IA utilizará todo su proyecto.",
     "removeFromContext": "Eliminar {title} del contexto",
     "searchAllProjects": "Buscar elementos en todos los proyectos accesibles",
     "searchThisProject": "Buscar en este proyecto notas, literatura, resultados...",
     "chooseProject": "Elija un proyecto para orientar las selecciones de contexto.",
-    "searching": "Buscando…",
-    "noMatchingItems": "Aún no hay elementos coincidentes. Intente con otro término de búsqueda.",
+    "searching": "Buscando...",
+    "noMatchingItems": "No hay elementos coincidentes. Pruebe con otro término de búsqueda.",
     "selected": "Seleccionado",
-    "literature": "Literatura",
-    "note": "Nota",
-    "outcome": "Resultado",
-    "model": "Modelo",
-    "keywordAnalysis": "Análisis de palabras clave",
-    "document": "Documento",
-    "documentChunk": "Fragmento de documento",
-    "project": "Proyecto",
     "selectProjectError": "Seleccione un proyecto para orientar el contexto del asistente.",
-    "failedToLoadContext": "Error al cargar sugerencias de contexto"
+    "failedToLoadContext": "Error al cargar sugerencias de contexto",
+    "types": {
+      "literature": "Literatura",
+      "note": "Nota",
+      "outcome": "Resultado",
+      "model": "Modelo",
+      "keywordAnalysis": "Análisis de palabras clave",
+      "document": "Documento",
+      "documentChunk": "Fragmento de documento",
+      "project": "Proyecto"
+    }
   },
   "graphContextMenu": {
     "node": "Nodo",

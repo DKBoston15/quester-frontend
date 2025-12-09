@@ -770,7 +770,20 @@
     "nextStepsDescription": "Erhalten Sie Empfehlungen für die Fortsetzung Ihrer Arbeit",
     "relevance": "{percent}% Relevanz",
     "literaturePage": "Literaturseite",
-    "failedToDeleteSession": "Sitzung konnte nicht gelöscht werden"
+    "failedToDeleteSession": "Sitzung konnte nicht gelöscht werden",
+    "justNow": "Gerade eben",
+    "createAsNote": "Als Notiz erstellen",
+    "previewDocument": "Dokument-Vorschau",
+    "welcomeDescription": "Stellen Sie Fragen zu Ihrer Forschung, erhalten Sie Einblicke aus Ihrer Literatur oder erkunden Sie Muster in Ihren Daten. Ich bin hier, um Ihren Forschungsprozess zu beschleunigen.",
+    "toolNames": {
+      "get_literature_count": "Literaturzähler",
+      "get_relevant_content": "Inhaltssuche",
+      "semantic_search": "Semantische Suche",
+      "analyze_literature_gaps": "Lückenanalyse",
+      "suggest_research_directions": "Forschungsvorschläge",
+      "summarize_search_results": "Suchergebnis-Zusammenfassung",
+      "compare_methodologies": "Methodenvergleich"
+    }
   },
   "onboarding": {
     "welcome": "Willkommen bei Quester",
@@ -3602,26 +3615,28 @@
   },
   "contextSelector": {
     "contextFocus": "Kontextfokus",
-    "contextFocusDescription": "Wählen Sie bestimmte Elemente aus, um den Kontext des Assistenten zu verankern. Der Assistent behält weiterhin leichte Projektmetadaten bei.",
+    "contextFocusDescription": "Wählen Sie Elemente aus, um die KI-Antworten auf bestimmte Teile Ihrer Forschung zu fokussieren.",
     "clear": "Löschen",
-    "noContextSelected": "Keine Kontextelemente ausgewählt. Der Assistent berücksichtigt den breiteren Projektinhalt.",
+    "noContextSelected": "Keine Kontextelemente ausgewählt. Die KI wird Ihr gesamtes Projekt verwenden.",
     "removeFromContext": "{title} aus dem Kontext entfernen",
     "searchAllProjects": "Elemente in allen zugänglichen Projekten suchen",
     "searchThisProject": "In diesem Projekt nach Notizen, Literatur, Ergebnissen suchen...",
-    "chooseProject": "Wählen Sie ein Projekt, um Kontextauswahlen zu zielen.",
-    "searching": "Suchen…",
-    "noMatchingItems": "Noch keine passenden Elemente. Versuchen Sie einen anderen Suchbegriff.",
+    "chooseProject": "Wählen Sie ein Projekt für die Kontextauswahl.",
+    "searching": "Suche läuft...",
+    "noMatchingItems": "Keine passenden Elemente. Versuchen Sie einen anderen Suchbegriff.",
     "selected": "Ausgewählt",
-    "literature": "Literatur",
-    "note": "Notiz",
-    "outcome": "Ergebnis",
-    "model": "Modell",
-    "keywordAnalysis": "Schlüsselwortanalyse",
-    "document": "Dokument",
-    "documentChunk": "Dokumentfragment",
-    "project": "Projekt",
     "selectProjectError": "Wählen Sie ein Projekt, um den Assistentenkontext zu zielen.",
-    "failedToLoadContext": "Kontextvorschläge konnten nicht geladen werden"
+    "failedToLoadContext": "Kontextvorschläge konnten nicht geladen werden",
+    "types": {
+      "literature": "Literatur",
+      "note": "Notiz",
+      "outcome": "Ergebnis",
+      "model": "Modell",
+      "keywordAnalysis": "Stichwortanalyse",
+      "document": "Dokument",
+      "documentChunk": "Dokumentfragment",
+      "project": "Projekt"
+    }
   },
   "graphContextMenu": {
     "node": "Knoten",
