@@ -1505,6 +1505,7 @@
     "deletedEvents": "{count} événements supprimés",
     "noCustomEventsSelected": "Aucun événement personnalisé sélectionné pour l'action groupée",
     "unknownModel": "Modèle inconnu",
+    "loadAchievementsFailed": "Échec du chargement des réalisations. Veuillez réessayer plus tard.",
     "levels": {
       "sparkOfCuriosity": {
         "name": "Étincelle de curiosité",
@@ -1536,6 +1537,8 @@
       }
     },
     "eventTitles": {
+      "projectCreated": "Projet créé : {name}",
+      "projectInitialized": "Projet initialisé",
       "projectStatusChanged": "Statut du projet modifié",
       "designUpdated": "Conception mise à jour",
       "modelCreatedAndUpdated": "Modèle créé et mis à jour",
@@ -1555,7 +1558,9 @@
       "addedLiteratureItem": "Élément de littérature ajouté",
       "addedLiteratureItems": "{count} éléments de littérature ajoutés",
       "createdNote": "Note créée",
-      "createdNotes": "{count} notes créées"
+      "createdNotes": "{count} notes créées",
+      "nEvents": "{count} événements",
+      "oneEvent": "1 événement"
     },
     "achievementGroups": {
       "noteTaking": "Prise de notes",
@@ -1565,6 +1570,59 @@
       "researchDesign": "Conception de recherche",
       "customDesigns": "Conceptions personnalisées",
       "visualization": "Visualisation"
+    },
+    "eventTypes": {
+      "project": "Projet",
+      "literature": "Littérature",
+      "notes": "Notes",
+      "models": "Modèles",
+      "outcomes": "Résultats",
+      "status": "Changements de statut",
+      "design": "Changements de conception",
+      "insights": "Perspectives",
+      "custom": "Événements personnalisés"
+    },
+    "achievementNames": {
+      "ADD_CUSTOM_MEASUREMENT_DESIGN": "Ajoutez votre propre conception de mesure",
+      "QUICK_NOTES_3": "Rédigez 3 notes rapides",
+      "KEYWORD_ANALYSIS": "Effectuez une analyse de mots-clés",
+      "NOTES_30": "Prenez 30 notes",
+      "ADD_CUSTOM_ANALYTIC_DESIGN": "Ajoutez votre propre conception analytique",
+      "ADD_LITERATURE_10": "Ajoutez 10 éléments de littérature",
+      "LOG_30_DAYS": "Connectez-vous pendant 30 jours consécutifs",
+      "LOG_7_DAYS": "Connectez-vous pendant 7 jours consécutifs",
+      "ADD_LITERATURE_3": "Ajoutez 3 éléments de littérature",
+      "KEYWORDS_5": "Identifiez 5 mots-clés",
+      "NOTES_10": "Prenez 10 notes",
+      "LOG_3_DAYS": "Connectez-vous pendant 3 jours consécutifs",
+      "ADD_CUSTOM_RESEARCH_DESIGN": "Ajoutez votre propre conception de recherche",
+      "ONBOARDING_COMPLETE_ONBOARDING": "Terminez l'intégration",
+      "LOG_90_DAYS": "Connectez-vous pendant 90 jours consécutifs",
+      "QUICK_NOTES_15": "Rédigez 15 notes rapides",
+      "LOG_60_DAYS": "Connectez-vous pendant 60 jours consécutifs",
+      "KEYWORDS_25": "Identifiez 25 mots-clés",
+      "DESIGNS_30": "Identifiez 30 conceptions",
+      "ADD_LITERATURE_30": "Ajoutez 30 éléments de littérature",
+      "ADD_CUSTOM_SAMPLING_DESIGN": "Ajoutez votre propre conception d'échantillonnage",
+      "NOTES_3": "Prenez 3 notes",
+      "VIS_MODEL": "Créez un modèle",
+      "ADD_LITERATURE_20": "Ajoutez 20 éléments de littérature",
+      "DESIGNS_10": "Identifiez 10 conceptions",
+      "KEYWORDS_50": "Identifiez 50 mots-clés",
+      "DESIGNS_3": "Identifiez 3 conceptions",
+      "QUICK_NOTES_7": "Rédigez 7 notes rapides",
+      "ONBOARDING_ADD_3_LITERATURE": "Ajoutez 3 éléments de littérature"
+    },
+    "categoryNames": {
+      "Expanding Horizons": "Élargir les horizons",
+      "Quick Thinker": "Penseur rapide",
+      "Keyword Researcher": "Chercheur de mots-clés",
+      "Note-Taking Master": "Maître des notes",
+      "Collector": "Collectionneur",
+      "Consistency": "Cohérence",
+      "Onboarding": "Intégration",
+      "Explorer": "Explorateur",
+      "Visualization Expert": "Expert en visualisation"
     }
   },
   "time": {

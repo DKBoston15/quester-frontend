@@ -595,8 +595,9 @@
                   >{formatRelativeDate(group.date, groupingMode)}</span
                 >
                 <span class="event-count">
-                  {group.events.length}
-                  {group.events.length === 1 ? "event" : "events"}
+                  {group.events.length === 1
+                    ? $_("progress.eventTitles.oneEvent")
+                    : $_("progress.eventTitles.nEvents", { values: { count: group.events.length } })}
                 </span>
               </div>
             </div>

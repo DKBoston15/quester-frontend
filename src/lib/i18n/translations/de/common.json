@@ -1505,6 +1505,7 @@
     "deletedEvents": "{count} Ereignisse gelöscht",
     "noCustomEventsSelected": "Keine benutzerdefinierten Ereignisse für Massenaktion ausgewählt",
     "unknownModel": "Unbekanntes Modell",
+    "loadAchievementsFailed": "Fehler beim Laden der Erfolge. Bitte versuchen Sie es später erneut.",
     "levels": {
       "sparkOfCuriosity": {
         "name": "Funke der Neugier",
@@ -1536,6 +1537,8 @@
       }
     },
     "eventTitles": {
+      "projectCreated": "Projekt erstellt: {name}",
+      "projectInitialized": "Projekt initialisiert",
       "projectStatusChanged": "Projektstatus geändert",
       "designUpdated": "Design aktualisiert",
       "modelCreatedAndUpdated": "Modell erstellt und aktualisiert",
@@ -1555,7 +1558,9 @@
       "addedLiteratureItem": "Literaturelement hinzugefügt",
       "addedLiteratureItems": "{count} Literaturelemente hinzugefügt",
       "createdNote": "Notiz erstellt",
-      "createdNotes": "{count} Notizen erstellt"
+      "createdNotes": "{count} Notizen erstellt",
+      "nEvents": "{count} Ereignisse",
+      "oneEvent": "1 Ereignis"
     },
     "achievementGroups": {
       "noteTaking": "Notizen machen",
@@ -1565,6 +1570,59 @@
       "researchDesign": "Forschungsdesign",
       "customDesigns": "Benutzerdefinierte Designs",
       "visualization": "Visualisierung"
+    },
+    "eventTypes": {
+      "project": "Projekt",
+      "literature": "Literatur",
+      "notes": "Notizen",
+      "models": "Modelle",
+      "outcomes": "Ergebnisse",
+      "status": "Statusänderungen",
+      "design": "Designänderungen",
+      "insights": "Erkenntnisse",
+      "custom": "Benutzerdefinierte Ereignisse"
+    },
+    "achievementNames": {
+      "ADD_CUSTOM_MEASUREMENT_DESIGN": "Fügen Sie Ihr eigenes Messdesign hinzu",
+      "QUICK_NOTES_3": "Schreiben Sie 3 Schnellnotizen",
+      "KEYWORD_ANALYSIS": "Führen Sie eine Schlüsselwortanalyse durch",
+      "NOTES_30": "Machen Sie 30 Notizen",
+      "ADD_CUSTOM_ANALYTIC_DESIGN": "Fügen Sie Ihr eigenes Analysedesign hinzu",
+      "ADD_LITERATURE_10": "Fügen Sie 10 Literaturstücke hinzu",
+      "LOG_30_DAYS": "Melden Sie sich 30 Tage hintereinander an",
+      "LOG_7_DAYS": "Melden Sie sich 7 Tage hintereinander an",
+      "ADD_LITERATURE_3": "Fügen Sie 3 Literaturstücke hinzu",
+      "KEYWORDS_5": "Identifizieren Sie 5 Schlüsselwörter",
+      "NOTES_10": "Machen Sie 10 Notizen",
+      "LOG_3_DAYS": "Melden Sie sich 3 Tage hintereinander an",
+      "ADD_CUSTOM_RESEARCH_DESIGN": "Fügen Sie Ihr eigenes Forschungsdesign hinzu",
+      "ONBOARDING_COMPLETE_ONBOARDING": "Schließen Sie das Onboarding ab",
+      "LOG_90_DAYS": "Melden Sie sich 90 Tage hintereinander an",
+      "QUICK_NOTES_15": "Schreiben Sie 15 Schnellnotizen",
+      "LOG_60_DAYS": "Melden Sie sich 60 Tage hintereinander an",
+      "KEYWORDS_25": "Identifizieren Sie 25 Schlüsselwörter",
+      "DESIGNS_30": "Identifizieren Sie 30 Designs",
+      "ADD_LITERATURE_30": "Fügen Sie 30 Literaturstücke hinzu",
+      "ADD_CUSTOM_SAMPLING_DESIGN": "Fügen Sie Ihr eigenes Stichprobendesign hinzu",
+      "NOTES_3": "Machen Sie 3 Notizen",
+      "VIS_MODEL": "Erstellen Sie ein Modell",
+      "ADD_LITERATURE_20": "Fügen Sie 20 Literaturstücke hinzu",
+      "DESIGNS_10": "Identifizieren Sie 10 Designs",
+      "KEYWORDS_50": "Identifizieren Sie 50 Schlüsselwörter",
+      "DESIGNS_3": "Identifizieren Sie 3 Designs",
+      "QUICK_NOTES_7": "Schreiben Sie 7 Schnellnotizen",
+      "ONBOARDING_ADD_3_LITERATURE": "Fügen Sie 3 Literaturstücke hinzu"
+    },
+    "categoryNames": {
+      "Expanding Horizons": "Horizonte erweitern",
+      "Quick Thinker": "Schnelldenker",
+      "Keyword Researcher": "Schlüsselwortforscher",
+      "Note-Taking Master": "Notizenmeister",
+      "Collector": "Sammler",
+      "Consistency": "Beständigkeit",
+      "Onboarding": "Einarbeitung",
+      "Explorer": "Entdecker",
+      "Visualization Expert": "Visualisierungsexperte"
     }
   },
   "time": {

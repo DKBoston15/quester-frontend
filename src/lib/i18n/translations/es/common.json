@@ -1505,6 +1505,7 @@
     "deletedEvents": "{count} eventos eliminados",
     "noCustomEventsSelected": "Ningún evento personalizado seleccionado para acción masiva",
     "unknownModel": "Modelo desconocido",
+    "loadAchievementsFailed": "Error al cargar logros. Por favor, inténtelo de nuevo más tarde.",
     "levels": {
       "sparkOfCuriosity": {
         "name": "Chispa de curiosidad",
@@ -1536,6 +1537,8 @@
       }
     },
     "eventTitles": {
+      "projectCreated": "Proyecto creado: {name}",
+      "projectInitialized": "Proyecto inicializado",
       "projectStatusChanged": "Estado del proyecto cambiado",
       "designUpdated": "Diseño actualizado",
       "modelCreatedAndUpdated": "Modelo creado y actualizado",
@@ -1555,7 +1558,9 @@
       "addedLiteratureItem": "Elemento de literatura agregado",
       "addedLiteratureItems": "{count} elementos de literatura agregados",
       "createdNote": "Nota creada",
-      "createdNotes": "{count} notas creadas"
+      "createdNotes": "{count} notas creadas",
+      "nEvents": "{count} eventos",
+      "oneEvent": "1 evento"
     },
     "achievementGroups": {
       "noteTaking": "Toma de notas",
@@ -1565,6 +1570,59 @@
       "researchDesign": "Diseño de investigación",
       "customDesigns": "Diseños personalizados",
       "visualization": "Visualización"
+    },
+    "eventTypes": {
+      "project": "Proyecto",
+      "literature": "Literatura",
+      "notes": "Notas",
+      "models": "Modelos",
+      "outcomes": "Resultados",
+      "status": "Cambios de estado",
+      "design": "Cambios de diseño",
+      "insights": "Perspectivas",
+      "custom": "Eventos personalizados"
+    },
+    "achievementNames": {
+      "ADD_CUSTOM_MEASUREMENT_DESIGN": "Añade tu propio diseño de medición",
+      "QUICK_NOTES_3": "Escribe 3 notas rápidas",
+      "KEYWORD_ANALYSIS": "Realiza un análisis de palabras clave",
+      "NOTES_30": "Toma 30 notas",
+      "ADD_CUSTOM_ANALYTIC_DESIGN": "Añade tu propio diseño analítico",
+      "ADD_LITERATURE_10": "Añade 10 piezas de literatura",
+      "LOG_30_DAYS": "Inicia sesión durante 30 días seguidos",
+      "LOG_7_DAYS": "Inicia sesión durante 7 días seguidos",
+      "ADD_LITERATURE_3": "Añade 3 piezas de literatura",
+      "KEYWORDS_5": "Identifica 5 palabras clave",
+      "NOTES_10": "Toma 10 notas",
+      "LOG_3_DAYS": "Inicia sesión durante 3 días seguidos",
+      "ADD_CUSTOM_RESEARCH_DESIGN": "Añade tu propio diseño de investigación",
+      "ONBOARDING_COMPLETE_ONBOARDING": "Completa la incorporación",
+      "LOG_90_DAYS": "Inicia sesión durante 90 días seguidos",
+      "QUICK_NOTES_15": "Escribe 15 notas rápidas",
+      "LOG_60_DAYS": "Inicia sesión durante 60 días seguidos",
+      "KEYWORDS_25": "Identifica 25 palabras clave",
+      "DESIGNS_30": "Identifica 30 diseños",
+      "ADD_LITERATURE_30": "Añade 30 piezas de literatura",
+      "ADD_CUSTOM_SAMPLING_DESIGN": "Añade tu propio diseño de muestreo",
+      "NOTES_3": "Toma 3 notas",
+      "VIS_MODEL": "Crea un modelo",
+      "ADD_LITERATURE_20": "Añade 20 piezas de literatura",
+      "DESIGNS_10": "Identifica 10 diseños",
+      "KEYWORDS_50": "Identifica 50 palabras clave",
+      "DESIGNS_3": "Identifica 3 diseños",
+      "QUICK_NOTES_7": "Escribe 7 notas rápidas",
+      "ONBOARDING_ADD_3_LITERATURE": "Añade 3 piezas de literatura"
+    },
+    "categoryNames": {
+      "Expanding Horizons": "Ampliando horizontes",
+      "Quick Thinker": "Pensador rápido",
+      "Keyword Researcher": "Investigador de palabras clave",
+      "Note-Taking Master": "Maestro de notas",
+      "Collector": "Coleccionista",
+      "Consistency": "Consistencia",
+      "Onboarding": "Incorporación",
+      "Explorer": "Explorador",
+      "Visualization Expert": "Experto en visualización"
     }
   },
   "time": {

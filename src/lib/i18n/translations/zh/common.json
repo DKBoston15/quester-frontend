@@ -1014,6 +1014,7 @@
     "deletedEvents": "已删除 {count} 个事件",
     "noCustomEventsSelected": "未选择自定义事件进行批量操作",
     "unknownModel": "未知模型",
+    "loadAchievementsFailed": "加载成就失败。请稍后重试。",
     "levels": {
       "sparkOfCuriosity": {
         "name": "好奇的火花",
@@ -1045,6 +1046,8 @@
       }
     },
     "eventTitles": {
+      "projectCreated": "项目已创建：{name}",
+      "projectInitialized": "项目已初始化",
       "projectStatusChanged": "项目状态已更改",
       "designUpdated": "设计已更新",
       "modelCreatedAndUpdated": "模型已创建并更新",
@@ -1064,7 +1067,9 @@
       "addedLiteratureItem": "文献已添加",
       "addedLiteratureItems": "添加了 {count} 条文献",
       "createdNote": "笔记已创建",
-      "createdNotes": "创建了 {count} 条笔记"
+      "createdNotes": "创建了 {count} 条笔记",
+      "nEvents": "{count} 个事件",
+      "oneEvent": "1 个事件"
     },
     "achievementGroups": {
       "noteTaking": "笔记",
@@ -1074,6 +1079,59 @@
       "researchDesign": "研究设计",
       "customDesigns": "自定义设计",
       "visualization": "可视化"
+    },
+    "eventTypes": {
+      "project": "项目",
+      "literature": "文献",
+      "notes": "笔记",
+      "models": "模型",
+      "outcomes": "成果",
+      "status": "状态变更",
+      "design": "设计变更",
+      "insights": "洞察",
+      "custom": "自定义事件"
+    },
+    "achievementNames": {
+      "ADD_CUSTOM_MEASUREMENT_DESIGN": "添加您自己的测量设计",
+      "QUICK_NOTES_3": "写 3 条快速笔记",
+      "KEYWORD_ANALYSIS": "进行关键词分析",
+      "NOTES_30": "记录 30 条笔记",
+      "ADD_CUSTOM_ANALYTIC_DESIGN": "添加您自己的分析设计",
+      "ADD_LITERATURE_10": "添加 10 篇文献",
+      "LOG_30_DAYS": "连续登录 30 天",
+      "LOG_7_DAYS": "连续登录 7 天",
+      "ADD_LITERATURE_3": "添加 3 篇文献",
+      "KEYWORDS_5": "识别 5 个关键词",
+      "NOTES_10": "记录 10 条笔记",
+      "LOG_3_DAYS": "连续登录 3 天",
+      "ADD_CUSTOM_RESEARCH_DESIGN": "添加您自己的研究设计",
+      "ONBOARDING_COMPLETE_ONBOARDING": "完成入门引导",
+      "LOG_90_DAYS": "连续登录 90 天",
+      "QUICK_NOTES_15": "写 15 条快速笔记",
+      "LOG_60_DAYS": "连续登录 60 天",
+      "KEYWORDS_25": "识别 25 个关键词",
+      "DESIGNS_30": "识别 30 个设计",
+      "ADD_LITERATURE_30": "添加 30 篇文献",
+      "ADD_CUSTOM_SAMPLING_DESIGN": "添加您自己的抽样设计",
+      "NOTES_3": "记录 3 条笔记",
+      "VIS_MODEL": "创建一个模型",
+      "ADD_LITERATURE_20": "添加 20 篇文献",
+      "DESIGNS_10": "识别 10 个设计",
+      "KEYWORDS_50": "识别 50 个关键词",
+      "DESIGNS_3": "识别 3 个设计",
+      "QUICK_NOTES_7": "写 7 条快速笔记",
+      "ONBOARDING_ADD_3_LITERATURE": "添加 3 篇文献"
+    },
+    "categoryNames": {
+      "Expanding Horizons": "拓展视野",
+      "Quick Thinker": "快速思考者",
+      "Keyword Researcher": "关键词研究员",
+      "Note-Taking Master": "笔记大师",
+      "Collector": "收藏家",
+      "Consistency": "一致性",
+      "Onboarding": "入门引导",
+      "Explorer": "探索者",
+      "Visualization Expert": "可视化专家"
     }
   },
   "keywordAnalysis": {
