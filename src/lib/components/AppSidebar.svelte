@@ -3,7 +3,6 @@
   import * as Accordion from "$lib/components/ui/accordion/index.js";
   import {
     Home,
-    Users,
     Settings,
     LogOut,
     ChevronDown,
@@ -15,11 +14,19 @@
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import { auth } from "$lib/stores/AuthStore";
   import { teamManagement } from "$lib/stores/TeamManagementStore";
-  import { navigate, Link } from "svelte-routing";
+  import { navigate, Link, useLocation } from "svelte-routing";
   import { DarkmodeToggle } from "$lib/components/ui/darkmode-toggle";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { api } from "$lib/services/api-client";
   import { _ } from "svelte-i18n";
+
+  // Location for active route detection
+  const location = useLocation();
+
+  // Helper to check if route is active
+  function isRouteActive(url: string): boolean {
+    return $location.pathname === url;
+  }
 
   // Define MenuItem type
   interface MenuItem {
@@ -192,9 +199,9 @@
 
 <Sidebar.Root
   collapsible="icon"
-  class="border-r-2 border-black dark:border-dark-border bg-card dark:bg-dark-card shadow-[4px_0px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_0px_0px_0px_rgba(44,46,51,0.1)]"
+  class="border-r-2 dark:border-dark-border bg-gradient-to-b from-card to-background shadow-[4px_0px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_0px_0px_0px_rgba(44,46,51,0.1)]"
 >
-  <Sidebar.Header class="border-b-2 border-black dark:border-dark-border">
+  <Sidebar.Header class="border-b-2 dark:border-dark-border">
     <div class="flex items-center gap-2 py-2">
       <Sidebar.Trigger
         class="h-8 w-8 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 p-2 rounded-sm"
@@ -221,8 +228,11 @@
         <Sidebar.Menu>
           {#each visibleNavItems as item (item.titleKey)}
             <Link to={item.url} class="block">
-              <Sidebar.MenuItem>
-                <Sidebar.MenuButton>
+              <Sidebar.MenuItem class="relative">
+                {#if isRouteActive(item.url)}
+                  <div class="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full bg-gradient-to-b from-primary to-primary/70"></div>
+                {/if}
+                <Sidebar.MenuButton isActive={isRouteActive(item.url)}>
                   <Tooltip.Root>
                     <Tooltip.Trigger>
                       <div
@@ -242,7 +252,7 @@
                       sideOffset={10}
                       class="group-data-[collapsible=icon]:block hidden z-[9999]"
                     >
-                      <span class="">{$_(item.titleKey)}</span>
+                      <span>{$_(item.titleKey)}</span>
                     </Tooltip.Content>
                   </Tooltip.Root>
                 </Sidebar.MenuButton>
@@ -363,7 +373,7 @@
 
   </Sidebar.Content>
 
-  <Sidebar.Footer class="border-t-2 border-black dark:border-dark-border">
+  <Sidebar.Footer class="border-t-2 dark:border-dark-border">
     <div
       class="flex items-center gap-2 group-data-[collapsible=icon]:flex-col-reverse group-data-[collapsible=icon]:items-center"
     >
@@ -371,39 +381,34 @@
         <DropdownMenu.Root>
           <DropdownMenu.Trigger>
             <div
-              class="flex items-center gap-3 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:p-2"
+              class="flex items-center gap-3 hover:bg-accent rounded-md hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:justify-center"
             >
+              <!-- Avatar Circle -->
+              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/70 text-primary-foreground flex items-center justify-center text-sm font-medium flex-shrink-0">
+                {auth.user?.firstName?.[0] || ''}{auth.user?.lastName?.[0] || ''}
+              </div>
+
+              <!-- User Info (hidden when collapsed) -->
               <div
                 class="flex-1 text-left group-data-[collapsible=icon]:hidden whitespace-nowrap"
               >
-                <div class="font-medium">
+                <div class="font-medium text-sm">
                   {auth.user?.firstName}
                   {auth.user?.lastName}
                 </div>
-                <!-- <div class="text-sm text-muted-foreground">View profile</div> -->
               </div>
-              <Users
-                class="h-4 w-4 hidden group-data-[collapsible=icon]:block"
-              />
             </div>
           </DropdownMenu.Trigger>
           <DropdownMenu.Content
             side="top"
             class="w-[--bits-dropdown-menu-anchor-width]"
           >
-            <!-- <DropdownMenu.Item class="flex items-center gap-3">
-              <span class="">Profile</span>
-            </DropdownMenu.Item>
-            <DropdownMenu.Item class="flex items-center gap-3">
-              <span class="">Settings</span>
-            </DropdownMenu.Item>
-            <DropdownMenu.Separator /> -->
             <DropdownMenu.Item
               onclick={handleLogout}
               class="flex items-center gap-3"
             >
               <LogOut class="h-4 w-4" />
-              <span class="">{$_('auth.signOut')}</span>
+              <span>{$_('auth.signOut')}</span>
             </DropdownMenu.Item>
           </DropdownMenu.Content>
         </DropdownMenu.Root>
@@ -420,9 +425,9 @@
 
   <!-- Decorative corners -->
   <div
-    class="absolute -top-1 -right-1 w-2 h-2 bg-blue-400 dark:bg-dark-accent-blue border border-black dark:border-dark-border"
+    class="absolute -top-1 -right-1 w-2 h-2 bg-blue-400 dark:bg-dark-accent-blue border dark:border-dark-border"
   ></div>
   <div
-    class="absolute -bottom-1 -left-1 w-2 h-2 bg-yellow-400 dark:bg-dark-accent-yellow border border-black dark:border-dark-border"
+    class="absolute -bottom-1 -left-1 w-2 h-2 bg-yellow-400 dark:bg-dark-accent-yellow border dark:border-dark-border"
   ></div>
 </Sidebar.Root>

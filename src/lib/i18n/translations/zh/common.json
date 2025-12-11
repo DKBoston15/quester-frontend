@@ -150,7 +150,11 @@
     "connections": "关联",
     "progress": "进度",
     "settings": "设置",
-    "project": "项目"
+    "project": "项目",
+    "activeProject": "当前项目",
+    "analysis": "分析",
+    "tracking": "追踪",
+    "researcher": "研究员"
   },
   "dashboard": {
     "title": "仪表板",

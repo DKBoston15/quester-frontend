@@ -150,7 +150,11 @@
     "connections": "Verbindungen",
     "progress": "Fortschritt",
     "settings": "Einstellungen",
-    "project": "Projekt"
+    "project": "Projekt",
+    "activeProject": "Aktives Projekt",
+    "analysis": "Analyse",
+    "tracking": "Verfolgung",
+    "researcher": "Forscher"
   },
   "dashboard": {
     "title": "Dashboard",

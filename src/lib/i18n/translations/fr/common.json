@@ -142,7 +142,7 @@
     "overview": "Aperçu",
     "literature": "Littérature",
     "notes": "Notes",
-    "researchAssistant": "Assistant de recherche",
+    "researchAssistant": "Assistant IA",
     "insights": "Analyses",
     "models": "Modèles",
     "outcomes": "Résultats",
@@ -150,7 +150,11 @@
     "connections": "Connexions",
     "progress": "Progression",
     "settings": "Paramètres",
-    "project": "Projet"
+    "project": "Projet",
+    "activeProject": "Projet actif",
+    "analysis": "Analyse",
+    "tracking": "Suivi",
+    "researcher": "Chercheur"
   },
   "dashboard": {
     "title": "Tableau de bord",
