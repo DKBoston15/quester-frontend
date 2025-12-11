@@ -20,6 +20,11 @@
     "untitled": "Sin título",
     "continue": "Continuar",
     "add": "Agregar",
+    "adding": "Agregando...",
+    "creating": "Creando...",
+    "retry": "Reintentar",
+    "tutorial": "Tutorial",
+    "error": "Error",
     "settings": "Configuración",
     "tour": "Recorrido",
     "refresh": "Actualizar",
@@ -28,7 +33,12 @@
     "actions": "Acciones",
     "project": "Proyecto",
     "department": "Departamento",
-    "organization": "Organización"
+    "organization": "Organización",
+    "announcements": {
+      "affected": "Afectados",
+      "date": "Fecha",
+      "duration": "Duración"
+    }
   },
   "designTypes": {
     "research": "Investigación",
@@ -2333,7 +2343,17 @@
     "researchDesigns": "Diseños de investigación",
     "defineMethodology": "Defina la metodología de investigación utilizada en esta literatura.",
     "selectDesign": "Seleccionar diseño de {type}",
-    "noDesignSpecified": "Ningún diseño de {type} especificado"
+    "noDesignSpecified": "Ningún diseño de {type} especificado",
+    "addNewDesign": "Agregar nuevo diseño",
+    "captureContext": "Capturar contexto",
+    "descriptionPlaceholder": "Ingrese descripción...",
+    "designDescription": "Descripción del diseño",
+    "designs": "Diseños",
+    "newDesignPlaceholder": "Nombre del nuevo diseño",
+    "noSavedDesigns": "No hay diseños guardados",
+    "selectDesignAria": "Seleccionar diseño",
+    "selectDesigns": "Seleccionar diseños",
+    "selectDesignsHelp": "Elija uno o más diseños de la lista"
   },
   "projectOverviewCard": {
     "projectOverview": "Resumen del proyecto",
@@ -2574,7 +2594,22 @@
     "export": "Exportar",
     "exportSelected": "Exportar seleccionados",
     "exportFormat": "Formato de exportación",
-    "addEvent": "Agregar evento"
+    "addEvent": "Agregar evento",
+    "archiveSelected": "Archivar seleccionados",
+    "bulkActions": "Acciones masivas",
+    "clear": "Limpiar",
+    "clearAll": "Limpiar todo",
+    "createdBy": "Creado por",
+    "csvFile": "Archivo CSV",
+    "customEventTypes": "Tipos de eventos personalizados",
+    "dateRange": "Rango de fechas",
+    "deleteSelected": "Eliminar seleccionados",
+    "editSelected": "Editar seleccionados",
+    "eventTypes": "Tipos de eventos",
+    "filterTimeline": "Filtrar línea de tiempo",
+    "jsonFile": "Archivo JSON",
+    "search": "Buscar",
+    "selected": "seleccionados"
   },
   "editor": {
     "placeholder": {
@@ -2582,6 +2617,13 @@
       "paragraph": "Presione / o escriba algo..."
     },
     "imageTooLarge": "¡Imagen demasiado grande! Tamaño: {filesize} MB",
+    "table": {
+      "cols": "Columnas",
+      "rows": "Filas",
+      "insert": "Insertar tabla",
+      "insertTableAria": "Insertar tabla con dimensiones especificadas",
+      "maxSize": "Tamaño máximo: {max}x{max}"
+    },
     "toolbar": {
       "bold": "Negrita (⌘B)",
       "italic": "Cursiva (⌘I)",
@@ -3173,7 +3215,10 @@
   },
   "aiChat": {
     "unsavedChanges": "Cambios sin guardar",
-    "sendMessage": "Enviar mensaje"
+    "sendMessage": "Enviar mensaje",
+    "searchContextAvailable": "Contexto de búsqueda disponible",
+    "referencedContext": "Contexto referenciado",
+    "usingProjectContext": "Usando contexto del proyecto actual"
   },
   "media": {
     "back": "Volver"
@@ -3316,7 +3361,11 @@
     "maxUsersReached": "Ha alcanzado el máximo de {max} usuarios para su plan {plan}.",
     "almostAtLimit": "Casi en el límite de usuarios",
     "oneSeatRemaining": "Le queda 1 puesto en su plan {plan}.",
-    "seatsRemainingOnPlan": "Le quedan {count} puestos en su plan {plan}."
+    "seatsRemainingOnPlan": "Le quedan {count} puestos en su plan {plan}.",
+    "considerTeamUpgrade": "Considere actualizar a un plan de equipo para más puestos.",
+    "contactSupportEnterprise": "Contacte a soporte para opciones empresariales.",
+    "contactSupportSeats": "Contacte a soporte para puestos adicionales.",
+    "upgradeToTeam": "Actualizar a Equipo"
   },
   "emptyStateDescriptions": {
     "addLiteratureForAnalytics": "Agregue literatura y notas para ver sus análisis.",
@@ -3328,6 +3377,15 @@
     "noLiteratureUpdatedRecently": "Ninguna literatura ha sido actualizada recientemente.",
     "noDesignsAddedYet": "Aún no se han agregado diseños de {type}. Agregue el primero arriba.",
     "noProjectSelected": "Ningún proyecto seleccionado. Por favor seleccione un proyecto primero."
+  },
+  "referenceExport": {
+    "bibliography": "Bibliografía",
+    "bibliographyPreview": "Vista previa de bibliografía",
+    "noReferencesAvailable": "No hay referencias disponibles",
+    "page": "página",
+    "pages": "páginas",
+    "style": "estilo",
+    "words": "palabras"
   },
   "projectInsightsDescriptions": {
     "giveProjectName": "Dele a su proyecto un nombre claro y descriptivo para ayudar a identificarlo."

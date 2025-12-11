@@ -28,7 +28,17 @@
     "actions": "操作",
     "project": "项目",
     "department": "部门",
-    "organization": "组织"
+    "organization": "组织",
+    "adding": "添加中...",
+    "creating": "创建中...",
+    "retry": "重试",
+    "tutorial": "教程",
+    "error": "错误",
+    "announcements": {
+      "affected": "受影响",
+      "date": "日期",
+      "duration": "持续时间"
+    }
   },
   "designTypes": {
     "research": "研究",
@@ -1757,7 +1767,17 @@
     "researchDesigns": "研究设计",
     "defineMethodology": "定义此文献中使用的研究方法论。",
     "selectDesign": "选择 {type} 设计",
-    "noDesignSpecified": "未指定 {type} 设计"
+    "noDesignSpecified": "未指定 {type} 设计",
+    "addNewDesign": "添加新设计",
+    "captureContext": "捕获此文献的相关研究背景。",
+    "descriptionPlaceholder": "描述此设计...",
+    "designDescription": "设计描述",
+    "designs": "设计",
+    "newDesignPlaceholder": "输入设计名称",
+    "noSavedDesigns": "没有已保存的设计",
+    "selectDesignAria": "为此文献选择设计",
+    "selectDesigns": "选择设计",
+    "selectDesignsHelp": "从您项目的研究设计中选择"
   },
   "projectOverviewCard": {
     "projectOverview": "项目概览",
@@ -1998,7 +2018,22 @@
     "export": "导出",
     "exportSelected": "导出选中项",
     "exportFormat": "导出格式",
-    "addEvent": "添加事件"
+    "addEvent": "添加事件",
+    "archiveSelected": "归档选中项",
+    "bulkActions": "批量操作",
+    "clear": "清除",
+    "clearAll": "清除全部",
+    "createdBy": "创建者",
+    "csvFile": "CSV 文件",
+    "customEventTypes": "自定义事件类型",
+    "dateRange": "日期范围",
+    "deleteSelected": "删除选中项",
+    "editSelected": "编辑选中项",
+    "eventTypes": "事件类型",
+    "filterTimeline": "筛选时间线",
+    "jsonFile": "JSON 文件",
+    "search": "搜索",
+    "selected": "已选择"
   },
   "editor": {
     "placeholder": {
@@ -2025,6 +2060,13 @@
       "table": "表格",
       "highlighter": "高亮 (⌘⇧H)",
       "exportData": "导出数据"
+    },
+    "table": {
+      "cols": "列",
+      "insert": "插入表格",
+      "insertTableAria": "插入自定义尺寸的表格",
+      "maxSize": "最大尺寸：{size}",
+      "rows": "行"
     },
     "textFormatting": "文本格式",
     "heading1": "标题 1",
@@ -2597,7 +2639,10 @@
   },
   "aiChat": {
     "unsavedChanges": "未保存的更改",
-    "sendMessage": "发送消息"
+    "sendMessage": "发送消息",
+    "searchContextAvailable": "搜索上下文可用",
+    "referencedContext": "引用的上下文",
+    "usingProjectContext": "使用当前项目上下文"
   },
   "media": {
     "back": "返回"
@@ -2740,7 +2785,20 @@
     "maxUsersReached": "您已达到 {plan} 计划的最大用户数 {max}。",
     "almostAtLimit": "即将达到用户限制",
     "oneSeatRemaining": "您的 {plan} 计划还剩 1 个席位。",
-    "seatsRemainingOnPlan": "您的 {plan} 计划还剩 {count} 个席位。"
+    "seatsRemainingOnPlan": "您的 {plan} 计划还剩 {count} 个席位。",
+    "considerTeamUpgrade": "考虑升级到团队计划以获得更多席位",
+    "contactSupportEnterprise": "联系支持获取企业选项",
+    "contactSupportSeats": "联系支持获取更多席位",
+    "upgradeToTeam": "升级到团队计划"
+  },
+  "referenceExport": {
+    "bibliography": "参考文献",
+    "bibliographyPreview": "参考文献预览",
+    "noReferencesAvailable": "没有可用的参考文献",
+    "page": "页",
+    "pages": "页",
+    "style": "样式",
+    "words": "字数"
   },
   "emptyStateDescriptions": {
     "addLiteratureForAnalytics": "添加文献和笔记以查看您的分析。",

@@ -20,6 +20,11 @@
     "untitled": "Untitled",
     "continue": "Continue",
     "add": "Add",
+    "adding": "Adding...",
+    "creating": "Creating...",
+    "retry": "Retry",
+    "tutorial": "Tutorial",
+    "error": "Error",
     "settings": "Settings",
     "tour": "Tour",
     "refresh": "Refresh",
@@ -28,7 +33,12 @@
     "actions": "Actions",
     "project": "Project",
     "department": "Department",
-    "organization": "Organization"
+    "organization": "Organization",
+    "announcements": {
+      "affected": "Affected",
+      "date": "Date",
+      "duration": "Duration"
+    }
   },
   "designTypes": {
     "research": "Research",
@@ -2333,7 +2343,17 @@
     "researchDesigns": "Research Designs",
     "defineMethodology": "Define the research methodology used in this literature.",
     "selectDesign": "Select {type} design",
-    "noDesignSpecified": "No {type} design specified"
+    "noDesignSpecified": "No {type} design specified",
+    "addNewDesign": "Add new design",
+    "captureContext": "Capture context",
+    "descriptionPlaceholder": "Enter description...",
+    "designDescription": "Design description",
+    "designs": "Designs",
+    "newDesignPlaceholder": "New design name",
+    "noSavedDesigns": "No saved designs",
+    "selectDesignAria": "Select design",
+    "selectDesigns": "Select designs",
+    "selectDesignsHelp": "Choose one or more designs from the list"
   },
   "projectOverviewCard": {
     "projectOverview": "Project Overview",
@@ -2574,7 +2594,22 @@
     "export": "Export",
     "exportSelected": "Export Selected",
     "exportFormat": "Export Format",
-    "addEvent": "Add Event"
+    "addEvent": "Add Event",
+    "archiveSelected": "Archive Selected",
+    "bulkActions": "Bulk Actions",
+    "clear": "Clear",
+    "clearAll": "Clear All",
+    "createdBy": "Created by",
+    "csvFile": "CSV File",
+    "customEventTypes": "Custom Event Types",
+    "dateRange": "Date Range",
+    "deleteSelected": "Delete Selected",
+    "editSelected": "Edit Selected",
+    "eventTypes": "Event Types",
+    "filterTimeline": "Filter Timeline",
+    "jsonFile": "JSON File",
+    "search": "Search",
+    "selected": "selected"
   },
   "editor": {
     "placeholder": {
@@ -2582,6 +2617,13 @@
       "paragraph": "Press / or write something ..."
     },
     "imageTooLarge": "Image too large! Filesize: {filesize} MB",
+    "table": {
+      "cols": "Columns",
+      "rows": "Rows",
+      "insert": "Insert Table",
+      "insertTableAria": "Insert table with specified dimensions",
+      "maxSize": "Maximum size: {max}x{max}"
+    },
     "toolbar": {
       "bold": "Bold (⌘B)",
       "italic": "Italic (⌘I)",
@@ -3173,7 +3215,10 @@
   },
   "aiChat": {
     "unsavedChanges": "Unsaved changes",
-    "sendMessage": "Send message"
+    "sendMessage": "Send message",
+    "searchContextAvailable": "Search context available",
+    "referencedContext": "Referenced context",
+    "usingProjectContext": "Using current project context"
   },
   "media": {
     "back": "Back"
@@ -3316,7 +3361,11 @@
     "maxUsersReached": "You've reached the maximum of {max} users for your {plan} plan.",
     "almostAtLimit": "Almost at User Limit",
     "oneSeatRemaining": "You have 1 seat remaining on your {plan} plan.",
-    "seatsRemainingOnPlan": "You have {count} seats remaining on your {plan} plan."
+    "seatsRemainingOnPlan": "You have {count} seats remaining on your {plan} plan.",
+    "considerTeamUpgrade": "Consider upgrading to a team plan for more seats.",
+    "contactSupportEnterprise": "Contact support for enterprise options.",
+    "contactSupportSeats": "Contact support for additional seats.",
+    "upgradeToTeam": "Upgrade to Team"
   },
   "emptyStateDescriptions": {
     "addLiteratureForAnalytics": "Add literature and notes to see your analytics.",
@@ -3328,6 +3377,15 @@
     "noLiteratureUpdatedRecently": "No literature has been updated recently.",
     "noDesignsAddedYet": "No {type} designs added yet. Add your first one above.",
     "noProjectSelected": "No project selected. Please select a project first."
+  },
+  "referenceExport": {
+    "bibliography": "Bibliography",
+    "bibliographyPreview": "Bibliography Preview",
+    "noReferencesAvailable": "No references available",
+    "page": "page",
+    "pages": "pages",
+    "style": "style",
+    "words": "words"
   },
   "projectInsightsDescriptions": {
     "giveProjectName": "Give your project a clear and descriptive name to help identify it."

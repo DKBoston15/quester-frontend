@@ -584,7 +584,7 @@
                 <div class="flex items-center gap-2 mb-2">
                   <Search class="size-4 text-muted-foreground" />
                   <span class="text-sm font-medium"
-                    >Search context available</span
+                    >{$_('aiChat.searchContextAvailable')}</span
                   >
                 </div>
                 <p class="text-xs text-muted-foreground">
@@ -704,7 +704,7 @@
                           >
                             <span class="flex items-center gap-2">
                               <BookOpen class="size-3" />
-                              <span>Referenced context</span>
+                              <span>{$_('aiChat.referencedContext')}</span>
                               <span
                                 class="text-[10px] uppercase tracking-wide text-muted-foreground/80"
                               >
@@ -840,7 +840,7 @@
                                 class="flex items-center gap-2 text-xs text-muted-foreground"
                               >
                                 <Folder class="size-3" />
-                                <span>Using current project context</span>
+                                <span>{$_('aiChat.usingProjectContext')}</span>
                               </div>
                             {/if}
                           </div>
@@ -875,7 +875,7 @@
               <span class="text-xs">!</span>
             </div>
             <div class="flex-1">
-              <div class="font-medium text-sm">Error</div>
+              <div class="font-medium text-sm">{$_('common.error')}</div>
               <div class="text-xs opacity-80">{error}</div>
             </div>
           </div>

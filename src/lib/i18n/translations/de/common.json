@@ -28,7 +28,17 @@
     "actions": "Aktionen",
     "project": "Projekt",
     "department": "Abteilung",
-    "organization": "Organisation"
+    "organization": "Organisation",
+    "adding": "Wird hinzugefügt...",
+    "creating": "Wird erstellt...",
+    "retry": "Erneut versuchen",
+    "tutorial": "Tutorial",
+    "error": "Fehler",
+    "announcements": {
+      "affected": "Betroffen",
+      "date": "Datum",
+      "duration": "Dauer"
+    }
   },
   "designTypes": {
     "research": "Forschung",
@@ -2333,7 +2343,17 @@
     "researchDesigns": "Forschungsdesigns",
     "defineMethodology": "Definieren Sie die in dieser Literatur verwendete Forschungsmethodologie.",
     "selectDesign": "{type}-Design auswählen",
-    "noDesignSpecified": "Kein {type}-Design angegeben"
+    "noDesignSpecified": "Kein {type}-Design angegeben",
+    "addNewDesign": "Neues Design hinzufügen",
+    "captureContext": "Erfassen Sie den relevanten Forschungskontext aus dieser Literatur.",
+    "descriptionPlaceholder": "Beschreiben Sie dieses Design...",
+    "designDescription": "Design-Beschreibung",
+    "designs": "Designs",
+    "newDesignPlaceholder": "Design-Namen eingeben",
+    "noSavedDesigns": "Keine gespeicherten Designs",
+    "selectDesignAria": "Designs für diese Literatur auswählen",
+    "selectDesigns": "Designs auswählen",
+    "selectDesignsHelp": "Wählen Sie aus den Forschungsdesigns Ihres Projekts"
   },
   "projectOverviewCard": {
     "projectOverview": "Projektübersicht",
@@ -2574,7 +2594,22 @@
     "export": "Exportieren",
     "exportSelected": "Ausgewählte exportieren",
     "exportFormat": "Exportformat",
-    "addEvent": "Ereignis hinzufügen"
+    "addEvent": "Ereignis hinzufügen",
+    "archiveSelected": "Ausgewählte archivieren",
+    "bulkActions": "Massenaktionen",
+    "clear": "Löschen",
+    "clearAll": "Alle löschen",
+    "createdBy": "Erstellt von",
+    "csvFile": "CSV-Datei",
+    "customEventTypes": "Benutzerdefinierte Ereignistypen",
+    "dateRange": "Datumsbereich",
+    "deleteSelected": "Ausgewählte löschen",
+    "editSelected": "Ausgewählte bearbeiten",
+    "eventTypes": "Ereignistypen",
+    "filterTimeline": "Zeitleiste filtern",
+    "jsonFile": "JSON-Datei",
+    "search": "Suchen",
+    "selected": "ausgewählt"
   },
   "editor": {
     "placeholder": {
@@ -2601,6 +2636,13 @@
       "table": "Tabelle",
       "highlighter": "Textmarker (⌘⇧H)",
       "exportData": "Daten exportieren"
+    },
+    "table": {
+      "cols": "Spalten",
+      "insert": "Tabelle einfügen",
+      "insertTableAria": "Tabelle mit benutzerdefinierten Abmessungen einfügen",
+      "maxSize": "Maximale Größe: {size}",
+      "rows": "Zeilen"
     },
     "textFormatting": "Textformatierung",
     "heading1": "Überschrift 1",
@@ -3173,7 +3215,10 @@
   },
   "aiChat": {
     "unsavedChanges": "Ungespeicherte Änderungen",
-    "sendMessage": "Nachricht senden"
+    "sendMessage": "Nachricht senden",
+    "searchContextAvailable": "Suchkontext verfügbar",
+    "referencedContext": "Referenzierter Kontext",
+    "usingProjectContext": "Aktuellen Projektkontext verwenden"
   },
   "media": {
     "back": "Zurück"
@@ -3316,7 +3361,20 @@
     "maxUsersReached": "Sie haben das Maximum von {max} Benutzern für Ihren {plan}-Tarif erreicht.",
     "almostAtLimit": "Fast am Benutzerlimit",
     "oneSeatRemaining": "Sie haben 1 Platz in Ihrem {plan}-Tarif verbleibend.",
-    "seatsRemainingOnPlan": "Sie haben {count} Plätze in Ihrem {plan}-Tarif verbleibend."
+    "seatsRemainingOnPlan": "Sie haben {count} Plätze in Ihrem {plan}-Tarif verbleibend.",
+    "considerTeamUpgrade": "Erwägen Sie ein Upgrade auf einen Team-Tarif für mehr Plätze",
+    "contactSupportEnterprise": "Kontaktieren Sie den Support für Enterprise-Optionen",
+    "contactSupportSeats": "Kontaktieren Sie den Support für zusätzliche Plätze",
+    "upgradeToTeam": "Auf Team-Tarif upgraden"
+  },
+  "referenceExport": {
+    "bibliography": "Bibliographie",
+    "bibliographyPreview": "Bibliographie-Vorschau",
+    "noReferencesAvailable": "Keine Referenzen verfügbar",
+    "page": "Seite",
+    "pages": "Seiten",
+    "style": "Stil",
+    "words": "Wörter"
   },
   "emptyStateDescriptions": {
     "addLiteratureForAnalytics": "Fügen Sie Literatur und Notizen hinzu, um Ihre Analysen zu sehen.",

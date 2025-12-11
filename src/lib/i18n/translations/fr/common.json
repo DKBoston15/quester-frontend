@@ -20,6 +20,11 @@
     "untitled": "Sans titre",
     "continue": "Continuer",
     "add": "Ajouter",
+    "adding": "Ajout en cours...",
+    "creating": "Création en cours...",
+    "retry": "Réessayer",
+    "tutorial": "Tutoriel",
+    "error": "Erreur",
     "settings": "Paramètres",
     "tour": "Visite guidée",
     "refresh": "Actualiser",
@@ -28,7 +33,12 @@
     "actions": "Actions",
     "project": "Projet",
     "department": "Département",
-    "organization": "Organisation"
+    "organization": "Organisation",
+    "announcements": {
+      "affected": "Affectés",
+      "date": "Date",
+      "duration": "Durée"
+    }
   },
   "designTypes": {
     "research": "Recherche",
@@ -2333,7 +2343,17 @@
     "researchDesigns": "Conceptions de recherche",
     "defineMethodology": "Définissez la méthodologie de recherche utilisée dans cette littérature.",
     "selectDesign": "Sélectionner la conception {type}",
-    "noDesignSpecified": "Aucune conception {type} spécifiée"
+    "noDesignSpecified": "Aucune conception {type} spécifiée",
+    "addNewDesign": "Ajouter une nouvelle conception",
+    "captureContext": "Capturez le contexte de recherche pertinent de cette littérature.",
+    "descriptionPlaceholder": "Décrivez cette conception...",
+    "designDescription": "Description de la conception",
+    "designs": "Conceptions",
+    "newDesignPlaceholder": "Entrez le nom de la conception",
+    "noSavedDesigns": "Aucune conception enregistrée",
+    "selectDesignAria": "Sélectionner les conceptions pour cette littérature",
+    "selectDesigns": "Sélectionner les conceptions",
+    "selectDesignsHelp": "Choisissez parmi les conceptions de recherche de votre projet"
   },
   "projectOverviewCard": {
     "projectOverview": "Aperçu du projet",
@@ -2574,7 +2594,22 @@
     "export": "Exporter",
     "exportSelected": "Exporter la sélection",
     "exportFormat": "Format d'exportation",
-    "addEvent": "Ajouter un événement"
+    "addEvent": "Ajouter un événement",
+    "archiveSelected": "Archiver la sélection",
+    "bulkActions": "Actions groupées",
+    "clear": "Effacer",
+    "clearAll": "Tout effacer",
+    "createdBy": "Créé par",
+    "csvFile": "Fichier CSV",
+    "customEventTypes": "Types d'événements personnalisés",
+    "dateRange": "Plage de dates",
+    "deleteSelected": "Supprimer la sélection",
+    "editSelected": "Modifier la sélection",
+    "eventTypes": "Types d'événements",
+    "filterTimeline": "Filtrer la chronologie",
+    "jsonFile": "Fichier JSON",
+    "search": "Rechercher",
+    "selected": "sélectionné(s)"
   },
   "editor": {
     "placeholder": {
@@ -2601,6 +2636,13 @@
       "table": "Tableau",
       "highlighter": "Surligneur (⌘⇧H)",
       "exportData": "Exporter les données"
+    },
+    "table": {
+      "cols": "Colonnes",
+      "insert": "Insérer un tableau",
+      "insertTableAria": "Insérer un tableau avec des dimensions personnalisées",
+      "maxSize": "Taille maximale : {size}",
+      "rows": "Lignes"
     },
     "textFormatting": "Formatage du texte",
     "heading1": "Titre 1",
@@ -3173,7 +3215,10 @@
   },
   "aiChat": {
     "unsavedChanges": "Modifications non enregistrées",
-    "sendMessage": "Envoyer le message"
+    "sendMessage": "Envoyer le message",
+    "searchContextAvailable": "Contexte de recherche disponible",
+    "referencedContext": "Contexte référencé",
+    "usingProjectContext": "Utilisation du contexte du projet actuel"
   },
   "media": {
     "back": "Retour"
@@ -3316,7 +3361,20 @@
     "maxUsersReached": "Vous avez atteint le maximum de {max} utilisateurs pour votre forfait {plan}.",
     "almostAtLimit": "Presque à la limite d'utilisateurs",
     "oneSeatRemaining": "Il vous reste 1 place sur votre forfait {plan}.",
-    "seatsRemainingOnPlan": "Il vous reste {count} places sur votre forfait {plan}."
+    "seatsRemainingOnPlan": "Il vous reste {count} places sur votre forfait {plan}.",
+    "considerTeamUpgrade": "Envisagez de passer à un forfait équipe pour plus de places",
+    "contactSupportEnterprise": "Contactez le support pour les options entreprise",
+    "contactSupportSeats": "Contactez le support pour des places supplémentaires",
+    "upgradeToTeam": "Passer au forfait équipe"
+  },
+  "referenceExport": {
+    "bibliography": "Bibliographie",
+    "bibliographyPreview": "Aperçu de la bibliographie",
+    "noReferencesAvailable": "Aucune référence disponible",
+    "page": "page",
+    "pages": "pages",
+    "style": "Style",
+    "words": "mots"
   },
   "emptyStateDescriptions": {
     "addLiteratureForAnalytics": "Ajoutez de la littérature et des notes pour voir vos analyses.",
