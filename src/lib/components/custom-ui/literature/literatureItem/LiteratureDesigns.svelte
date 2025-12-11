@@ -15,11 +15,19 @@
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { InfoIcon } from "lucide-svelte";
   import { projectStore } from "$lib/stores/ProjectStore";
+  import { auth } from "$lib/stores/AuthStore.svelte";
+  import { localeStore } from "$lib/stores/LocaleStore.svelte";
   import type { Literature } from "$lib/types/literature";
   import { literatureStore } from "$lib/stores/LiteratureStore";
   import { _ } from "svelte-i18n";
   import { toast } from "svelte-sonner";
   import { normalizeDesignDetail } from "$lib/utils/design";
+  import {
+    translateDesignName,
+    isValidDesignType,
+    isSupportedLocale,
+    type DesignType as TranslationDesignType
+  } from "$lib/utils/designTranslations";
 
   const designTypes = [
     "research",
@@ -132,19 +140,32 @@
     };
   }
 
-  const typeLabels: Record<DesignType, string> = {
-    research: "Research",
-    sampling: "Sampling",
-    measurement: "Measurement",
-    analytic: "Analytic",
-  };
+  // Check if current user is the owner of the project
+  function isProjectOwner(): boolean {
+    const currentUserId = auth.user?.id;
+    const projectOwnerId = projectStore.currentProject?.userId;
+    if (!currentUserId || !projectOwnerId) return false;
+    return String(currentUserId) === String(projectOwnerId);
+  }
+
+  // Translate design name for display (only for non-owners)
+  function getTranslatedDesignName(designType: DesignType, name: string): string {
+    if (isProjectOwner()) {
+      return name;
+    }
+    const currentLocale = localeStore.locale;
+    if (isValidDesignType(designType) && isSupportedLocale(currentLocale)) {
+      return translateDesignName(designType as TranslationDesignType, name, currentLocale);
+    }
+    return name;
+  }
 
   function getTriggerLabel(type: DesignType): string {
     const selections = localDesigns[type].selections;
     if (selections.length === 0) {
-      return `Select ${typeLabels[type]} designs`;
+      return $_('literatureDesigns.selectDesigns', { values: { type: $_(`designTypes.${type}`) } });
     }
-    return selections.join(", ");
+    return selections.map(s => getTranslatedDesignName(type, s)).join(", ");
   }
 
   function cancelAddDesign(type: DesignType) {
@@ -350,7 +371,7 @@
                     )}
                   items={(projectStore.designs[type] || []).map((option) => ({
                     value: option.name,
-                    label: option.name,
+                    label: getTranslatedDesignName(type, option.name),
                   }))}
                 >
                   <Select.Trigger
@@ -368,7 +389,7 @@
                   >
                     {#if (projectStore.designs[type] || []).length > 0}
                       {#each projectStore.designs[type] || [] as option}
-                        <Select.Item value={option.name} label={option.name} />
+                        <Select.Item value={option.name} label={getTranslatedDesignName(type, option.name)} />
                       {/each}
                     {:else}
                       <div class="px-3 py-2 text-sm text-muted-foreground">
@@ -457,7 +478,7 @@
                 {#if localDesigns[type].selections.length > 0}
                   <div class="flex flex-wrap gap-2">
                     {#each localDesigns[type].selections as selection}
-                      <Badge variant="outline">{selection}</Badge>
+                      <Badge variant="outline">{getTranslatedDesignName(type, selection)}</Badge>
                     {/each}
                   </div>
                 {:else}

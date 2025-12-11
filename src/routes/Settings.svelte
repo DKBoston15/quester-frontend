@@ -412,138 +412,144 @@
             <CardContent class="pt-6">
               <!-- Profile Tab -->
               {#if activeTab === "profile"}
-                <form
-                  id="profile-tab-content"
-                  class="space-y-6"
-                  onsubmit={(e) => {
-                    e.preventDefault();
-                    saveProfile();
-                  }}
-                >
-                  <div class="grid gap-4 md:grid-cols-2">
+                <div id="profile-tab-content" class="space-y-6">
+                  <!-- Profile Information Section -->
+                  <form
+                    class="space-y-4 p-4 border rounded-lg dark:border-dark-border"
+                    onsubmit={(e) => {
+                      e.preventDefault();
+                      saveProfile();
+                    }}
+                  >
+                    <h3 class="text-lg font-medium">{$_('settings.profileInformation')}</h3>
+                    <div class="grid gap-4 md:grid-cols-2">
+                      <div class="space-y-2">
+                        <Label for="firstName">{$_('settings.firstName')}</Label>
+                        <Input
+                          id="firstName"
+                          placeholder={$_('settings.firstName')}
+                          bind:value={firstName}
+                          class="border-2  dark:border-dark-border"
+                        />
+                      </div>
+                      <div class="space-y-2">
+                        <Label for="lastName">{$_('settings.lastName')}</Label>
+                        <Input
+                          id="lastName"
+                          placeholder={$_('settings.lastName')}
+                          bind:value={lastName}
+                          class="border-2  dark:border-dark-border"
+                        />
+                      </div>
+                    </div>
+
                     <div class="space-y-2">
-                      <Label for="firstName">{$_('settings.firstName')}</Label>
+                      <Label for="email">{$_('settings.email')}</Label>
                       <Input
-                        id="firstName"
-                        placeholder={$_('settings.firstName')}
-                        bind:value={firstName}
+                        disabled
+                        id="email"
+                        type="email"
+                        placeholder={$_('settings.email')}
+                        bind:value={email}
                         class="border-2  dark:border-dark-border"
                       />
                     </div>
+
                     <div class="space-y-2">
-                      <Label for="lastName">{$_('settings.lastName')}</Label>
-                      <Input
-                        id="lastName"
-                        placeholder={$_('settings.lastName')}
-                        bind:value={lastName}
-                        class="border-2  dark:border-dark-border"
-                      />
-                    </div>
-                  </div>
-
-                  <div class="space-y-2">
-                    <Label for="email">{$_('settings.email')}</Label>
-                    <Input
-                      disabled
-                      id="email"
-                      type="email"
-                      placeholder={$_('settings.email')}
-                      bind:value={email}
-                      class="border-2  dark:border-dark-border"
-                    />
-                  </div>
-
-                  <div class="space-y-2">
-                    <Label for="orcidUrl">
-                      {$_('settings.orcidUrl')}
-                      <span class="text-sm text-muted-foreground font-normal">
-                        ({$_('common.optional')})
-                      </span>
-                    </Label>
-                    <Input
-                      id="orcidUrl"
-                      type="url"
-                      placeholder="https://orcid.org/0000-0000-0000-0000"
-                      bind:value={orcidUrl}
-                      class={`border-2 dark:border-dark-border ${orcidError ? "border-destructive" : ""}`}
-                    />
-                    {#if orcidError}
-                      <p class="text-sm text-destructive">{orcidError}</p>
-                    {:else}
-                      <p class="text-sm text-muted-foreground">
-                        {$_('settings.orcidDescription')}
-                        <a
-                          href="https://orcid.org/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          class="text-primary hover:underline"
-                        >
-                          {$_('settings.learnMoreOrcid')}
-                        </a>
-                      </p>
-                    {/if}
-                  </div>
-
-                  <!-- Language Selector -->
-                  <div class="space-y-2">
-                    <Label for="language">
-                      <Globe class="h-4 w-4 inline mr-1" />
-                      {$_('settings.language')}
-                    </Label>
-                    <Select.Root
-                      type="single"
-                      value={selectedLocale}
-                      onValueChange={(value) => value && handleLocaleChange(value as SupportedLocale)}
-                    >
-                      <Select.Trigger class="w-full border-2 dark:border-dark-border">
-                        <span class="truncate">
-                          {#if SUPPORTED_LOCALES.find(l => l.code === selectedLocale)}
-                            <span class="mr-2">{SUPPORTED_LOCALES.find(l => l.code === selectedLocale)?.flag}</span>
-                            {SUPPORTED_LOCALES.find(l => l.code === selectedLocale)?.name}
-                          {:else}
-                            {$_('settings.selectLanguage')}
-                          {/if}
+                      <Label for="orcidUrl">
+                        {$_('settings.orcidUrl')}
+                        <span class="text-sm text-muted-foreground font-normal">
+                          ({$_('common.optional')})
                         </span>
-                      </Select.Trigger>
-                      <Select.Content>
-                        {#each SUPPORTED_LOCALES as locale}
-                          <Select.Item value={locale.code}>
-                            <span class="mr-2">{locale.flag}</span>
-                            {locale.name}
-                          </Select.Item>
-                        {/each}
-                      </Select.Content>
-                    </Select.Root>
-                    <p class="text-sm text-muted-foreground">
-                      {$_('settings.languageDescription')}
-                    </p>
-                  </div>
-
-                  {#if message}
-                    <div
-                      class={`p-3 rounded-md ${message.type === "success" ? "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200" : "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200"}`}
-                    >
-                      {message.text}
-                    </div>
-                  {/if}
-
-                  <div class="flex justify-end">
-                    <Button
-                      id="profile-save-button"
-                      type="submit"
-                      disabled={isLoading}
-                    >
-                      {#if isLoading}
-                        <div
-                          class="h-4 w-4 mr-2 border-2 border-t-transparent rounded-full animate-spin"
-                        ></div>
-                        {$_('settings.saving')}
+                      </Label>
+                      <Input
+                        id="orcidUrl"
+                        type="url"
+                        placeholder="https://orcid.org/0000-0000-0000-0000"
+                        bind:value={orcidUrl}
+                        class={`border-2 dark:border-dark-border ${orcidError ? "border-destructive" : ""}`}
+                      />
+                      {#if orcidError}
+                        <p class="text-sm text-destructive">{orcidError}</p>
                       {:else}
-                        {$_('settings.saveChanges')}
+                        <p class="text-sm text-muted-foreground">
+                          {$_('settings.orcidDescription')}
+                          <a
+                            href="https://orcid.org/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="text-primary hover:underline"
+                          >
+                            {$_('settings.learnMoreOrcid')}
+                          </a>
+                        </p>
                       {/if}
-                    </Button>
+                    </div>
+
+                    {#if message}
+                      <div
+                        class={`p-3 rounded-md ${message.type === "success" ? "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200" : "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200"}`}
+                      >
+                        {message.text}
+                      </div>
+                    {/if}
+
+                    <div class="flex justify-end">
+                      <Button
+                        id="profile-save-button"
+                        type="submit"
+                        disabled={isLoading}
+                      >
+                        {#if isLoading}
+                          <div
+                            class="h-4 w-4 mr-2 border-2 border-t-transparent rounded-full animate-spin"
+                          ></div>
+                          {$_('settings.saving')}
+                        {:else}
+                          {$_('settings.saveChanges')}
+                        {/if}
+                      </Button>
+                    </div>
+                  </form>
+
+                  <!-- Language Preferences Section (saves automatically) -->
+                  <div class="space-y-4 p-4 border rounded-lg dark:border-dark-border">
+                    <h3 class="text-lg font-medium">{$_('settings.languagePreferences')}</h3>
+                    <div class="space-y-2">
+                      <Label for="language">
+                        <Globe class="h-4 w-4 inline mr-1" />
+                        {$_('settings.language')}
+                      </Label>
+                      <Select.Root
+                        type="single"
+                        value={selectedLocale}
+                        onValueChange={(value) => value && handleLocaleChange(value as SupportedLocale)}
+                      >
+                        <Select.Trigger class="w-full border-2 dark:border-dark-border">
+                          <span class="truncate">
+                            {#if SUPPORTED_LOCALES.find(l => l.code === selectedLocale)}
+                              <span class="mr-2">{SUPPORTED_LOCALES.find(l => l.code === selectedLocale)?.flag}</span>
+                              {SUPPORTED_LOCALES.find(l => l.code === selectedLocale)?.name}
+                            {:else}
+                              {$_('settings.selectLanguage')}
+                            {/if}
+                          </span>
+                        </Select.Trigger>
+                        <Select.Content>
+                          {#each SUPPORTED_LOCALES as locale}
+                            <Select.Item value={locale.code}>
+                              <span class="mr-2">{locale.flag}</span>
+                              {locale.name}
+                            </Select.Item>
+                          {/each}
+                        </Select.Content>
+                      </Select.Root>
+                      <p class="text-sm text-muted-foreground">
+                        {$_('settings.languageDescription')}
+                      </p>
+                    </div>
                   </div>
-                </form>
+                </div>
               {/if}
 
               <!-- Organization Tab -->

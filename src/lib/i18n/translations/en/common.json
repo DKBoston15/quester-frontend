@@ -36,6 +36,46 @@
     "measurement": "Measurement",
     "analytic": "Analytic"
   },
+  "designs": {
+    "analytic": {
+      "associative": "Associative",
+      "descriptive": "Descriptive",
+      "emergent": "Emergent",
+      "narrative": "Narrative",
+      "predictive": "Predictive",
+      "thematic": "Thematic",
+      "metaAnalysis": "Meta-analysis",
+      "secondary": "Secondary"
+    },
+    "measurement": {
+      "extant": "Extant",
+      "interview": "Interview",
+      "instrument": "Instrument",
+      "survey": "Survey"
+    },
+    "research": {
+      "caseStudy": "Case study",
+      "convergentParallel": "Convergent parallel",
+      "correlational": "Correlational",
+      "descriptive": "Descriptive",
+      "experimental": "Experimental",
+      "explanatorySequential": "Explanatory sequential",
+      "exploratorySequential": "Exploratory sequential",
+      "review": "Review",
+      "survey": "Survey"
+    },
+    "sampling": {
+      "cluster": "Cluster",
+      "simpleRandomSampling": "Simple Random Sampling (SRS)",
+      "stratified": "Stratified",
+      "systematic": "Systematic",
+      "convenience": "Convenience",
+      "purposive": "Purposive",
+      "quota": "Quota",
+      "snowball": "Snowball",
+      "voluntaryResponse": "Voluntary response"
+    }
+  },
   "datePicker": {
     "selectDate": "Select date"
   },
@@ -149,7 +189,9 @@
     "viewPlans": "View Plans",
     "language": "Language",
     "selectLanguage": "Select language",
-    "languageDescription": "Choose your preferred language for the application interface. Changes take effect immediately."
+    "languageDescription": "Choose your preferred language for the application interface. Changes take effect immediately.",
+    "profileInformation": "Profile Information",
+    "languagePreferences": "Language Preferences"
   },
   "team": {
     "title": "Team Management",
@@ -2962,7 +3004,12 @@
     "currentProject": "Current project: {name}",
     "failedToUpdateDesigns": "Failed to update designs",
     "autoSaveMessage": "Changes are saved automatically as you make them.",
-    "selectProjectMessage": "Please select a project to manage its designs."
+    "selectProjectMessage": "Please select a project to manage its designs.",
+    "noDesignsYet": "No {type} designs added yet. Add your first one above.",
+    "designNameEmpty": "Design name cannot be empty",
+    "designExists": "Design with this name already exists",
+    "syncFailed": "Design renamed, but related records could not be updated",
+    "updatedSuccess": "Designs updated successfully"
   },
   "feedback": {
     "thankYouDescription": "Thank you for helping us improve!",

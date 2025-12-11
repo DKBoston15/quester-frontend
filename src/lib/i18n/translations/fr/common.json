@@ -36,6 +36,46 @@
     "measurement": "Mesure",
     "analytic": "Analytique"
   },
+  "designs": {
+    "analytic": {
+      "associative": "Associatif",
+      "descriptive": "Descriptif",
+      "emergent": "Émergent",
+      "narrative": "Narratif",
+      "predictive": "Prédictif",
+      "thematic": "Thématique",
+      "metaAnalysis": "Méta-analyse",
+      "secondary": "Secondaire"
+    },
+    "measurement": {
+      "extant": "Existant",
+      "interview": "Entretien",
+      "instrument": "Instrument",
+      "survey": "Enquête"
+    },
+    "research": {
+      "caseStudy": "Étude de cas",
+      "convergentParallel": "Parallèle convergent",
+      "correlational": "Corrélationnel",
+      "descriptive": "Descriptif",
+      "experimental": "Expérimental",
+      "explanatorySequential": "Séquentiel explicatif",
+      "exploratorySequential": "Séquentiel exploratoire",
+      "review": "Revue",
+      "survey": "Enquête"
+    },
+    "sampling": {
+      "cluster": "Par grappes",
+      "simpleRandomSampling": "Échantillonnage aléatoire simple (EAS)",
+      "stratified": "Stratifié",
+      "systematic": "Systématique",
+      "convenience": "De commodité",
+      "purposive": "Raisonné",
+      "quota": "Par quotas",
+      "snowball": "Boule de neige",
+      "voluntaryResponse": "Réponse volontaire"
+    }
+  },
   "datePicker": {
     "selectDate": "Sélectionner une date"
   },
@@ -149,7 +189,9 @@
     "viewPlans": "Voir les forfaits",
     "language": "Langue",
     "selectLanguage": "Sélectionner la langue",
-    "languageDescription": "Choisissez votre langue préférée pour l'interface de l'application. Les modifications prennent effet immédiatement."
+    "languageDescription": "Choisissez votre langue préférée pour l'interface de l'application. Les modifications prennent effet immédiatement.",
+    "profileInformation": "Informations du profil",
+    "languagePreferences": "Préférences de langue"
   },
   "team": {
     "title": "Gestion d'équipe",
@@ -2962,7 +3004,12 @@
     "currentProject": "Projet actuel : {name}",
     "failedToUpdateDesigns": "Échec de la mise à jour des conceptions",
     "autoSaveMessage": "Les modifications sont enregistrées automatiquement au fur et à mesure.",
-    "selectProjectMessage": "Veuillez sélectionner un projet pour gérer ses conceptions."
+    "selectProjectMessage": "Veuillez sélectionner un projet pour gérer ses conceptions.",
+    "noDesignsYet": "Aucune conception de {type} ajoutée pour l'instant. Ajoutez la première ci-dessus.",
+    "designNameEmpty": "Le nom de la conception ne peut pas être vide",
+    "designExists": "Une conception avec ce nom existe déjà",
+    "syncFailed": "Conception renommée, mais les enregistrements associés n'ont pas pu être mis à jour",
+    "updatedSuccess": "Conceptions mises à jour avec succès"
   },
   "feedback": {
     "thankYouDescription": "Merci de nous aider à nous améliorer !",

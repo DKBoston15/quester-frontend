@@ -36,6 +36,46 @@
     "measurement": "Messung",
     "analytic": "Analytik"
   },
+  "designs": {
+    "analytic": {
+      "associative": "Assoziativ",
+      "descriptive": "Deskriptiv",
+      "emergent": "Emergent",
+      "narrative": "Narrativ",
+      "predictive": "Prädiktiv",
+      "thematic": "Thematisch",
+      "metaAnalysis": "Meta-Analyse",
+      "secondary": "Sekundär"
+    },
+    "measurement": {
+      "extant": "Bestehend",
+      "interview": "Interview",
+      "instrument": "Instrument",
+      "survey": "Umfrage"
+    },
+    "research": {
+      "caseStudy": "Fallstudie",
+      "convergentParallel": "Konvergent parallel",
+      "correlational": "Korrelativ",
+      "descriptive": "Deskriptiv",
+      "experimental": "Experimentell",
+      "explanatorySequential": "Erklärend sequentiell",
+      "exploratorySequential": "Explorativ sequentiell",
+      "review": "Übersicht",
+      "survey": "Umfrage"
+    },
+    "sampling": {
+      "cluster": "Klumpen",
+      "simpleRandomSampling": "Einfache Zufallsstichprobe (EZS)",
+      "stratified": "Geschichtet",
+      "systematic": "Systematisch",
+      "convenience": "Gelegenheit",
+      "purposive": "Gezielt",
+      "quota": "Quote",
+      "snowball": "Schneeballverfahren",
+      "voluntaryResponse": "Freiwillige Antwort"
+    }
+  },
   "datePicker": {
     "selectDate": "Datum auswählen"
   },
@@ -149,7 +189,9 @@
     "viewPlans": "Tarife anzeigen",
     "language": "Sprache",
     "selectLanguage": "Sprache auswählen",
-    "languageDescription": "Wählen Sie Ihre bevorzugte Sprache für die Anwendungsoberfläche. Änderungen werden sofort wirksam."
+    "languageDescription": "Wählen Sie Ihre bevorzugte Sprache für die Anwendungsoberfläche. Änderungen werden sofort wirksam.",
+    "profileInformation": "Profilinformationen",
+    "languagePreferences": "Spracheinstellungen"
   },
   "team": {
     "title": "Teamverwaltung",
@@ -2962,7 +3004,12 @@
     "currentProject": "Aktuelles Projekt: {name}",
     "failedToUpdateDesigns": "Designs konnten nicht aktualisiert werden",
     "autoSaveMessage": "Änderungen werden automatisch gespeichert, während Sie sie vornehmen.",
-    "selectProjectMessage": "Bitte wählen Sie ein Projekt aus, um seine Designs zu verwalten."
+    "selectProjectMessage": "Bitte wählen Sie ein Projekt aus, um seine Designs zu verwalten.",
+    "noDesignsYet": "Noch keine {type}-Designs hinzugefügt. Fügen Sie oben das erste hinzu.",
+    "designNameEmpty": "Der Designname darf nicht leer sein",
+    "designExists": "Ein Design mit diesem Namen existiert bereits",
+    "syncFailed": "Design umbenannt, aber zugehörige Datensätze konnten nicht aktualisiert werden",
+    "updatedSuccess": "Designs erfolgreich aktualisiert"
   },
   "feedback": {
     "thankYouDescription": "Vielen Dank, dass Sie uns helfen, uns zu verbessern!",

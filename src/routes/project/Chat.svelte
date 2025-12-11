@@ -1352,12 +1352,12 @@
                               <button
                                 class="inline-flex h-8 w-8 items-center justify-center rounded-md border bg-background text-muted-foreground hover:bg-muted"
                                 onclick={() => createNoteFromMessage(message)}
-                                aria-label="Create as note"
+                                aria-label={$_("chat.createAsNote")}
                               >
                                 <FilePlus class="h-4 w-4" />
                               </button>
                             </Tooltip.Trigger>
-                            <Tooltip.Content>Create as note</Tooltip.Content>
+                            <Tooltip.Content>{$_("chat.createAsNote")}</Tooltip.Content>
                           </Tooltip.Root>
                         </div>
 

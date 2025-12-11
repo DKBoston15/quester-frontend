@@ -14,15 +14,49 @@
   import { InfoIcon, Plus, X, Edit, Check, Save } from "lucide-svelte";
   import { projectStore } from "$lib/stores/ProjectStore";
   import { literatureStore } from "$lib/stores/LiteratureStore";
+  import { auth } from "$lib/stores/AuthStore.svelte";
+  import { localeStore } from "$lib/stores/LocaleStore.svelte";
   import { toast } from "svelte-sonner";
   import type { Project } from "$lib/types/auth";
   import type { Literature } from "$lib/types/literature";
   import { normalizeDesignDetail } from "$lib/utils/design";
   import { _ } from "svelte-i18n";
   import { get } from "svelte/store";
+  import {
+    translateDesignName,
+    isValidDesignType,
+    isSupportedLocale,
+    type DesignType as TranslationDesignType
+  } from "$lib/utils/designTranslations";
 
   // Helper for imperative translation access
   const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
+
+  // Check if current user is the owner of the project
+  function isProjectOwner(): boolean {
+    const currentUserId = auth.user?.id;
+    const projectOwnerId = projectStore.currentProject?.userId;
+    if (!currentUserId || !projectOwnerId) return false;
+    return String(currentUserId) === String(projectOwnerId);
+  }
+
+  // Get translated design name for display
+  // For owners: show design as-is (designs are already in their language)
+  // For non-owners: translate standard designs to user's current locale
+  function getTranslatedDesignName(designType: DesignType, name: string): string {
+    // If user is the owner, no translation needed (designs are in owner's language)
+    if (isProjectOwner()) {
+      return name;
+    }
+
+    // For non-owners, translate standard designs to their locale
+    const currentLocale = localeStore.locale;
+    if (isValidDesignType(designType) && isSupportedLocale(currentLocale)) {
+      return translateDesignName(designType as TranslationDesignType, name, currentLocale);
+    }
+
+    return name;
+  }
 
   // Design types that match our existing components
   const designTypes = [
@@ -82,9 +116,25 @@
     return [...designs].sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  // Initialize local designs from the store - only run once
+  // Track the last synced state to detect changes
+  let lastSyncedLocale = $state<string | null>(null);
+  let lastSyncedDesignsHash = $state<string | null>(null);
+
+  // Helper to create a simple hash of designs for change detection
+  function getDesignsHash(designs: Record<string, { name: string }[]>): string {
+    return JSON.stringify(designs);
+  }
+
+  // Initialize local designs from the store, and re-sync when locale or designs change
   $effect(() => {
-    if (projectStore.designs && !initialized) {
+    const currentLocale = localeStore.locale;
+    const currentDesignsHash = projectStore.designs ? getDesignsHash(projectStore.designs) : null;
+
+    const localeChanged = lastSyncedLocale !== currentLocale;
+    const designsChanged = lastSyncedDesignsHash !== currentDesignsHash;
+    const shouldSync = projectStore.designs && (!initialized || localeChanged || designsChanged);
+
+    if (shouldSync) {
       Object.keys(projectStore.designs).forEach((type) => {
         if (type in localDesigns) {
           // Sort designs alphabetically when loading
@@ -94,13 +144,15 @@
         }
       });
       initialized = true;
+      lastSyncedLocale = currentLocale;
+      lastSyncedDesignsHash = currentDesignsHash;
     }
   });
 
   // Check if a project is selected
   $effect(() => {
     if (!projectStore.currentProject) {
-      toast.error("Please select a project to manage its designs");
+      toast.error(t("designManager.selectProjectMessage"));
     }
   });
 
@@ -120,7 +172,7 @@
   // Function to add a new design option
   async function addDesign() {
     if (!newDesignName.trim()) {
-      toast.error("Design name cannot be empty");
+      toast.error(t("designManager.designNameEmpty"));
       return;
     }
 
@@ -130,7 +182,7 @@
         (design) => design.name.toLowerCase() === newDesignName.toLowerCase()
       )
     ) {
-      toast.error("Design with this name already exists");
+      toast.error(t("designManager.designExists"));
       return;
     }
 
@@ -166,7 +218,7 @@
     const trimmedName = editingDesign.newName.trim();
 
     if (!trimmedName) {
-      toast.error("Design name cannot be empty");
+      toast.error(t("designManager.designNameEmpty"));
       return null;
     }
 
@@ -177,7 +229,7 @@
     });
 
     if (hasDuplicate) {
-      toast.error("Design with this name already exists");
+      toast.error(t("designManager.designExists"));
       return null;
     }
 
@@ -263,18 +315,18 @@
           toast.error(
             syncError instanceof Error
               ? syncError.message
-              : "Design renamed, but related records could not be updated"
+              : t("designManager.syncFailed")
           );
         } finally {
           renameContext = null;
         }
       }
 
-      toast.success("Designs updated successfully");
+      toast.success(t("designManager.updatedSuccess"));
     } catch (error) {
       console.error("Failed to update designs:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to update designs"
+        error instanceof Error ? error.message : t("designManager.failedToUpdateDesigns")
       );
     } finally {
       isPending = false;
@@ -376,30 +428,28 @@
   <CardHeader>
     <div class="flex justify-between items-center">
       <CardTitle class="flex items-center gap-2">
-        Manage Project Designs
+        {$_("designManager.title")}
         <Tooltip.Root>
           <Tooltip.Trigger>
             <InfoIcon class="h-5 w-5" />
           </Tooltip.Trigger>
           <Tooltip.Content>
             <p class="text-sm max-w-xs">
-              The design options below will be available for describing both the
-              current project and the literature associated with this project.
+              {$_("designManager.tooltip")}
             </p>
           </Tooltip.Content>
         </Tooltip.Root>
       </CardTitle>
     </div>
     <CardDescription>
-      These design options will be available for selection in this project and
-      its literature items.
+      {$_("designManager.description")}
       {#if projectStore.currentProject}
         <span class="font-medium"
-          >Current project: {projectStore.currentProject.name}</span
+          >{$_("designManager.currentProject", { values: { name: projectStore.currentProject.name } })}</span
         >
       {:else}
         <span class="text-red-500"
-          >No project selected. Please select a project first.</span
+          >{$_("designManager.selectProjectMessage")}</span
         >
       {/if}
     </CardDescription>
@@ -415,7 +465,7 @@
             value={type}
             class="capitalize px-4 data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]: dark:data-[state=active]:border-dark-border data-[state=active]:font-medium"
           >
-            {type}
+            {$_(`designTypes.${type}`)}
           </Tabs.Trigger>
         {/each}
       </Tabs.List>
@@ -427,7 +477,7 @@
             <div class="flex items-center gap-2">
               <Input
                 type="text"
-                placeholder="Add new design option"
+                placeholder={$_("designManager.addNewOption")}
                 bind:value={newDesignName}
                 class="flex-grow"
                 onkeydown={(e) =>
@@ -449,7 +499,7 @@
                 {:else}
                   <Plus class="h-4 w-4 mr-1" />
                 {/if}
-                Add
+                {$_("common.add")}
               </Button>
             </div>
 
@@ -459,7 +509,7 @@
             >
               {#if localDesigns[type].length === 0}
                 <div class="p-4 text-center text-muted-foreground">
-                  No {type} designs added yet. Add your first one above.
+                  {$_("designManager.noDesignsYet", { values: { type: $_(`designTypes.${type}`).toLowerCase() } })}
                 </div>
               {:else}
                 <div class="divide-y divide-black dark:divide-dark-border">
@@ -500,7 +550,7 @@
                           </Button>
                         </div>
                       {:else}
-                        <span>{design.name}</span>
+                        <span>{getTranslatedDesignName(type, design.name)}</span>
                         <div class="flex items-center gap-1">
                           <Button
                             size="icon"
@@ -539,9 +589,9 @@
   <CardFooter class="flex items-center justify-between">
     <p class="text-sm text-muted-foreground">
       {#if projectStore.currentProject}
-        Changes are saved automatically as you make them.
+        {$_("designManager.autoSaveMessage")}
       {:else}
-        Please select a project to manage its designs.
+        {$_("designManager.selectProjectMessage")}
       {/if}
     </p>
     <Button
@@ -550,9 +600,9 @@
       class="ml-auto"
     >
       {#if isOperationPending("save")}
-        <span class="animate-spin mr-2">⏳</span> Saving...
+        <span class="animate-spin mr-2">⏳</span> {$_("common.saving")}
       {:else}
-        <Save class="h-4 w-4 mr-1" /> Save Now
+        <Save class="h-4 w-4 mr-1" /> {$_("designManager.saveNow")}
       {/if}
     </Button>
   </CardFooter>

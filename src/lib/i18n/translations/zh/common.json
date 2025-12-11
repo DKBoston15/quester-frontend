@@ -36,6 +36,46 @@
     "measurement": "测量",
     "analytic": "分析"
   },
+  "designs": {
+    "analytic": {
+      "associative": "关联性",
+      "descriptive": "描述性",
+      "emergent": "涌现性",
+      "narrative": "叙事性",
+      "predictive": "预测性",
+      "thematic": "主题性",
+      "metaAnalysis": "元分析",
+      "secondary": "二次分析"
+    },
+    "measurement": {
+      "extant": "现有数据",
+      "interview": "访谈",
+      "instrument": "量表",
+      "survey": "问卷调查"
+    },
+    "research": {
+      "caseStudy": "案例研究",
+      "convergentParallel": "汇聚平行设计",
+      "correlational": "相关研究",
+      "descriptive": "描述性研究",
+      "experimental": "实验研究",
+      "explanatorySequential": "解释性顺序设计",
+      "exploratorySequential": "探索性顺序设计",
+      "review": "文献综述",
+      "survey": "调查研究"
+    },
+    "sampling": {
+      "cluster": "整群抽样",
+      "simpleRandomSampling": "简单随机抽样",
+      "stratified": "分层抽样",
+      "systematic": "系统抽样",
+      "convenience": "便利抽样",
+      "purposive": "目的性抽样",
+      "quota": "配额抽样",
+      "snowball": "滚雪球抽样",
+      "voluntaryResponse": "自愿响应"
+    }
+  },
   "datePicker": {
     "selectDate": "选择日期"
   },
@@ -149,7 +189,9 @@
     "viewPlans": "查看计划",
     "language": "语言",
     "selectLanguage": "选择语言",
-    "languageDescription": "选择您偏好的应用界面语言。更改将立即生效。"
+    "languageDescription": "选择您偏好的应用界面语言。更改将立即生效。",
+    "profileInformation": "个人资料",
+    "languagePreferences": "语言偏好"
   },
   "team": {
     "title": "团队管理",
@@ -2386,7 +2428,12 @@
     "currentProject": "当前项目：{name}",
     "failedToUpdateDesigns": "更新设计失败",
     "autoSaveMessage": "更改会在您操作时自动保存。",
-    "selectProjectMessage": "请选择一个项目以管理其设计。"
+    "selectProjectMessage": "请选择一个项目以管理其设计。",
+    "noDesignsYet": "尚未添加{type}设计。请在上方添加第一个。",
+    "designNameEmpty": "设计名称不能为空",
+    "designExists": "此名称的设计已存在",
+    "syncFailed": "设计已重命名，但相关记录无法更新",
+    "updatedSuccess": "设计更新成功"
   },
   "feedback": {
     "thankYouDescription": "感谢您帮助我们改进！",

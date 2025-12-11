@@ -36,6 +36,46 @@
     "measurement": "Medición",
     "analytic": "Analítico"
   },
+  "designs": {
+    "analytic": {
+      "associative": "Asociativo",
+      "descriptive": "Descriptivo",
+      "emergent": "Emergente",
+      "narrative": "Narrativo",
+      "predictive": "Predictivo",
+      "thematic": "Temático",
+      "metaAnalysis": "Meta-análisis",
+      "secondary": "Secundario"
+    },
+    "measurement": {
+      "extant": "Existente",
+      "interview": "Entrevista",
+      "instrument": "Instrumento",
+      "survey": "Encuesta"
+    },
+    "research": {
+      "caseStudy": "Estudio de caso",
+      "convergentParallel": "Paralelo convergente",
+      "correlational": "Correlacional",
+      "descriptive": "Descriptivo",
+      "experimental": "Experimental",
+      "explanatorySequential": "Secuencial explicativo",
+      "exploratorySequential": "Secuencial exploratorio",
+      "review": "Revisión",
+      "survey": "Encuesta"
+    },
+    "sampling": {
+      "cluster": "Por conglomerados",
+      "simpleRandomSampling": "Muestreo aleatorio simple (MAS)",
+      "stratified": "Estratificado",
+      "systematic": "Sistemático",
+      "convenience": "Por conveniencia",
+      "purposive": "Intencional",
+      "quota": "Por cuotas",
+      "snowball": "Bola de nieve",
+      "voluntaryResponse": "Respuesta voluntaria"
+    }
+  },
   "datePicker": {
     "selectDate": "Seleccionar fecha"
   },
@@ -149,7 +189,9 @@
     "viewPlans": "Ver planes",
     "language": "Idioma",
     "selectLanguage": "Seleccionar idioma",
-    "languageDescription": "Elija su idioma preferido para la interfaz de la aplicación. Los cambios surten efecto inmediatamente."
+    "languageDescription": "Elija su idioma preferido para la interfaz de la aplicación. Los cambios surten efecto inmediatamente.",
+    "profileInformation": "Información del perfil",
+    "languagePreferences": "Preferencias de idioma"
   },
   "team": {
     "title": "Gestión de equipos",
@@ -2962,7 +3004,12 @@
     "currentProject": "Proyecto actual: {name}",
     "failedToUpdateDesigns": "Error al actualizar los diseños",
     "autoSaveMessage": "Los cambios se guardan automáticamente a medida que los realiza.",
-    "selectProjectMessage": "Por favor seleccione un proyecto para gestionar sus diseños."
+    "selectProjectMessage": "Por favor seleccione un proyecto para gestionar sus diseños.",
+    "noDesignsYet": "Aún no se han agregado diseños de {type}. Agregue el primero arriba.",
+    "designNameEmpty": "El nombre del diseño no puede estar vacío",
+    "designExists": "Ya existe un diseño con este nombre",
+    "syncFailed": "Diseño renombrado, pero no se pudieron actualizar los registros relacionados",
+    "updatedSuccess": "Diseños actualizados correctamente"
   },
   "feedback": {
     "thankYouDescription": "¡Gracias por ayudarnos a mejorar!",
