@@ -2,6 +2,10 @@
   import type { Note } from "$lib/types";
   import { auth } from "$lib/stores/AuthStore";
   import { api, isAuthError } from "../services/api-client";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   type FilterType = "literature" | "research" | "all" | "unlinked" | "recent";
   type FilterState = {
@@ -223,14 +227,14 @@
             .includes(query.toLowerCase());
 
           // Handle section_type which could be a string or an object
-          let sectionTypeLabel = "Other";
+          let sectionTypeLabel = t('stores.notes.other');
           if (
             typeof note.section_type === "object" &&
             note.section_type !== null
           ) {
             sectionTypeLabel =
               (note.section_type as { value: string; label: string }).label ||
-              "Other";
+              t('stores.notes.other');
           } else if (typeof note.section_type === "string") {
             sectionTypeLabel = note.section_type;
           }
@@ -305,20 +309,20 @@
           }
 
           const highlightedName = highlightText(
-            note.name || "Untitled Note",
+            note.name || t('stores.notes.untitledNote'),
             query
           );
           const contentSnippet = getSnippet(contentText, query);
 
           // Handle section_type which could be a string or an object
-          let sectionTypeLabel = "Other";
+          let sectionTypeLabel = t('stores.notes.other');
           if (
             typeof note.section_type === "object" &&
             note.section_type !== null
           ) {
             sectionTypeLabel =
               (note.section_type as { value: string; label: string }).label ||
-              "Other";
+              t('stores.notes.other');
           } else if (typeof note.section_type === "string") {
             sectionTypeLabel = note.section_type;
           }
@@ -404,7 +408,7 @@
 
     async loadNotes(projectId: string, literatureId?: string) {
       if (!projectId) {
-        error = "No project ID provided";
+        error = t("stores.notes.noProjectId");
         isLoading = false;
         return;
       }
@@ -450,7 +454,7 @@
         };
       } catch (err) {
         console.error("Error loading notes:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("common.anErrorOccurred");
         notes = [];
         loadedProjectId = null;
       } finally {
@@ -464,7 +468,7 @@
 
       try {
         if (!auth.user?.id) {
-          throw new Error("User not authenticated");
+          throw new Error(t("common.notesStore.userNotAuthenticated"));
         }
 
         const now = new Date().toISOString();
@@ -472,11 +476,11 @@
         const sectionType =
           data.section_type && typeof data.section_type === "object"
             ? data.section_type.value
-            : data.section_type || "Other";
+            : data.section_type || t('stores.notes.other');
 
         // Use type assertion to avoid TypeScript errors with camelCase backend fields
         const payload = {
-          name: data.name || "Untitled Note",
+          name: data.name || t('stores.notes.untitledNote'),
           content: data.content || "",
           type: data.type || "RESEARCH",
           sectionType: sectionType, // Use camelCase for backend
@@ -502,7 +506,7 @@
         return processedNote;
       } catch (err) {
         console.error("Error creating note:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("common.anErrorOccurred");
         throw err;
       } finally {
         isLoading = false;
@@ -549,7 +553,7 @@
           // Update the note in the local state without causing full array replacement
           const updatedNote = notes.find(n => n.id === id);
           if (!updatedNote) {
-            throw new Error("Note not found");
+            throw new Error(t("common.notesStore.noteNotFound"));
           }
           
           const newNote = { ...updatedNote, ...data };
@@ -629,13 +633,13 @@
           // Return the updated note
           const finalNote = notes.find(n => n.id === id);
           if (!finalNote) {
-            throw new Error("Failed to update note");
+            throw new Error(t("common.notesStore.failedToUpdateNote"));
           }
           return finalNote;
 
       } catch (err) {
         console.error("Error updating note:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("common.anErrorOccurred");
         throw err;
       } finally {
         if (!isContentUpdate && !uiOnlyUpdate) {
@@ -661,7 +665,7 @@
         }
       } catch (err) {
         console.error("Error deleting note:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("common.anErrorOccurred");
         throw err;
       } finally {
         isLoading = false;
@@ -816,7 +820,7 @@
     if (processedNote.sectionType !== undefined) {
       // Handle null sectionType from backend
       if (processedNote.sectionType === null) {
-        processedNote.section_type = { value: "Other", label: "Other" };
+        processedNote.section_type = { value: t('stores.notes.other'), label: t('stores.notes.other') };
       } else {
         // Convert backend's sectionType to frontend's section_type
         processedNote.section_type =
@@ -848,8 +852,8 @@
     ) {
       // Handle case where we have an object but it's missing the label
       processedNote.section_type = {
-        value: processedNote.section_type.value || "Other",
-        label: processedNote.section_type.value || "Other",
+        value: processedNote.section_type.value || t('stores.notes.other'),
+        label: processedNote.section_type.value || t('stores.notes.other'),
       };
     }
 

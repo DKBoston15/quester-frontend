@@ -9,6 +9,8 @@
   import PlusCircle from "lucide-svelte/icons/plus-circle";
   import XCircle from "lucide-svelte/icons/x-circle";
   import AlertCircle from "lucide-svelte/icons/alert-circle";
+  import { _, locale } from "svelte-i18n";
+  import { get } from "svelte/store";
   import type {
     ContextSelectionItem,
     ContextResourceType,
@@ -464,37 +466,29 @@
     dispatch("clear");
   }
 
+  const t = (key: string) => get(_)(key);
+
   function getTypeLabel(type: ContextResourceType): string {
-    switch (type) {
-      case "literature":
-        return "Literature";
-      case "note":
-        return "Note";
-      case "outcome":
-        return "Outcome";
-      case "model":
-        return "Model";
-      case "keyword_analysis":
-        return "Keyword Analysis";
-      case "document":
-        return "Document";
-      case "document_chunk":
-        return "Document Chunk";
-      case "project":
-        return "Project";
-      default:
-        return type;
-    }
+    const typeMap: Record<string, string> = {
+      literature: t("contextSelector.types.literature"),
+      note: t("contextSelector.types.note"),
+      outcome: t("contextSelector.types.outcome"),
+      model: t("contextSelector.types.model"),
+      keyword_analysis: t("contextSelector.types.keywordAnalysis"),
+      document: t("contextSelector.types.document"),
+      document_chunk: t("contextSelector.types.documentChunk"),
+      project: t("contextSelector.types.project"),
+    };
+    return typeMap[type] || type;
   }
 </script>
 
 <div class="flex flex-col gap-3" bind:this={rootEl}>
   <div class="flex items-center justify-between">
     <div>
-      <p class="text-sm font-semibold">Context Focus</p>
+      <p class="text-sm font-semibold">{$_("contextSelector.contextFocus")}</p>
       <p class="text-xs text-muted-foreground">
-        Select specific items to anchor the assistant's context. The assistant
-        will still keep lightweight project metadata.
+        {$_("contextSelector.contextFocusDescription")}
       </p>
     </div>
     {#if selectedItems.length > 0}
@@ -505,7 +499,7 @@
         onclick={handleClear}
         {disabled}
       >
-        Clear
+        {$_("contextSelector.clear")}
       </Button>
     {/if}
   </div>
@@ -513,8 +507,7 @@
   <div class="flex flex-wrap gap-2">
     {#if selectedItems.length === 0}
       <span class="text-xs text-muted-foreground">
-        No context items selected. The assistant will consider the broader
-        project content.
+        {$_("contextSelector.noContextSelected")}
       </span>
     {:else}
       {#each selectedItems as item (item.type + item.id)}
@@ -525,7 +518,7 @@
             class="ml-1 inline-flex items-center"
             onclick={() => handleRemove(item)}
             {disabled}
-            aria-label={`Remove ${item.title} from context`}
+            aria-label={$_("contextSelector.removeFromContext", { values: { title: item.title }})}
           >
             <XCircle class="size-3" />
           </button>
@@ -539,8 +532,8 @@
       type="text"
       class="w-full h-[44px] rounded-lg border-2 border-border dark:border-dark-border bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:focus:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
       placeholder={scope === "all"
-        ? "Search items across accessible projects"
-        : "Search this project for notes, literature, outcomes..."}
+        ? $_("contextSelector.searchAllProjects")
+        : $_("contextSelector.searchThisProject")}
       bind:value={query}
       disabled={disabled || (scope === "current" && !projectId)}
     />
@@ -550,14 +543,14 @@
         class="flex items-center gap-2 rounded border border-dashed border-border px-3 py-2 text-xs text-muted-foreground"
       >
         <AlertCircle class="size-3" />
-        Choose a project to target context selections.
+        {$_("contextSelector.chooseProject")}
       </div>
     {/if}
 
     {#if isSearching}
       <div class="flex items-center gap-2 text-xs text-muted-foreground">
         <Loader2 class="size-3 animate-spin" />
-        Searching…
+        {$_("contextSelector.searching")}
       </div>
     {:else if searchError}
       <div
@@ -568,7 +561,7 @@
       </div>
     {:else if query.trim().length >= MIN_QUERY_LENGTH && results.length === 0}
       <div class="text-xs text-muted-foreground">
-        No matching items yet. Try another search term.
+        {$_("contextSelector.noMatchingItems")}
       </div>
     {:else if results.length > 0}
       <div class="space-y-2">
@@ -590,8 +583,7 @@
                   {getTypeLabel(item.type)}
                 </Badge>
                 {#if isSelected(item)}
-                  <Badge variant="secondary" class="text-[10px]">Selected</Badge
-                  >
+                  <Badge variant="secondary" class="text-[10px]">{$_("contextSelector.selected")}</Badge>
                 {:else}
                   <PlusCircle class="size-4 text-muted-foreground" />
                 {/if}

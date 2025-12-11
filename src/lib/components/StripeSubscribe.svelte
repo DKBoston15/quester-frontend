@@ -4,6 +4,7 @@
   import { loadStripe } from "@stripe/stripe-js";
   import { api } from "$lib/services/api-client";
   import { auth } from "$lib/stores/AuthStore";
+  import { _ } from "svelte-i18n";
 
   export let organizationId: string;
   export let priceId: string;
@@ -65,7 +66,7 @@
       <div
         class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
       ></div>
-      <span>Processing...</span>
+      <span>{$_('stripe.processing')}</span>
     </div>
   {:else if stripeError}
     Stripe Failed to Load

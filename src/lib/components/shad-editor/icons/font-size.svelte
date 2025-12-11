@@ -4,24 +4,25 @@
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { ChevronDown } from 'lucide-svelte';
 	import type { ToolBarIconProps } from './types.js';
+	import { _ } from 'svelte-i18n';
 
 	let { editor, toolTipProps = { delayDuration: 0, disabled: false } }: ToolBarIconProps = $props();
 
-	const FONT_SIZE = [
-		{ label: 'Tiny', value: '0.7rem' },
-		{ label: 'Smaller', value: '0.75rem' },
-		{ label: 'Small', value: '0.9rem' },
-		{ label: 'Medium', value: '' },
-		{ label: 'Large', value: '1.25rem' },
-		{ label: 'Extra Large', value: '1.5rem' }
-	];
+	const FONT_SIZE = $derived([
+		{ label: $_('editor.fontSize.tiny'), value: '0.7rem' },
+		{ label: $_('editor.fontSize.smaller'), value: '0.75rem' },
+		{ label: $_('editor.fontSize.small'), value: '0.9rem' },
+		{ label: $_('editor.fontSize.medium'), value: '' },
+		{ label: $_('editor.fontSize.large'), value: '1.25rem' },
+		{ label: $_('editor.fontSize.extraLarge'), value: '1.5rem' }
+	]);
 
 	let currentSize = $derived.by(() => editor.getAttributes('textStyle').fontSize || '');
 
 	const currentLabel = $derived.by(() => {
 		const l = FONT_SIZE.find((f) => f.value === currentSize);
 		if (l) return l.label.split(' ')[0];
-		return 'Medium';
+		return $_('editor.fontSize.medium');
 	});
 </script>
 
@@ -37,7 +38,7 @@
 					avoidCollisions
 					class="border bg-background p-2 font-medium text-foreground"
 				>
-					<p>Font Size</p>
+					<p>{$_('editor.fontSize.title')}</p>
 				</Tooltip.Content>
 			</Tooltip.Root>
 		</Tooltip.Provider>

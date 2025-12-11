@@ -1,4 +1,8 @@
 import { apiRequest } from '../services/api-client'
+import { _ } from "svelte-i18n";
+import { get } from "svelte/store";
+
+const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
 export interface Announcement {
   id: string
@@ -87,7 +91,7 @@ export const announcementStore = {
         announcements = []
       }
     } catch (err) {
-      error = 'Network error while fetching announcements'
+      error = t('stores.announcement.networkError')
       console.error('❌ Network error fetching announcements:', err)
     } finally {
       isLoading = false
@@ -102,7 +106,7 @@ export const announcementStore = {
       const data = await apiRequest('/announcements/unread')
       unreadAnnouncements = data.data || []
     } catch (err) {
-      error = 'Network error while fetching unread announcements'
+      error = t('stores.announcement.networkError')
       console.error('❌ Network error fetching unread announcements:', err)
     } finally {
       isLoading = false
@@ -142,7 +146,7 @@ export const announcementStore = {
         }
       }
     } catch (err) {
-      error = 'Network error while tracking interaction'
+      error = t('stores.announcement.networkError')
       console.error('❌ Error tracking interaction:', err)
     }
   },

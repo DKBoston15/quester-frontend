@@ -1,6 +1,8 @@
 import type { Editor } from '@tiptap/core';
 import { Node, Slice } from '@tiptap/pm/model';
 import { Decoration, DecorationSet, EditorView } from '@tiptap/pm/view';
+import { _, locale } from 'svelte-i18n';
+import { get } from 'svelte/store';
 
 export default function (doc: Node): DecorationSet {
 	const hexColor = /(#[0-9a-f]{3,6})\b/gi;
@@ -77,7 +79,7 @@ export function getHandlePaste(editor: Editor, maxSize: number = 2) {
 		let filesize = (file?.size / 1024 / 1024).toFixed(4);
 
 		if (filesize && Number(filesize) > maxSize) {
-			window.alert(`too large image! filesize: ${filesize} mb`);
+			window.alert(get(_)('editor.imageTooLarge', { values: { filesize } }));
 			return;
 		}
 

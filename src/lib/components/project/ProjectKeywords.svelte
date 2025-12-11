@@ -2,6 +2,7 @@
   import TagInput from "../custom-ui/TagInput.svelte";
   import { projectStore } from "$lib/stores/ProjectStore";
   import type { Project } from "$lib/types/auth";
+  import { _ } from "svelte-i18n";
 
   const { project } = $props<{ project: Project }>();
   let keywords = $state<string[]>(
@@ -34,4 +35,4 @@
   }
 </script>
 
-<TagInput tags={keywords} placeholder="Keywords" on:change={updateKeywords} />
+<TagInput tags={keywords} placeholder={$_('keywords.placeholder')} on:change={updateKeywords} />

@@ -23,6 +23,11 @@
   import { api } from "$lib/services/api-client";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper to get translation value imperatively
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   interface Model {
     id: string;
@@ -38,7 +43,7 @@
   let showCreateDialog = $state(false);
   let showDeleteDialog = $state(false);
   let showRenameDialog = $state(false);
-  let newModelName = $state("New Model");
+  let newModelName = $state(t("modelsPage.newModel"));
   let modelToDelete = $state<Model | null>(null);
   let modelToRename = $state<Model | null>(null);
   let renameValue = $state("");
@@ -121,7 +126,7 @@
       }
 
       showCreateDialog = false;
-      newModelName = "New Model";
+      newModelName = t("modelsPage.newModel");
       const path = `/project/${projectStore.currentProject.id}/models/${newModel.id}`;
       navigate(path);
     } catch (err) {
@@ -197,7 +202,7 @@
 
   $effect(() => {
     if (!showCreateDialog) {
-      newModelName = "New Model";
+      newModelName = t("modelsPage.newModel");
     }
   });
 
@@ -214,62 +219,59 @@
     }
   });
 
-  const driverObj = driver({
-    showProgress: true,
-    popoverClass: "quester-driver-theme",
-    steps: [
-      {
-        element: "#models-header",
-        popover: {
-          title: "Manage Your Research Models",
-          description:
-            "This is where you create, view, and organize visual models of your research concepts and their relationships. Models help you map out theories and complex ideas.",
-          side: "bottom",
-          align: "start",
+  function createDriverObj() {
+    return driver({
+      showProgress: true,
+      popoverClass: "quester-driver-theme",
+      steps: [
+        {
+          element: "#models-header",
+          popover: {
+            title: t("tours.models.header.title"),
+            description: t("tours.models.header.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#create-model-button",
-        popover: {
-          title: "Create a New Model",
-          description:
-            "Click here to start a new model. Give it a name, and you'll be taken to the editor to begin mapping your ideas.",
-          side: "bottom",
-          align: "end",
+        {
+          element: "#create-model-button",
+          popover: {
+            title: t("tours.models.createButton.title"),
+            description: t("tours.models.createButton.description"),
+            side: "bottom",
+            align: "end",
+          },
         },
-      },
-      {
-        element: "#models-search",
-        popover: {
-          title: "Find Your Models",
-          description:
-            "Use the search bar to quickly find specific models by name as your collection grows.",
-          side: "bottom",
-          align: "start",
+        {
+          element: "#models-search",
+          popover: {
+            title: t("tours.models.search.title"),
+            description: t("tours.models.search.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#models-grid",
-        popover: {
-          title: "Your Model Collection",
-          description:
-            "All your created models are displayed here. Click on a card to open the editor. You can also rename or delete models using the icons that appear on hover.",
-          side: "top",
-          align: "start",
+        {
+          element: "#models-grid",
+          popover: {
+            title: t("tours.models.grid.title"),
+            description: t("tours.models.grid.description"),
+            side: "top",
+            align: "start",
+          },
         },
-      },
-      {
-        element: ".container", // Target a stable element on the main page
-        popover: {
-          title: "Visualize Your Research",
-          description:
-            "Use models to visually structure your thoughts, theories, and connections within your research. It's a powerful way to gain clarity and communicate complex ideas.",
-          side: "top",
-          align: "center",
+        {
+          element: ".container", // Target a stable element on the main page
+          popover: {
+            title: t("tours.models.visualize.title"),
+            description: t("tours.models.visualize.description"),
+            side: "top",
+            align: "center",
+          },
         },
-      },
-    ],
-  });
+      ],
+    });
+  }
 </script>
 
 {#if isLoadingCapability}
@@ -284,15 +286,14 @@
       <div class="mb-8">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2" id="models-header">
-            <h1 class="text-3xl font-bold">Models</h1>
+            <h1 class="text-3xl font-bold">{$_("models.title")}</h1>
             <Tooltip.Root>
               <Tooltip.Trigger>
                 <Info class="h-5 w-5 text-muted-foreground" />
               </Tooltip.Trigger>
               <Tooltip.Content>
                 <p class="text-sm max-w-xs">
-                  Create and manage research models to visualize your concepts
-                  and relationships.
+                  {$_("models.tooltip")}
                 </p>
               </Tooltip.Content>
             </Tooltip.Root>
@@ -304,20 +305,20 @@
               id="create-model-button"
             >
               <Plus class="h-4 w-4 mr-2" />
-              Create Model
+              {$_("models.createModel")}
             </Button>
             <Button
               variant="outline"
-              onclick={() => driverObj.drive()}
+              onclick={() => createDriverObj().drive()}
               class="border-2 dark:border-dark-border"
             >
               <GraduationCap class="h-4 w-4 mr-2" />
-              Tour
+              {$_("dashboard.tour")}
             </Button>
           </div>
         </div>
         <p class="text-muted-foreground mt-2">
-          Create and manage your research models
+          {$_("models.manageResearchModels")}
         </p>
       </div>
 
@@ -330,7 +331,7 @@
             <input
               id="models-search"
               type="text"
-              placeholder="Search models..."
+              placeholder={$_("models.searchModels")}
               bind:value={searchQuery}
               class="pl-9 flex h-10 w-full rounded-md border-2 dark:border-dark-border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             />
@@ -340,7 +341,7 @@
         <Card.Content class="space-y-6 pt-6">
           {#if modelStore.isLoading}
             <div class="flex justify-center items-center h-[400px]">
-              <p class="text-lg text-muted-foreground">Loading models...</p>
+              <p class="text-lg text-muted-foreground">{$_("models.loadingModels")}</p>
             </div>
           {:else if modelStore.error}
             <div class="flex justify-center items-center h-[400px]">
@@ -348,9 +349,9 @@
             </div>
           {:else if !modelStore.models.length}
             <EmptyState
-              title="No models created yet"
+              title={$_("models.noModelsCreated")}
               variant="data-empty"
-              ctaText="Create your first model"
+              ctaText={$_("models.createFirstModel")}
               ctaAction={() => (showCreateDialog = true)}
             />
           {:else}
@@ -396,7 +397,7 @@
                             <Pencil
                               class="h-4 w-4 text-blue-600 dark:text-blue-400"
                             />
-                            <span class="sr-only">Rename model</span>
+                            <span class="sr-only">{$_("models.renameModel")}</span>
                           </Button>
                           <Button
                             variant="outline"
@@ -407,14 +408,14 @@
                             )}
                           >
                             <Trash2 class="h-4 w-4 text-destructive" />
-                            <span class="sr-only">Delete model</span>
+                            <span class="sr-only">{$_("models.deleteModel")}</span>
                           </Button>
                         </div>
                       </div>
                       <Card.Description class="text-xs">
                         <div class="flex flex-col gap-1 mt-1">
                           <div class="flex justify-between">
-                            <span class="text-muted-foreground">Created:</span>
+                            <span class="text-muted-foreground">{$_("models.created")}:</span>
                             <span
                               >{new Date(
                                 model.createdAt
@@ -422,7 +423,7 @@
                             >
                           </div>
                           <div class="flex justify-between">
-                            <span class="text-muted-foreground">Updated:</span>
+                            <span class="text-muted-foreground">{$_("models.updated")}:</span>
                             <span
                               >{new Date(
                                 model.updatedAt
@@ -448,14 +449,14 @@
       class="sm:max-w-[425px] border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
     >
       <div class="flex flex-col space-y-1.5 text-center sm:text-left">
-        <Title>Create New Model</Title>
+        <Title>{$_("models.createNewModel")}</Title>
         <Description>
-          Give your model a name. You can change it later.
+          {$_("models.giveModelName")}
         </Description>
       </div>
       <div class="grid gap-4 py-4">
         <div class="grid grid-cols-4 items-center gap-4">
-          <label for="name" class="text-right"> Name </label>
+          <label for="name" class="text-right"> {$_("models.name")} </label>
           <input
             id="name"
             bind:value={newModelName}
@@ -471,13 +472,13 @@
           onclick={() => (showCreateDialog = false)}
           class="border-2  dark:border-dark-border"
         >
-          Cancel
+          {$_("common.cancel")}
         </Button>
         <Button
           onclick={handleCreateModel}
           class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] transition-all"
         >
-          Create Model
+          {$_("models.createModel")}
         </Button>
       </div>
     </Content>
@@ -489,10 +490,9 @@
       class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
     >
       <AlertDialog.Header>
-        <AlertDialog.Title>Delete Model</AlertDialog.Title>
+        <AlertDialog.Title>{$_("models.deleteModelTitle")}</AlertDialog.Title>
         <AlertDialog.Description>
-          Are you sure you want to delete "{modelToDelete?.name}"? This action
-          cannot be undone.
+          {$_("models.deleteModelConfirm", { values: { name: modelToDelete?.name || "" } })}
         </AlertDialog.Description>
       </AlertDialog.Header>
       <AlertDialog.Footer>
@@ -502,14 +502,14 @@
             onclick={() => (showDeleteDialog = false)}
             class="border-2  dark:border-dark-border"
           >
-            Cancel
+            {$_("common.cancel")}
           </Button>
           <Button
             variant="destructive"
             onclick={handleDeleteModel}
             class="border-2 border-destructive dark:border-destructive"
           >
-            Delete
+            {$_("common.delete")}
           </Button>
         </div>
       </AlertDialog.Footer>
@@ -522,14 +522,14 @@
       class="sm:max-w-[425px] border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
     >
       <div class="flex flex-col space-y-1.5 text-center sm:text-left">
-        <Title>Rename Model</Title>
+        <Title>{$_("models.renameModel")}</Title>
         <Description>
-          Enter a new name for "{modelToRename?.name}"
+          {$_("models.enterNewName", { values: { name: modelToRename?.name || "" } })}
         </Description>
       </div>
       <div class="grid gap-4 py-4">
         <div class="grid grid-cols-4 items-center gap-4">
-          <label for="rename" class="text-right"> Name </label>
+          <label for="rename" class="text-right"> {$_("models.name")} </label>
           <input
             id="rename"
             bind:value={renameValue}
@@ -545,13 +545,13 @@
           onclick={() => (showRenameDialog = false)}
           class="border-2  dark:border-dark-border"
         >
-          Cancel
+          {$_("common.cancel")}
         </Button>
         <Button
           onclick={handleRenameModel}
           class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(44,46,51,0.1)] transition-all"
         >
-          Rename
+          {$_("models.rename")}
         </Button>
       </div>
     </Content>

@@ -14,6 +14,11 @@
   import FrequencyChart from "./FrequencyChart.svelte";
   import { EmptyState } from "$lib/components/ui/empty-state";
   import { toast } from "svelte-sonner";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper function for imperative translation access
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   const { analysis } = $props<{ analysis: KeywordAnalysis }>();
 
@@ -232,10 +237,10 @@
 
     try {
       await navigator.clipboard.writeText(summaryElement.innerText);
-      toast.success("Summary copied to clipboard!");
+      toast.success(t("keywordAnalysis.summaryCopied"));
     } catch (err) {
       console.error("Failed to copy summary text: ", err);
-      toast.error("Failed to copy summary.");
+      toast.error(t("keywordAnalysis.copyFailed"));
     }
   }
   // --- End Copy Summary Function ---
@@ -347,18 +352,18 @@
 
 <Card class="p-6">
   <div class="prose prose-slate dark:prose-invert max-w-none">
-    <h3 class="text-lg font-semibold mb-1">Analysis Results</h3>
+    <h3 class="text-lg font-semibold mb-1">{$_("keywordAnalysis.analysisResults")}</h3>
     {#if keywordsText}
       <p class="text-sm text-muted-foreground mb-4 italic">{keywordsText}</p>
     {/if}
 
     <Accordion type="single" class="w-full">
       <AccordionItem value="summary" id="analysis-summary-accordion">
-        <AccordionTrigger>Summary</AccordionTrigger>
+        <AccordionTrigger>{$_("keywordAnalysis.summary")}</AccordionTrigger>
         <AccordionContent>
           <div class="flex justify-end mb-2">
             <Button variant="outline" size="sm" onclick={copySummaryText}>
-              <ClipboardCopyIcon class="h-4 w-4 mr-2" /> Copy Text
+              <ClipboardCopyIcon class="h-4 w-4 mr-2" /> {$_("keywordAnalysis.copyText")}
             </Button>
           </div>
           <div bind:this={summaryElement} class="report-content">
@@ -368,7 +373,7 @@
       </AccordionItem>
 
       <AccordionItem value="frequency-chart" id="frequency-chart-accordion">
-        <AccordionTrigger>Frequency Distribution Figure</AccordionTrigger>
+        <AccordionTrigger>{$_("keywordAnalysis.frequencyDistributionFigure")}</AccordionTrigger>
         <AccordionContent>
           <div class="mt-2">
             {#key analysis.id}
@@ -379,7 +384,7 @@
       </AccordionItem>
 
       <AccordionItem value="visualization" id="venn-diagram-accordion">
-        <AccordionTrigger>Keyword Venn Diagram Figures</AccordionTrigger>
+        <AccordionTrigger>{$_("keywordAnalysis.vennDiagramFigures")}</AccordionTrigger>
         <AccordionContent>
           <div class="mt-2">
             {#key analysis.id}
@@ -393,40 +398,38 @@
         value="frequency-distribution"
         id="frequency-table-accordion"
       >
-        <AccordionTrigger>Frequency Distribution</AccordionTrigger>
+        <AccordionTrigger>{$_("keywordAnalysis.frequencyDistribution")}</AccordionTrigger>
         <AccordionContent>
           <div class="flex justify-between items-center mb-2">
             <div class="flex items-baseline gap-2">
-              <h2 class="font-bold italic">Table 1</h2>
+              <h2 class="font-bold italic">{$_("keywordAnalysis.table1")}</h2>
               <Tooltip.Root>
                 <Tooltip.Trigger>
                   <InfoIcon class="h-4 w-4" />
                 </Tooltip.Trigger>
                 <Tooltip.Content>
                   <p class="text-sm max-w-xs">
-                    Numbers may differ from Google Scholar UI as we display
-                    exact values from the database, while Scholar's UI shows
-                    approximations.
+                    {$_("keywordAnalysis.tooltipScholarNote")}
                   </p>
                 </Tooltip.Content>
               </Tooltip.Root>
             </div>
             <Button variant="outline" size="sm" onclick={downloadFrequencyCSV}>
-              <DownloadIcon class="h-4 w-4 mr-2" /> Download CSV
+              <DownloadIcon class="h-4 w-4 mr-2" /> {$_("keywordAnalysis.downloadCSV")}
             </Button>
           </div>
           <h2 class="font-bold italic mb-2">
-            Frequency Distribution of Key Terms
+            {$_("keywordAnalysis.frequencyDistributionTable")}
           </h2>
           <div class="overflow-x-auto">
             <table class="min-w-full border-collapse rounded-md border">
               <thead>
                 <tr>
-                  <th class="p-2 border bg-muted text-left">Key Term</th>
-                  <th class="p-2 border bg-muted text-right">Frequency</th>
-                  <th class="p-2 border bg-muted text-right">Percentage (%)</th>
+                  <th class="p-2 border bg-muted text-left">{$_("keywordAnalysis.keyTerm")}</th>
+                  <th class="p-2 border bg-muted text-right">{$_("keywordAnalysis.frequency")}</th>
+                  <th class="p-2 border bg-muted text-right">{$_("keywordAnalysis.percentage")}</th>
                   <th class="p-2 border bg-muted text-right"
-                    >Cumulative Percentage (%)</th
+                    >{$_("keywordAnalysis.cumulativePercentage")}</th
                   >
                 </tr>
               </thead>
@@ -454,7 +457,7 @@
                     0
                   )}
                   <tr class="font-semibold">
-                    <td class="p-2 border">Total</td>
+                    <td class="p-2 border">{$_("keywordAnalysis.total")}</td>
                     <td class="p-2 border text-right">{formatNumber(total)}</td>
                     <td class="p-2 border text-right">100.00</td>
                     <td class="p-2 border text-right">100.00</td>
@@ -467,34 +470,32 @@
       </AccordionItem>
 
       <AccordionItem value="cross-distribution" id="cross-table-accordion">
-        <AccordionTrigger>Cross Distribution</AccordionTrigger>
+        <AccordionTrigger>{$_("keywordAnalysis.crossDistribution")}</AccordionTrigger>
         <AccordionContent>
           <div class="flex justify-between items-center mb-2">
             <div class="flex items-baseline gap-2">
-              <h2 class="font-bold italic">Table 2</h2>
+              <h2 class="font-bold italic">{$_("keywordAnalysis.table2")}</h2>
               <Tooltip.Root>
                 <Tooltip.Trigger>
                   <InfoIcon class="h-4 w-4" />
                 </Tooltip.Trigger>
                 <Tooltip.Content>
                   <p class="text-sm max-w-xs">
-                    Numbers may differ from Google Scholar UI as we display
-                    exact values from the database, while Scholar's UI shows
-                    approximations.
+                    {$_("keywordAnalysis.tooltipScholarNote")}
                   </p>
                 </Tooltip.Content>
               </Tooltip.Root>
             </div>
             <Button variant="outline" size="sm" onclick={downloadCrossDistCSV}>
-              <DownloadIcon class="h-4 w-4 mr-2" /> Download CSV
+              <DownloadIcon class="h-4 w-4 mr-2" /> {$_("keywordAnalysis.downloadCSV")}
             </Button>
           </div>
-          <h2 class="font-bold italic mb-2">Cross Distribution of Key Terms</h2>
+          <h2 class="font-bold italic mb-2">{$_("keywordAnalysis.crossDistributionTable")}</h2>
           <div class="overflow-x-auto">
             <table class="min-w-full border-collapse rounded-md border">
               <thead>
                 <tr>
-                  <th class="p-2 border bg-muted">Key term</th>
+                  <th class="p-2 border bg-muted">{$_("keywordAnalysis.keyTerm")}</th>
                   {#each keywords as keyword}
                     <th class="p-2 border bg-muted">{keyword}</th>
                   {/each}
@@ -535,39 +536,37 @@
       <!-- New Accordion Item for Three-way Distribution -->
       {#if keywords.length >= 3}
         <AccordionItem value="triple-distribution" id="triple-table-accordion">
-          <AccordionTrigger>Three-way Distribution</AccordionTrigger>
+          <AccordionTrigger>{$_("keywordAnalysis.threeWayDistribution")}</AccordionTrigger>
           <AccordionContent>
             <div class="flex justify-between items-center mb-2">
               <div class="flex items-baseline gap-2">
-                <h2 class="font-bold italic">Table 3</h2>
+                <h2 class="font-bold italic">{$_("keywordAnalysis.table3")}</h2>
                 <Tooltip.Root>
                   <Tooltip.Trigger>
                     <InfoIcon class="h-4 w-4" />
                   </Tooltip.Trigger>
                   <Tooltip.Content>
                     <p class="text-sm max-w-xs">
-                      Numbers may differ from Google Scholar UI as we display
-                      exact values from the database, while Scholar's UI shows
-                      approximations.
+                      {$_("keywordAnalysis.tooltipScholarNote")}
                     </p>
                   </Tooltip.Content>
                 </Tooltip.Root>
               </div>
               <Button variant="outline" size="sm" onclick={downloadTripleCSV}>
-                <DownloadIcon class="h-4 w-4 mr-2" /> Download CSV
+                <DownloadIcon class="h-4 w-4 mr-2" /> {$_("keywordAnalysis.downloadCSV")}
               </Button>
             </div>
             <h2 class="font-bold italic mb-2">
-              Three-way Distribution of Key Terms
+              {$_("keywordAnalysis.threeWayDistributionTable")}
             </h2>
             <div class="overflow-x-auto">
               <table class="min-w-full border-collapse rounded-md border">
                 <thead>
                   <tr>
-                    <th class="p-2 border bg-muted text-left">Keyword 1</th>
-                    <th class="p-2 border bg-muted text-left">Keyword 2</th>
-                    <th class="p-2 border bg-muted text-left">Keyword 3</th>
-                    <th class="p-2 border bg-muted text-right">Frequency</th>
+                    <th class="p-2 border bg-muted text-left">{$_("keywordAnalysis.keyword1")}</th>
+                    <th class="p-2 border bg-muted text-left">{$_("keywordAnalysis.keyword2")}</th>
+                    <th class="p-2 border bg-muted text-left">{$_("keywordAnalysis.keyword3")}</th>
+                    <th class="p-2 border bg-muted text-right">{$_("keywordAnalysis.frequency")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -592,8 +591,8 @@
                     <tr>
                       <td class="p-2 border text-center" colspan="4">
                         <EmptyState
-                          title="No triple combinations found"
-                          description="Data unavailable for three-way keyword analysis."
+                          title={$_("keywordAnalysis.noTripleCombinations")}
+                          description={$_("keywordAnalysis.tripleDataUnavailable")}
                           variant="data-empty"
                           height="h-[100px]"
                         />
@@ -609,7 +608,7 @@
 
       {#if report.keywordsSuggested}
         <AccordionItem value="suggestions" id="suggestions-accordion">
-          <AccordionTrigger>Suggested Keywords</AccordionTrigger>
+          <AccordionTrigger>{$_("keywordAnalysis.suggestedKeywords")}</AccordionTrigger>
           <AccordionContent>
             <div class="flex flex-wrap gap-2 mt-2">
               {#each report.keywords as keyword}

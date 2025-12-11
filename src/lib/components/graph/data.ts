@@ -1,7 +1,12 @@
 import { projectStore } from "$lib/stores/ProjectStore";
 import { literatureStore } from "$lib/stores/LiteratureStore";
 import { notesStore } from "$lib/stores/NotesStore";
+import { get } from "svelte/store";
+import { _ } from "svelte-i18n";
 import { designSelections } from "$lib/utils/design";
+
+// Helper function for runtime translation
+const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
 export const groupColorMap = {
   1: "#006eff",
@@ -306,7 +311,7 @@ export async function createGraphData(urlProjectId: string) {
       return `${stripHtmlTags(note.content).slice(0, 24)}...`;
     }
 
-    return "Untitled Note";
+    return t('graphData.untitledNote');
   };
 
   noteRecords.forEach((note) => {
@@ -354,6 +359,28 @@ export const nodeIcons = {
   note: `/note.png`,
 };
 
+// Function to get translated type labels
+export function getTypeLabel(type: string): string {
+  const typeKeyMap: Record<string, string> = {
+    keyword: 'graphData.typeMap.keyword',
+    publisher: 'graphData.typeMap.publisher',
+    authors: 'graphData.typeMap.authors',
+    year: 'graphData.typeMap.year',
+    research_design: 'graphData.typeMap.researchDesign',
+    sampling_design: 'graphData.typeMap.samplingDesign',
+    measurement_design: 'graphData.typeMap.measurementDesign',
+    analytic_design: 'graphData.typeMap.analyticDesign',
+    model: 'graphData.typeMap.model',
+    type: 'graphData.typeMap.type',
+    note: 'graphData.typeMap.note',
+  };
+
+  const translationKey = typeKeyMap[type];
+  return translationKey ? t(translationKey) : type;
+}
+
+// Deprecated: Use getTypeLabel() instead
+// Kept for backwards compatibility
 export const typeMap = {
   keyword: "Keyword",
   publisher: "Publisher",

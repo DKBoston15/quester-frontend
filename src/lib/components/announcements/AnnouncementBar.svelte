@@ -5,6 +5,7 @@
   import { Sparkles, ChevronRight, History } from 'lucide-svelte'
   import { onMount } from 'svelte'
   import AnnouncementHistory from './AnnouncementHistory.svelte'
+  import { _ } from 'svelte-i18n'
   
   let showBar = $state(true)
   let isInitialized = $state(false)
@@ -112,11 +113,11 @@
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2 mb-1">
             <h3 class="font-medium text-gray-900 dark:text-gray-100 truncate">
-              {latestAnnouncement?.title || 'Platform Update Available'}
+              {latestAnnouncement?.title || $_('announcements.systemAnnouncement')}
             </h3>
           </div>
           <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-1">
-            {latestAnnouncement?.content || 'Click to view the latest platform updates and improvements.'}
+            {latestAnnouncement?.content || $_('announcements.viewDetails')}
           </p>
         </div>
       </div>
@@ -128,11 +129,11 @@
           onclick={openLatestAnnouncement}
           class="text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50"
         >
-          <span class="hidden sm:inline">View Update</span>
-          <span class="sm:hidden">View</span>
+          <span class="hidden sm:inline">{$_('announcements.viewDetails')}</span>
+          <span class="sm:hidden">{$_('announcements.view')}</span>
           <ChevronRight class="w-4 h-4 ml-1" />
         </Button>
-        
+
         <Button
           variant="ghost"
           size="sm"
@@ -140,7 +141,7 @@
           class="text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
         >
           <History class="w-4 h-4" />
-          <span class="hidden md:inline ml-1">History</span>
+          <span class="hidden md:inline ml-1">{$_('announcements.history')}</span>
         </Button>
       </div>
     </div>

@@ -8,6 +8,11 @@
   import "driver.js/dist/driver.css";
   import { GraduationCap } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper function for imperative translation access
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   const props = $props<{
     modelId: string;
@@ -77,72 +82,14 @@
     })();
   });
 
-  // Enhanced interactive tutorial with auto-demos
-  const driverObj = driver({
-    showProgress: true,
-    popoverClass: "quester-driver-theme",
-    onHighlightStarted: (element, step, options) => {
-      // Check if this is the toolbar step
-      if (step.element === "#flow-toolbar") {
-        setTimeout(() => {
-          const tutorialMethods = (window as any).tutorialMethods;
-
-          if (
-            tutorialMethods &&
-            typeof tutorialMethods.addTutorialNode === "function"
-          ) {
-            const nodeId = tutorialMethods.addTutorialNode("ResizableNode");
-            if (nodeId) {
-              (window as any).tutorialNodeId = nodeId;
-            }
-          }
-        }, 1000);
-      }
-    },
-    steps: [
-      {
-        element: "#model-view-loading-container",
-        popover: {
-          title: "Loading Your Model",
-          description:
-            "Quester is now checking your access permissions and loading the selected model data. This usually only takes a moment.",
-          side: "bottom",
-          align: "center",
-        },
-      },
-      {
-        element: "#model-view-container",
-        popover: {
-          title: "Welcome to Model Builder!",
-          description:
-            "Let's take an interactive tour! I'll demonstrate how to build models by automatically adding nodes and connecting them. Watch as we explore each feature!",
-          side: "top",
-          align: "center",
-        },
-        onHighlightStarted: (_element, _step, _options) => {
-          // Only show this step if the model has actually loaded
-          if (
-            isLoadingCapability ||
-            !hasAccess ||
-            modelStore.isLoading ||
-            modelStore.error ||
-            !modelStore.currentModel
-          ) {
-            driverObj.moveNext(); // Skip if model isn't loaded
-          }
-        },
-      },
-      {
-        element: "#flow-toolbar",
-        popover: {
-          title: "Model Building Toolbar",
-          description:
-            "This toolbar lets you add different types of nodes to build your model. Watch as I create a node for you!",
-          side: "right",
-          align: "start",
-        },
-        onHighlightStarted: () => {
-          // Create node after a delay to show the toolbar first
+  // Enhanced interactive tutorial with auto-demos - factory function for i18n
+  function createDriverObj() {
+    const driverInstance = driver({
+      showProgress: true,
+      popoverClass: "quester-driver-theme",
+      onHighlightStarted: (element, step, options) => {
+        // Check if this is the toolbar step
+        if (step.element === "#flow-toolbar") {
           setTimeout(() => {
             const tutorialMethods = (window as any).tutorialMethods;
 
@@ -151,196 +98,129 @@
               typeof tutorialMethods.addTutorialNode === "function"
             ) {
               const nodeId = tutorialMethods.addTutorialNode("ResizableNode");
-
               if (nodeId) {
                 (window as any).tutorialNodeId = nodeId;
               }
-            } else {
-              console.error("Tutorial: Global tutorial methods not available");
             }
           }, 1000);
-        },
+        }
       },
-      {
-        element: () => {
-          const nodeId = (window as any).tutorialNodeId;
-          const selector = nodeId
-            ? `[data-id="${nodeId}"]`
-            : ".svelte-flow__node";
-          const el = document.querySelector(selector);
-          return (el as Element) ?? document.body;
+      steps: [
+        {
+          element: "#model-view-loading-container",
+          popover: {
+            title: t("tours.modelView.loading.title"),
+            description: t("tours.modelView.loading.description"),
+            side: "bottom",
+            align: "center",
+          },
         },
-        popover: {
-          title: "Your First Node!",
-          description:
-            "Here's the node I created for you! You can drag it around, resize it using the handles, and double-click to edit its content. Click on it to see the editing options!",
-          side: "top",
-          align: "center",
+        {
+          element: "#model-view-container",
+          popover: {
+            title: t("tours.modelView.welcome.title"),
+            description: t("tours.modelView.welcome.description"),
+            side: "top",
+            align: "center",
+          },
+          onHighlightStarted: (_element, _step, _options) => {
+            // Only show this step if the model has actually loaded
+            if (
+              isLoadingCapability ||
+              !hasAccess ||
+              modelStore.isLoading ||
+              modelStore.error ||
+              !modelStore.currentModel
+            ) {
+              driverInstance.moveNext(); // Skip if model isn't loaded
+            }
+          },
         },
-        onHighlightStarted: async (_element, _step, _options) => {
-          setTimeout(() => {
+        {
+          element: "#flow-toolbar",
+          popover: {
+            title: t("tours.modelView.toolbar.title"),
+            description: t("tours.modelView.toolbar.description"),
+            side: "right",
+            align: "start",
+          },
+          onHighlightStarted: () => {
+            // Create node after a delay to show the toolbar first
+            setTimeout(() => {
+              const tutorialMethods = (window as any).tutorialMethods;
+
+              if (
+                tutorialMethods &&
+                typeof tutorialMethods.addTutorialNode === "function"
+              ) {
+                const nodeId = tutorialMethods.addTutorialNode("ResizableNode");
+
+                if (nodeId) {
+                  (window as any).tutorialNodeId = nodeId;
+                }
+              } else {
+                console.error("Tutorial: Global tutorial methods not available");
+              }
+            }, 1000);
+          },
+        },
+        {
+          element: () => {
             const nodeId = (window as any).tutorialNodeId;
-            const tutorialMethods = (window as any).tutorialMethods;
+            const selector = nodeId
+              ? `[data-id="${nodeId}"]`
+              : ".svelte-flow__node";
+            const el = document.querySelector(selector);
+            return (el as Element) ?? document.body;
+          },
+          popover: {
+            title: t("tours.modelView.firstNode.title"),
+            description: t("tours.modelView.firstNode.description"),
+            side: "top",
+            align: "center",
+          },
+          onHighlightStarted: async (_element, _step, _options) => {
+            setTimeout(() => {
+              const nodeId = (window as any).tutorialNodeId;
+              const tutorialMethods = (window as any).tutorialMethods;
 
-            if (
-              nodeId &&
-              tutorialMethods &&
-              typeof tutorialMethods.selectNode === "function"
-            ) {
-              tutorialMethods.selectNode(nodeId);
+              if (
+                nodeId &&
+                tutorialMethods &&
+                typeof tutorialMethods.selectNode === "function"
+              ) {
+                tutorialMethods.selectNode(nodeId);
+              }
+            }, 500);
+          },
+        },
+        {
+          element: "[data-node-toolbar]",
+          popover: {
+            title: t("tours.modelView.nodeMenu.title"),
+            description: t("tours.modelView.nodeMenu.description"),
+            side: "bottom",
+            align: "center",
+          },
+          onHighlightStarted: (_element, _step, options) => {
+            // Check if toolbar is visible
+            const toolbar = document.querySelector("[data-node-toolbar]");
+            if (!toolbar || getComputedStyle(toolbar).display === "none") {
+              // If not visible, skip this step
+              options.driver.moveNext();
             }
-          }, 500);
+          },
         },
-      },
-      {
-        element: "[data-node-toolbar]",
-        popover: {
-          title: "Node Editing Menu",
-          description:
-            "Perfect! When you select a node, this menu appears. Here you can customize the node's appearance - change colors, borders, text styling, and add effects. Try clicking the different tabs!",
-          side: "bottom",
-          align: "center",
-        },
-        onHighlightStarted: (_element, _step, options) => {
-          // Check if toolbar is visible
-          const toolbar = document.querySelector("[data-node-toolbar]");
-          if (!toolbar || getComputedStyle(toolbar).display === "none") {
-            // If not visible, skip this step
-            options.driver.moveNext();
-          }
-        },
-      },
-      {
-        element: "#flow-toolbar",
-        popover: {
-          title: "Adding More Nodes",
-          description:
-            "Let me add another node so we can connect them with arrows!",
-          side: "right",
-          align: "start",
-        },
-        onHighlightStarted: async (_element, _step, _options) => {
-          // Clear selection first
-          const pane = document.querySelector(".svelte-flow__pane");
-          if (pane) {
-            const clickEvent = new MouseEvent("click", {
-              bubbles: true,
-              cancelable: true,
-            });
-            pane.dispatchEvent(clickEvent);
-          }
-
-          // Create a second node
-          setTimeout(() => {
-            const tutorialMethods = (window as any).tutorialMethods;
-            if (
-              tutorialMethods &&
-              typeof tutorialMethods.addTutorialNode === "function"
-            ) {
-              tutorialMethods.addTutorialNode("CircleNode");
-            }
-          }, 500);
-        },
-      },
-      {
-        element: ".svelte-flow",
-        popover: {
-          title: "Connecting Nodes with Arrows",
-          description:
-            "Perfect! Now I'll demonstrate how to connect nodes. Watch as I automatically create a connection between these two nodes. In practice, you'd drag from one node's handle to another.",
-          side: "top",
-          align: "center",
-        },
-        onHighlightStarted: async (_element, _step, _options) => {
-          // Auto-connect the nodes after a delay
-          setTimeout(() => {
-            // Get the most recent nodes and create a connection between them
-            const modelViewEvent = new CustomEvent("autoConnectNodes", {
-              detail: { action: "connect-latest-nodes" },
-            });
-            document.dispatchEvent(modelViewEvent);
-          }, 1000);
-        },
-      },
-      {
-        element: ".svelte-flow__edge",
-        popover: {
-          title: "Arrows Show Relationships",
-          description:
-            "Excellent! This arrow shows the relationship between your concepts. Click on any arrow to customize its appearance - change colors, add arrowheads, or make it animated!",
-          side: "bottom",
-          align: "center",
-        },
-        onHighlightStarted: (_element, _step, _options) => {
-          // Auto-select the edge after a delay to show the customization panel
-          setTimeout(() => {
-            const edge = document.querySelector(".svelte-flow__edge");
-            if (edge) {
-              // Simulate edge click
-              const clickEvent = new MouseEvent("click", {
-                bubbles: true,
-                cancelable: true,
-              });
-              edge.dispatchEvent(clickEvent);
-
-              // Add highlight effect
-              (edge as HTMLElement).style.filter =
-                "drop-shadow(0 0 8px rgba(79, 70, 229, 0.8))";
-              setTimeout(() => {
-                (edge as HTMLElement).style.filter = "";
-              }, 2000);
-            }
-          }, 500);
-        },
-      },
-      {
-        element: "#edge-customization-panel",
-        popover: {
-          title: "Customize Your Arrows",
-          description:
-            "This panel appeared when I selected the arrow! Here you can change the arrow's style, color, thickness, add arrowheads, and even make it animated to show dynamic relationships.",
-          side: "left",
-          align: "start",
-        },
-        onHighlightStarted: (_element, _step, options) => {
-          const panel = document.getElementById("edge-customization-panel");
-          if (!panel || getComputedStyle(panel).display === "none") {
-            options.driver.moveNext();
-          }
-        },
-      },
-      {
-        element: ".svelte-flow__controls",
-        popover: {
-          title: "Navigation Controls",
-          description:
-            "Use these controls to zoom in/out, fit your entire model to the view, and lock/unlock canvas panning. Very handy for large, complex models!",
-          side: "top",
-          align: "end",
-        },
-      },
-      {
-        element: ".svelte-flow__minimap",
-        popover: {
-          title: "Minimap for Large Models",
-          description:
-            "This minimap shows an overview of your entire model. Click and drag within it to quickly navigate large canvases. It's especially useful for complex research models!",
-          side: "left",
-          align: "end",
-        },
-      },
-      {
-        element: "#flow-toolbar",
-        popover: {
-          title: "Building Your Research Model",
-          description:
-            "Now you know the basics! Add rectangle nodes for concepts, circle nodes for variables, connect them with arrows to show relationships. Use the grid and snap settings to keep things organized. You're ready to build your research model!",
-          side: "right",
-          align: "center",
-        },
-        onDeselected: () => {
-          // Clear any edge selection when tour ends
-          setTimeout(() => {
+        {
+          element: "#flow-toolbar",
+          popover: {
+            title: t("tours.modelView.addingNodes.title"),
+            description: t("tours.modelView.addingNodes.description"),
+            side: "right",
+            align: "start",
+          },
+          onHighlightStarted: async (_element, _step, _options) => {
+            // Clear selection first
             const pane = document.querySelector(".svelte-flow__pane");
             if (pane) {
               const clickEvent = new MouseEvent("click", {
@@ -349,11 +229,127 @@
               });
               pane.dispatchEvent(clickEvent);
             }
-          }, 500);
+
+            // Create a second node
+            setTimeout(() => {
+              const tutorialMethods = (window as any).tutorialMethods;
+              if (
+                tutorialMethods &&
+                typeof tutorialMethods.addTutorialNode === "function"
+              ) {
+                tutorialMethods.addTutorialNode("CircleNode");
+              }
+            }, 500);
+          },
         },
-      },
-    ],
-  });
+        {
+          element: ".svelte-flow",
+          popover: {
+            title: t("tours.modelView.connecting.title"),
+            description: t("tours.modelView.connecting.description"),
+            side: "top",
+            align: "center",
+          },
+          onHighlightStarted: async (_element, _step, _options) => {
+            // Auto-connect the nodes after a delay
+            setTimeout(() => {
+              // Get the most recent nodes and create a connection between them
+              const modelViewEvent = new CustomEvent("autoConnectNodes", {
+                detail: { action: "connect-latest-nodes" },
+              });
+              document.dispatchEvent(modelViewEvent);
+            }, 1000);
+          },
+        },
+        {
+          element: ".svelte-flow__edge",
+          popover: {
+            title: t("tours.modelView.arrows.title"),
+            description: t("tours.modelView.arrows.description"),
+            side: "bottom",
+            align: "center",
+          },
+          onHighlightStarted: (_element, _step, _options) => {
+            // Auto-select the edge after a delay to show the customization panel
+            setTimeout(() => {
+              const edge = document.querySelector(".svelte-flow__edge");
+              if (edge) {
+                // Simulate edge click
+                const clickEvent = new MouseEvent("click", {
+                  bubbles: true,
+                  cancelable: true,
+                });
+                edge.dispatchEvent(clickEvent);
+
+                // Add highlight effect
+                (edge as HTMLElement).style.filter =
+                  "drop-shadow(0 0 8px rgba(79, 70, 229, 0.8))";
+                setTimeout(() => {
+                  (edge as HTMLElement).style.filter = "";
+                }, 2000);
+              }
+            }, 500);
+          },
+        },
+        {
+          element: "#edge-customization-panel",
+          popover: {
+            title: t("tours.modelView.customizeArrows.title"),
+            description: t("tours.modelView.customizeArrows.description"),
+            side: "left",
+            align: "start",
+          },
+          onHighlightStarted: (_element, _step, options) => {
+            const panel = document.getElementById("edge-customization-panel");
+            if (!panel || getComputedStyle(panel).display === "none") {
+              options.driver.moveNext();
+            }
+          },
+        },
+        {
+          element: ".svelte-flow__controls",
+          popover: {
+            title: t("tours.modelView.navigation.title"),
+            description: t("tours.modelView.navigation.description"),
+            side: "top",
+            align: "end",
+          },
+        },
+        {
+          element: ".svelte-flow__minimap",
+          popover: {
+            title: t("tours.modelView.minimap.title"),
+            description: t("tours.modelView.minimap.description"),
+            side: "left",
+            align: "end",
+          },
+        },
+        {
+          element: "#flow-toolbar",
+          popover: {
+            title: t("tours.modelView.building.title"),
+            description: t("tours.modelView.building.description"),
+            side: "right",
+            align: "center",
+          },
+          onDeselected: () => {
+            // Clear any edge selection when tour ends
+            setTimeout(() => {
+              const pane = document.querySelector(".svelte-flow__pane");
+              if (pane) {
+                const clickEvent = new MouseEvent("click", {
+                  bubbles: true,
+                  cancelable: true,
+                });
+                pane.dispatchEvent(clickEvent);
+              }
+            }, 500);
+          },
+        },
+      ],
+    });
+    return driverInstance;
+  }
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
@@ -363,7 +359,7 @@
     <Button
       variant="outline"
       onclick={() => {
-        driverObj.drive();
+        createDriverObj().drive();
 
         // Create the tutorial nodes and edge after a delay
         setTimeout(() => {
@@ -409,7 +405,7 @@
       class="border-2 dark:border-dark-border"
     >
       <GraduationCap class="h-4 w-4 mr-2" />
-      Tour
+      {$_("dashboard.tour")}
     </Button>
   </div>
   {#if isLoadingCapability}
@@ -427,7 +423,7 @@
         class="flex h-full items-center justify-center"
         id="model-view-loading-container"
       >
-        <p class="text-lg text-muted-foreground">Loading model...</p>
+        <p class="text-lg text-muted-foreground">{$_("models.loadingModel")}</p>
       </div>
     {:else if modelStore.error}
       <div
@@ -449,7 +445,7 @@
         class="flex h-full items-center justify-center"
         id="model-view-loading-container"
       >
-        <p class="text-lg text-muted-foreground">Model not found</p>
+        <p class="text-lg text-muted-foreground">{$_("models.modelNotFound")}</p>
       </div>
     {/if}
   {/if}

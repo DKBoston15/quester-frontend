@@ -5,6 +5,7 @@
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { Badge } from "$lib/components/ui/badge";
   import { auth } from "$lib/stores/AuthStore";
+  import { _ } from "svelte-i18n";
 
   interface Outcome {
     id: string;
@@ -151,24 +152,16 @@
         {/if}
         {#if currentOutcome?.type}
           <Badge class={getTypeColor(currentOutcome.type)}>
-            {currentOutcome.type}
+            {$_(`outcomes.outcomeTypes.${currentOutcome.type}`)}
           </Badge>
         {/if}
       </div>
     </div>
     {#if currentOutcome?.createdAt && currentOutcome?.updatedAt}
       <div class="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-        <span
-          >Created {new Date(
-            currentOutcome.createdAt
-          ).toLocaleDateString()}</span
-        >
+        <span>{$_('outcomes.createdDate', { values: { date: new Date(currentOutcome.createdAt).toLocaleDateString() }})}</span>
         <span>•</span>
-        <span
-          >Updated {new Date(
-            currentOutcome.updatedAt
-          ).toLocaleDateString()}</span
-        >
+        <span>{$_('outcomes.updatedDate', { values: { date: new Date(currentOutcome.updatedAt).toLocaleDateString() }})}</span>
       </div>
     {/if}
   </header>
@@ -180,7 +173,7 @@
       on:contentChange={(e) => {
         content = e.detail;
       }}
-      placeholder="Start writing your outcome..."
+      placeholder={$_('outcomeEditor.startWriting')}
     />
   </div>
 </div>
@@ -191,10 +184,9 @@
     class="border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
   >
     <AlertDialog.Header>
-      <AlertDialog.Title>Delete Outcome</AlertDialog.Title>
+      <AlertDialog.Title>{$_('outcomeEditor.deleteTitle')}</AlertDialog.Title>
       <AlertDialog.Description>
-        Are you sure you want to delete this outcome? This action cannot be
-        undone.
+        {$_('outcomeEditor.deleteConfirm')}
       </AlertDialog.Description>
     </AlertDialog.Header>
     <AlertDialog.Footer>

@@ -3,13 +3,14 @@
   import { Button } from "$lib/components/ui/button";
   import * as Card from "$lib/components/ui/card";
   import * as Tooltip from "$lib/components/ui/tooltip";
-  import { 
-    TrendingUp, 
-    Brain, 
-    AlertTriangle, 
-    RefreshCw, 
-    Info 
+  import {
+    TrendingUp,
+    Brain,
+    AlertTriangle,
+    RefreshCw,
+    Info
   } from "lucide-svelte";
+  import { _ } from "svelte-i18n";
 
   interface Props {
     insight: {
@@ -25,29 +26,29 @@
   let { insight, onRefresh, isRefreshing = false }: Props = $props();
 
   // Map insight types to visual properties
-  const insightConfig = {
+  const insightConfig = $derived({
     research_focus: {
       icon: TrendingUp,
-      label: "Research Focus",
+      label: $_('insights.types.researchFocus'),
       color: "bg-blue-500",
       bgColor: "bg-blue-50 dark:bg-blue-950/20",
       textColor: "text-blue-700 dark:text-blue-300"
     },
     content_analysis: {
       icon: Brain,
-      label: "Content Analysis", 
+      label: $_('insights.types.contentAnalysis'),
       color: "bg-purple-500",
       bgColor: "bg-purple-50 dark:bg-purple-950/20",
       textColor: "text-purple-700 dark:text-purple-300"
     },
     research_gaps: {
       icon: AlertTriangle,
-      label: "Research Gaps",
-      color: "bg-amber-500", 
+      label: $_('insights.types.researchGaps'),
+      color: "bg-amber-500",
       bgColor: "bg-amber-50 dark:bg-amber-950/20",
       textColor: "text-amber-700 dark:text-amber-300"
     }
-  };
+  });
 
   const config = insightConfig[insight.type];
   const IconComponent = config.icon;
@@ -74,7 +75,7 @@
               </Badge>
             </Tooltip.Trigger>
             <Tooltip.Content>
-              <p>AI Confidence: {confidencePercentage}%</p>
+              <p>{$_('insights.aiConfidence', { values: { confidencePercentage } })}</p>
             </Tooltip.Content>
           </Tooltip.Root>
         </div>
@@ -94,7 +95,7 @@
             </Button>
           </Tooltip.Trigger>
           <Tooltip.Content>
-            <p>Regenerate insight</p>
+            <p>{$_('insights.regenerateInsight')}</p>
           </Tooltip.Content>
         </Tooltip.Root>
       {/if}
@@ -110,7 +111,7 @@
       <div class="border-t pt-3">
         <div class="flex items-center gap-2 mb-2">
           <Info class="h-3 w-3 text-muted-foreground" />
-          <span class="text-xs font-medium text-muted-foreground">Supporting Data</span>
+          <span class="text-xs font-medium text-muted-foreground">{$_('insights.supportingData')}</span>
         </div>
         <div class="flex flex-wrap gap-1">
           {#each insight.dataPoints.slice(0, 3) as dataPoint}

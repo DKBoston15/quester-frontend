@@ -20,6 +20,7 @@
   import { toast } from "svelte-sonner";
   import GrantForm from "./GrantForm.svelte";
   import type { Grant } from "$lib/types/auth";
+  import { _ } from "$lib/i18n";
 
   interface Props {
     grant: Grant;
@@ -48,7 +49,7 @@
   }
 
   function formatCurrency(amount: number | null) {
-    if (!amount) return "Not specified";
+    if (!amount) return $_("grants.display.notSpecified");
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
@@ -58,7 +59,7 @@
   }
 
   function formatDate(dateString: string | null) {
-    if (!dateString) return "Not specified";
+    if (!dateString) return $_("grants.display.notSpecified");
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -67,28 +68,41 @@
   }
 
   function formatAwardInstrument(type: string | null) {
-    if (!type) return "Not specified";
+    if (!type) return $_("grants.display.notSpecified");
 
-    // Handle the specific mappings
+    // Map to translation keys
     const typeMap: Record<string, string> = {
-      standard: "Standard Grant",
-      research: "Research Grant",
-      training: "Training Grant",
-      equipment: "Equipment Grant",
-      fellowship: "Fellowship",
-      career: "Career Development",
-      collaborative: "Collaborative Research",
-      other: "Other",
+      standard: "grants.types.standard",
+      research: "grants.types.research",
+      training: "grants.types.training",
+      equipment: "grants.types.equipment",
+      fellowship: "grants.types.fellowship",
+      career: "grants.types.career",
+      collaborative: "grants.types.collaborative",
+      other: "grants.types.other",
     };
 
-    return (
-      typeMap[type] ||
-      type.charAt(0).toUpperCase() + type.slice(1).replace("_", " ")
-    );
+    return typeMap[type]
+      ? $_(typeMap[type])
+      : type.charAt(0).toUpperCase() + type.slice(1).replace("_", " ");
+  }
+
+  function formatStatus(status: string) {
+    const statusMap: Record<string, string> = {
+      active: "grants.status.active",
+      pending: "grants.status.pending",
+      completed: "grants.status.completed",
+      cancelled: "grants.status.cancelled",
+      expired: "grants.status.expired",
+    };
+
+    return statusMap[status.toLowerCase()]
+      ? $_(statusMap[status.toLowerCase()])
+      : status.charAt(0).toUpperCase() + status.slice(1);
   }
 
   function formatInvestigatorList(investigators: string[] | null) {
-    if (!investigators || investigators.length === 0) return "Not specified";
+    if (!investigators || investigators.length === 0) return $_("grants.display.notSpecified");
     return investigators.join(", ");
   }
 
@@ -99,10 +113,10 @@
     try {
       await grantStore.updateGrant(grant.id, grantData);
       isEditing = false;
-      toast.success("Grant updated successfully");
+      toast.success($_("grants.display.grantUpdated"));
     } catch (error) {
       console.error("Failed to update grant:", error);
-      toast.error("Failed to update grant");
+      toast.error($_("grants.display.grantUpdateFailed"));
     } finally {
       isDeleting = false;
     }
@@ -119,10 +133,10 @@
     try {
       await grantStore.deleteGrant(grant.id);
       showDeleteDialog = false;
-      toast.success("Grant deleted successfully");
+      toast.success($_("grants.display.grantDeleted"));
     } catch (error) {
       console.error("Failed to delete grant:", error);
-      toast.error("Failed to delete grant");
+      toast.error($_("grants.display.grantDeleteFailed"));
     } finally {
       isDeleting = false;
     }
@@ -162,10 +176,10 @@
                   <FileTextIcon class="h-4 w-4 flex-shrink-0" />
                   <Tooltip.Root>
                     <Tooltip.Trigger class="text-left">
-                      <span class="truncate">Award #{grant.awardNumber}</span>
+                      <span class="truncate">{$_("grants.display.awardNumber")} {grant.awardNumber}</span>
                     </Tooltip.Trigger>
                     <Tooltip.Content side="top" align="start">
-                      <p class="max-w-xs text-sm">Award #{grant.awardNumber}</p>
+                      <p class="max-w-xs text-sm">{$_("grants.display.awardNumber")} {grant.awardNumber}</p>
                     </Tooltip.Content>
                   </Tooltip.Root>
                 </div>
@@ -175,7 +189,7 @@
               variant={getBadgeVariant(grant.status)}
               class="flex-shrink-0"
             >
-              {grant.status.charAt(0).toUpperCase() + grant.status.slice(1)}
+              {formatStatus(grant.status)}
             </Badge>
           </div>
         </div>
@@ -214,7 +228,7 @@
               />
             </div>
             <div class="min-w-0 flex-1">
-              <p class="text-sm text-muted-foreground">Amount</p>
+              <p class="text-sm text-muted-foreground">{$_("grants.labels.amount")}</p>
               <p class="font-semibold text-sm">
                 {formatCurrency(grant.amount)}
               </p>
@@ -232,7 +246,7 @@
               <CalendarIcon class="h-4 w-4 text-blue-600 dark:text-blue-400" />
             </div>
             <div class="min-w-0 flex-1">
-              <p class="text-sm text-muted-foreground">Duration</p>
+              <p class="text-sm text-muted-foreground">{$_("grants.labels.duration")}</p>
               <p class="font-semibold text-sm">
                 <span class="block sm:hidden"
                   >{formatDate(grant.startDate)}</span
@@ -258,9 +272,9 @@
             </div>
             <div class="min-w-0 flex-1">
               <p class="text-sm text-muted-foreground">
-                Principal Investigator{grant.principalInvestigators.length > 1
-                  ? "s"
-                  : ""}
+                {grant.principalInvestigators.length > 1
+                  ? $_("grants.display.principalInvestigators")
+                  : $_("grants.display.principalInvestigator")}
               </p>
               <Tooltip.Root>
                 <Tooltip.Trigger class="text-left w-full">
@@ -287,7 +301,7 @@
               class="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0"
             />
             <div class="min-w-0 flex-1">
-              <span class="font-medium text-muted-foreground">Recipient:</span>
+              <span class="font-medium text-muted-foreground">{$_("grants.display.recipientLabel")}</span>
               <Tooltip.Root>
                 <Tooltip.Trigger class="text-left w-full">
                   <span class="ml-2 block truncate">{grant.recipient}</span>
@@ -307,7 +321,7 @@
             />
             <div class="min-w-0 flex-1">
               <span class="font-medium text-muted-foreground"
-                >Award Instrument:</span
+                >{$_("grants.display.awardInstrumentLabel")}</span
               >
               <span class="ml-2 break-words"
                 >{formatAwardInstrument(grant.awardType)}</span
@@ -322,7 +336,7 @@
               class="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0"
             />
             <div class="min-w-0 flex-1">
-              <span class="font-medium text-muted-foreground">Directorate:</span
+              <span class="font-medium text-muted-foreground">{$_("grants.display.directorateLabel")}</span
               >
               <Tooltip.Root>
                 <Tooltip.Trigger class="text-left w-full">
@@ -345,7 +359,7 @@
             />
             <div class="min-w-0 flex-1">
               <span class="font-medium text-muted-foreground"
-                >Program Manager:</span
+                >{$_("grants.display.programManagerLabel")}</span
               >
               <Tooltip.Root>
                 <Tooltip.Trigger class="text-left w-full">
@@ -366,7 +380,7 @@
               class="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0"
             />
             <div class="min-w-0 flex-1">
-              <span class="font-medium text-muted-foreground">PM Email:</span>
+              <span class="font-medium text-muted-foreground">{$_("grants.display.pmEmail")}</span>
               <a
                 href="mailto:{grant.programManagerEmail}"
                 class="ml-2 text-blue-600 dark:text-blue-400 hover:underline block truncate"
@@ -383,7 +397,7 @@
               class="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0"
             />
             <div class="min-w-0 flex-1">
-              <span class="font-medium text-muted-foreground">PM Phone:</span>
+              <span class="font-medium text-muted-foreground">{$_("grants.display.pmPhone")}</span>
               <a
                 href="tel:{grant.programManagerPhone}"
                 class="ml-2 text-blue-600 dark:text-blue-400 hover:underline block truncate"
@@ -401,10 +415,9 @@
             />
             <div class="min-w-0 flex-1">
               <span class="font-medium text-muted-foreground"
-                >Co-Principal Investigator{grant.coPrincipalInvestigators
-                  .length > 1
-                  ? "s"
-                  : ""}:</span
+                >{grant.coPrincipalInvestigators.length > 1
+                  ? $_("grants.display.coPrincipalInvestigators")
+                  : $_("grants.display.coPrincipalInvestigator")}:</span
               >
               <Tooltip.Root>
                 <Tooltip.Trigger class="text-left w-full">
@@ -432,14 +445,13 @@
 <AlertDialog.Root bind:open={showDeleteDialog}>
   <AlertDialog.Content>
     <AlertDialog.Header>
-      <AlertDialog.Title>Delete Grant</AlertDialog.Title>
+      <AlertDialog.Title>{$_("grants.display.deleteGrant")}</AlertDialog.Title>
       <AlertDialog.Description>
-        Are you sure you want to delete "{grant.grantName}"? This action cannot
-        be undone.
+        {$_("grants.display.deleteConfirm", { values: { name: grant.grantName } })}
       </AlertDialog.Description>
     </AlertDialog.Header>
     <AlertDialog.Footer>
-      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+      <AlertDialog.Cancel>{$_("common.cancel")}</AlertDialog.Cancel>
       <AlertDialog.Action
         onclick={handleDeleteGrant}
         disabled={isDeleting}
@@ -448,7 +460,7 @@
         {#if isDeleting}
           <Loader2Icon class="h-4 w-4 animate-spin mr-2" />
         {/if}
-        Delete Grant
+        {$_("grants.display.deleteGrantButton")}
       </AlertDialog.Action>
     </AlertDialog.Footer>
   </AlertDialog.Content>

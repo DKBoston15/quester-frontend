@@ -20,6 +20,11 @@
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
   import * as Tooltip from "$lib/components/ui/tooltip";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper to get translation value imperatively for driver.js
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   let organizations = $state<Organization[]>([]);
   let currentOrg = $state<Organization | null>(null);
@@ -40,81 +45,78 @@
     );
   }
 
-  const driverObj = driver({
-    showProgress: true,
-    popoverClass: "quester-driver-theme",
-    steps: [
-      {
-        element: "#dashboard-welcome",
-        popover: {
-          title: "Welcome to Your Dashboard",
-          description:
-            "This is your main hub for navigating your Quester workspace. See your organization's structure and manage settings.",
-          side: "bottom",
-          align: "start",
+  // Create dashboard tour with translated steps
+  function createDashboardTour() {
+    return driver({
+      showProgress: true,
+      popoverClass: "quester-driver-theme",
+      steps: [
+        {
+          element: "#dashboard-welcome",
+          popover: {
+            title: t("tours.dashboard.welcome.title"),
+            description: t("tours.dashboard.welcome.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#organization-structure-card",
-        popover: {
-          title: "Organization Structure",
-          description:
-            "View and manage your departments and projects here. Let's explore this section.",
-          side: "top",
-          align: "start",
+        {
+          element: "#organization-structure-card",
+          popover: {
+            title: t("tours.dashboard.organizationStructure.title"),
+            description: t("tours.dashboard.organizationStructure.description"),
+            side: "top",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#org-view-mode-toggle",
-        popover: {
-          title: "Switch Views",
-          description:
-            "Toggle between a hierarchical 'Tree View' and a flat 'List View' to see your projects and departments.",
-          side: "bottom",
-          align: "start",
+        {
+          element: "#org-view-mode-toggle",
+          popover: {
+            title: t("tours.dashboard.viewModeToggle.title"),
+            description: t("tours.dashboard.viewModeToggle.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#org-new-department-button",
-        popover: {
-          title: "Create Departments",
-          description:
-            "Organize your projects by creating departments (if your role and subscription allow).",
-          side: "bottom",
-          align: "end",
+        {
+          element: "#org-new-department-button",
+          popover: {
+            title: t("tours.dashboard.newDepartment.title"),
+            description: t("tours.dashboard.newDepartment.description"),
+            side: "bottom",
+            align: "end",
+          },
         },
-      },
-      {
-        element: "#org-new-project-button",
-        popover: {
-          title: "Create Projects",
-          description:
-            "Start new research projects directly from here (permissions and subscription permitting).",
-          side: "bottom",
-          align: "end",
+        {
+          element: "#org-new-project-button",
+          popover: {
+            title: t("tours.dashboard.newProject.title"),
+            description: t("tours.dashboard.newProject.description"),
+            side: "bottom",
+            align: "end",
+          },
         },
-      },
-      {
-        element: "#org-search-input",
-        popover: {
-          title: "Search Projects",
-          description: "Quickly find projects by searching for their name.",
-          side: "bottom",
-          align: "start",
+        {
+          element: "#org-search-input",
+          popover: {
+            title: t("tours.dashboard.search.title"),
+            description: t("tours.dashboard.search.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#org-filter-toggle",
-        popover: {
-          title: "Filter Your View",
-          description:
-            "Toggle this to show only the projects for which you are a member.",
-          side: "bottom",
-          align: "start",
+        {
+          element: "#org-filter-toggle",
+          popover: {
+            title: t("tours.dashboard.filter.title"),
+            description: t("tours.dashboard.filter.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-    ],
-  });
+      ],
+    });
+  }
 
   onMount(() => {
     void (async () => {
@@ -134,7 +136,7 @@
         error =
           err instanceof Error
             ? err.message
-            : "Failed to initialize dashboard";
+            : t("dashboard.failedToInitialize");
       } finally {
         isLoading = false;
       }
@@ -257,7 +259,7 @@
           <div
             class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"
           ></div>
-          <p class="ml-4 text-muted-foreground">Loading your dashboard...</p>
+          <p class="ml-4 text-muted-foreground">{$_('dashboard.loadingDashboard')}</p>
         </div>
       {:else}
         <div class="container mx-auto py-6 px-4">
@@ -265,28 +267,28 @@
           <div class="mb-8" id="dashboard-welcome">
             <div class="flex justify-between items-center">
               <h1 class="text-3xl font-bold">
-                Welcome back, {auth.user?.firstName}!
+                {$_('dashboard.welcome', { values: { name: auth.user?.firstName || '' } })}
               </h1>
               <Tooltip.Provider>
                 <Tooltip.Root>
                   <Tooltip.Trigger>
                     <Button
                       variant="outline"
-                      onclick={() => driverObj.drive()}
-                      aria-label="Learn about the Dashboard"
+                      onclick={() => createDashboardTour().drive()}
+                      aria-label={$_('dashboard.tour')}
                     >
                       <GraduationCap class="h-4 w-4 mr-2" />
-                      Tour
+                      {$_('dashboard.tour')}
                     </Button>
                   </Tooltip.Trigger>
                   <Tooltip.Content>
-                    <p>Tutorial</p>
+                    <p>{$_('dashboard.tutorial')}</p>
                   </Tooltip.Content>
                 </Tooltip.Root>
               </Tooltip.Provider>
             </div>
             <p class="text-muted-foreground mt-1">
-              Here's what's happening in your workspace.
+              {$_('dashboard.workspaceOverview')}
             </p>
           </div>
 
@@ -351,11 +353,11 @@
               <CardHeader>
                 <div class="flex items-center gap-2">
                   <FolderTree class="h-5 w-5" />
-                  <CardTitle class="">Organization Structure</CardTitle>
+                  <CardTitle class="">{$_('dashboard.organizationStructure')}</CardTitle>
                 </div>
-                <CardDescription
-                  >Manage your departments and projects</CardDescription
-                >
+                <CardDescription>
+                  {$_('dashboard.organizationStructureDescription')}
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div class="border rounded-lg p-4">

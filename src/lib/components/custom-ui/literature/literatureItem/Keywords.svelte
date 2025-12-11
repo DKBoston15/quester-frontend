@@ -2,6 +2,7 @@
   import TagInput from "../../TagInput.svelte";
   import { literatureStore } from "$lib/stores/LiteratureStore";
   import type { Literature } from "$lib/types/literature";
+  import { _ } from "svelte-i18n";
 
   const { literature } = $props<{ literature: Literature }>();
   let keywords = $state<string[]>(
@@ -23,5 +24,5 @@
 </script>
 
 <div id="lit-keywords-input">
-  <TagInput tags={keywords} placeholder="Keywords" on:change={updateKeywords} />
+  <TagInput tags={keywords} placeholder={$_('literatureKeywords.placeholder')} on:change={updateKeywords} />
 </div>

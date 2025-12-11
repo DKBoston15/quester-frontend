@@ -10,6 +10,7 @@
     TableHeader,
     TableRow,
   } from "$lib/components/ui/table";
+  import { _ } from "svelte-i18n";
 
   // Define the structure for the user prop
   interface ModalProjectUser {
@@ -26,21 +27,21 @@
   let isLoading = $derived(teamManagement.isModalDataLoading);
   let error = $derived(teamManagement.modalError);
   let projectData = $derived(teamManagement.modalProjectData);
-  let projectName = $derived(projectData?.name || "Project Users");
+  let projectName = $derived(projectData?.name || $_('projectUsers.defaultTitle'));
   let users = $derived(projectData?.users || []);
 
   function getRoleName(user: any): string {
     // Add more robust role checking as needed based on the actual user object structure
-    return user?.role?.name || user?.$extras?.roleName || "Unknown";
+    return user?.role?.name || user?.$extras?.roleName || $_('common.unknown');
   }
 </script>
 
 <Dialog.Root open={true} onOpenChange={(open) => !open && onClose()}>
   <Dialog.Content class="sm:max-w-[600px]">
     <Dialog.Header>
-      <Dialog.Title class="truncate">Users in {projectName}</Dialog.Title>
+      <Dialog.Title class="truncate">{$_('projectUsers.title', { values: { projectName } })}</Dialog.Title>
       <Dialog.Description>
-        List of users who have access to this project.
+        {$_('projectUsers.description')}
       </Dialog.Description>
     </Dialog.Header>
 
@@ -49,23 +50,23 @@
         <div
           class="inline-block h-6 w-6 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
         ></div>
-        <p class="mt-2 text-muted-foreground">Loading users...</p>
+        <p class="mt-2 text-muted-foreground">{$_('projectUsers.loadingUsers')}</p>
       </div>
     {:else if error}
       <div class="py-6 text-center text-destructive">
-        <p>Error loading users: {error}</p>
+        <p>{$_('projectUsers.errorLoading', { values: { error } })}</p>
       </div>
     {:else if users.length === 0}
       <div class="py-6 text-center text-muted-foreground">
-        No users found for this project.
+        {$_('projectUsers.noUsersFound')}
       </div>
     {:else}
       <div class="max-h-[60vh] overflow-y-auto pr-2">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
+              <TableHead>{$_('projectUsers.name')}</TableHead>
+              <TableHead>{$_('projectUsers.email')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -84,7 +85,7 @@
     {/if}
 
     <Dialog.Footer>
-      <Button variant="outline" onclick={onClose}>Close</Button>
+      <Button variant="outline" onclick={onClose}>{$_('projectUsers.close')}</Button>
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>

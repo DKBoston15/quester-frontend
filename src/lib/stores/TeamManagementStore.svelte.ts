@@ -1,6 +1,11 @@
 
   import { api } from "$lib/services/api-client";
   import { auth } from "$lib/stores/AuthStore";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper function for imperative access
+  const t = (key: string, options?: object) => get(_)(key, options);
 
   type ResourceType = "organization" | "department" | "project";
 
@@ -161,7 +166,7 @@
         return data;
       } catch (err) {
         console.error("Error loading user resources:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("teamManagement.errors.failedToLoadResources");
         userLoginStatsMap = null;
         loginStatUsers = null;
         throw err; // Re-throw to allow caller to catch
@@ -193,8 +198,8 @@
           (!hasRoles || !data.organization.users?.length)
         ) {
           data.organization.availableRoles = [
-            { id: "admin", name: "Admin" },
-            { id: "member", name: "Member" },
+            { id: "admin", name: t("teamManagement.roles.admin") },
+            { id: "member", name: t("teamManagement.roles.member") },
           ];
         }
 
@@ -229,7 +234,7 @@
         error =
           err instanceof Error
             ? err.message
-            : "An error occurred. Please contact your administrator as there may be a backend configuration issue.";
+            : t("teamManagement.errors.operationFailed");
 
         // Create a minimal structure if the API failed but we have an organization ID
         if (
@@ -239,12 +244,12 @@
         ) {
           organizationStructure = {
             id: organizationId,
-            name: auth.currentOrganization.name || "Organization",
+            name: auth.currentOrganization.name || t("team.organizations"),
             users: [auth.user],
             // Add hardcoded roles for the interface
             availableRoles: [
-              { id: "admin", name: "Admin" },
-              { id: "member", name: "Member" },
+              { id: "admin", name: t("teamManagement.roles.admin") },
+              { id: "member", name: t("teamManagement.roles.member") },
             ],
           };
 
@@ -280,8 +285,8 @@
         // If no roles are found, add some hardcoded roles for the interface
         if (data.department && (!hasRoles || !data.department.users?.length)) {
           data.department.availableRoles = [
-            { id: "manager", name: "Manager" },
-            { id: "member", name: "Member" },
+            { id: "manager", name: t("teamManagement.roles.manager") },
+            { id: "member", name: t("teamManagement.roles.member") },
           ];
         }
 
@@ -292,18 +297,18 @@
         error =
           err instanceof Error
             ? err.message
-            : "An error occurred. Please contact your administrator as there may be a backend configuration issue.";
+            : t("teamManagement.errors.operationFailed");
 
         // Create a minimal structure if the API failed
         if (!departmentStructure) {
           departmentStructure = {
             id: departmentId,
-            name: "Department",
+            name: t("team.departments"),
             users: [],
             // Add hardcoded roles for the interface
             availableRoles: [
-              { id: "manager", name: "Manager" },
-              { id: "member", name: "Member" },
+              { id: "manager", name: t("teamManagement.roles.manager") },
+              { id: "member", name: t("teamManagement.roles.member") },
             ],
           };
 
@@ -337,9 +342,9 @@
         // If no roles are found, add some hardcoded roles for the interface
         if (data.project && (!hasRoles || !data.project.users?.length)) {
           data.project.availableRoles = [
-            { id: "owner", name: "Owner" },
-            { id: "admin", name: "Admin" },
-            { id: "member", name: "Member" },
+            { id: "owner", name: t("teamManagement.roles.owner") },
+            { id: "admin", name: t("teamManagement.roles.admin") },
+            { id: "member", name: t("teamManagement.roles.member") },
           ];
         }
 
@@ -350,19 +355,19 @@
         error =
           err instanceof Error
             ? err.message
-            : "An error occurred. Please contact your administrator as there may be a backend configuration issue.";
+            : t("teamManagement.errors.operationFailed");
 
         // Create a minimal structure if the API failed
         if (!projectTeam) {
           projectTeam = {
             id: projectId,
-            name: "Project",
+            name: t("team.projects"),
             users: [],
             // Add hardcoded roles for the interface
             availableRoles: [
-              { id: "owner", name: "Owner" },
-              { id: "admin", name: "Admin" },
-              { id: "member", name: "Member" },
+              { id: "owner", name: t("teamManagement.roles.owner") },
+              { id: "admin", name: t("teamManagement.roles.admin") },
+              { id: "member", name: t("teamManagement.roles.member") },
             ],
           };
 
@@ -381,7 +386,7 @@
     // Add a user to the selected resource
     async addUser(userId: string, roleId: string) {
       if (!selectedResourceType || !selectedResourceId) {
-        error = "No resource selected";
+        error = t("teamManagement.errors.invalidResourceId");
         return false;
       }
 
@@ -396,7 +401,7 @@
         return true;
       } catch (err) {
         console.error("Error adding user:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("teamManagement.errors.operationFailed");
         return false;
       }
     },
@@ -404,7 +409,7 @@
     // Update a user's role in the selected resource
     async updateUserRole(userId: string, roleId: string) {
       if (!selectedResourceType || !selectedResourceId) {
-        error = "No resource selected";
+        error = t("teamManagement.errors.invalidResourceId");
         return false;
       }
 
@@ -423,7 +428,7 @@
         return true;
       } catch (err) {
         console.error("Error updating user role:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("teamManagement.errors.operationFailed");
         return false;
       }
     },
@@ -431,7 +436,7 @@
     // Remove a user from the selected resource
     async removeUser(userId: string) {
       if (!selectedResourceType || !selectedResourceId) {
-        error = "No resource selected";
+        error = t("teamManagement.errors.invalidResourceId");
         return false;
       }
 
@@ -445,7 +450,7 @@
         return true;
       } catch (err) {
         console.error("Error removing user:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("teamManagement.errors.operationFailed");
         return false;
       }
     },
@@ -457,7 +462,7 @@
         !selectedResourceId ||
         selectedResourceType === "organization"
       ) {
-        error = "Self-assignment not available for this resource type";
+        error = t("teamManagement.errors.invalidResourceId");
         console.error(
           "Self-assignment failed: Not available for this resource type"
         );
@@ -477,7 +482,7 @@
         return true;
       } catch (err) {
         console.error("Error self-assigning:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("teamManagement.errors.operationFailed");
         return false;
       }
     },
@@ -521,7 +526,7 @@
       } catch (err) {
         console.error("[TeamManagementStore] Error loading settings:", err);
         settingsError =
-          err instanceof Error ? err.message : "An error occurred";
+          err instanceof Error ? err.message : t("teamManagement.errors.failedToLoadSettings");
       } finally {
         isLoading = false;
       }
@@ -530,7 +535,7 @@
     // Update a specific setting
     async updateSetting(key: string, value: any) {
       if (!selectedResourceType || !selectedResourceId) {
-        settingsError = "No resource selected";
+        settingsError = t("teamManagement.errors.invalidResourceId");
         return false;
       }
 
@@ -543,7 +548,7 @@
         } catch (err: any) {
           // Check if this is a permissions error (403)
           if (err.status === 403) {
-            settingsError = "You don't have permission to update settings";
+            settingsError = t("teamManagement.errors.failedToSaveSettings");
             return false;
           }
           throw err;
@@ -576,7 +581,7 @@
       } catch (err) {
         console.error("[TeamManagementStore] Error updating setting:", err);
         settingsError =
-          err instanceof Error ? err.message : "An error occurred";
+          err instanceof Error ? err.message : t("teamManagement.errors.failedToSaveSettings");
         // Don't set the general error for settings issues
         return false;
       }
@@ -605,7 +610,7 @@
         await this.loadSettings();
       } catch (err) {
         console.error("Error refreshing resource data:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("teamManagement.errors.operationFailed");
       }
     },
 
@@ -639,7 +644,7 @@
           await this.loadSettings();
         } catch (err) {
           console.error("Error initializing team management:", err);
-          error = err instanceof Error ? err.message : "An error occurred";
+          error = err instanceof Error ? err.message : t("teamManagement.errors.failedToLoadResources");
         }
       } else {
         this.clear();
@@ -660,7 +665,7 @@
         modalProjectData = data.project;
       } catch (err) {
         console.error("Error loading project details for modal:", err);
-        modalError = err instanceof Error ? err.message : "An error occurred";
+        modalError = err instanceof Error ? err.message : t("teamManagement.errors.failedToLoadProjectDetails");
         modalProjectData = null;
       } finally {
         isModalDataLoading = false;
@@ -670,7 +675,7 @@
     // Delete a department
     async deleteDepartment(departmentId: string) {
       if (!departmentId) {
-        error = "Department ID is required";
+        error = t("teamManagement.errors.invalidResourceId");
         return false;
       }
 
@@ -707,7 +712,7 @@
         return true;
       } catch (err) {
         console.error("Error deleting department:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("teamManagement.errors.operationFailed");
         return false;
       }
     },

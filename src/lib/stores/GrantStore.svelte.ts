@@ -1,5 +1,9 @@
 import { api } from "$lib/services/api-client";
 import type { Grant } from "../types/auth";
+import { _ } from "svelte-i18n";
+import { get } from "svelte/store";
+
+const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
 let grants = $state<Grant[]>([]);
 let currentGrant = $state<Grant | null>(null);
@@ -22,7 +26,7 @@ export const grantStore = {
 
     async loadGrants(projectId: string) {
       if (!projectId) {
-        error = "No project ID provided";
+        error = t("grantStore.noProjectId");
         return;
       }
 
@@ -34,7 +38,7 @@ export const grantStore = {
         grants = grantsData;
       } catch (err) {
         console.error("Error loading grants:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("grantStore.errorOccurred");
         grants = [];
       } finally {
         isLoading = false;
@@ -43,7 +47,7 @@ export const grantStore = {
 
     async loadGrant(grantId: string) {
       if (!grantId) {
-        error = "No grant ID provided";
+        error = t("grantStore.noGrantId");
         return;
       }
 
@@ -56,7 +60,7 @@ export const grantStore = {
         return grantData;
       } catch (err) {
         console.error("Error loading grant:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("grantStore.errorOccurred");
         currentGrant = null;
         throw err;
       } finally {
@@ -66,7 +70,7 @@ export const grantStore = {
 
     async createGrant(projectId: string, grantData: Partial<Grant>) {
       if (!projectId) {
-        throw new Error("No project ID provided");
+        throw new Error(t("grantStore.noProjectId"));
       }
 
       isLoading = true;
@@ -81,7 +85,7 @@ export const grantStore = {
         return newGrant;
       } catch (err) {
         console.error("Error creating grant:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("grantStore.errorOccurred");
         throw err;
       } finally {
         isLoading = false;
@@ -90,7 +94,7 @@ export const grantStore = {
 
     async updateGrant(grantId: string, updateData: Partial<Grant>) {
       if (!grantId) {
-        throw new Error("No grant ID provided");
+        throw new Error(t("grantStore.noGrantId"));
       }
 
       isLoading = true;
@@ -112,7 +116,7 @@ export const grantStore = {
         return updatedGrant;
       } catch (err) {
         console.error("Error updating grant:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("grantStore.errorOccurred");
         throw err;
       } finally {
         isLoading = false;
@@ -121,7 +125,7 @@ export const grantStore = {
 
     async deleteGrant(grantId: string) {
       if (!grantId) {
-        throw new Error("No grant ID provided");
+        throw new Error(t("grantStore.noGrantId"));
       }
 
       isLoading = true;
@@ -139,7 +143,7 @@ export const grantStore = {
         }
       } catch (err) {
         console.error("Error deleting grant:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("grantStore.errorOccurred");
         throw err;
       } finally {
         isLoading = false;

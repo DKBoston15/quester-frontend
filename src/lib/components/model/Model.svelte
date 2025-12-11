@@ -25,6 +25,7 @@
   import FlowToolbar from "./FlowToolbar.svelte";
   import { driver, type DriveStep, type Driver } from "driver.js";
   import "driver.js/dist/driver.css";
+  import { _ } from "svelte-i18n";
 
   let { modelId } = $props<{
     modelId: string;
@@ -62,7 +63,7 @@
       id: `tutorial-${nodeType}-${Date.now()}`,
       type: nodeType,
       position: position,
-      data: { label: "Tutorial Node" },
+      data: { label: get(_)('modelTutorial.tutorialNode') },
       selected: false,
     };
 
@@ -101,7 +102,7 @@
       id: `tutorial-${nodeType}-${Date.now()}`,
       type: nodeType,
       position: { x, y },
-      data: { label: label || "Tutorial Node" },
+      data: { label: label || get(_)('modelTutorial.tutorialNode') },
       selected: false,
     };
 
@@ -667,9 +668,8 @@
       {
         element: "#flow-toolbar",
         popover: {
-          title: "Model Building Tools",
-          description:
-            "Add Rectangle or Circle nodes, toggle grid visibility and snapping, and download your model as an image using this toolbar.",
+          title: get(_)('modelTutorial.modelBuildingTools.title'),
+          description: get(_)('modelTutorial.modelBuildingTools.description'),
           side: "right",
           align: "start",
         },
@@ -677,9 +677,8 @@
       {
         element: ".svelte-flow", // Target the main canvas area
         popover: {
-          title: "Your Modeling Canvas",
-          description:
-            "This is your main workspace. Drag nodes from the toolbar to add them. Connect nodes by dragging between their handles.",
+          title: get(_)('modelTutorial.modelingCanvas.title'),
+          description: get(_)('modelTutorial.modelingCanvas.description'),
           side: "top",
           align: "center",
         },
@@ -687,9 +686,8 @@
       {
         element: ".svelte-flow__controls", // Target the controls panel
         popover: {
-          title: "Canvas Controls",
-          description:
-            "Use these controls to zoom in/out, fit the entire model to the view, and lock/unlock the canvas panning.",
+          title: get(_)('modelTutorial.canvasControls.title'),
+          description: get(_)('modelTutorial.canvasControls.description'),
           side: "top", // Adjust side based on actual position
           align: "end",
         },
@@ -697,9 +695,8 @@
       {
         element: ".svelte-flow__minimap", // Target the minimap
         popover: {
-          title: "Minimap Navigation",
-          description:
-            "This provides an overview of your entire model. Click and drag within the minimap to quickly navigate large canvases.",
+          title: get(_)('modelTutorial.minimapNavigation.title'),
+          description: get(_)('modelTutorial.minimapNavigation.description'),
           side: "left", // Adjust side based on actual position
           align: "end",
         },
@@ -707,9 +704,8 @@
       {
         element: ".svelte-flow__node", // Target the first node found
         popover: {
-          title: "Nodes",
-          description:
-            "Nodes represent the core concepts or variables in your model. Click to select, resize using handles, and double-click (if applicable) to edit content.",
+          title: get(_)('modelTutorial.nodes.title'),
+          description: get(_)('modelTutorial.nodes.description'),
           side: "right",
           align: "start",
         },
@@ -733,9 +729,8 @@
       {
         element: ".svelte-flow__edge", // Target the first edge found
         popover: {
-          title: "Edges",
-          description:
-            "Edges show the relationships or connections between your concepts. Click an edge to select it and customize its appearance using the panel that appears.",
+          title: get(_)('modelTutorial.edges.title'),
+          description: get(_)('modelTutorial.edges.description'),
           side: "bottom",
           align: "start",
         },
@@ -759,9 +754,8 @@
       {
         element: "#edge-customization-panel", // Assuming this ID exists
         popover: {
-          title: "Edge Customization",
-          description:
-            "When an edge is selected, use this panel to change its style, color, arrowheads, and animation to clearly communicate the nature of the relationship.",
+          title: get(_)('modelTutorial.edgeCustomization.title'),
+          description: get(_)('modelTutorial.edgeCustomization.description'),
           side: "left",
           align: "start",
         },
@@ -779,9 +773,8 @@
       {
         element: "#model-view-container",
         popover: {
-          title: "Model View Container",
-          description:
-            "This is the container for the model view. It's used to apply any additional styling or layout constraints.",
+          title: get(_)('modelTutorial.modelViewContainer.title'),
+          description: get(_)('modelTutorial.modelViewContainer.description'),
           side: "right",
           align: "start",
         },

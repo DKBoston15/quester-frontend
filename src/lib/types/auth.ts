@@ -1,5 +1,10 @@
 import type { DesignDetail } from '$lib/utils/design'
 
+export type UserMetadata = {
+  locale?: string;
+  [key: string]: unknown;
+};
+
 export type User = {
   id: number;
   email: string;
@@ -7,6 +12,7 @@ export type User = {
   lastName: string;
   avatarUrl: string | null;
   orcidUrl: string | null;
+  metadata?: UserMetadata | null;
 };
 
 export interface Organization {

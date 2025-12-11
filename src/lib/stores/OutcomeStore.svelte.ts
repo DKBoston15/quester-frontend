@@ -1,5 +1,9 @@
 
   import { api } from "../services/api-client";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   interface Outcome {
     id: string;
@@ -18,7 +22,1216 @@
   let isLoading = $state(false);
   let error = $state<string | null>(null);
 
-  // Predefined outcome templates
+  // Function to generate templates dynamically with translations
+  function getOutcomeTemplates() {
+    return [
+      {
+        name: "Link",
+        content: "",
+        type: "LINK",
+      },
+      {
+        name: "Research Question",
+        content: JSON.stringify({
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "textStyle", attrs: { fontSize: "1.5rem" } }],
+                  text: t("outcomes.templates.researchQuestion.title"),
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "bold" }],
+                  text: t("outcomes.templates.researchQuestion.primaryQuestion"),
+                },
+              ],
+            },
+            {
+              type: "blockquote",
+              content: [
+                {
+                  type: "paragraph",
+                  attrs: { textAlign: null, class: null },
+                  content: [
+                    {
+                      type: "text",
+                      marks: [{ type: "italic" }],
+                      text: t("outcomes.templates.researchQuestion.primaryQuestionPrompt"),
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "bold" }],
+                  text: t("outcomes.templates.researchQuestion.components"),
+                },
+              ],
+            },
+            {
+              type: "taskList",
+              content: [
+                {
+                  type: "taskItem",
+                  attrs: { checked: false },
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [
+                        {
+                          type: "text",
+                          text: t("outcomes.templates.researchQuestion.defineScope"),
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: "taskItem",
+                  attrs: { checked: false },
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [
+                        {
+                          type: "text",
+                          text: t("outcomes.templates.researchQuestion.identifyVariables"),
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: "taskItem",
+                  attrs: { checked: false },
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [
+                        {
+                          type: "text",
+                          text: t("outcomes.templates.researchQuestion.specifyPopulation"),
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: "taskItem",
+                  attrs: { checked: false },
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [
+                        { type: "text", text: t("outcomes.templates.researchQuestion.defineTimeframe") },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "bold" }],
+                  text: t("outcomes.templates.researchQuestion.subQuestions"),
+                },
+              ],
+            },
+            {
+              type: "orderedList",
+              attrs: { tight: true, start: 1 },
+              content: [
+                {
+                  type: "listItem",
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [
+                        {
+                          type: "text",
+                          text: t("outcomes.templates.researchQuestion.subQuestion1"),
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: "listItem",
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [
+                        {
+                          type: "text",
+                          text: t("outcomes.templates.researchQuestion.subQuestion2"),
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: "listItem",
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [
+                        {
+                          type: "text",
+                          text: t("outcomes.templates.researchQuestion.subQuestion3"),
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "bold" }],
+                  text: t("outcomes.templates.researchQuestion.hypotheses"),
+                },
+              ],
+            },
+            {
+              type: "bulletList",
+              attrs: { tight: true },
+              content: [
+                {
+                  type: "listItem",
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [{ type: "text", text: "H1: " }],
+                    },
+                  ],
+                },
+                {
+                  type: "listItem",
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [{ type: "text", text: "H2: " }],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        }),
+        type: "QUESTION",
+      },
+      {
+        name: "Research Finding",
+        content: JSON.stringify({
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "textStyle", attrs: { fontSize: "1.5rem" } }],
+                  text: t("outcomes.templates.researchFinding.title"),
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "bold" }],
+                  text: t("outcomes.templates.researchFinding.keyFinding"),
+                },
+              ],
+            },
+            {
+              type: "blockquote",
+              content: [
+                {
+                  type: "paragraph",
+                  attrs: { textAlign: null, class: null },
+                  content: [
+                    {
+                      type: "text",
+                      marks: [{ type: "italic" }],
+                      text: t("outcomes.templates.researchFinding.keyFindingPrompt"),
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "bold" }],
+                  text: t("outcomes.templates.researchFinding.evidenceAnalysis"),
+                },
+              ],
+            },
+            {
+              type: "bulletList",
+              attrs: { tight: true },
+              content: [
+                {
+                  type: "listItem",
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [{ type: "text", text: t("outcomes.templates.researchFinding.primaryEvidence") }],
+                    },
+                  ],
+                },
+                {
+                  type: "listItem",
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [{ type: "text", text: t("outcomes.templates.researchFinding.supportingData") }],
+                    },
+                  ],
+                },
+                {
+                  type: "listItem",
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [
+                        {
+                          type: "text",
+                          text: t("outcomes.templates.researchFinding.statisticalSignificance"),
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "bold" }],
+                  text: t("outcomes.templates.researchFinding.implicationsImpact"),
+                },
+              ],
+            },
+            {
+              type: "table",
+              content: [
+                {
+                  type: "tableRow",
+                  content: [
+                    {
+                      type: "tableCell",
+                      attrs: { colspan: 1, rowspan: 1, colwidth: null },
+                      content: [
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null, class: null },
+                          content: [
+                            {
+                              type: "text",
+                              marks: [{ type: "bold" }],
+                              text: t("outcomes.templates.researchFinding.domain"),
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                    {
+                      type: "tableCell",
+                      attrs: { colspan: 1, rowspan: 1, colwidth: null },
+                      content: [
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null, class: null },
+                          content: [
+                            {
+                              type: "text",
+                              marks: [{ type: "bold" }],
+                              text: t("outcomes.templates.researchFinding.impact"),
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                    {
+                      type: "tableCell",
+                      attrs: { colspan: 1, rowspan: 1, colwidth: null },
+                      content: [
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null, class: null },
+                          content: [
+                            {
+                              type: "text",
+                              marks: [{ type: "bold" }],
+                              text: t("outcomes.templates.researchFinding.recommendations"),
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: "tableRow",
+                  content: [
+                    {
+                      type: "tableCell",
+                      attrs: { colspan: 1, rowspan: 1, colwidth: null },
+                      content: [
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null, class: null },
+                          content: [{ type: "text", text: t("outcomes.templates.researchFinding.theory") }],
+                        },
+                      ],
+                    },
+                    {
+                      type: "tableCell",
+                      attrs: { colspan: 1, rowspan: 1, colwidth: null },
+                      content: [
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null, class: null },
+                        },
+                      ],
+                    },
+                    {
+                      type: "tableCell",
+                      attrs: { colspan: 1, rowspan: 1, colwidth: null },
+                      content: [
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null, class: null },
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: "tableRow",
+                  content: [
+                    {
+                      type: "tableCell",
+                      attrs: { colspan: 1, rowspan: 1, colwidth: null },
+                      content: [
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null, class: null },
+                          content: [{ type: "text", text: t("outcomes.templates.researchFinding.practice") }],
+                        },
+                      ],
+                    },
+                    {
+                      type: "tableCell",
+                      attrs: { colspan: 1, rowspan: 1, colwidth: null },
+                      content: [
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null, class: null },
+                        },
+                      ],
+                    },
+                    {
+                      type: "tableCell",
+                      attrs: { colspan: 1, rowspan: 1, colwidth: null },
+                      content: [
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null, class: null },
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: "tableRow",
+                  content: [
+                    {
+                      type: "tableCell",
+                      attrs: { colspan: 1, rowspan: 1, colwidth: null },
+                      content: [
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null, class: null },
+                          content: [{ type: "text", text: t("outcomes.templates.researchFinding.policy") }],
+                        },
+                      ],
+                    },
+                    {
+                      type: "tableCell",
+                      attrs: { colspan: 1, rowspan: 1, colwidth: null },
+                      content: [
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null, class: null },
+                        },
+                      ],
+                    },
+                    {
+                      type: "tableCell",
+                      attrs: { colspan: 1, rowspan: 1, colwidth: null },
+                      content: [
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null, class: null },
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "bold" }],
+                  text: t("outcomes.templates.researchFinding.limitationsFuture"),
+                },
+              ],
+            },
+            {
+              type: "bulletList",
+              attrs: { tight: true },
+              content: [
+                {
+                  type: "listItem",
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [{ type: "text", text: t("outcomes.templates.researchFinding.limitations") }],
+                    },
+                  ],
+                },
+                {
+                  type: "listItem",
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [
+                        { type: "text", text: t("outcomes.templates.researchFinding.futureResearch") },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        }),
+        type: "FINDING",
+      },
+      {
+        name: "Research Gap",
+        content: JSON.stringify({
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "textStyle", attrs: { fontSize: "1.5rem" } }],
+                  text: t("outcomes.templates.researchGap.title"),
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "bold" }],
+                  text: t("outcomes.templates.researchGap.gapIdentification"),
+                },
+              ],
+            },
+            {
+              type: "blockquote",
+              content: [
+                {
+                  type: "paragraph",
+                  attrs: { textAlign: null, class: null },
+                  content: [
+                    {
+                      type: "text",
+                      marks: [{ type: "italic" }],
+                      text: t("outcomes.templates.researchGap.gapIdentificationPrompt"),
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "bold" }],
+                  text: t("outcomes.templates.researchGap.literatureReview"),
+                },
+              ],
+            },
+            {
+              type: "table",
+              content: [
+                {
+                  type: "tableRow",
+                  content: [
+                    {
+                      type: "tableCell",
+                      attrs: { colspan: 1, rowspan: 1, colwidth: null },
+                      content: [
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null, class: null },
+                          content: [
+                            {
+                              type: "text",
+                              marks: [{ type: "bold" }],
+                              text: t("outcomes.templates.researchGap.currentKnowledge"),
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                    {
+                      type: "tableCell",
+                      attrs: { colspan: 1, rowspan: 1, colwidth: null },
+                      content: [
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null, class: null },
+                          content: [
+                            {
+                              type: "text",
+                              marks: [{ type: "bold" }],
+                              text: t("outcomes.templates.researchGap.knowledgeGaps"),
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: "tableRow",
+                  content: [
+                    {
+                      type: "tableCell",
+                      attrs: { colspan: 1, rowspan: 1, colwidth: null },
+                      content: [
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null, class: null },
+                        },
+                      ],
+                    },
+                    {
+                      type: "tableCell",
+                      attrs: { colspan: 1, rowspan: 1, colwidth: null },
+                      content: [
+                        {
+                          type: "paragraph",
+                          attrs: { textAlign: null, class: null },
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "bold" }],
+                  text: t("outcomes.templates.researchGap.gapAnalysis"),
+                },
+              ],
+            },
+            {
+              type: "taskList",
+              content: [
+                {
+                  type: "taskItem",
+                  attrs: { checked: false },
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [
+                        { type: "text", text: t("outcomes.templates.researchGap.theoreticalGaps") },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: "taskItem",
+                  attrs: { checked: false },
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [
+                        { type: "text", text: t("outcomes.templates.researchGap.methodologicalGaps") },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: "taskItem",
+                  attrs: { checked: false },
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [
+                        { type: "text", text: t("outcomes.templates.researchGap.empiricalGaps") },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: "taskItem",
+                  attrs: { checked: false },
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [
+                        {
+                          type: "text",
+                          text: t("outcomes.templates.researchGap.practicalGaps"),
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "bold" }],
+                  text: t("outcomes.templates.researchGap.significance"),
+                },
+              ],
+            },
+            {
+              type: "bulletList",
+              attrs: { tight: true },
+              content: [
+                {
+                  type: "listItem",
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [
+                        { type: "text", text: t("outcomes.templates.researchGap.theoreticalSignificance") },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: "listItem",
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [
+                        { type: "text", text: t("outcomes.templates.researchGap.practicalSignificance") },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: "listItem",
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [
+                        {
+                          type: "text",
+                          text: t("outcomes.templates.researchGap.potentialImpact"),
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        }),
+        type: "GAP",
+      },
+      {
+        name: "Research Abstract",
+        content: JSON.stringify({
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "textStyle", attrs: { fontSize: "1.5rem" } }],
+                  text: t("outcomes.templates.researchAbstract.title"),
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "bold" }],
+                  text: t("outcomes.templates.researchAbstract.background"),
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "italic" }],
+                  text: t("outcomes.templates.researchAbstract.backgroundPrompt"),
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "bold" }],
+                  text: t("outcomes.templates.researchAbstract.objectives"),
+                },
+              ],
+            },
+            {
+              type: "bulletList",
+              attrs: { tight: true },
+              content: [
+                {
+                  type: "listItem",
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [{ type: "text", text: t("outcomes.templates.researchAbstract.primaryObjective") }],
+                    },
+                  ],
+                },
+                {
+                  type: "listItem",
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [{ type: "text", text: t("outcomes.templates.researchAbstract.secondaryObjectives") }],
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "bold" }],
+                  text: t("outcomes.templates.researchAbstract.methods"),
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "italic" }],
+                  text: t("outcomes.templates.researchAbstract.methodsPrompt"),
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "bold" }],
+                  text: t("outcomes.templates.researchAbstract.results"),
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "italic" }],
+                  text: t("outcomes.templates.researchAbstract.resultsPrompt"),
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "bold" }],
+                  text: t("outcomes.templates.researchAbstract.conclusions"),
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "italic" }],
+                  text: t("outcomes.templates.researchAbstract.conclusionsPrompt"),
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "bold" }],
+                  text: t("outcomes.templates.researchAbstract.keywords"),
+                },
+              ],
+            },
+            {
+              type: "bulletList",
+              attrs: { tight: true },
+              content: [
+                {
+                  type: "listItem",
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [{ type: "text", text: t("outcomes.templates.researchAbstract.keyword1") }],
+                    },
+                  ],
+                },
+                {
+                  type: "listItem",
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [{ type: "text", text: t("outcomes.templates.researchAbstract.keyword2") }],
+                    },
+                  ],
+                },
+                {
+                  type: "listItem",
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [{ type: "text", text: t("outcomes.templates.researchAbstract.keyword3") }],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        }),
+        type: "ABSTRACT",
+      },
+      {
+        name: "Research Grant",
+        content: JSON.stringify({
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "textStyle", attrs: { fontSize: "1.5rem" } }],
+                  text: t("outcomes.templates.researchGrant.title"),
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "bold" }],
+                  text: t("outcomes.templates.researchGrant.projectDescription"),
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "italic" }],
+                  text: t("outcomes.templates.researchGrant.projectDescriptionPrompt"),
+                },
+              ],
+            },
+            { type: "horizontalRule" },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "bold" }],
+                  text: t("outcomes.templates.researchGrant.relevantLiterature"),
+                },
+              ],
+            },
+            {
+              type: "taskList",
+              content: [
+                {
+                  type: "taskItem",
+                  attrs: { checked: false },
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [{ type: "text", text: t("outcomes.templates.researchGrant.primaryObjective") }],
+                    },
+                  ],
+                },
+                {
+                  type: "taskItem",
+                  attrs: { checked: false },
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [{ type: "text", text: t("outcomes.templates.researchGrant.secondaryObjectives") }],
+                    },
+                  ],
+                },
+                {
+                  type: "taskItem",
+                  attrs: { checked: false },
+                  content: [
+                    {
+                      type: "paragraph",
+                      attrs: { textAlign: null, class: null },
+                      content: [
+                        {
+                          type: "text",
+                          text: t("outcomes.templates.researchGrant.conceptualModel"),
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            { type: "horizontalRule" },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "bold" }],
+                  text: t("outcomes.templates.researchGrant.summaryDesigns"),
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "italic" }],
+                  text: t("outcomes.templates.researchGrant.summaryDesignsPrompt"),
+                },
+              ],
+            },
+            { type: "horizontalRule" },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "bold" }],
+                  text: t("outcomes.templates.researchGrant.knowledgeGained"),
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "italic" }],
+                  text: t("outcomes.templates.researchGrant.knowledgeGainedPrompt"),
+                },
+              ],
+            },
+            { type: "horizontalRule" },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "bold" }],
+                  text: t("outcomes.templates.researchGrant.principalInvestigators"),
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "italic" }],
+                  text: t("outcomes.templates.researchGrant.principalInvestigatorsPrompt"),
+                },
+              ],
+            },
+            { type: "horizontalRule" },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "bold" }],
+                  text: t("outcomes.templates.researchGrant.wordCount"),
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "italic" }],
+                  text: t("outcomes.templates.researchGrant.wordCountPrompt"),
+                },
+              ],
+            },
+            { type: "horizontalRule" },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "bold" }],
+                  text: t("outcomes.templates.researchGrant.references"),
+                },
+              ],
+            },
+            {
+              type: "paragraph",
+              attrs: { textAlign: null, class: null },
+              content: [
+                {
+                  type: "text",
+                  marks: [{ type: "italic" }],
+                  text: t("outcomes.templates.researchGrant.referencesPrompt"),
+                },
+              ],
+            },
+          ],
+        }),
+        type: "GRANT",
+      },
+    ];
+  }
+
   const outcomeTemplates = [
     {
       name: "Link",
@@ -1240,7 +2453,7 @@
       return error;
     },
     get templates() {
-      return outcomeTemplates;
+      return getOutcomeTemplates();
     },
 
     setError(newError: string | null) {
@@ -1253,7 +2466,7 @@
 
     async loadOutcomes(projectId: string) {
       if (!projectId) {
-        error = "No project ID provided";
+        error = t("outcomeStore.noProjectIdProvided");
         isLoading = false;
         return;
       }
@@ -1266,7 +2479,7 @@
         outcomes = data;
       } catch (err) {
         console.error("Error loading outcomes:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("outcomeStore.errorOccurred");
         outcomes = [];
       } finally {
         isLoading = false;
@@ -1275,7 +2488,7 @@
 
     async loadOutcome(outcomeId: string) {
       if (!outcomeId) {
-        this.setError("No outcome ID provided");
+        this.setError(t("outcomeStore.noOutcomeIdProvided"));
         isLoading = false;
         return;
       }
@@ -1291,14 +2504,14 @@
       try {
         const data = await api.get<Outcome>(`/outcome/${outcomeId}`);
         if (!data) {
-          throw new Error("Outcome not found");
+          throw new Error(t("outcomeStore.outcomeNotFound"));
         }
 
         currentOutcome = data;
         return data;
       } catch (err) {
         console.error("Error loading outcome:", err);
-        this.setError(err instanceof Error ? err.message : "An error occurred");
+        this.setError(err instanceof Error ? err.message : t("outcomeStore.errorOccurred"));
         currentOutcome = null;
       } finally {
         isLoading = false;
@@ -1313,12 +2526,15 @@
       error = null;
 
       try {
+        // Get templates with current translations
+        const templates = getOutcomeTemplates();
+
         // If a template is specified, find and apply it
         if (templateName && templateName !== "") {
           const templateNameStr = Array.isArray(templateName)
             ? templateName[0]
             : templateName;
-          const template = outcomeTemplates.find(
+          const template = templates.find(
             (t) => t.name === templateNameStr
           );
           if (template) {
@@ -1331,7 +2547,7 @@
         } else if (data.type && templateName === undefined) {
           // Only apply default template if no template parameter was passed (undefined)
           // If templateName is "" (empty string), user explicitly chose no template
-          const defaultTemplate = outcomeTemplates.find(
+          const defaultTemplate = templates.find(
             (t) => t.type === data.type
           );
           if (defaultTemplate) {
@@ -1345,7 +2561,7 @@
         return newOutcome;
       } catch (err) {
         console.error("Error creating outcome:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("outcomeStore.errorOccurred");
         throw err;
       } finally {
         isLoading = false;
@@ -1371,7 +2587,7 @@
         return updatedOutcome;
       } catch (err) {
         console.error("Error updating outcome:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("outcomeStore.errorOccurred");
         throw err;
       }
     },
@@ -1386,7 +2602,7 @@
         }
       } catch (err) {
         console.error("Error deleting outcome:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("outcomeStore.errorOccurred");
         throw err;
       }
     },

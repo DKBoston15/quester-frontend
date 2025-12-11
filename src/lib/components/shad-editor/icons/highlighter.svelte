@@ -9,6 +9,7 @@
   import * as Popover from "$lib/components/ui/popover/index.js";
   import { mode } from "mode-watcher";
   import ColorPicker from "svelte-awesome-color-picker";
+  import { _ } from "svelte-i18n";
 
   interface Props {
     editor: Editor;
@@ -38,7 +39,7 @@
         </Popover.Trigger>
         <Popover.Content class="bg-popover shadow-lg *:my-2">
           <div class="flex items-center justify-between">
-            <h1 class="text-[1.2rem] font-bold">Pick a highlight color</h1>
+            <h1 class="text-[1.2rem] font-bold">{$_('editor.highlighter.title')}</h1>
             <Popover.Close>
               <X class="size-4 text-muted-foreground" />
             </Popover.Close>
@@ -67,14 +68,14 @@
               size="sm"
               class="border-destructive text-destructive hover:bg-destructive hover:text-foreground"
               onclick={() => editor.chain().focus().unsetHighlight().run()}
-              >Remove Highlight
+              >{$_('editor.highlighter.removeHighlight')}
             </Button>
           </div>
         </Popover.Content>
       </Popover.Root>
     </Tooltip.Trigger>
     <Tooltip.Content>
-      <p>Highlighter (⌘⇧H)</p>
+      <p>{$_('editor.toolbar.highlighter')}</p>
     </Tooltip.Content>
   </Tooltip.Root>
 </Tooltip.Provider>

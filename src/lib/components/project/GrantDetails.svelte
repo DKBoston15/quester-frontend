@@ -18,6 +18,7 @@
   import { projectStore } from "$lib/stores/ProjectStore";
   import { grantStore } from "$lib/stores/GrantStore";
   import { toast } from "svelte-sonner";
+  import { _ } from "svelte-i18n";
   import GrantForm from "./GrantForm.svelte";
   import GrantListItem from "./GrantListItem.svelte";
 
@@ -38,7 +39,7 @@
       await grantStore.loadGrants(projectStore.currentProject.id);
     } catch (error) {
       console.error("Failed to load grants:", error);
-      toast.error("Failed to load grants");
+      toast.error($_("grants.display.grantAddFailed"));
     }
   }
 
@@ -65,10 +66,10 @@
     try {
       await grantStore.createGrant(projectStore.currentProject.id, grantData);
       showAddForm = false;
-      toast.success("Grant added successfully");
+      toast.success($_("grants.display.grantAdded"));
     } catch (error) {
       console.error("Failed to add grant:", error);
-      toast.error("Failed to add grant");
+      toast.error($_("grants.display.grantAddFailed"));
     } finally {
       isLoading = false;
     }
@@ -89,18 +90,17 @@
           </Tooltip.Trigger>
           <Tooltip.Content>
             <p class="text-sm max-w-xs">
-              Manage comprehensive grant information including NSF funding
-              opportunities and other grant details.
+              {$_("grants.display.manageGrantInfo")}
             </p>
           </Tooltip.Content>
         </Tooltip.Root>
-        <CardTitle>Project Grants</CardTitle>
+        <CardTitle>{$_("grants.display.projectGrants")}</CardTitle>
       </div>
 
       {#if !showAddForm}
         <Button size="sm" class="gap-2" onclick={() => (showAddForm = true)}>
           <PlusIcon class="h-4 w-4" />
-          Add Grant
+          {$_("grants.display.addGrantButton")}
         </Button>
       {/if}
     </div>
@@ -116,19 +116,19 @@
     {:else if grantStore.isLoading}
       <div class="flex items-center justify-center py-8">
         <Loader2Icon class="h-6 w-6 animate-spin mr-2" />
-        Loading grants...
+        {$_("grants.display.loadingGrants")}
       </div>
     {:else if grantStore.error}
       <div class="text-center py-8">
         <p class="text-destructive mb-4">{grantStore.error}</p>
-        <Button size="sm" onclick={loadGrants}>Try Again</Button>
+        <Button size="sm" onclick={loadGrants}>{$_("grants.display.tryAgain")}</Button>
       </div>
     {:else if grantStore.grants.length === 0}
       <EmptyState
-        title="No grants found"
-        description="Add your first grant to get started."
+        title={$_("grants.display.noGrantsFound")}
+        description={$_("grants.display.addFirstGrant")}
         variant="data-empty"
-        ctaText="Add Grant"
+        ctaText={$_("grants.display.addGrantButton")}
         ctaAction={() => (showAddForm = true)}
         icon={PlusIcon}
       />
@@ -157,10 +157,10 @@
             >
               {#if isExpanded}
                 <ChevronUpIcon class="h-4 w-4" />
-                Show Less ({grantStore.grants.length} grants)
+                {$_("grants.display.showLess", { values: { count: grantStore.grants.length } })}
               {:else}
                 <ChevronDownIcon class="h-4 w-4" />
-                Show All ({grantStore.grants.length} grants)
+                {$_("grants.display.showAll", { values: { count: grantStore.grants.length } })}
               {/if}
             </Button>
           </div>

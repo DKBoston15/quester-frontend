@@ -5,16 +5,21 @@
   import { Copy, CopyCheck } from "lucide-svelte";
   import { toast } from "svelte-sonner";
   import type { Literature } from "$lib/types/literature";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper for imperative translation access
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   const { literature } = $props<{ literature: Literature }>();
 
   const citationStyles = [
-    { value: "APA", label: "APA" },
-    { value: "MLA", label: "MLA" },
-    { value: "Chicago", label: "Chicago" },
-    { value: "Harvard", label: "Harvard" },
-    { value: "IEEE", label: "IEEE" },
-    { value: "ASA", label: "ASA" },
+    { value: "APA", label: $_("citationFormats.apa") },
+    { value: "MLA", label: $_("citationFormats.mla") },
+    { value: "Chicago", label: $_("citationFormats.chicago") },
+    { value: "Harvard", label: $_("citationFormats.harvard") },
+    { value: "IEEE", label: $_("citationFormats.ieee") },
+    { value: "ASA", label: $_("citationFormats.asa") },
   ];
 
   let citationStyle = $state(citationStyles[0]);
@@ -72,7 +77,7 @@
         : typeof literature?.editors === "string"
           ? JSON.parse(literature.editors || "[]")
           : [],
-      publicationYear: literature?.publishYear ?? "n.d.",
+      publicationYear: literature?.publishYear ?? t("reference.noDate"),
       title: literature?.name ?? "",
       journalName: literature?.publisherName || "",
       volumeNumber: literature?.volume ?? "",
@@ -178,7 +183,7 @@
 
     let formattedDate = citation.publicationYear
       ? `(${citation.publicationYear}).`
-      : "(n.d.).";
+      : `(${t("reference.noDate")}).`;
 
     let formattedTitle;
     if (citation.type.value === "Book") {
@@ -922,9 +927,9 @@
       setTimeout(() => {
         hasCopied = false;
       }, 2000);
-      toast.success("Reference copied to clipboard");
+      toast.success($_("reference.copiedSuccess"));
     } catch (err) {
-      toast.error("Failed to copy reference");
+      toast.error($_("reference.copyFailed"));
     }
   }
 </script>
@@ -932,7 +937,7 @@
 <Card.Root>
   <Card.Header>
     <Card.Title class="flex items-center justify-between">
-      <span>Reference</span>
+      <span>{$_("reference.heading")}</span>
       <div class="flex items-center gap-2">
         <Select.Root
           type="single"

@@ -1,7 +1,11 @@
 
   import { api } from "../services/api-client";
   import type { Literature } from "../types/literature";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
   import { normalizeDesignDetail } from "$lib/utils/design";
+
+  const t = (key: string, options?: object) => get(_)(key, options);
 
   const DESIGN_FIELDS = [
     "researchDesign",
@@ -51,7 +55,7 @@ function normalizeLiteratureDesignFields<T extends Partial<Literature>>(
 
     async loadLiterature(projectId: string) {
       if (!projectId) {
-        error = "No project ID provided";
+        error = t("literatureStore.noProjectId");
         isLoading = false;
         return;
       }
@@ -69,7 +73,7 @@ function normalizeLiteratureDesignFields<T extends Partial<Literature>>(
         loadedProjectId = projectId;
       } catch (err) {
         console.error("Error loading literature:", err);
-        error = err instanceof Error ? err.message : "An error occurred";
+        error = err instanceof Error ? err.message : t("literatureStore.errorLoadingLiterature");
         literatureData = [];
         loadedProjectId = null;
       } finally {
@@ -92,7 +96,7 @@ function normalizeLiteratureDesignFields<T extends Partial<Literature>>(
         ];
         return newLiterature;
       } catch (err) {
-        console.error("Error adding literature:", err);
+        console.error(t("literatureStore.errorAddingLiterature"), err);
         throw err;
       }
     },
@@ -114,7 +118,7 @@ function normalizeLiteratureDesignFields<T extends Partial<Literature>>(
         );
         return updatedLiterature;
       } catch (err) {
-        console.error("Error updating literature:", err);
+        console.error(t("literatureStore.errorUpdatingLiterature"), err);
         throw err;
       }
     },
@@ -125,7 +129,7 @@ function normalizeLiteratureDesignFields<T extends Partial<Literature>>(
         await api.delete(`/literature/${id}`, { timeout: 120000, retries: 0 });
         literatureData = literatureData.filter((item) => item.id !== id);
       } catch (err) {
-        console.error("Error deleting literature:", err);
+        console.error(t("literatureStore.errorDeletingLiterature"), err);
         throw err;
       }
     },

@@ -23,6 +23,7 @@
   import { navigate } from "svelte-routing";
   import { api } from "$lib/services/api-client";
   import { teamManagement } from "$lib/stores/TeamManagementStore";
+  import { _ } from "svelte-i18n";
 
   // Props
   const props = $props();
@@ -33,8 +34,8 @@
 
   // State for error dialog
   let showErrorDialog = $state(false);
-  let dialogErrorTitle = $state("Action Failed");
-  let dialogErrorMessage = $state("An unexpected error occurred.");
+  let dialogErrorTitle = $state($_('treeNodeItem.actionFailed'));
+  let dialogErrorMessage = $state($_('common.unexpectedError'));
 
   // State for renaming
   let isRenaming = $state(false);
@@ -165,7 +166,7 @@
 
   // Helper function to get user's role for the current item
   function getUserRoleNameForCurrentItem(): string {
-    if (!auth.user) return "Unknown";
+    if (!auth.user) return $_('common.unknown');
 
     // 1. Try to read the role name from the cached user resources
     const resources = teamManagement.userResources;
@@ -210,9 +211,10 @@
         (role: any) => String(role.userId) === String(auth.user?.id)
       );
       if (userRole) {
+        const unknownText = $_('common.unknown');
         const name =
-          userRole.role?.name || ROLE_ID_TO_NAME[userRole.roleId] || "Unknown";
-        if (name === "Unknown") {
+          userRole.role?.name || ROLE_ID_TO_NAME[userRole.roleId] || unknownText;
+        if (name === unknownText) {
           console.debug(
             "[TreeNodeItem] Derived department role returned Unknown",
             {
@@ -231,9 +233,10 @@
         (role: any) => String(role.userId) === String(auth.user?.id)
       );
       if (userRole) {
+        const unknownText = $_('common.unknown');
         const name =
-          userRole.role?.name || ROLE_ID_TO_NAME[userRole.roleId] || "Unknown";
-        if (name === "Unknown") {
+          userRole.role?.name || ROLE_ID_TO_NAME[userRole.roleId] || unknownText;
+        if (name === unknownText) {
           console.debug(
             "[TreeNodeItem] Derived project role returned Unknown",
             {
@@ -261,7 +264,7 @@
       }
     );
 
-    return "Unknown";
+    return $_('common.unknown');
   }
 
   // Start renaming a department
@@ -275,7 +278,7 @@
     // Focus the input after a short delay to ensure it's rendered
     setTimeout(() => {
       const input = document.querySelector(
-        'input[placeholder="Department name"]'
+        `input[placeholder="${$_('organizationDialogs.treeNode.departmentName')}"]`
       ) as HTMLInputElement;
       if (input) {
         input.focus();
@@ -434,7 +437,7 @@
           bind:value={newName}
           onkeydown={handleRenameKeydown}
           class="h-8 text-sm font-medium"
-          placeholder="Department name"
+          placeholder={$_('organizationDialogs.treeNode.departmentName')}
           disabled={isRenameLoading}
         />
         <Button
@@ -479,7 +482,7 @@
           }}
         >
           <UserPlus class="h-3 w-3" />
-          Join
+          {$_('organizationDialogs.treeView.join')}
         </Button>
       {:else}
         <Badge variant="outline" class="bg-primary/10 text-primary"
@@ -501,7 +504,7 @@
             onclick={(e: MouseEvent) => e.stopPropagation()}
             class="relative z-20"
           >
-            <DropdownMenu.Label>Department Actions</DropdownMenu.Label>
+            <DropdownMenu.Label>{$_('organizationDialogs.treeNode.departmentActions')}</DropdownMenu.Label>
             <DropdownMenu.Separator />
             <DropdownMenu.Item
               onclick={(e: MouseEvent) => {
@@ -510,7 +513,7 @@
               }}
             >
               <Plus class="h-4 w-4 mr-2" />
-              New Project
+              {$_('organizationDialogs.treeNode.newProject')}
             </DropdownMenu.Item>
 
             {#if isDepartment(props.item) && canRenameDepartment(props.item)}
@@ -521,7 +524,7 @@
                 }}
               >
                 <Edit3 class="h-4 w-4 mr-2" />
-                Rename Department
+                {$_('organizationDialogs.treeNode.renameDepartment')}
               </DropdownMenu.Item>
             {/if}
 
@@ -545,7 +548,7 @@
                           e.stopPropagation();
                         }}
                       >
-                        Delete Department
+                        {$_('organizationDialogs.treeNode.deleteDepartment')}
                       </DropdownMenu.Item>
                     </span>
                   </Tooltip.Trigger>
@@ -553,7 +556,7 @@
                     side="right"
                     class="bg-background text-foreground border rounded-md shadow-md p-2 text-sm"
                   >
-                    <p>Move or delete all projects in this department first.</p>
+                    <p>{$_('organizationDialogs.treeNode.moveTooltip')}</p>
                   </Tooltip.Content>
                 </Tooltip.Root>
               {:else}
@@ -565,9 +568,9 @@
                     e.stopPropagation();
                     showDeleteConfirmDialog = true;
                   }}
-                  aria-label="Delete Department"
+                  aria-label={$_('ariaLabels.deleteDepartment')}
                 >
-                  Delete Department
+                  {$_('organizationDialogs.treeNode.deleteDepartment')}
                 </DropdownMenu.Item>
               {/if}
             {/if}
@@ -582,15 +585,14 @@
     <AlertDialog.Root bind:open={showDeleteConfirmDialog}>
       <AlertDialog.Content>
         <AlertDialog.Header>
-          <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
+          <AlertDialog.Title>{$_('organizationDialogs.deleteConfirm.areYouSure')}</AlertDialog.Title>
           <AlertDialog.Description>
-            This action cannot be undone. This will permanently delete the
-            department "<strong>{props.item.name}</strong>".
+            {$_('organizationDialogs.deleteConfirm.departmentWarning', { values: { name: props.item.name } })}
           </AlertDialog.Description>
         </AlertDialog.Header>
         <AlertDialog.Footer>
           <AlertDialog.Cancel onclick={() => (showDeleteConfirmDialog = false)}
-            >Cancel</AlertDialog.Cancel
+            >{$_('organizationDialogs.deleteConfirm.cancel')}</AlertDialog.Cancel
           >
           <AlertDialog.Action
             class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -600,13 +602,13 @@
               );
               if (!success) {
                 alert(
-                  `Failed to delete department: ${teamManagement.error || "Unknown error"}`
+                  $_('treeNodeItem.failedToDeleteDepartment', { values: { error: teamManagement.error || $_('common.unknown') } })
                 );
               }
               showDeleteConfirmDialog = false; // Close dialog regardless of success/failure
             }}
           >
-            Delete
+            {$_('organizationDialogs.deleteConfirm.delete')}
           </AlertDialog.Action>
         </AlertDialog.Footer>
       </AlertDialog.Content>
@@ -636,7 +638,7 @@
                   onclick={(e: MouseEvent) => joinProject(project, e)}
                 >
                   <UserPlus class="h-3 w-3" />
-                  Join
+                  {$_('organizationDialogs.treeView.join')}
                 </Button>
               {:else}
                 <Badge variant="outline" class="bg-primary/10 text-primary"
@@ -655,7 +657,7 @@
                   </Button>
                 </DropdownMenu.Trigger>
                 <DropdownMenu.Content>
-                  <DropdownMenu.Label>Actions</DropdownMenu.Label>
+                  <DropdownMenu.Label>{$_('organizationDialogs.treeNode.actions')}</DropdownMenu.Label>
                   <DropdownMenu.Separator />
                   <DropdownMenu.Item
                     onclick={(e: MouseEvent) => {
@@ -664,7 +666,7 @@
                     }}
                   >
                     <FolderInput class="h-4 w-4 mr-2" />
-                    Move to Department
+                    {$_('organizationDialogs.treeNode.moveToDepartment')}
                   </DropdownMenu.Item>
                 </DropdownMenu.Content>
               </DropdownMenu.Root>
@@ -673,7 +675,7 @@
         {/each}
       {:else}
         <div class="text-sm text-muted-foreground py-2 px-4">
-          No projects in this department
+          {$_('organizationDialogs.treeNode.noProjectsInDepartment')}
         </div>
       {/if}
     </div>
@@ -698,7 +700,7 @@
           onclick={(e: MouseEvent) => joinProject(props.item, e)}
         >
           <UserPlus class="h-3 w-3" />
-          Join
+          {$_('organizationDialogs.treeView.join')}
         </Button>
       {:else}
         <Badge variant="outline" class="bg-primary/10 text-primary"
@@ -717,7 +719,7 @@
           </Button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <DropdownMenu.Label>Actions</DropdownMenu.Label>
+          <DropdownMenu.Label>{$_('organizationDialogs.treeNode.actions')}</DropdownMenu.Label>
           <DropdownMenu.Separator />
           <DropdownMenu.Item
             onclick={(e: MouseEvent) => {
@@ -726,7 +728,7 @@
             }}
           >
             <FolderInput class="h-4 w-4 mr-2" />
-            Move to Department
+            {$_('organizationDialogs.treeNode.moveToDepartment')}
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>

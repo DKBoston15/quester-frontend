@@ -20,6 +20,7 @@
     EyeOff,
   } from "lucide-svelte";
   import { formatDistanceToNow } from "date-fns";
+  import { _ } from "svelte-i18n";
 
   interface Props {
     open: boolean;
@@ -105,9 +106,9 @@
 <Dialog {open} onOpenChange={handleOpenChange}>
   <DialogContent class="max-w-3xl max-h-[80vh]">
     <DialogHeader>
-      <DialogTitle>Announcement History</DialogTitle>
+      <DialogTitle>{$_('announcementHistory.title')}</DialogTitle>
       <DialogDescription>
-        Browse through all platform announcements and updates
+        {$_('announcementHistory.description')}
       </DialogDescription>
     </DialogHeader>
 
@@ -115,7 +116,7 @@
       <div class="space-y-4">
         {#if sortedAnnouncements().length === 0}
           <div class="text-center py-8 text-muted-foreground">
-            No announcements available
+            {$_('announcements.noAnnouncementsAvailable')}
           </div>
         {:else}
           {#each sortedAnnouncements() as announcement}
@@ -143,7 +144,7 @@
                         {#if !hasUserViewed(announcement)}
                           <div
                             class="w-2 h-2 bg-blue-500 rounded-full"
-                            title="Unread"
+                            title={$_('announcements.unread')}
                           ></div>
                         {/if}
                       </h3>
@@ -186,7 +187,7 @@
                 </div>
 
                 <!-- Action -->
-                <Button variant="ghost" size="sm">View</Button>
+                <Button variant="ghost" size="sm">{$_('announcementHistory.view')}</Button>
               </div>
             </Card>
           {/each}

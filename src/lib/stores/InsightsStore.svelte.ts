@@ -1,4 +1,9 @@
 import { api } from '$lib/services/api-client';
+import { _ } from 'svelte-i18n';
+import { get } from 'svelte/store';
+import { localeStore } from './LocaleStore.svelte';
+
+const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
 export interface Insight {
   type: 'research_focus' | 'content_analysis' | 'research_gaps';
@@ -88,11 +93,11 @@ class InsightsStore {
         this.state.insights[projectId] = response.data;
         this.state.lastUpdated[projectId] = new Date();
       } else {
-        throw new Error(response.error || 'Failed to load insights');
+        throw new Error(response.error || t('common.insightsStore.failedToLoadInsights'));
       }
     } catch (error) {
       console.error('Error loading insights:', error);
-      this.state.error[projectId] = error instanceof Error ? error.message : 'Failed to load insights';
+      this.state.error[projectId] = error instanceof Error ? error.message : t('common.insightsStore.failedToLoadInsights');
     } finally {
       this.state.loading[projectId] = false;
     }
@@ -104,22 +109,25 @@ class InsightsStore {
     this.state.error[projectId] = null;
 
     try {
-      const payload: any = { force };
+      const payload: any = {
+        force,
+        language: localeStore.locale // Pass user's current language preference
+      };
       if (analyticsData) {
         payload.analyticsData = analyticsData;
       }
-      
+
       const response = await api.post(`/projects/${projectId}/insights/generate`, payload);
       
       if (response.success) {
         this.state.insights[projectId] = response.data;
         this.state.lastUpdated[projectId] = new Date();
       } else {
-        throw new Error(response.error || 'Failed to generate insights');
+        throw new Error(response.error || t('common.insightsStore.failedToGenerateInsights'));
       }
     } catch (error) {
       console.error('Error generating insights:', error);
-      this.state.error[projectId] = error instanceof Error ? error.message : 'Failed to generate insights';
+      this.state.error[projectId] = error instanceof Error ? error.message : t('common.insightsStore.failedToGenerateInsights');
     } finally {
       this.state.loading[projectId] = false;
     }
@@ -171,7 +179,7 @@ class InsightsStore {
       if (response.success) {
         this.state.historicalInsights[projectId] = response.data;
       } else {
-        throw new Error(response.error || 'Failed to load historical insights');
+        throw new Error(response.error || t('common.insightsStore.failedToLoadHistoricalInsights'));
       }
     } catch (error) {
       console.error('Error loading historical insights:', error);

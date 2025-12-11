@@ -13,6 +13,7 @@
   import { downloadFile } from "../custom/utils.js";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import type { ToolBarIconProps } from "./types.js";
+  import { _ } from "svelte-i18n";
 
   let {
     editor,
@@ -31,7 +32,7 @@
           </Button>
         </Tooltip.Trigger>
         <Tooltip.Content>
-          <p>Export Data</p>
+          <p>{$_('editor.toolbar.exportData')}</p>
         </Tooltip.Content>
       </Tooltip.Root>
     </Tooltip.Provider>
@@ -41,27 +42,27 @@
       onclick={() => downloadFile(editor.getHTML(), "data.html")}
     >
       <Code />
-      <span>Export as HTML</span>
+      <span>{$_('editor.export.html')}</span>
     </DropdownMenu.Item>
     <DropdownMenu.Item
       onclick={() =>
         downloadFile(editor.storage.markdown.getMarkdown(), "data.md")}
     >
       <DiamondMinus />
-      <span>Export as Markdown</span>
+      <span>{$_('editor.export.markdown')}</span>
     </DropdownMenu.Item>
     <DropdownMenu.Item
       onclick={() => downloadFile(editor.getText(), "data.txt")}
     >
       <FileText />
-      <span>Export as Text</span>
+      <span>{$_('editor.export.text')}</span>
     </DropdownMenu.Item>
     <DropdownMenu.Item
       onclick={() =>
         downloadFile(JSON.stringify(editor.getJSON()), "data.json")}
     >
       <FileJson />
-      <span>Export as JSON</span>
+      <span>{$_('editor.export.json')}</span>
     </DropdownMenu.Item>
   </DropdownMenu.Content>
 </DropdownMenu.Root>

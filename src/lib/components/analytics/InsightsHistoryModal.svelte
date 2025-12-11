@@ -12,6 +12,8 @@
     Brain,
     AlertTriangle,
   } from "lucide-svelte";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
 
   interface Props {
     projectId: string;
@@ -51,29 +53,19 @@
     const diffTime = now.getTime() - date.getTime();
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) return "Today";
-    if (diffDays === 1) return "Yesterday";
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-    if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
-    return `${Math.floor(diffDays / 365)} years ago`;
+    if (diffDays === 0) return get(_)('insights.relativeDate.today');
+    if (diffDays === 1) return get(_)('insights.relativeDate.yesterday');
+    if (diffDays < 7) return get(_)('insights.relativeDate.daysAgo', { values: { count: diffDays } });
+    if (diffDays < 30) return get(_)('insights.relativeDate.weeksAgo', { values: { count: Math.floor(diffDays / 7) } });
+    if (diffDays < 365) return get(_)('insights.relativeDate.monthsAgo', { values: { count: Math.floor(diffDays / 30) } });
+    return get(_)('insights.relativeDate.yearsAgo', { values: { count: Math.floor(diffDays / 365) } });
   }
 
   // Map insight types to visual properties (matching InsightCard component)
-  const insightConfig: Record<
-    string,
-    {
-      icon: typeof Brain;
-      label: string;
-      color: string;
-      bgColor: string;
-      textColor: string;
-      borderColor: string;
-    }
-  > = {
+  const insightConfig = $derived.by(() => ({
     research_focus: {
       icon: TrendingUp,
-      label: "Research Focus",
+      label: $_('insights.types.researchFocus'),
       color: "bg-blue-500",
       bgColor: "bg-blue-50 dark:bg-blue-950/20",
       textColor: "text-blue-700 dark:text-blue-300",
@@ -81,7 +73,7 @@
     },
     content_analysis: {
       icon: Brain,
-      label: "Content Analysis",
+      label: $_('insights.types.contentAnalysis'),
       color: "bg-purple-500",
       bgColor: "bg-purple-50 dark:bg-purple-950/20",
       textColor: "text-purple-700 dark:text-purple-300",
@@ -89,19 +81,19 @@
     },
     research_gaps: {
       icon: AlertTriangle,
-      label: "Research Gaps",
+      label: $_('insights.types.researchGaps'),
       color: "bg-amber-500",
       bgColor: "bg-amber-50 dark:bg-amber-950/20",
       textColor: "text-amber-700 dark:text-amber-300",
       borderColor: "border-l-amber-500",
     },
-  };
+  }));
 
   function getInsightConfig(type: string) {
     return (
       insightConfig[type] || {
         icon: Brain,
-        label: "Insight",
+        label: $_('insights.types.insight'),
         color: "bg-gray-500",
         bgColor: "bg-gray-50 dark:bg-gray-950/20",
         textColor: "text-gray-700 dark:text-gray-300",
@@ -122,10 +114,10 @@
         </div>
         <div>
           <Dialog.Title class="text-xl font-semibold"
-            >Insights History</Dialog.Title
+            >{$_('insights.history.title')}</Dialog.Title
           >
           <Dialog.Description>
-            View all previously generated insights for this project
+            {$_('insights.history.description')}
           </Dialog.Description>
         </div>
       </div>
@@ -139,7 +131,7 @@
               class="h-8 w-8 animate-spin mx-auto mb-4 text-muted-foreground"
             />
             <p class="text-sm text-muted-foreground">
-              Loading insights history...
+              {$_('insights.history.loading')}
             </p>
           </div>
         </div>
@@ -147,10 +139,9 @@
         <div class="flex items-center justify-center py-12">
           <div class="text-center">
             <Calendar class="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 class="text-lg font-medium mb-2">No Historical Insights</h3>
+            <h3 class="text-lg font-medium mb-2">{$_('insights.history.emptyHeading')}</h3>
             <p class="text-sm text-muted-foreground">
-              This project doesn't have any historical insights yet. Generate
-              some insights to see them here!
+              {$_('insights.history.emptyDescription')}
             </p>
           </div>
         </div>
@@ -169,7 +160,9 @@
                   </div>
                 </div>
                 <Badge variant="secondary" class="text-xs">
-                  {insights.length} insight{insights.length !== 1 ? "s" : ""}
+                  {insights.length !== 1
+                    ? $_('insights.history.insightsCount', { values: { count: insights.length } })
+                    : $_('insights.history.insightCount', { values: { count: insights.length } })}
                 </Badge>
               </div>
 
@@ -207,7 +200,7 @@
                         <p
                           class="text-xs font-medium text-muted-foreground mb-2"
                         >
-                          Supporting Data
+                          {$_('insights.supportingData')}
                         </p>
                         <div class="flex flex-wrap gap-1">
                           {#each insight.dataPoints as dataPoint}
@@ -229,7 +222,7 @@
 
     <Dialog.Footer class="pt-4">
       <Button variant="outline" onclick={() => onOpenChange(false)}>
-        Close
+        {$_('common.close')}
       </Button>
     </Dialog.Footer>
   </Dialog.Content>

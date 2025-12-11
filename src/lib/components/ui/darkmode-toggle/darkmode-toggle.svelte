@@ -5,6 +5,7 @@
   import { toggleMode, initializeTheme } from "$lib/utils/mode-watcher";
   import { onMount } from "svelte";
   import { cn } from "$lib/utils.js";
+  import { _ } from "svelte-i18n";
 
   const props = $props<{
     class?: string;
@@ -31,6 +32,6 @@
     <Moon
       class="absolute h-4 w-4 rotate-90 scale-0 transition-all duration-300 dark:rotate-0 dark:scale-100"
     />
-    <span class="sr-only">Toggle theme</span>
+    <span class="sr-only">{$_('srOnly.toggleTheme')}</span>
   </Button>
 </div>

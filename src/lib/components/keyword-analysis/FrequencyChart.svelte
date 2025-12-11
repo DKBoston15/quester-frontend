@@ -5,6 +5,7 @@
   import { Card } from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { DownloadIcon } from "lucide-svelte";
+  import { _ } from "svelte-i18n";
 
   const { analysis } = $props<{ analysis: KeywordAnalysis }>();
 
@@ -280,15 +281,15 @@
 
 <Card class="p-4">
   <div class="flex justify-between items-center mb-4">
-    <h3 class="text-lg font-semibold">Frequency Distribution</h3>
+    <h3 class="text-lg font-semibold">{$_("keywordAnalysis.frequencyDistribution")}</h3>
     <Button
       variant="outline"
       size="sm"
       onclick={downloadFrequencyChartPNG}
-      title="Download Frequency Chart as PNG"
+      title={$_("keywordAnalysis.downloadPNG")}
     >
       <DownloadIcon class="h-4 w-4 mr-2" />
-      Download PNG
+      {$_("keywordAnalysis.downloadPNG")}
     </Button>
   </div>
   <div class="relative w-full aspect-[4/3] max-w-lg mx-auto">

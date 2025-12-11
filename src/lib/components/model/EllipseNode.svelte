@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Handle, NodeResizer, NodeToolbar, Position } from "@xyflow/svelte";
   import { createEventDispatcher } from "svelte";
+  import { _ } from "svelte-i18n";
 
   let {
     data = {},
@@ -124,7 +125,7 @@
           : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}"
         onclick={() => setTab("style")}
       >
-        Style
+        {$_("models.node.style")}
       </button>
       <button
         class="px-2 py-1 text-xs font-medium rounded {activeTab === 'text'
@@ -132,7 +133,7 @@
           : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}"
         onclick={() => setTab("text")}
       >
-        Text
+        {$_("models.node.text")}
       </button>
       <button
         class="px-2 py-1 text-xs font-medium rounded {activeTab === 'effects'
@@ -140,27 +141,27 @@
           : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}"
         onclick={() => setTab("effects")}
       >
-        Effects
+        {$_("models.node.effects")}
       </button>
       <button
         class="px-2 py-1 text-xs font-medium rounded text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
         onclick={handleDuplicate}
       >
-        Duplicate
+        {$_("models.node.duplicate")}
       </button>
       <button
         class="px-2 py-1 text-xs font-medium rounded text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
         onclick={bringToFront}
-        title="Bring to Front"
+        title={$_("models.node.bringToFrontTitle")}
       >
-        ↑ Front
+        {$_("models.node.bringToFront")}
       </button>
       <button
         class="px-2 py-1 text-xs font-medium rounded text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
         onclick={sendToBack}
-        title="Send to Back"
+        title={$_("models.node.sendToBackTitle")}
       >
-        ↓ Back
+        {$_("models.node.sendToBack")}
       </button>
     </div>
 
@@ -171,7 +172,7 @@
         <!-- Background color section -->
         <div class="flex flex-col gap-2">
           <span class="text-xs text-gray-700 dark:text-gray-300"
-            >Background</span
+            >{$_("models.customization.background")}</span
           >
           <div class="flex flex-col gap-2">
             <div class="flex items-center gap-2">
@@ -191,7 +192,7 @@
                   bind:checked={transparentBg}
                   class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
                 />
-                Transparent
+                {$_("models.toolbar.transparent")}
               </label>
             </div>
             <input
@@ -210,7 +211,7 @@
 
         <!-- Border color section -->
         <div class="flex flex-col gap-2">
-          <span class="text-xs text-gray-700 dark:text-gray-300">Border</span>
+          <span class="text-xs text-gray-700 dark:text-gray-300">{$_("models.customization.border")}</span>
           <div class="flex flex-col gap-2">
             <div class="flex items-center gap-2">
               <input
@@ -229,7 +230,7 @@
                   bind:checked={transparentBorder}
                   class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
                 />
-                Transparent
+                {$_("models.toolbar.transparent")}
               </label>
             </div>
             <div class="flex gap-2">
@@ -239,10 +240,10 @@
                 disabled={transparentBorder}
                 class:opacity-30={transparentBorder}
               >
-                <option value="solid">Solid</option>
-                <option value="dashed">Dashed</option>
-                <option value="dotted">Dotted</option>
-                <option value="double">Double</option>
+                <option value="solid">{$_("models.customization.borderStyles.solid")}</option>
+                <option value="dashed">{$_("models.customization.borderStyles.dashed")}</option>
+                <option value="dotted">{$_("models.customization.borderStyles.dotted")}</option>
+                <option value="double">{$_("models.customization.borderStyles.double")}</option>
               </select>
               <select
                 bind:value={borderWidth}
@@ -270,7 +271,7 @@
               bind:checked={showHandles}
               class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
             />
-            Show Handles
+            {$_("models.customization.showHandles")}
           </label>
         </div>
       </div>
@@ -280,7 +281,7 @@
     {#if activeTab === "text"}
       <div class="grid grid-cols-[auto_auto_auto] gap-4">
         <div class="flex flex-col gap-2">
-          <span class="text-xs text-gray-700 dark:text-gray-300">Color</span>
+          <span class="text-xs text-gray-700 dark:text-gray-300">{$_("models.customization.color")}</span>
           <div class="flex items-center gap-2">
             <input
               type="color"
@@ -298,7 +299,7 @@
           </div>
         </div>
         <div class="flex flex-col gap-2">
-          <span class="text-xs text-gray-700 dark:text-gray-300">Text</span>
+          <span class="text-xs text-gray-700 dark:text-gray-300">{$_("models.node.text")}</span>
           <div class="flex gap-2">
             <select
               bind:value={fontSize}
@@ -317,21 +318,21 @@
               bind:value={fontWeight}
               class="text-xs p-1 bg-white dark:bg-slate-700 border border-gray-200 dark:border-gray-600 rounded w-20"
             >
-              <option value="normal">Normal</option>
-              <option value="bold">Bold</option>
-              <option value="light">Light</option>
+              <option value="normal">{$_("models.customization.fontWeight.normal")}</option>
+              <option value="bold">{$_("models.customization.fontWeight.bold")}</option>
+              <option value="light">{$_("models.customization.fontWeight.light")}</option>
             </select>
           </div>
         </div>
         <div class="flex flex-col gap-2">
-          <span class="text-xs text-gray-700 dark:text-gray-300">Align</span>
+          <span class="text-xs text-gray-700 dark:text-gray-300">{$_("models.customization.align")}</span>
           <select
             bind:value={textAlign}
             class="text-xs p-1 bg-white dark:bg-slate-700 border border-gray-200 dark:border-gray-600 rounded w-24"
           >
-            <option value="left">Left</option>
-            <option value="center">Center</option>
-            <option value="right">Right</option>
+            <option value="left">{$_("models.customization.textAlign.left")}</option>
+            <option value="center">{$_("models.customization.textAlign.center")}</option>
+            <option value="right">{$_("models.customization.textAlign.right")}</option>
           </select>
         </div>
       </div>
@@ -341,7 +342,7 @@
     {#if activeTab === "effects"}
       <div class="flex items-center gap-4">
         <div class="flex flex-col gap-2">
-          <span class="text-xs text-gray-700 dark:text-gray-300">Shadow</span>
+          <span class="text-xs text-gray-700 dark:text-gray-300">{$_("models.customization.shadow")}</span>
           <div class="flex items-center gap-2">
             <input
               type="color"

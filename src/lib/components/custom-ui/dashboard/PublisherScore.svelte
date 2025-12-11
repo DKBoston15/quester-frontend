@@ -6,6 +6,7 @@
   import { literatureStore } from "$lib/stores/LiteratureStore";
   import type { Literature } from "$lib/types/literature";
   import _ from "lodash";
+  import { _ as t } from "svelte-i18n";
 
   interface Article {
     type: string;
@@ -226,9 +227,9 @@
         <Card.Header>
           <Card.Title class="flex justify-between items-center">
             <h3 class="font-semibold mb-2 text-xl text-[#2383fb]">
-              Journal Suggestions For Publication:
+              {$t('publisherScoreExtra.journalSuggestionsForPublication')}:
             </h3>
-            <Dialog.Trigger><Button size="sm">Explain</Button></Dialog.Trigger>
+            <Dialog.Trigger><Button size="sm">{$t('publisherScore.explain')}</Button></Dialog.Trigger>
           </Card.Title>
         </Card.Header>
         <Card.Content>
@@ -244,8 +245,7 @@
             </ul>
           {:else}
             <p>
-              No Journal Suggestions Available Yet. <br />Keep Adding Literature
-              To Gain Suggestions.
+              {$t('publisherScoreExtra.noJournalSuggestionsYet')}
             </p>
           {/if}
         </Card.Content>
@@ -253,14 +253,10 @@
       <Dialog.Content class="max-w-[600px] mx-auto">
         <div>
           <h2 class="text-xl font-semibold">
-            Journal Suggestions For Publication
+            {$t('publisherScoreExtra.journalSuggestionsForPublication')}
           </h2>
           <p class="dark:text-white text-lg mt-2">
-            The Journal Suggestions Utilize Weighted Assessments For Journal
-            Articles And Literature Reviews To Help Determine The Journals You
-            Should Consider Investigating For Further Research And Publication
-            Purposes. The Scores Are Calculated Based On Publication Recency,
-            Author Diversity, And Keyword Relevance.
+            {$t('publisherScoreExtra.journalSuggestionsExplanation')}
           </p>
         </div>
       </Dialog.Content>
@@ -270,9 +266,9 @@
         <Card.Header>
           <Card.Title class="flex justify-between items-center">
             <h3 class="font-semibold mb-2 text-xl text-[#2383fb]">
-              Conference Suggestions For Presentation:
+              {$t('publisherScoreExtra.conferenceSuggestionsForPresentation')}:
             </h3>
-            <Dialog.Trigger><Button size="sm">Explain</Button></Dialog.Trigger>
+            <Dialog.Trigger><Button size="sm">{$t('publisherScore.explain')}</Button></Dialog.Trigger>
           </Card.Title>
         </Card.Header>
         <Card.Content>
@@ -288,8 +284,7 @@
             </ul>
           {:else}
             <p>
-              No Conference Suggestions Available Yet. <br />Keep Adding
-              Literature To Gain Suggestions.
+              {$t('publisherScoreExtra.noConferenceSuggestionsYet')}
             </p>
           {/if}
         </Card.Content>
@@ -297,14 +292,10 @@
       <Dialog.Content class="max-w-[600px] mx-auto">
         <div>
           <h2 class="text-xl font-semibold">
-            Conference Suggestions For Presentation
+            {$t('publisherScoreExtra.conferenceSuggestionsForPresentation')}
           </h2>
           <p class="dark:text-white text-lg mt-2">
-            The Conference Suggestions Utilize Weighted Assessments For
-            Conference Proceedings And Presentations To Help Determine The
-            Conferences You Should Consider Attending Or Presenting At. The
-            Scores Are Calculated Based On Publication Recency, Author
-            Diversity, And Keyword Relevance.
+            {$t('publisherScoreExtra.conferenceSuggestionsExplanation')}
           </p>
         </div>
       </Dialog.Content>
@@ -315,19 +306,19 @@
 {#if dialog}
   <Dialog.Root>
     <Dialog.Trigger
-      ><Button size="sm">Suggested Journals & Conferences</Button
+      ><Button size="sm">{$t('publisherScore.suggestedJournalsConferences')}</Button
       ></Dialog.Trigger
     >
     <Dialog.Content class="max-w-[800px] mx-auto">
       <div>
         <h2 class="text-xl font-semibold mb-2">
-          Suggested Journals & Conferences
+          {$t('publisherScoreExtra.suggestedJournalsAndConferences')}
         </h2>
         <Card.Root>
           <Card.Content class="p-4">
             {#if scores}
               <h3 class="font-semibold mb-2 text-xl text-[#2383fb]">
-                Journal Suggestions For Publication:
+                {$t('publisherScoreExtra.journalSuggestionsForPublication')}:
               </h3>
               {#if Object.keys(scores.journalAndReviewScores).length > 0}
                 <ul class="space-y-2 mb-4">
@@ -339,11 +330,11 @@
                   {/each}
                 </ul>
               {:else}
-                <p>No Journal And Review Suggestions Available.</p>
+                <p>{$t('publisherScoreExtra.noJournalAndReviewSuggestions')}</p>
               {/if}
               <hr class="mb-4" />
               <h3 class="font-semibold mb-2 text-xl text-[#2383fb]">
-                Conference Suggestions For Presentation:
+                {$t('publisherScoreExtra.conferenceSuggestionsForPresentation')}:
               </h3>
               {#if Object.keys(scores.conferenceProceedingsScores).length > 0}
                 <ul class="space-y-2">
@@ -355,10 +346,10 @@
                   {/each}
                 </ul>
               {:else}
-                <p>No Conference Suggestions Available.</p>
+                <p>{$t('publisherScoreExtra.noConferenceSuggestions')}</p>
               {/if}
             {:else}
-              <p>No Suggestions Available.</p>
+              <p>{$t('publisherScoreExtra.noSuggestionsAvailable')}</p>
             {/if}
           </Card.Content>
         </Card.Root>

@@ -9,6 +9,7 @@
   import { DarkmodeToggle } from "$lib/components/ui/darkmode-toggle";
   import { LogOut } from "lucide-svelte";
   import { api } from "$lib/services/api-client";
+  import { _ } from "svelte-i18n";
 
   // Define the expected structure for the role information
   // interface OrganizationRole {
@@ -175,7 +176,7 @@
       currentStep = 2;
     } catch (error) {
       console.error("Failed to create organization:", error);
-      error = "Failed to create organization";
+      error = $_('errors.failedToCreateOrganization');
     } finally {
       isLoading = false;
     }
@@ -221,7 +222,7 @@
       // Move to project creation step
       currentStep = 4;
     } catch (err) {
-      error = err instanceof Error ? err.message : "An error occurred";
+      error = err instanceof Error ? err.message : $_('common.anErrorOccurred');
       console.error("Department creation error:", err);
     } finally {
       isLoading = false;
@@ -252,7 +253,7 @@
       // After successful project creation, navigate to dashboard
       navigate("/dashboard");
     } catch (err) {
-      error = err instanceof Error ? err.message : "An error occurred";
+      error = err instanceof Error ? err.message : $_('common.anErrorOccurred');
     } finally {
       isLoading = false;
     }
@@ -272,7 +273,7 @@
     <button
       onclick={handleLogout}
       class="relative border-2 dark:border-dark-border bg-card dark:bg-dark-card p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(44,46,51,1)] transition-all duration-300 hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[3px_3px_0px_0px_rgba(44,46,51,1)]"
-      title="Sign out"
+      title={$_('auth.signOut')}
     >
       <LogOut class="h-4 w-4 text-black dark:text-dark-text-primary" />
     </button>
@@ -313,21 +314,21 @@
           class=" text-3xl font-bold text-black dark:text-dark-text-primary mb-2"
         >
           {#if currentStep === 1}
-            Choose Your Workspace Type
+            {$_('onboarding.chooseWorkspaceType')}
           {:else if currentStep === 2}
             {#if subscriptionType === "personal"}
-              Choose Your Personal Plan
+              {$_('onboarding.choosePersonalPlan')}
             {:else}
-              Choose Your Team Plan
+              {$_('onboarding.chooseTeamPlan')}
             {/if}
           {:else if currentStep === 3}
             {#if subscriptionType === "organization"}
-              Create Departments
+              {$_('onboarding.createDepartments')}
             {:else}
-              Create Your First Project
+              {$_('onboarding.createFirstProject')}
             {/if}
           {:else if currentStep === 4}
-            Create Your First Project
+            {$_('onboarding.createFirstProject')}
           {/if}
         </h2>
         <div
@@ -351,7 +352,7 @@
               class=" text-black dark:text-dark-text-primary mb-2"
               for="orgName"
             >
-              Workspace Name
+              {$_('onboarding.workspaceName')}
             </Label>
             <Input
               type="text"
@@ -367,14 +368,14 @@
               <p
                 class="mt-2 text-sm text-gray-600 dark:text-dark-text-secondary"
               >
-                You already have a workspace created
+                {$_('onboarding.workspaceExists')}
               </p>
             {/if}
           </div>
 
           <div class="space-y-4 mt-6">
             <Label class=" text-black dark:text-dark-text-primary">
-              Workspace Type
+              {$_('onboarding.workspaceType')}
             </Label>
             <div class="space-y-4">
               <button
@@ -385,10 +386,10 @@
                   : ''}"
                 onclick={() => handleSubscriptionChoice("personal")}
               >
-                <span class="text-xl">Personal Workspace</span>
+                <span class="text-xl">{$_('onboarding.personalWorkspace')}</span>
                 <span
                   class="block mt-1 text-sm text-blue-800 dark:text-dark-text-blue"
-                  >For individual use</span
+                  >{$_('onboarding.forIndividualUse')}</span
                 >
               </button>
 
@@ -400,10 +401,10 @@
                   : ''}"
                 onclick={() => handleSubscriptionChoice("organization")}
               >
-                <span class="text-xl">Organization Workspace</span>
+                <span class="text-xl">{$_('onboarding.organizationWorkspace')}</span>
                 <span
                   class="block mt-1 text-sm text-blue-800 dark:text-dark-text-blue"
-                  >For teams and businesses</span
+                  >{$_('onboarding.forTeams')}</span
                 >
               </button>
             </div>
@@ -415,10 +416,10 @@
             class="relative w-full border-2 dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading
-              ? "Creating..."
+              ? $_('common.creating')
               : hasExistingWorkspace
-                ? "Continue"
-                : "Create Workspace"}
+                ? $_('common.continue')
+                : $_('onboarding.createWorkspace')}
           </button>
         </form>
       {:else if currentStep === 2}
@@ -440,7 +441,7 @@
           <form onsubmit={handleCreateDepartments} class="space-y-6">
             <div>
               <Label class=" text-black dark:text-dark-text-primary mb-2">
-                Number of Departments
+                {$_('onboarding.numberOfDepartments')}
               </Label>
               <Input
                 type="text"
@@ -460,7 +461,7 @@
                   class=" text-black dark:text-dark-text-primary mb-2"
                   for={`dept${i}`}
                 >
-                  Department {i + 1} Name
+                  {$_('onboarding.departmentName', { values: { number: i + 1 } })}
                 </Label>
                 <Input
                   type="text"
@@ -477,7 +478,7 @@
               disabled={isLoading}
               class="relative w-full border-2 dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? "Creating..." : "Continue to Project Creation"}
+              {isLoading ? $_('common.creating') : $_('onboarding.continueToProject')}
             </button>
           </form>
         {:else}
@@ -488,7 +489,7 @@
                 class=" text-black dark:text-dark-text-primary mb-2"
                 for="projectName"
               >
-                Project Name
+                {$_('projects.projectName')}
               </Label>
               <Input
                 type="text"
@@ -504,7 +505,7 @@
               disabled={isLoading}
               class="relative w-full border-2 dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? "Creating..." : "Create Project"}
+              {isLoading ? $_('common.creating') : $_('onboarding.createProject')}
             </button>
           </form>
         {/if}
@@ -516,7 +517,7 @@
               class=" text-black dark:text-dark-text-primary mb-2"
               for="projectName"
             >
-              Project Name
+              {$_('projects.projectName')}
             </Label>
             <Input
               type="text"
@@ -533,14 +534,14 @@
                 class=" text-black dark:text-dark-text-primary mb-2"
                 for="departmentSelect"
               >
-                Select Department
+                {$_('onboarding.selectDepartment')}
               </Label>
               <select
                 id="departmentSelect"
                 bind:value={selectedDepartmentId}
                 class="w-full border-2 dark:border-dark-border bg-card dark:bg-dark-card text-black dark:text-dark-text-primary p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent-blue"
               >
-                <option value="">Select a department...</option>
+                <option value="">{$_('onboarding.selectDepartmentPlaceholder')}</option>
                 {#each departments as dept}
                   {#if dept.id}
                     <option value={dept.id}>{dept.name}</option>
@@ -555,7 +556,7 @@
             disabled={isLoading}
             class="relative w-full border-2 dark:border-dark-border bg-card dark:bg-dark-card px-6 py-3 text-lg text-black dark:text-dark-text-primary transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(44,46,51,1)] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? "Creating..." : "Create Project"}
+            {isLoading ? $_('common.creating') : $_('onboarding.createProject')}
           </button>
         </form>
       {/if}

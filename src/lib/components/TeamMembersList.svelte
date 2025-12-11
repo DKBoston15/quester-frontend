@@ -21,6 +21,14 @@
   import { toast } from "svelte-sonner";
   import { fly } from "svelte/transition";
   import { onDestroy } from "svelte";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper function for imperative translation access
+  const t = (key: string, values?: Record<string, any>) => {
+    const translate = get(_);
+    return values ? translate(key, { values }) : translate(key);
+  };
 
   // Define a type for team members that includes role information
   type TeamMember = User & {
@@ -128,15 +136,33 @@
     })
   );
 
+  // Helper function to translate role names
+  function translateRole(roleName: string): string {
+    const roleKey = roleName.toLowerCase();
+    const translationKey = `roles.${roleKey}`;
+    const translated = $_(translationKey);
+    // If translation key returns itself, fall back to original name
+    return translated === translationKey ? roleName : translated;
+  }
+
+  // Get raw role name for comparisons (untranslated)
+  function getRawRoleName(user: TeamMember): string {
+    if (user.$extras?.roleName) {
+      return user.$extras.roleName;
+    }
+    return "Unknown";
+  }
+
+  // Get translated role name for display
   function getRoleName(user: TeamMember): string {
     // Prioritize the roleName from $extras provided by the backend
     if (user.$extras?.roleName) {
-      return user.$extras.roleName;
+      return translateRole(user.$extras.roleName);
     }
 
     // Fallback if $extras.roleName is somehow missing (shouldn't happen with backend changes)
     console.warn("Missing $extras.roleName for user:", user);
-    return "Unknown";
+    return $_('common.unknown');
   }
 
   function isCurrentUser(user: TeamMember): boolean {
@@ -295,7 +321,7 @@
     if (props.resourceType === "organization" && isOrganizationOwner(user)) {
       // Only prevent removal if this is the last owner
       if (countOwners() <= 1) {
-        toast.error("Cannot remove the last organization owner");
+        toast.error(t("teamMembers.cannotRemoveLastOwner"));
         return;
       }
     }
@@ -316,10 +342,10 @@
 
     if (success) {
       toast.success(
-        `${userToRemove.firstName} ${userToRemove.lastName} has been removed from the team`
+        t("teamMembers.memberRemovedSuccess", { name: `${userToRemove.firstName} ${userToRemove.lastName}` })
       );
     } else {
-      toast.error("Failed to remove user: " + teamManagement.error);
+      toast.error(t("teamMembers.removeFailed") + ": " + teamManagement.error);
     }
 
     userToRemove = null;
@@ -329,12 +355,12 @@
 <div class="space-y-6">
   <!-- Search and header -->
   <div class="flex items-center justify-between">
-    <h3 class="text-lg font-medium">Team Members</h3>
+    <h3 class="text-lg font-medium">{$_("teamMembers.title")}</h3>
     <div class="relative w-64">
       <Search class="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
       <Input
         type="text"
-        placeholder="Search members..."
+        placeholder={$_("teamMembers.searchPlaceholder")}
         class="pl-8 pr-8"
         value={searchTerm}
         oninput={handleSearchInput}
@@ -353,10 +379,10 @@
     <Table.Root>
       <Table.Header>
         <Table.Row>
-          <Table.Head>Name</Table.Head>
-          <Table.Head>Email</Table.Head>
-          <Table.Head>Role</Table.Head>
-          <Table.Head class="text-right">Actions</Table.Head>
+          <Table.Head>{$_("teamMembers.tableName")}</Table.Head>
+          <Table.Head>{$_("teamMembers.tableEmail")}</Table.Head>
+          <Table.Head>{$_("teamMembers.tableRole")}</Table.Head>
+          <Table.Head class="text-right">{$_("teamMembers.tableActions")}</Table.Head>
         </Table.Row>
       </Table.Header>
       <Table.Body>
@@ -365,11 +391,11 @@
             <Table.Cell colspan={4} class="p-0">
               <EmptyState
                 title={debouncedSearchTerm
-                  ? "No users matching your search"
-                  : "No team members yet"}
+                  ? $_("teamMembers.noUsersMatchingSearch")
+                  : $_("teamMembers.noMembersYet")}
                 description={debouncedSearchTerm
-                  ? "Try adjusting your search terms"
-                  : "Team members will appear here once added"}
+                  ? $_("teamMembers.tryAdjustingSearch")
+                  : $_("teamMembers.membersWillAppear")}
                 variant={debouncedSearchTerm ? "search-empty" : "data-empty"}
                 height="h-[400px]"
               />
@@ -391,7 +417,7 @@
                       {user.lastName}
                     </div>
                     {#if isCurrentUser(user)}
-                      <Badge variant="outline" class="text-xs">You</Badge>
+                      <Badge variant="outline" class="text-xs">{$_("teamMembers.you")}</Badge>
                     {/if}
                   </div>
                 </div>
@@ -407,15 +433,14 @@
                     </Tooltip.Trigger>
                     <Tooltip.Content>
                       <p class="text-xs max-w-xs">
-                        {#if getRoleName(user) === "Owner"}
-                          Full control over this {props.resourceType} including team
-                          management and settings.
-                        {:else if getRoleName(user) === "Admin"}
-                          Can manage team members and most settings for this {props.resourceType}.
-                        {:else if getRoleName(user) === "Member"}
-                          Can access and contribute to this {props.resourceType}.
+                        {#if getRawRoleName(user) === "Owner"}
+                          {$_("teamMembers.roleOwnerDescription", { values: { resourceType: props.resourceType } })}
+                        {:else if getRawRoleName(user) === "Admin"}
+                          {$_("teamMembers.roleAdminDescription", { values: { resourceType: props.resourceType } })}
+                        {:else if getRawRoleName(user) === "Member"}
+                          {$_("teamMembers.roleMemberDescription", { values: { resourceType: props.resourceType } })}
                         {:else}
-                          {getRoleName(user)} role in this {props.resourceType}.
+                          {$_("teamMembers.roleGenericDescription", { values: { role: getRoleName(user), resourceType: props.resourceType } })}
                         {/if}
                       </p>
                     </Tooltip.Content>
@@ -428,13 +453,12 @@
                           class="font-medium text-xs px-1.5 py-0.5 bg-primary/10 text-primary border-primary/20"
                         >
                           <Building class="h-3 w-3 mr-1" />
-                          Organization Owner
+                          {$_("teamMembers.organizationOwner")}
                         </Badge>
                       </Tooltip.Trigger>
                       <Tooltip.Content>
                         <p class="text-xs max-w-xs">
-                          This user has full access to this project because they
-                          own the parent organization.
+                          {$_("teamMembers.orgOwnerAccessDescription")}
                         </p>
                       </Tooltip.Content>
                     </Tooltip.Root>
@@ -446,13 +470,12 @@
                           class="font-medium text-xs px-1.5 py-0.5 bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800"
                         >
                           <Building class="h-3 w-3 mr-1" />
-                          Organization Admin
+                          {$_("teamMembers.organizationAdmin")}
                         </Badge>
                       </Tooltip.Trigger>
                       <Tooltip.Content>
                         <p class="text-xs max-w-xs">
-                          This user has admin access to this project through
-                          their organization role.
+                          {$_("teamMembers.orgAdminAccessDescription")}
                         </p>
                       </Tooltip.Content>
                     </Tooltip.Root>
@@ -469,7 +492,7 @@
                       class="h-8 px-2"
                     >
                       <UserCog class="h-4 w-4 mr-1" />
-                      Manage
+                      {$_("teamMembers.manage")}
                     </Button>
                     <Button
                       variant="destructive"
@@ -501,11 +524,11 @@
     {#if filteredUsers.length === 0}
       <EmptyState
         title={debouncedSearchTerm
-          ? "No users matching your search"
-          : "No team members yet"}
+          ? $_("teamMembers.noUsersMatchingSearch")
+          : $_("teamMembers.noMembersYet")}
         description={debouncedSearchTerm
-          ? "Try adjusting your search terms"
-          : "Team members will appear here once added"}
+          ? $_("teamMembers.tryAdjustingSearch")
+          : $_("teamMembers.membersWillAppear")}
         variant={debouncedSearchTerm ? "search-empty" : "data-empty"}
         height="h-[400px]"
       />
@@ -527,7 +550,7 @@
                       {user.lastName}
                     </h3>
                     {#if isCurrentUser(user)}
-                      <Badge variant="outline" class="text-xs">You</Badge>
+                      <Badge variant="outline" class="text-xs">{$_("teamMembers.you")}</Badge>
                     {/if}
                   </div>
                   <p class="text-sm text-muted-foreground">{user.email}</p>
@@ -542,7 +565,7 @@
             <CardContent class="pt-0">
               <div class="grid grid-cols-1 gap-4 text-sm">
                 <div class="flex items-center gap-2">
-                  <span class="font-medium">Role:</span>
+                  <span class="font-medium">{$_("teamMembers.roleLabel")}:</span>
                   <div class="flex items-center gap-1">
                     <Tooltip.Root>
                       <Tooltip.Trigger>
@@ -552,15 +575,14 @@
                       </Tooltip.Trigger>
                       <Tooltip.Content>
                         <p class="text-xs max-w-xs">
-                          {#if getRoleName(user) === "Owner"}
-                            Full control over this {props.resourceType} including
-                            team management and settings.
-                          {:else if getRoleName(user) === "Admin"}
-                            Can manage team members and most settings for this {props.resourceType}.
-                          {:else if getRoleName(user) === "Member"}
-                            Can access and contribute to this {props.resourceType}.
+                          {#if getRawRoleName(user) === "Owner"}
+                            {$_("teamMembers.roleOwnerDescription", { values: { resourceType: props.resourceType } })}
+                          {:else if getRawRoleName(user) === "Admin"}
+                            {$_("teamMembers.roleAdminDescription", { values: { resourceType: props.resourceType } })}
+                          {:else if getRawRoleName(user) === "Member"}
+                            {$_("teamMembers.roleMemberDescription", { values: { resourceType: props.resourceType } })}
                           {:else}
-                            {getRoleName(user)} role in this {props.resourceType}.
+                            {$_("teamMembers.roleGenericDescription", { values: { role: getRoleName(user), resourceType: props.resourceType } })}
                           {/if}
                         </p>
                       </Tooltip.Content>
@@ -573,13 +595,12 @@
                             class="font-medium text-xs px-1.5 py-0.5 bg-primary/10 text-primary border-primary/20"
                           >
                             <Building class="h-3 w-3 mr-1" />
-                            Organization Owner
+                            {$_("teamMembers.organizationOwner")}
                           </Badge>
                         </Tooltip.Trigger>
                         <Tooltip.Content>
                           <p class="text-xs max-w-xs">
-                            This user has full access to this project because
-                            they own the parent organization.
+                            {$_("teamMembers.orgOwnerAccessDescription")}
                           </p>
                         </Tooltip.Content>
                       </Tooltip.Root>
@@ -591,13 +612,12 @@
                             class="font-medium text-xs px-1.5 py-0.5 bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800"
                           >
                             <Building class="h-3 w-3 mr-1" />
-                            Organization Admin
+                            {$_("teamMembers.organizationAdmin")}
                           </Badge>
                         </Tooltip.Trigger>
                         <Tooltip.Content>
                           <p class="text-xs max-w-xs">
-                            This user has admin access to this project through
-                            their organization role.
+                            {$_("teamMembers.orgAdminAccessDescription")}
                           </p>
                         </Tooltip.Content>
                       </Tooltip.Root>
@@ -613,7 +633,7 @@
                       class="flex-1"
                     >
                       <UserCog class="h-4 w-4 mr-1" />
-                      Manage
+                      {$_("teamMembers.manage")}
                     </Button>
                     <Button
                       variant="destructive"
@@ -628,7 +648,7 @@
                         ></div>
                       {:else}
                         <UserMinus class="h-4 w-4 mr-1" />
-                        Remove
+                        {$_("teamMembers.remove")}
                       {/if}
                     </Button>
                   </div>
@@ -646,14 +666,12 @@
 <AlertDialog.Root bind:open={showDeleteDialog}>
   <AlertDialog.Content>
     <AlertDialog.Header>
-      <AlertDialog.Title>Remove Team Member</AlertDialog.Title>
+      <AlertDialog.Title>{$_("teamMembers.removeDialogTitle")}</AlertDialog.Title>
       <AlertDialog.Description>
         {#if userToRemove && props.resourceType === "project" && isProjectOwner(userToRemove) && isUsingElevatedPermissions()}
-          You are about to remove a Project Owner using your Organization
-          privileges. Are you sure you want to proceed?
+          {$_("teamMembers.removeOwnerElevatedWarning")}
         {:else}
-          Are you sure you want to remove {userToRemove?.firstName}
-          {userToRemove?.lastName} from this {props.resourceType}?
+          {$_("teamMembers.removeConfirmMessage", { values: { name: `${userToRemove?.firstName} ${userToRemove?.lastName}`, resourceType: props.resourceType } })}
         {/if}
       </AlertDialog.Description>
     </AlertDialog.Header>
@@ -666,10 +684,10 @@
             userToRemove = null;
           }}
         >
-          Cancel
+          {$_("common.cancel")}
         </Button>
         <Button variant="destructive" onclick={confirmRemoveUser}>
-          Remove
+          {$_("teamMembers.remove")}
         </Button>
       </div>
     </AlertDialog.Footer>

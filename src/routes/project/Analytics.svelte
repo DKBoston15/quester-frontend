@@ -23,6 +23,11 @@
   import EmptyState from "$lib/components/ui/empty-state/EmptyState.svelte";
   import KeyInsights from "$lib/components/analytics/KeyInsights.svelte";
   import { insightsStore } from "$lib/stores/InsightsStore";
+  import { get } from "svelte/store";
+  import { _ } from "svelte-i18n";
+
+  // Helper function to get translated text
+  const t = (key: string) => get(_)(key);
 
   // Watch for theme changes and update charts
   const observer = new MutationObserver((mutations) => {
@@ -179,9 +184,8 @@
       {
         element: "#analytics-header",
         popover: {
-          title: "Explore Your Project Analytics",
-          description:
-            "This section visualizes key trends and patterns in your literature and notes, helping you understand your research landscape.",
+          title: get(_)('analyticsTutorial.exploreAnalytics.title'),
+          description: get(_)('analyticsTutorial.exploreAnalytics.description'),
           side: "bottom",
           align: "start",
         },
@@ -189,9 +193,8 @@
       {
         element: "#analytics-tabs",
         popover: {
-          title: "Navigate Different Views",
-          description:
-            "Use these tabs to switch between different analysis categories: Overview, Notes Content, Literature Titles, and Research Design Methods.",
+          title: get(_)('analyticsTutorial.navigateViews.title'),
+          description: get(_)('analyticsTutorial.navigateViews.description'),
           side: "bottom",
           align: "center",
         },
@@ -199,9 +202,8 @@
       {
         element: "#overview-charts",
         popover: {
-          title: "Project Overview",
-          description:
-            "See high-level trends like prevalent publishers, common keywords, publication year distribution, literature types, and a detailed breakdown of literature types by publication year.",
+          title: get(_)('analyticsTutorial.projectOverview.title'),
+          description: get(_)('analyticsTutorial.projectOverview.description'),
           side: "top",
           align: "start",
         },
@@ -209,9 +211,8 @@
       {
         element: "#notes-charts",
         popover: {
-          title: "Notes Content Analysis",
-          description:
-            "Analyze the content of your notes by identifying the most frequent nouns, verbs, and adjectives used.",
+          title: get(_)('analyticsTutorial.notesContentAnalysis.title'),
+          description: get(_)('analyticsTutorial.notesContentAnalysis.description'),
           side: "top",
           align: "start",
         },
@@ -223,9 +224,8 @@
       {
         element: "#literature-charts",
         popover: {
-          title: "Literature Title Analysis",
-          description:
-            "Discover common nouns, verbs, and adjectives appearing in the titles of your collected literature.",
+          title: get(_)('analyticsTutorial.literatureTitleAnalysis.title'),
+          description: get(_)('analyticsTutorial.literatureTitleAnalysis.description'),
           side: "top",
           align: "start",
         },
@@ -237,9 +237,8 @@
       {
         element: "#research-charts",
         popover: {
-          title: "Research Design Insights",
-          description:
-            "Understand the methodologies used in your literature, including prevalent research, sampling, measurement, and analytic designs.",
+          title: get(_)('analyticsTutorial.researchDesignInsights.title'),
+          description: get(_)('analyticsTutorial.researchDesignInsights.description'),
           side: "top",
           align: "start",
         },
@@ -251,9 +250,8 @@
       {
         element: "#fullscreen-button-example",
         popover: {
-          title: "View Fullscreen",
-          description:
-            "Click this icon on any chart card to view a larger version in a modal window for easier inspection.",
+          title: get(_)('analyticsTutorial.viewFullscreen.title'),
+          description: get(_)('analyticsTutorial.viewFullscreen.description'),
           side: "left",
           align: "start",
         },
@@ -265,9 +263,8 @@
       {
         element: ".stacked-chart-card",
         popover: {
-          title: "Literature Types by Year",
-          description:
-            "This stacked bar chart shows the distribution of different literature types across publication years, helping you identify trends in research approaches over time.",
+          title: get(_)('analyticsTutorial.literatureTypesByYear.title'),
+          description: get(_)('analyticsTutorial.literatureTypesByYear.description'),
           side: "top",
           align: "center",
         },
@@ -279,9 +276,8 @@
       {
         element: ".analytics-container", // General container if no data
         popover: {
-          title: "No Data Yet?",
-          description:
-            "If you see a 'No data' message, start by adding literature and notes to your project. Analytics will appear automatically as you add content.",
+          title: get(_)('analyticsTutorial.noDataYet.title'),
+          description: get(_)('analyticsTutorial.noDataYet.description'),
           side: "top",
           align: "center",
         },
@@ -293,9 +289,8 @@
       {
         element: ".analytics-container",
         popover: {
-          title: "Gain Deeper Insights",
-          description:
-            "Regularly check these analytics to spot trends, identify gaps, and understand the focus of your research materials.",
+          title: get(_)('analyticsTutorial.gainDeeperInsights.title'),
+          description: get(_)('analyticsTutorial.gainDeeperInsights.description'),
           side: "top",
           align: "center",
         },
@@ -341,10 +336,10 @@
 
     // Check if this is the years chart or stacked chart
     const isYearsChart =
-      activeChart.title === "Distribution of Publication Years" ||
-      activeChart.title === "Publication Year Frequency Distribution";
+      activeChart.title === t("analytics.chartTitles.distributionOfPublicationYears") ||
+      activeChart.title === t("analytics.chartTitles.publicationYearFrequencyDistribution");
     const isStackedChart =
-      activeChart.title === "Literature Types by Publication Year";
+      activeChart.title === t("analytics.chartTitles.literatureTypesByPublicationYear");
 
     if (isStackedChart) {
       const stackedData = data.summary?.yearTypeMatrix;
@@ -383,7 +378,7 @@
             labels: chartData.names || [],
             datasets: [
               {
-                label: "Count",
+                label: get(_)('projectActivityChart.count'),
                 data: chartData.counts || [],
                 backgroundColor: chartColor,
               },
@@ -460,7 +455,7 @@
             labels: originalChart.data.labels,
             datasets: [
               {
-                label: "Count",
+                label: get(_)('projectActivityChart.count'),
                 data: originalChart.data.datasets[0].data,
                 backgroundColor: activeChart?.color || "rgb(75, 192, 192)",
               },
@@ -543,7 +538,7 @@
                     if (typeof label !== "string") return value;
 
                     const title = activeChart?.title || "";
-                    if (title === "Prevalent Publishers" && label.length > 10) {
+                    if (title === t("analytics.chartTitles.prevalentPublishers") && label.length > 10) {
                       return label.slice(0, 10) + "...";
                     }
                     if (label.length > 35) {
@@ -738,7 +733,7 @@
             callback: function (this: any, value: any) {
               const label = labels[value];
               // For publisher chart, truncate to 10 characters
-              if (title === "Prevalent Publishers" && label?.length > 10) {
+              if (title === t("analytics.chartTitles.prevalentPublishers") && label?.length > 10) {
                 return label.slice(0, 10) + "...";
               }
               // For other charts, use standard length
@@ -756,10 +751,10 @@
       return new Chart(canvas, {
         type: "bar",
         data: {
-          labels: ["No data"],
+          labels: [get(_)('projectActivityChart.noData')],
           datasets: [
             {
-              label: "Count",
+              label: get(_)('projectActivityChart.count'),
               data: [0],
               backgroundColor: "rgb(200, 200, 200)",
             },
@@ -775,7 +770,7 @@
         labels: [...labels],
         datasets: [
           {
-            label: "Count",
+            label: get(_)('projectActivityChart.count'),
             data: [...data],
             backgroundColor: color,
           },
@@ -886,10 +881,10 @@
       return new Chart(canvas, {
         type: "bar",
         data: {
-          labels: ["No data"],
+          labels: [get(_)('projectActivityChart.noData')],
           datasets: [
             {
-              label: "Count",
+              label: get(_)('projectActivityChart.count'),
               data: [0],
               backgroundColor: "rgb(200, 200, 200)",
             },
@@ -937,8 +932,8 @@
       ? summary.publicationYearFrequency || { names: [], counts: [] }
       : summary.publicationYears;
     const chartTitle = isFrequencyMode
-      ? "Publication Year Frequency Distribution"
-      : "Distribution of Publication Years";
+      ? t("analytics.chartTitles.publicationYearFrequencyDistribution")
+      : t("analytics.chartTitles.distributionOfPublicationYears");
     const chartColor = isFrequencyMode
       ? "rgb(147, 197, 253)"
       : "rgb(255, 206, 86)";
@@ -947,10 +942,10 @@
       charts.years = new Chart(canvasRefs.years, {
         type: "bar",
         data: {
-          labels: ["No data"],
+          labels: [get(_)('projectActivityChart.noData')],
           datasets: [
             {
-              label: "Publications",
+              label: get(_)('projectActivityChart.publications'),
               data: [0],
               backgroundColor: "rgb(200, 200, 200)",
             },
@@ -1017,7 +1012,7 @@
           labels: [...chartData.names],
           datasets: [
             {
-              label: "Publications",
+              label: get(_)('projectActivityChart.publications'),
               data: [...chartData.counts],
               backgroundColor: chartColor,
             },
@@ -1097,8 +1092,8 @@
     if (
       fullscreenChart &&
       activeChart &&
-      (activeChart.title === "Distribution of Publication Years" ||
-        activeChart.title === "Publication Year Frequency Distribution")
+      (activeChart.title === t("analytics.chartTitles.distributionOfPublicationYears") ||
+        activeChart.title === t("analytics.chartTitles.publicationYearFrequencyDistribution"))
     ) {
       fullscreenChart.destroy();
       fullscreenChart = null;
@@ -1128,7 +1123,7 @@
         canvasRefs.publishers,
         summary.topPublishers.names,
         summary.topPublishers.counts,
-        "Prevalent Publishers",
+        t("analytics.chartTitles.prevalentPublishers"),
         "rgb(54, 162, 235)"
       );
     }
@@ -1138,7 +1133,7 @@
         canvasRefs.keywords,
         summary.keywords.names,
         summary.keywords.counts,
-        "Prevalent Keywords",
+        t("analytics.chartTitles.prevalentKeywords"),
         "rgb(54, 162, 235)"
       );
     }
@@ -1151,7 +1146,7 @@
         canvasRefs.types,
         summary.literatureTypes.names,
         summary.literatureTypes.counts,
-        "Types of Literature",
+        t("analytics.chartTitles.typesOfLiterature"),
         "rgb(255, 206, 86)"
       );
     }
@@ -1162,7 +1157,7 @@
         canvasRefs.noteTypes,
         noteTypesData.names,
         noteTypesData.counts,
-        "Note Section Types",
+        t("analytics.chartTitles.noteSectionTypes"),
         "rgb(34, 197, 94)"
       );
     }
@@ -1173,7 +1168,7 @@
         canvasRefs.notesNouns,
         summary.nounsWordCounts.names,
         summary.nounsWordCounts.counts,
-        "Notes - Prevalent Nouns",
+        t("analytics.chartTitles.notesPrevalentNouns"),
         "rgb(54, 162, 235)"
       );
     }
@@ -1183,7 +1178,7 @@
         canvasRefs.notesVerbs,
         summary.verbsWordCounts.names,
         summary.verbsWordCounts.counts,
-        "Notes - Prevalent Verbs",
+        t("analytics.chartTitles.notesPrevalentVerbs"),
         "rgb(54, 162, 235)"
       );
     }
@@ -1193,7 +1188,7 @@
         canvasRefs.notesAdjectives,
         summary.adjectivesWordCounts.names,
         summary.adjectivesWordCounts.counts,
-        "Notes - Prevalent Adjectives",
+        t("analytics.chartTitles.notesPrevalentAdjectives"),
         "rgb(54, 162, 235)"
       );
     }
@@ -1204,7 +1199,7 @@
         canvasRefs.litNouns,
         summary.literatureNounsWordCounts.names,
         summary.literatureNounsWordCounts.counts,
-        "Literature Titles - Prevalent Nouns",
+        t("analytics.chartTitles.literatureTitlesPrevalentNouns"),
         "rgb(54, 162, 235)"
       );
     }
@@ -1214,7 +1209,7 @@
         canvasRefs.litVerbs,
         summary.literatureVerbsWordCounts.names,
         summary.literatureVerbsWordCounts.counts,
-        "Literature Titles - Prevalent Verbs",
+        t("analytics.chartTitles.literatureTitlesPrevalentVerbs"),
         "rgb(54, 162, 235)"
       );
     }
@@ -1224,7 +1219,7 @@
         canvasRefs.litAdjectives,
         summary.literatureAdjectivesWordCounts.names,
         summary.literatureAdjectivesWordCounts.counts,
-        "Literature Titles - Prevalent Adjectives",
+        t("analytics.chartTitles.literatureTitlesPrevalentAdjectives"),
         "rgb(54, 162, 235)"
       );
     }
@@ -1235,7 +1230,7 @@
         canvasRefs.researchDesigns,
         summary.researchDesigns.names,
         summary.researchDesigns.counts,
-        "Prevalent Research Designs",
+        t("analytics.chartTitles.prevalentResearchDesigns"),
         "rgb(180, 30, 50)"
       );
     }
@@ -1245,7 +1240,7 @@
         canvasRefs.samplingDesigns,
         summary.samplingDesigns.names,
         summary.samplingDesigns.counts,
-        "Prevalent Sampling Designs",
+        t("analytics.chartTitles.prevalentSamplingDesigns"),
         "rgb(180, 30, 50)"
       );
     }
@@ -1255,7 +1250,7 @@
         canvasRefs.measurementDesigns,
         summary.measurementDesigns.names,
         summary.measurementDesigns.counts,
-        "Prevalent Measurement Designs",
+        t("analytics.chartTitles.prevalentMeasurementDesigns"),
         "rgb(180, 30, 50)"
       );
     }
@@ -1265,7 +1260,7 @@
         canvasRefs.analyticDesigns,
         summary.analyticDesigns.names,
         summary.analyticDesigns.counts,
-        "Prevalent Analytic Designs",
+        t("analytics.chartTitles.prevalentAnalyticDesigns"),
         "rgb(180, 30, 50)"
       );
     }
@@ -1284,7 +1279,7 @@
       charts.yearTypeStacked = createStackedBarChart(
         canvasRefs.yearTypeStacked,
         plainYearTypeData,
-        "Literature Types by Publication Year"
+        t("analytics.chartTitles.literatureTypesByPublicationYear")
       );
     }
   }
@@ -1293,16 +1288,14 @@
 <div class="analytics-container">
   <div class="flex justify-between items-center mb-6" id="analytics-header">
     <div class="flex items-center gap-2">
-      <h1 class="text-3xl font-bold">Analytics</h1>
+      <h1 class="text-3xl font-bold">{$_('analytics.title')}</h1>
       <Tooltip.Root>
         <Tooltip.Trigger>
           <Info class="h-5 w-5 text-muted-foreground" />
         </Tooltip.Trigger>
         <Tooltip.Content>
           <p class="text-sm max-w-xs">
-            Visualize and analyze your project's literature collection and notes
-            content. Track trends in publications, identify common themes, and
-            gain insights into your research landscape.
+            {$_('analytics.projectAnalyticsTooltip')}
           </p>
         </Tooltip.Content>
       </Tooltip.Root>
@@ -1312,11 +1305,11 @@
         <Tooltip.Trigger>
           <Button variant="outline" onclick={() => driverObj.drive()}>
             <GraduationCap class="h-4 w-4 mr-2" />
-            Tour
+            {$_('dashboard.tour')}
           </Button>
         </Tooltip.Trigger>
         <Tooltip.Content>
-          <p>Tutorial</p>
+          <p>{$_('dashboard.tutorial')}</p>
         </Tooltip.Content>
       </Tooltip.Root>
     </Tooltip.Provider>
@@ -1328,7 +1321,7 @@
   >
     <Dialog.Content class="fullscreen-dialog">
       <div class="fullscreen-canvas-container">
-        {#if activeChart && (activeChart.title === "Distribution of Publication Years" || activeChart.title === "Publication Year Frequency Distribution")}
+        {#if activeChart && (activeChart.title === t("analytics.chartTitles.distributionOfPublicationYears") || activeChart.title === t("analytics.chartTitles.publicationYearFrequencyDistribution"))}
           <div class="fullscreen-controls">
             <div
               class="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2"
@@ -1338,7 +1331,7 @@
                   ? 'text-foreground'
                   : 'text-muted-foreground'}"
               >
-                Individual
+                {$_('analytics.chartLabels.individual')}
               </span>
               <Switch
                 bind:pressed={switchPressed}
@@ -1348,8 +1341,8 @@
                   if (activeChart) {
                     activeChart.title =
                       yearChartMode === "individual"
-                        ? "Distribution of Publication Years"
-                        : "Publication Year Frequency Distribution";
+                        ? t("analytics.chartTitles.distributionOfPublicationYears")
+                        : t("analytics.chartTitles.publicationYearFrequencyDistribution");
                     activeChart.color =
                       yearChartMode === "individual"
                         ? "rgb(255, 206, 86)"
@@ -1370,14 +1363,14 @@
                     }
                   }, 0);
                 }}
-                aria-label="Toggle between individual years and time periods"
+                aria-label={$_('ariaLabels.toggleYearsTimePeriods')}
               />
               <span
                 class="text-sm font-medium {yearChartMode === 'frequency'
                   ? 'text-foreground'
                   : 'text-muted-foreground'}"
               >
-                Time Periods
+                {$_('analytics.chartLabels.timePeriods')}
               </span>
             </div>
           </div>
@@ -1396,12 +1389,12 @@
   {/if}
 
   {#if isLoading}
-    <div class="loading">Loading data...</div>
+    <div class="loading">{$_('analytics.loadingData')}</div>
   {:else if !data.summary}
     <div id="analytics-no-data">
       <EmptyState
-        title="No data to analyze yet!"
-        description="Add literature and notes to see your analytics."
+        title={$_('analytics.noDataToAnalyze')}
+        description={$_('emptyStateDescriptions.addLiteratureForAnalytics')}
         variant="data-empty"
         height="h-96"
       />
@@ -1418,19 +1411,19 @@
       >
         <Tabs.Trigger value="overview" class="tab-button">
           <PieChart class="h-4 w-4 mr-2" />
-          Overview
+          {$_('analytics.tabs.overview')}
         </Tabs.Trigger>
         <Tabs.Trigger value="notes" class="tab-button">
           <FileText class="h-4 w-4 mr-2" />
-          Notes Analysis
+          {$_('analytics.tabs.notesAnalysis')}
         </Tabs.Trigger>
         <Tabs.Trigger value="literature" class="tab-button">
           <BookText class="h-4 w-4 mr-2" />
-          Literature Analysis
+          {$_('analytics.tabs.literatureAnalysis')}
         </Tabs.Trigger>
         <Tabs.Trigger value="research" class="tab-button">
           <FlaskConical class="h-4 w-4 mr-2" />
-          Designs Analysis
+          {$_('analytics.tabs.designsAnalysis')}
         </Tabs.Trigger>
       </Tabs.List>
 
@@ -1440,11 +1433,11 @@
             <button
               id="fullscreen-button-example"
               class="fullscreen-button"
-              aria-label="View chart in fullscreen"
+              aria-label={$_('analytics.viewChartFullscreen')}
               onclick={() =>
                 openFullscreen(
                   canvasRefs.publishers,
-                  "Prevalent Publishers",
+                  t("analytics.chartTitles.prevalentPublishers"),
                   "rgb(54, 162, 235)"
                 )}
             >
@@ -1470,11 +1463,11 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
-              aria-label="View chart in fullscreen"
+              aria-label={$_('analytics.viewChartFullscreen')}
               onclick={() =>
                 openFullscreen(
                   canvasRefs.keywords,
-                  "Prevalent Keywords",
+                  t("analytics.chartTitles.prevalentKeywords"),
                   "rgb(54, 162, 235)"
                 )}
             >
@@ -1507,32 +1500,32 @@
                     ? 'text-foreground'
                     : 'text-muted-foreground'}"
                 >
-                  Individual
+                  {$_('analytics.chartLabels.individual')}
                 </span>
                 <Switch
                   bind:pressed={switchPressed}
                   onPressedChange={(pressed: boolean) => {
                     yearChartMode = pressed ? "frequency" : "individual";
                   }}
-                  aria-label="Toggle between individual years and time periods"
+                  aria-label={$_('ariaLabels.toggleYearsTimePeriods')}
                 />
                 <span
                   class="text-sm font-medium {yearChartMode === 'frequency'
                     ? 'text-foreground'
                     : 'text-muted-foreground'}"
                 >
-                  Time Periods
+                  {$_('analytics.chartLabels.timePeriods')}
                 </span>
               </div>
               <button
                 class="fullscreen-button"
-                aria-label="View chart in fullscreen"
+                aria-label={$_('analytics.viewChartFullscreen')}
                 onclick={() =>
                   openFullscreen(
                     canvasRefs.years,
                     yearChartMode === "individual"
-                      ? "Distribution of Publication Years"
-                      : "Publication Year Frequency Distribution",
+                      ? t("analytics.chartTitles.distributionOfPublicationYears")
+                      : t("analytics.chartTitles.publicationYearFrequencyDistribution"),
                     yearChartMode === "individual"
                       ? "rgb(255, 206, 86)"
                       : "rgb(147, 197, 253)"
@@ -1561,11 +1554,11 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
-              aria-label="View chart in fullscreen"
+              aria-label={$_('analytics.viewChartFullscreen')}
               onclick={() =>
                 openFullscreen(
                   canvasRefs.types,
-                  "Types of Literature",
+                  t("analytics.chartTitles.typesOfLiterature"),
                   "rgb(255, 206, 86)"
                 )}
             >
@@ -1591,11 +1584,11 @@
           <div class="chart-card stacked-chart-card">
             <button
               class="fullscreen-button"
-              aria-label="View chart in fullscreen"
+              aria-label={$_('analytics.viewChartFullscreen')}
               onclick={() =>
                 openFullscreen(
                   canvasRefs.yearTypeStacked,
-                  "Literature Types by Publication Year",
+                  t("analytics.chartTitles.literatureTypesByPublicationYear"),
                   "rgb(54, 162, 235)"
                 )}
             >
@@ -1626,11 +1619,11 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
-              aria-label="View chart in fullscreen"
+              aria-label={$_('analytics.viewChartFullscreen')}
               onclick={() =>
                 openFullscreen(
                   canvasRefs.noteTypes,
-                  "Note Section Types",
+                  t("analytics.chartTitles.noteSectionTypes"),
                   "rgb(34, 197, 94)"
                 )}
             >
@@ -1656,11 +1649,11 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
-              aria-label="View chart in fullscreen"
+              aria-label={$_('analytics.viewChartFullscreen')}
               onclick={() =>
                 openFullscreen(
                   canvasRefs.notesNouns,
-                  "Notes - Prevalent Nouns",
+                  t("analytics.chartTitles.notesPrevalentNouns"),
                   "rgb(54, 162, 235)"
                 )}
             >
@@ -1686,11 +1679,11 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
-              aria-label="View chart in fullscreen"
+              aria-label={$_('analytics.viewChartFullscreen')}
               onclick={() =>
                 openFullscreen(
                   canvasRefs.notesVerbs,
-                  "Notes - Prevalent Verbs",
+                  t("analytics.chartTitles.notesPrevalentVerbs"),
                   "rgb(54, 162, 235)"
                 )}
             >
@@ -1716,11 +1709,11 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
-              aria-label="View chart in fullscreen"
+              aria-label={$_('analytics.viewChartFullscreen')}
               onclick={() =>
                 openFullscreen(
                   canvasRefs.notesAdjectives,
-                  "Notes - Prevalent Adjectives",
+                  t("analytics.chartTitles.notesPrevalentAdjectives"),
                   "rgb(54, 162, 235)"
                 )}
             >
@@ -1751,11 +1744,11 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
-              aria-label="View chart in fullscreen"
+              aria-label={$_('analytics.viewChartFullscreen')}
               onclick={() =>
                 openFullscreen(
                   canvasRefs.litNouns,
-                  "Literature Titles - Prevalent Nouns",
+                  t("analytics.chartTitles.literatureTitlesPrevalentNouns"),
                   "rgb(54, 162, 235)"
                 )}
             >
@@ -1781,11 +1774,11 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
-              aria-label="View chart in fullscreen"
+              aria-label={$_('analytics.viewChartFullscreen')}
               onclick={() =>
                 openFullscreen(
                   canvasRefs.litVerbs,
-                  "Literature Titles - Prevalent Verbs",
+                  t("analytics.chartTitles.literatureTitlesPrevalentVerbs"),
                   "rgb(54, 162, 235)"
                 )}
             >
@@ -1811,11 +1804,11 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
-              aria-label="View chart in fullscreen"
+              aria-label={$_('analytics.viewChartFullscreen')}
               onclick={() =>
                 openFullscreen(
                   canvasRefs.litAdjectives,
-                  "Literature Titles - Prevalent Adjectives",
+                  t("analytics.chartTitles.literatureTitlesPrevalentAdjectives"),
                   "rgb(54, 162, 235)"
                 )}
             >
@@ -1846,11 +1839,11 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
-              aria-label="View chart in fullscreen"
+              aria-label={$_('analytics.viewChartFullscreen')}
               onclick={() =>
                 openFullscreen(
                   canvasRefs.researchDesigns,
-                  "Prevalent Research Designs",
+                  t("analytics.chartTitles.prevalentResearchDesigns"),
                   "rgb(180, 30, 50)"
                 )}
             >
@@ -1876,11 +1869,11 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
-              aria-label="View chart in fullscreen"
+              aria-label={$_('analytics.viewChartFullscreen')}
               onclick={() =>
                 openFullscreen(
                   canvasRefs.samplingDesigns,
-                  "Prevalent Sampling Designs",
+                  t("analytics.chartTitles.prevalentSamplingDesigns"),
                   "rgb(180, 30, 50)"
                 )}
             >
@@ -1906,11 +1899,11 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
-              aria-label="View chart in fullscreen"
+              aria-label={$_('analytics.viewChartFullscreen')}
               onclick={() =>
                 openFullscreen(
                   canvasRefs.measurementDesigns,
-                  "Prevalent Measurement Designs",
+                  t("analytics.chartTitles.prevalentMeasurementDesigns"),
                   "rgb(180, 30, 50)"
                 )}
             >
@@ -1936,11 +1929,11 @@
           <div class="chart-card">
             <button
               class="fullscreen-button"
-              aria-label="View chart in fullscreen"
+              aria-label={$_('analytics.viewChartFullscreen')}
               onclick={() =>
                 openFullscreen(
                   canvasRefs.analyticDesigns,
-                  "Prevalent Analytic Designs",
+                  t("analytics.chartTitles.prevalentAnalyticDesigns"),
                   "rgb(180, 30, 50)"
                 )}
             >

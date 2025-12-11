@@ -3,6 +3,7 @@
 	import type { WithElementRef, WithoutChildren } from "bits-ui";
 	import type { HTMLAttributes } from "svelte/elements";
 	import { cn } from "$lib/utils.js";
+	import { _ } from "svelte-i18n";
 
 	let {
 		ref = $bindable(null),
@@ -18,5 +19,5 @@
 	{...restProps}
 >
 	<Ellipsis class="size-4" />
-	<span class="sr-only">More pages</span>
+	<span class="sr-only">{$_('srOnly.morePages')}</span>
 </span>

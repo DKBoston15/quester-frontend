@@ -6,6 +6,8 @@
   import { onDestroy, onMount, createEventDispatcher } from "svelte";
   import EditorToolbar from "./editor-toolbar.svelte";
   import { cn } from "$lib/utils.js";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
 
   import { Subscript } from "@tiptap/extension-subscript";
   import { Superscript } from "@tiptap/extension-superscript";
@@ -210,9 +212,9 @@
           emptyEditorClass: "is-empty",
           placeholder: ({ node }) => {
             if (node.type.name === "heading") {
-              return "What's the title?";
+              return get(_)('editor.placeholder.heading');
             } else if (node.type.name === "paragraph") {
-              return "Press / or write something ...";
+              return get(_)('editor.placeholder.paragraph');
             }
             return "";
           },

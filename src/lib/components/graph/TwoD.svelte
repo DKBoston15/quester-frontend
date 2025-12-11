@@ -13,6 +13,7 @@
   import TypeCheckbox from "./TypeCheckbox.svelte";
   import * as Popover from "$lib/components/ui/popover";
   import { projectStore } from "$lib/stores/ProjectStore";
+  import { _ } from "svelte-i18n";
   import GraphContextMenu from "./GraphContextMenu.svelte";
   import { navigate } from "svelte-routing";
 
@@ -760,7 +761,7 @@
                  variant="outline"
                  class="w-[6rem] border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                 disabled={!isGraphReady}
-                 >Settings</Button
+                 >{$_('common.settings')}</Button
                >
             </Popover.Trigger>
             <Popover.Content
@@ -781,7 +782,7 @@
                     disabled={showIcons}
                     class="w-full"
                   >
-                    {!labels ? "Labels On" : "Labels Off"}
+                    {!labels ? $_('graph.labelsOn') : $_('graph.labelsOff')}
                   </Button>
                   <Button
                     onclick={() => {
@@ -796,16 +797,16 @@
                     disabled={labels}
                     class="w-full"
                   >
-                    {!showIcons ? "Icons On" : "Icons Off"}
+                    {!showIcons ? $_('graph.iconsOn') : $_('graph.iconsOff')}
                   </Button>
                   <Button
                     onclick={() => (stickNodes = !stickNodes)}
                     class="w-full"
                   >
-                    {!stickNodes ? "Stick Nodes" : "Unstick Nodes"}
+                    {!stickNodes ? $_('graph.stickNodes') : $_('graph.unstickNodes')}
                   </Button>
                   <Button onclick={startTimelapse} class="w-full"
-                    >Timelapse</Button
+                    >{$_('graph.timelapse')}</Button
                   >
                 </Card.Content>
               </Card.Root>
@@ -817,7 +818,7 @@
                  variant="outline"
                  class="w-[6rem] border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                 disabled={!isGraphReady}
-                 >Filter</Button
+                 >{$_('graph.filter')}</Button
                >
             </Popover.Trigger>
             <Popover.Content
@@ -825,9 +826,9 @@
             >
               <Card.Root>
                 <Card.Header>
-                  <Card.Title>Filter</Card.Title>
+                  <Card.Title>{$_('graph.filterTitle')}</Card.Title>
                   <Card.Description>
-                    Toggle visibility of different node types
+                    {$_('connections.filterDescription')}
                   </Card.Description>
                 </Card.Header>
                 <Card.Content
@@ -854,12 +855,12 @@
   </div>
   {#if originalGraphData}
     {#if originalGraphData.nodes.length != 0 && originalGraphData.nodes.length != 0}
-      
+
     {:else}
       <div class="h-[60vh]">
         <EmptyState
-          title="No data to display yet!"
-          description="Add literature to see your graph start to populate."
+          title={$_('emptyStates.noData')}
+          description={$_('emptyStateDescriptions.addLiteratureForGraph')}
           variant="data-empty"
           height="h-full"
         />

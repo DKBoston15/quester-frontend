@@ -51,68 +51,49 @@
     type TimelineEvent,
     type FilterOptions,
   } from "$lib/components/custom-ui/timeline";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
 
-  // Level definitions with colors
-  const levels = [
-    {
-      name: "Spark of Curiosity",
-      minXP: 0,
-      maxXP: 1000,
-      color: "from-amber-500 to-orange-600",
-      description:
-        "The beginning of your research journey, where questions start to form.",
-    },
-    {
-      name: "Illuminator",
-      minXP: 1001,
-      maxXP: 2000,
-      color: "from-blue-500 to-indigo-600",
-      description:
-        "Shedding light on new ideas and connections within your research.",
-    },
-    {
-      name: "Knowledge Weaver",
-      minXP: 2001,
-      maxXP: 3000,
-      color: "from-purple-500 to-fuchsia-600",
-      description:
-        "Connecting threads of information into a cohesive understanding.",
-    },
-    {
-      name: "Insight Architect",
-      minXP: 3001,
-      maxXP: 4000,
-      color: "from-emerald-500 to-teal-600",
-      description:
-        "Building frameworks of understanding from collected knowledge.",
-    },
-    {
-      name: "Wisdom Sculptor",
-      minXP: 4001,
-      maxXP: 5000,
-      color: "from-rose-500 to-pink-600",
-      description:
-        "Shaping raw information into refined insights and theories.",
-    },
-    {
-      name: "Enlightenment Explorer",
-      minXP: 5001,
-      maxXP: 6000,
-      color: "from-cyan-500 to-blue-600",
-      description: "Venturing beyond established knowledge into new territory.",
-    },
-    {
-      name: "Sage of Scholars",
-      minXP: 6001,
-      maxXP: Infinity,
-      color: "from-violet-500 to-purple-600",
-      description:
-        "The pinnacle of research mastery, where expertise guides others.",
-    },
+  // Helper for imperative translation access
+  const t = (key: string, options?: { values?: Record<string, string | number> }) => get(_)(key, options);
+
+  // Helper to get translated achievement name
+  function getAchievementName(achievement: Achievement): string {
+    const translatedName = t(`progress.achievementNames.${achievement.code}`);
+    // If translation key doesn't exist (returns the key itself), fall back to backend name
+    return translatedName.startsWith('progress.achievementNames.') ? achievement.name : translatedName;
+  }
+
+  // Helper to get translated category name
+  function getCategoryName(category: string): string {
+    const translatedName = t(`progress.categoryNames.${category}`);
+    // If translation key doesn't exist, fall back to original category name
+    return translatedName.startsWith('progress.categoryNames.') ? category : translatedName;
+  }
+
+  // Level definitions with colors and translation keys
+  const levelDefinitions = [
+    { key: "sparkOfCuriosity", minXP: 0, maxXP: 1000, color: "from-amber-500 to-orange-600" },
+    { key: "illuminator", minXP: 1001, maxXP: 2000, color: "from-blue-500 to-indigo-600" },
+    { key: "knowledgeWeaver", minXP: 2001, maxXP: 3000, color: "from-purple-500 to-fuchsia-600" },
+    { key: "insightArchitect", minXP: 3001, maxXP: 4000, color: "from-emerald-500 to-teal-600" },
+    { key: "wisdomSculptor", minXP: 4001, maxXP: 5000, color: "from-rose-500 to-pink-600" },
+    { key: "enlightenmentExplorer", minXP: 5001, maxXP: 6000, color: "from-cyan-500 to-blue-600" },
+    { key: "sageOfScholars", minXP: 6001, maxXP: Infinity, color: "from-violet-500 to-purple-600" },
   ];
+
+  // Function to get levels with translated names and descriptions
+  function getLevels() {
+    return levelDefinitions.map((level) => ({
+      ...level,
+      name: t(`progress.levels.${level.key}.name`),
+      description: t(`progress.levels.${level.key}.description`),
+    }));
+  }
 
   // Function to get current level info
   function getCurrentLevel(points: number) {
+    const levels = getLevels();
     const level =
       levels.find((l) => points >= l.minXP && points <= l.maxXP) || levels[0];
     const levelIndex = levels.indexOf(level);
@@ -184,60 +165,71 @@
   }
 
   // Achievement categories for grouping with colors
-  const achievementGroups: Record<
+  const achievementGroupsConfig: Record<
     string,
-    AchievementGroup & { color: string; hoverShadowClass: string }
+    { nameKey: string; icon: any; color: string; hoverShadowClass: string }
   > = {
     "Note-Taking Master": {
-      name: "Note Taking",
+      nameKey: "noteTaking",
       icon: PenTool,
-      achievements: [],
       color: "from-blue-500 to-blue-600",
       hoverShadowClass: getHoverShadowClass("from-blue-500 to-blue-600"),
     },
     Collector: {
-      name: "Literature Collection",
+      nameKey: "literatureCollection",
       icon: Book,
-      achievements: [],
       color: "from-purple-500 to-purple-600",
       hoverShadowClass: getHoverShadowClass("from-purple-500 to-purple-600"),
     },
     Consistency: {
-      name: "Consistency",
+      nameKey: "consistency",
       icon: Calendar,
-      achievements: [],
       color: "from-green-500 to-green-600",
       hoverShadowClass: getHoverShadowClass("from-green-500 to-green-600"),
     },
     "Keyword Researcher": {
-      name: "Keyword Research",
+      nameKey: "keywordResearch",
       icon: Search,
-      achievements: [],
       color: "from-amber-500 to-amber-600",
       hoverShadowClass: getHoverShadowClass("from-amber-500 to-amber-600"),
     },
     Explorer: {
-      name: "Research Design",
+      nameKey: "researchDesign",
       icon: Expand,
-      achievements: [],
       color: "from-rose-500 to-rose-600",
       hoverShadowClass: getHoverShadowClass("from-rose-500 to-rose-600"),
     },
     "Expanding Horizons": {
-      name: "Custom Designs",
+      nameKey: "customDesigns",
       icon: Star,
-      achievements: [],
       color: "from-indigo-500 to-indigo-600",
       hoverShadowClass: getHoverShadowClass("from-indigo-500 to-indigo-600"),
     },
     "Visualization Expert": {
-      name: "Visualization",
+      nameKey: "visualization",
       icon: Network,
-      achievements: [],
       color: "from-cyan-500 to-cyan-600",
       hoverShadowClass: getHoverShadowClass("from-cyan-500 to-cyan-600"),
     },
   };
+
+  // State for grouped achievements (populated by loadAchievements)
+  let groupedAchievements = $state<Record<string, Achievement[]>>({});
+
+  // Function to get achievement groups with translated names and populated achievements
+  function getAchievementGroups(): Record<string, AchievementGroup & { color: string; hoverShadowClass: string }> {
+    const result: Record<string, AchievementGroup & { color: string; hoverShadowClass: string }> = {};
+    for (const [category, config] of Object.entries(achievementGroupsConfig)) {
+      result[category] = {
+        name: t(`progress.achievementGroups.${config.nameKey}`),
+        icon: config.icon,
+        achievements: groupedAchievements[category] || [],
+        color: config.color,
+        hoverShadowClass: config.hoverShadowClass,
+      };
+    }
+    return result;
+  }
 
   // Timeline event types for filtering
   let availableEventTypes = $derived(() => {
@@ -247,45 +239,12 @@
       typeCounts.set(event.type, (typeCounts.get(event.type) || 0) + 1);
     });
 
-    return [
-      {
-        id: "project",
-        label: "Project",
-        count: typeCounts.get("project") || 0,
-      },
-      {
-        id: "literature",
-        label: "Literature",
-        count: typeCounts.get("literature") || 0,
-      },
-      { id: "notes", label: "Notes", count: typeCounts.get("notes") || 0 },
-      { id: "models", label: "Models", count: typeCounts.get("models") || 0 },
-      {
-        id: "outcomes",
-        label: "Outcomes",
-        count: typeCounts.get("outcomes") || 0,
-      },
-      {
-        id: "status",
-        label: "Status Changes",
-        count: typeCounts.get("status") || 0,
-      },
-      {
-        id: "design",
-        label: "Design Changes",
-        count: typeCounts.get("design") || 0,
-      },
-      {
-        id: "insights",
-        label: "Insights",
-        count: typeCounts.get("insights") || 0,
-      },
-      {
-        id: "custom",
-        label: "Custom Events",
-        count: typeCounts.get("custom") || 0,
-      },
-    ].filter((type) => type.count > 0);
+    const eventTypeIds = ["project", "literature", "notes", "models", "outcomes", "status", "design", "insights", "custom"] as const;
+    return eventTypeIds.map((id) => ({
+      id,
+      label: t(`progress.eventTypes.${id}`),
+      count: typeCounts.get(id) || 0,
+    })).filter((type) => type.count > 0);
   });
 
   // Filter timeline events
@@ -394,10 +353,10 @@
       const projectDate = new Date(currentProject.createdAt || Date.now());
       events.push({
         id: "project_creation",
-        title: `Project Created: ${currentProject.name}`,
+        title: t("progress.eventTitles.projectCreated", { values: { name: currentProject.name } }),
         timestamp: projectDate,
         type: "project",
-        description: "Project was initialized",
+        description: t("progress.eventTitles.projectInitialized"),
       });
 
       // Fetch and add status changes
@@ -408,14 +367,14 @@
         statusChanges.forEach((change: any) => {
           events.push({
             id: `status_${change.id}`,
-            title: "Project Status Changed",
+            title: t("progress.eventTitles.projectStatusChanged"),
             description: `${change.data.previousStatus || "None"} → ${change.data.newStatus}`,
             timestamp: new Date(change.createdAt),
             type: "project",
             data: change.data,
             details: [
-              `Previous Status: ${change.data.previousStatus || "None"}`,
-              `New Status: ${change.data.newStatus}`,
+              t("progress.eventDetails.previousStatus", { values: { status: change.data.previousStatus || "None" } }),
+              t("progress.eventDetails.newStatus", { values: { status: change.data.newStatus } }),
             ],
           });
         });
@@ -435,15 +394,15 @@
 
           events.push({
             id: `design_${change.id}`,
-            title: "Design Updated",
+            title: t("progress.eventTitles.designUpdated"),
             description: `${fieldName}: ${change.data.previousValue || "None"} → ${change.data.newValue}`,
             timestamp: new Date(change.createdAt),
             type: "design",
             data: { ...change.data, fieldName },
             details: [
-              `Design Type: ${fieldName}`,
-              `Previous: ${change.data.previousValue || "None"}`,
-              `New: ${change.data.newValue}`,
+              t("progress.eventDetails.designType", { values: { type: fieldName } }),
+              t("progress.eventDetails.previousValue", { values: { value: change.data.previousValue || "None" } }),
+              t("progress.eventDetails.newValue", { values: { value: change.data.newValue } }),
             ],
           });
         });
@@ -507,24 +466,22 @@
 
           if (hasCreated && hasUpdated) {
             if (sortedEvents.length === 2) {
-              title = "Model Created & Updated";
-              description = `Created and updated model: ${firstEvent.data.name}`;
+              title = t("progress.eventTitles.modelCreatedAndUpdated");
+              description = t("progress.eventDescriptions.createdAndUpdatedModel", { values: { name: firstEvent.data.name } });
             } else {
-              title = `Model Activity (${sortedEvents.length} events)`;
-              description = `Created and updated model: ${firstEvent.data.name}`;
+              title = t("progress.eventTitles.modelActivity", { values: { count: sortedEvents.length } });
+              description = t("progress.eventDescriptions.createdAndUpdatedModel", { values: { name: firstEvent.data.name } });
             }
           } else if (hasCreated) {
-            title =
-              sortedEvents.length === 1
-                ? "Model Created"
-                : `Model Created (${sortedEvents.length} events)`;
-            description = `Created model: ${firstEvent.data.name}`;
+            title = sortedEvents.length === 1
+              ? t("progress.eventTitles.modelCreated")
+              : t("progress.eventTitles.modelCreatedMultiple", { values: { count: sortedEvents.length } });
+            description = t("progress.eventDescriptions.createdModel", { values: { name: firstEvent.data.name } });
           } else {
-            title =
-              sortedEvents.length === 1
-                ? "Model Updated"
-                : `Model Updated (${sortedEvents.length} times)`;
-            description = `Updated model: ${firstEvent.data.name}`;
+            title = sortedEvents.length === 1
+              ? t("progress.eventTitles.modelUpdated")
+              : t("progress.eventTitles.modelUpdatedMultiple", { values: { count: sortedEvents.length } });
+            description = t("progress.eventDescriptions.updatedModel", { values: { name: firstEvent.data.name } });
           }
 
           events.push({
@@ -538,8 +495,8 @@
               events: sortedEvents,
             },
             details: [
-              `Model Name: ${lastEvent.data.name}`,
-              `Events: ${sortedEvents.map((e) => e.eventType).join(", ")}`,
+              t("progress.eventDetails.modelName", { values: { name: lastEvent.data.name } }),
+              t("progress.eventDetails.events", { values: { events: sortedEvents.map((e) => e.eventType).join(", ") } }),
             ],
           });
         });
@@ -607,24 +564,22 @@
 
           if (hasCreated && hasUpdated) {
             if (sortedEvents.length === 2) {
-              title = "Outcome Created & Updated";
-              description = `Created and updated ${firstEvent.data.type} outcome: ${firstEvent.data.name}`;
+              title = t("progress.eventTitles.outcomeCreatedAndUpdated");
+              description = t("progress.eventDescriptions.createdAndUpdatedOutcome", { values: { type: firstEvent.data.type, name: firstEvent.data.name } });
             } else {
-              title = `Outcome Activity (${sortedEvents.length} events)`;
-              description = `Created and updated ${firstEvent.data.type} outcome: ${firstEvent.data.name}`;
+              title = t("progress.eventTitles.outcomeActivity", { values: { count: sortedEvents.length } });
+              description = t("progress.eventDescriptions.createdAndUpdatedOutcome", { values: { type: firstEvent.data.type, name: firstEvent.data.name } });
             }
           } else if (hasCreated) {
-            title =
-              sortedEvents.length === 1
-                ? "Outcome Created"
-                : `Outcome Created (${sortedEvents.length} events)`;
-            description = `Created ${firstEvent.data.type} outcome: ${firstEvent.data.name}`;
+            title = sortedEvents.length === 1
+              ? t("progress.eventTitles.outcomeCreated")
+              : t("progress.eventTitles.outcomeCreatedMultiple", { values: { count: sortedEvents.length } });
+            description = t("progress.eventDescriptions.createdOutcome", { values: { type: firstEvent.data.type, name: firstEvent.data.name } });
           } else {
-            title =
-              sortedEvents.length === 1
-                ? "Outcome Updated"
-                : `Outcome Updated (${sortedEvents.length} times)`;
-            description = `Updated ${firstEvent.data.type} outcome: ${firstEvent.data.name}`;
+            title = sortedEvents.length === 1
+              ? t("progress.eventTitles.outcomeUpdated")
+              : t("progress.eventTitles.outcomeUpdatedMultiple", { values: { count: sortedEvents.length } });
+            description = t("progress.eventDescriptions.updatedOutcome", { values: { type: firstEvent.data.type, name: firstEvent.data.name } });
           }
 
           events.push({
@@ -638,12 +593,12 @@
               events: sortedEvents,
             },
             details: [
-              `Name: ${lastEvent.data.name}`,
-              `Type: ${lastEvent.data.type}`,
+              t("progress.eventDetails.name", { values: { name: lastEvent.data.name } }),
+              t("progress.eventDetails.type", { values: { type: lastEvent.data.type } }),
               ...(lastEvent.data.sectionType
-                ? [`Section: ${lastEvent.data.sectionType}`]
+                ? [t("progress.eventDetails.section", { values: { section: lastEvent.data.sectionType } })]
                 : []),
-              `Events: ${sortedEvents.map((e) => e.eventType).join(", ")}`,
+              t("progress.eventDetails.events", { values: { events: sortedEvents.map((e) => e.eventType).join(", ") } }),
             ],
           });
         });
@@ -677,14 +632,17 @@
 
           events.push({
             id: `insight_${dateKey}`,
-            title:
-              count === 1 ? "Created Insight" : `Created ${count} Insights`,
-            description: `${count} keyword analysis insight${count !== 1 ? "s" : ""} created`,
+            title: count === 1
+              ? t("progress.eventTitles.createdInsight")
+              : t("progress.eventTitles.createdInsights", { values: { count } }),
+            description: count === 1
+              ? t("progress.eventDescriptions.createdInsight")
+              : t("progress.eventDescriptions.createdInsights", { values: { count } }),
             timestamp: earliestTime,
             type: "insights",
             data: insights,
             details: insights.map((insight: any) => {
-              return `Keywords: ${insight.keywords}`;
+              return t("progress.eventDetails.keywords", { values: { keywords: insight.keywords } });
             }),
           });
         });
@@ -712,17 +670,18 @@
 
         events.push({
           id: `lit_${dateKey}`,
-          title:
-            count === 1
-              ? "Added Literature Item"
-              : `Added ${count} Literature Items`,
-          description: `${count} literature item${count !== 1 ? "s" : ""} added to the project`,
+          title: count === 1
+            ? t("progress.eventTitles.addedLiteratureItem")
+            : t("progress.eventTitles.addedLiteratureItems", { values: { count } }),
+          description: count === 1
+            ? t("progress.eventDescriptions.addedLiteratureItem")
+            : t("progress.eventDescriptions.addedLiteratureItems", { values: { count } }),
           timestamp: earliestTime,
           type: "literature",
           data: lits,
           details: lits.map((lit: any) => {
             const title = lit.title || lit.name || "Untitled";
-            let authorText = "No authors";
+            let authorText = t("progress.eventDetails.noAuthors");
             if (lit.authors) {
               if (Array.isArray(lit.authors)) {
                 authorText = lit.authors.join(", ");
@@ -755,14 +714,18 @@
 
         events.push({
           id: `note_${dateKey}`,
-          title: count === 1 ? "Created Note" : `Created ${count} Notes`,
-          description: `${count} note${count !== 1 ? "s" : ""} created`,
+          title: count === 1
+            ? t("progress.eventTitles.createdNote")
+            : t("progress.eventTitles.createdNotes", { values: { count } }),
+          description: count === 1
+            ? t("progress.eventDescriptions.createdNote")
+            : t("progress.eventDescriptions.createdNotes", { values: { count } }),
           timestamp: earliestTime,
           type: "notes",
           data: notes,
           details: notes.map((note: any) => {
-            const type = note.type?.toLowerCase() || "research";
-            return `${note.name || "Untitled Note"} (${type})`;
+            const type = note.type?.toLowerCase() || t("progress.eventDetails.researchType");
+            return `${note.name || t("progress.eventDetails.untitledNote")} (${type})`;
           }),
         });
       });
@@ -1075,29 +1038,31 @@
       achievements = data.statuses;
       newlyAwarded = data.newlyAwarded;
 
-      // Reset achievement groups
-      Object.values(achievementGroups).forEach((group) => {
-        group.achievements = [];
+      // Group achievements by category
+      const grouped: Record<string, Achievement[]> = {};
+
+      // Initialize all categories with empty arrays
+      Object.keys(achievementGroupsConfig).forEach((category) => {
+        grouped[category] = [];
       });
 
-      // Group and sort achievements
+      // Group achievements
       achievements.forEach((achievement) => {
-        if (achievementGroups[achievement.category]) {
-          achievementGroups[achievement.category].achievements.push(
-            achievement
-          );
+        if (grouped[achievement.category]) {
+          grouped[achievement.category].push(achievement);
         }
       });
 
       // Sort achievements in each group
-      Object.values(achievementGroups).forEach((group) => {
-        group.achievements = sortAchievements(group.achievements);
+      Object.keys(grouped).forEach((category) => {
+        grouped[category] = sortAchievements(grouped[category]);
       });
 
+      groupedAchievements = grouped;
       error = null;
     } catch (err) {
       console.error("Error loading achievements:", err);
-      error = "Failed to load achievements. Please try again later.";
+      error = t("progress.loadAchievementsFailed");
     } finally {
       isAchievementsLoading = false;
     }
@@ -1107,99 +1072,94 @@
     return new Intl.NumberFormat().format(num);
   }
 
-  // Define driverObj for the guided tour
-  const driverObj = driver({
-    showProgress: true,
-    popoverClass: "quester-driver-theme",
-    steps: [
-      {
-        element: "#progress-header",
-        popover: {
-          title: "Track Your Research Journey",
-          description:
-            "This page visualizes your project's activity, milestones, and achievements, helping you understand your progress over time.",
-          side: "bottom",
-          align: "start",
+  // Function to create driver.js guided tour with translated content
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function createDriver() {
+    return driver({
+      showProgress: true,
+      popoverClass: "quester-driver-theme",
+      steps: [
+        {
+          element: "#progress-header",
+          popover: {
+            title: t("tours.progress.header.title"),
+            description: t("tours.progress.header.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#research-level-card",
-        popover: {
-          title: "Your Research Level",
-          description:
-            "Gain Experience Points (XP) by completing research activities and achievements. Level up to unlock new titles reflecting your mastery!",
-          side: "bottom",
-          align: "center",
+        {
+          element: "#research-level-card",
+          popover: {
+            title: t("tours.progress.researchLevel.title"),
+            description: t("tours.progress.researchLevel.description"),
+            side: "bottom",
+            align: "center",
+          },
         },
-      },
-      {
-        element: "#view-levels-button",
-        popover: {
-          title: "Explore All Levels",
-          description:
-            "Click here to see all the available research levels, their XP requirements, and descriptions.",
-          side: "left",
-          align: "start",
+        {
+          element: "#view-levels-button",
+          popover: {
+            title: t("tours.progress.viewLevels.title"),
+            description: t("tours.progress.viewLevels.description"),
+            side: "left",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#progress-tabs",
-        popover: {
-          title: "Navigate Progress Views",
-          description:
-            "Switch between the 'Project Timeline' view, showing chronological events, and the 'Achievements' view, tracking specific milestones.",
-          side: "bottom",
-          align: "center",
+        {
+          element: "#progress-tabs",
+          popover: {
+            title: t("tours.progress.tabs.title"),
+            description: t("tours.progress.tabs.description"),
+            side: "bottom",
+            align: "center",
+          },
         },
-      },
-      {
-        element: "#timeline-content",
-        popover: {
-          title: "Project Timeline",
-          description:
-            "See key project events like creation, status changes, literature additions, and note creation laid out chronologically. Click items for more details.",
-          side: "top",
-          align: "start",
+        {
+          element: "#timeline-content",
+          popover: {
+            title: t("tours.progress.timeline.title"),
+            description: t("tours.progress.timeline.description"),
+            side: "top",
+            align: "start",
+          },
+          onHighlighted: () => {
+            if (activeTab !== "timeline") activeTab = "timeline";
+          },
         },
-        onHighlighted: () => {
-          if (activeTab !== "timeline") activeTab = "timeline";
+        {
+          element: "#progress-tabs",
+          popover: {
+            title: t("tours.progress.switchToAchievements.title"),
+            description: t("tours.progress.switchToAchievements.description"),
+            side: "bottom",
+            align: "center",
+          },
+          onHighlighted: () => {
+            if (activeTab !== "achievements") activeTab = "achievements";
+          },
         },
-      },
-      {
-        element: "#progress-tabs",
-        popover: {
-          title: "Switch to Achievements",
-          description:
-            "Now let's look at the specific achievements you can unlock.",
-          side: "bottom",
-          align: "center",
+        {
+          element: "#achievements-content",
+          popover: {
+            title: t("tours.progress.achievements.title"),
+            description: t("tours.progress.achievements.description"),
+            side: "top",
+            align: "start",
+          },
         },
-        onHighlighted: () => {
-          if (activeTab !== "achievements") activeTab = "achievements";
+        {
+          element: "#progress-header",
+          popover: {
+            title: t("tours.progress.monitor.title"),
+            description: t("tours.progress.monitor.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#achievements-content",
-        popover: {
-          title: "Achievements",
-          description:
-            "Unlock achievements by performing specific actions like adding literature, writing notes, or using features consistently. Completed achievements award XP towards your Research Level.",
-          side: "top",
-          align: "start",
-        },
-      },
-      {
-        element: "#progress-header",
-        popover: {
-          title: "Monitor Your Momentum",
-          description:
-            "Check this page regularly to visualize your research activity, celebrate milestones, and stay motivated on your journey!",
-          side: "bottom",
-          align: "start",
-        },
-      },
-    ],
-  });
+      ],
+    });
+  }
 
   // Calculate total XP from achievements
   let totalXP = $derived(
@@ -1331,7 +1291,7 @@
           >
             <GraduationCap class="h-6 w-6 text-foreground" />
           </div>
-          <span class="text-xl font-semibold">Research Level</span>
+          <span class="text-xl font-semibold">{$_("progress.researchLevel")}</span>
         </CardTitle>
         <Button
           variant="outline"
@@ -1341,7 +1301,7 @@
           class="view-all-button"
         >
           <Info class="h-4 w-4 mr-2" />
-          View All
+          {$_("progress.viewAll")}
         </Button>
       </div>
     </CardHeader>
@@ -1383,7 +1343,7 @@
         <div class="progress-section">
           <div class="progress-header">
             <span class="progress-label"
-              >Progress to {currentLevel.next.name}</span
+              >{$_("progress.progressTo", { values: { level: currentLevel.next.name } })}</span
             >
             <div class="progress-percentage">
               <span class="percentage-value"
@@ -1400,8 +1360,7 @@
           </div>
           <div class="progress-footer">
             <span class="points-needed">
-              {formatNumber(currentLevel.next.minXP - totalXP)} points until next
-              level
+              {$_("progress.pointsUntilNext", { values: { points: formatNumber(currentLevel.next.minXP - totalXP) } })}
             </span>
           </div>
         </div>
@@ -1415,10 +1374,10 @@
               class="achievement-title bg-gradient-to-r {currentLevel.current
                 .color} bg-clip-text text-transparent"
             >
-              Maximum Level Achieved!
+              {$_("progress.maximumLevelAchieved")}
             </h4>
             <p class="achievement-description">
-              You've reached the pinnacle of research mastery
+              {$_("progress.pinnacleOfMastery")}
             </p>
           </div>
         </div>
@@ -1438,18 +1397,18 @@
     >
       <Tabs.Trigger value="timeline" class="tab-button">
         <Calendar class="h-4 w-4 mr-2" />
-        Project Timeline
+        {$_("progress.projectTimeline")}
       </Tabs.Trigger>
       <Tabs.Trigger value="achievements" class="tab-button">
         <Trophy class="h-4 w-4 mr-2" />
-        Achievements
+        {$_("progress.achievements")}
       </Tabs.Trigger>
     </Tabs.List>
 
     <Tabs.Content value="timeline" class="space-y-4" id="timeline-content">
       <Card>
         <CardHeader>
-          <CardTitle>Project Timeline</CardTitle>
+          <CardTitle>{$_("progress.projectTimeline")}</CardTitle>
         </CardHeader>
         <CardContent>
           <TimelineControls
@@ -1495,7 +1454,7 @@
           </CardContent>
         </Card>
       {:else}
-        {#each Object.entries(achievementGroups).sort( ([, a], [, b]) => a.name.localeCompare(b.name) ) as [category, { name, icon: Icon, achievements, color, hoverShadowClass }]}
+        {#each Object.entries(getAchievementGroups()).sort( ([, a], [, b]) => a.name.localeCompare(b.name) ) as [_category, { name, icon: Icon, achievements, color, hoverShadowClass }]}
           {#if achievements.length > 0}
             <Card class="achievement-group p-4">
               <div class="flex items-center gap-3 mb-4">
@@ -1507,7 +1466,7 @@
                 <h2 class="text-xl font-semibold">{name}</h2>
                 <div class="text-sm text-muted-foreground ml-auto">
                   {achievements.filter((a) => a.completed)
-                    .length}/{achievements.length} Complete
+                    .length}/{achievements.length} {$_("progress.complete")}
                 </div>
               </div>
 
@@ -1528,7 +1487,7 @@
                         <CardTitle
                           class="flex justify-between items-start gap-4"
                         >
-                          <span class="text-base">{achievement.name}</span>
+                          <span class="text-base">{getAchievementName(achievement)}</span>
                           <span
                             class={`achievement-points ${achievement.completed ? `bg-gradient-to-br ${color} text-white` : ""}`}
                           >
@@ -1546,7 +1505,7 @@
                               class={`h-2 achievement-progress ${achievement.completed ? "completed" : color}`}
                             />
                             <div class="flex justify-between text-sm">
-                              <span class="text-muted-foreground">Progress</span
+                              <span class="text-muted-foreground">{$_("projectSidebar.progress")}</span
                               >
                               <span class="font-medium">
                                 {achievement.progress.current}/{achievement
@@ -1821,7 +1780,7 @@
           <div class="no-details">
             <FileText class="w-8 h-8 text-muted-foreground/60" />
             <p class="text-sm text-muted-foreground">
-              No additional details available
+              {$_("progress.noAdditionalDetails")}
             </p>
           </div>
         {/if}
@@ -1831,12 +1790,12 @@
           <div class="data-section">
             <h4 class="data-section-title">
               <Info class="w-4 h-4" />
-              Additional Information
+              {$_("progress.additionalInfo")}
             </h4>
             <div class="data-grid">
               {#if selectedEvent.data.nodeCount !== undefined}
                 <div class="data-item">
-                  <span class="data-label">Nodes</span>
+                  <span class="data-label">{$_("progress.nodes")}</span>
                   <span class="data-value numeric"
                     >{selectedEvent.data.nodeCount}</span
                   >
@@ -1844,7 +1803,7 @@
               {/if}
               {#if selectedEvent.data.edgeCount !== undefined}
                 <div class="data-item">
-                  <span class="data-label">Edges</span>
+                  <span class="data-label">{$_("progress.edges")}</span>
                   <span class="data-value numeric"
                     >{selectedEvent.data.edgeCount}</span
                   >
@@ -1852,7 +1811,7 @@
               {/if}
               {#if selectedEvent.data.updatedFields && selectedEvent.data.updatedFields.length > 0}
                 <div class="data-item span-full">
-                  <span class="data-label">Updated Fields</span>
+                  <span class="data-label">{$_("progress.updatedFields")}</span>
                   <div class="tag-container">
                     {#each selectedEvent.data.updatedFields as field}
                       <span class="field-tag">{capitalizeTag(field)}</span>
@@ -1872,14 +1831,14 @@
 <Dialog.Root bind:open={showLevelsDialog}>
   <Dialog.Content class="sm:max-w-[800px]">
     <div class="flex flex-col space-y-1.5 p-4">
-      <Dialog.Title class="text-2xl">Research Levels</Dialog.Title>
+      <Dialog.Title class="text-2xl">{$_("progress.researchLevels")}</Dialog.Title>
       <Dialog.Description class="text-muted-foreground">
-        Your journey through research mastery
+        {$_("progress.yourJourney")}
       </Dialog.Description>
     </div>
     <div class="px-4 pb-4 pt-3 max-h-[70vh] overflow-y-auto">
       <div class="grid gap-4 md:grid-cols-2">
-        {#each levels as level, index}
+        {#each getLevels() as level, index}
           <div
             class="level-card relative overflow-hidden p-3 rounded-lg border backdrop-blur-sm"
           >
@@ -1916,7 +1875,7 @@
                     <span
                       class={`font-medium bg-gradient-to-r ${level.color} bg-clip-text text-transparent`}
                     >
-                      and beyond
+                      {$_("progress.andBeyond")}
                     </span>
                   {/if}
                 </div>
@@ -1928,7 +1887,7 @@
     </div>
     <div class="flex justify-end p-4 pt-0">
       <Button variant="outline" onclick={() => (showLevelsDialog = false)}
-        >Close</Button
+        >{$_("progress.close")}</Button
       >
     </div>
   </Dialog.Content>

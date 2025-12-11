@@ -2,6 +2,7 @@
   import { Button } from "$lib/components/ui/button";
   import { api } from "$lib/services/api-client";
   import { CreditCard } from "lucide-svelte";
+  import { _ } from "svelte-i18n";
 
   const props = $props<{
     organizationId: string;
@@ -23,7 +24,7 @@
       window.location.href = portalUrl;
     } catch (err) {
       error =
-        err instanceof Error ? err.message : "Failed to create portal session";
+        err instanceof Error ? err.message : $_('manageSubscription.failedToCreatePortalSession');
       console.error("Failed to create portal session:", err);
     } finally {
       isLoading = false;
@@ -44,9 +45,9 @@
   >
     <CreditCard class="mr-2 h-4 w-4" />
     {isLoading
-      ? "Loading..."
+      ? $_('manageSubscription.loading')
       : props.isUpgradeCta
-        ? "Upgrade Your Plan"
-        : "Manage Subscription"}
+        ? $_('manageSubscription.upgradePlan')
+        : $_('manageSubscription.manageSubscription')}
   </Button>
 </div>

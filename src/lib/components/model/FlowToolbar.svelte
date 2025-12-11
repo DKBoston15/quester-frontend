@@ -8,6 +8,7 @@
     useSvelteFlow,
   } from "@xyflow/svelte";
   import * as Tooltip from "$lib/components/ui/tooltip";
+  import { _ } from "svelte-i18n";
 
   // Define props using $props
   let {
@@ -156,7 +157,7 @@
     <!-- Add Nodes Section -->
     <div class="flex flex-col gap-2">
       <span class="text-xs font-medium text-gray-700 dark:text-gray-300"
-        >Add Nodes</span
+        >{$_("models.toolbar.addNodes")}</span
       >
       <div class="flex gap-2 flex-wrap">
         <button
@@ -165,7 +166,7 @@
           class="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-md bg-white dark:bg-slate-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors"
         >
           <span class="w-4 h-4 border-2 border-current rounded-sm"></span>
-          Rectangle
+          {$_("models.toolbar.rectangle")}
         </button>
         <button
           id="add-circle-node"
@@ -173,7 +174,7 @@
           class="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-md bg-white dark:bg-slate-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors"
         >
           <span class="w-4 h-4 border-2 border-current rounded-full"></span>
-          Circle
+          {$_("models.toolbar.circle")}
         </button>
         <button
           id="add-ellipse-node"
@@ -181,7 +182,7 @@
           class="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-md bg-white dark:bg-slate-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors"
         >
           <span class="w-5 h-3 border-2 border-current rounded-full"></span>
-          Ellipse
+          {$_("models.toolbar.ellipse")}
         </button>
       </div>
     </div>
@@ -189,7 +190,7 @@
     <!-- View Settings Section -->
     <div class="flex flex-col gap-2">
       <span class="text-xs font-medium text-gray-700 dark:text-gray-300"
-        >View Settings</span
+        >{$_("models.toolbar.viewSettings")}</span
       >
       <div class="flex flex-col gap-2">
         <label
@@ -202,7 +203,7 @@
               class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
             />
           </div>
-          <div class="pt-2">Show Grid</div>
+          <div class="pt-2">{$_("models.toolbar.showGrid")}</div>
         </label>
         <label
           class="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300"
@@ -214,7 +215,7 @@
               class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
             />
           </div>
-          <div class="pt-2">Snap to Grid</div>
+          <div class="pt-2">{$_("models.toolbar.snapToGrid")}</div>
         </label>
       </div>
     </div>
@@ -223,7 +224,7 @@
     <hr class="border-gray-200 dark:border-gray-700" />
     <div class="flex flex-col gap-2">
       <span class="text-xs font-medium text-gray-700 dark:text-gray-300"
-        >Background Color for Download</span
+        >{$_("models.toolbar.backgroundColorForDownload")}</span
       >
       <div class="flex flex-col gap-2">
         <div class="flex items-center gap-2">
@@ -245,7 +246,7 @@
               bind:checked={isTransparent}
               class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
             />
-            Transparent
+            {$_("models.toolbar.transparent")}
           </label>
         </div>
         <button
@@ -265,7 +266,7 @@
               d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
             />
           </svg>
-          Download Image
+          {$_("models.toolbar.downloadImage")}
         </button>
       </div>
     </div>

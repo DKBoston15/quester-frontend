@@ -17,6 +17,7 @@
     Shapes,
     GraduationCap,
   } from "lucide-svelte";
+  import { _ } from "svelte-i18n";
 
   interface Props {
     announcement: Announcement;
@@ -47,12 +48,12 @@
           variant="secondary"
           class="bg-blue-100 text-blue-800 hover:bg-blue-100"
         >
-          Major Update
+          {$_('announcementOne.majorUpdate')}
         </Badge>
       </div>
 
       <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-        {announcement.metadata?.featureTitle || "Quester 2.5 Platform Update"}
+        {announcement.metadata?.featureTitle || $_('announcementOne.platformUpdate')}
       </h3>
 
       <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
@@ -71,19 +72,18 @@
             <Users class="w-5 h-5 text-blue-600 dark:text-blue-400" />
           </div>
           <CardTitle class="text-base font-semibold"
-            >Team Management Redesign</CardTitle
+            >{$_('announcementOne.features.teamManagement.title')}</CardTitle
           >
         </div>
       </CardHeader>
       <CardContent class="pt-0">
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-          Complete overhaul of team navigation with a new sidebar interface
-          replacing the old dropdown system.
+          {$_('announcementOne.features.teamManagement.description')}
         </p>
         <ul class="text-xs text-gray-500 dark:text-gray-500 space-y-1">
-          <li>• Persistent sidebar navigation</li>
-          <li>• Quick team switching</li>
-          <li>• Enhanced team overview</li>
+          <li>• {$_('announcementOne.features.teamManagement.bullet1')}</li>
+          <li>• {$_('announcementOne.features.teamManagement.bullet2')}</li>
+          <li>• {$_('announcementOne.features.teamManagement.bullet3')}</li>
         </ul>
       </CardContent>
     </Card>
@@ -96,19 +96,18 @@
             <Search class="w-5 h-5 text-purple-600 dark:text-purple-400" />
           </div>
           <CardTitle class="text-base font-semibold"
-            >Global Search & AI Chat</CardTitle
+            >{$_('announcementOne.features.globalSearch.title')}</CardTitle
           >
         </div>
       </CardHeader>
       <CardContent class="pt-0">
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-          Powerful search across all your projects with integrated AI assistance
-          for research questions.
+          {$_('announcementOne.features.globalSearch.description')}
         </p>
         <ul class="text-xs text-gray-500 dark:text-gray-500 space-y-1">
-          <li>• Cross-project search</li>
-          <li>• AI-powered research chat</li>
-          <li>• Smart content discovery</li>
+          <li>• {$_('announcementOne.features.globalSearch.bullet1')}</li>
+          <li>• {$_('announcementOne.features.globalSearch.bullet2')}</li>
+          <li>• {$_('announcementOne.features.globalSearch.bullet3')}</li>
         </ul>
       </CardContent>
     </Card>
@@ -120,18 +119,17 @@
           <div class="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
             <Brain class="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <CardTitle class="text-base font-semibold">Key Insights AI</CardTitle>
+          <CardTitle class="text-base font-semibold">{$_('announcementOne.features.keyInsights.title')}</CardTitle>
         </div>
       </CardHeader>
       <CardContent class="pt-0">
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-          AI-driven analysis that automatically identifies patterns and insights
-          from your research data.
+          {$_('announcementOne.features.keyInsights.description')}
         </p>
         <ul class="text-xs text-gray-500 dark:text-gray-500 space-y-1">
-          <li>• Automated pattern detection</li>
-          <li>• Research recommendations</li>
-          <li>• Smart data synthesis</li>
+          <li>• {$_('announcementOne.features.keyInsights.bullet1')}</li>
+          <li>• {$_('announcementOne.features.keyInsights.bullet2')}</li>
+          <li>• {$_('announcementOne.features.keyInsights.bullet3')}</li>
         </ul>
       </CardContent>
     </Card>
@@ -144,19 +142,18 @@
             <Download class="w-5 h-5 text-orange-600 dark:text-orange-400" />
           </div>
           <CardTitle class="text-base font-semibold"
-            >Reference Export Suite</CardTitle
+            >{$_('announcementOne.features.referenceExport.title')}</CardTitle
           >
         </div>
       </CardHeader>
       <CardContent class="pt-0">
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-          Export your references in multiple academic formats for seamless
-          integration with your workflow.
+          {$_('announcementOne.features.referenceExport.description')}
         </p>
         <ul class="text-xs text-gray-500 dark:text-gray-500 space-y-1">
-          <li>• Multiple citation formats</li>
-          <li>• Bulk export capabilities</li>
-          <li>• Academic standards compliance</li>
+          <li>• {$_('announcementOne.features.referenceExport.bullet1')}</li>
+          <li>• {$_('announcementOne.features.referenceExport.bullet2')}</li>
+          <li>• {$_('announcementOne.features.referenceExport.bullet3')}</li>
         </ul>
       </CardContent>
     </Card>
@@ -169,19 +166,18 @@
             <Shapes class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
           </div>
           <CardTitle class="text-base font-semibold"
-            >Model Building Enhancements</CardTitle
+            >{$_('announcementOne.features.modelBuilding.title')}</CardTitle
           >
         </div>
       </CardHeader>
       <CardContent class="pt-0">
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-          Advanced visual modeling tools with enhanced node types, edge
-          customization, and workflow improvements.
+          {$_('announcementOne.features.modelBuilding.description')}
         </p>
         <ul class="text-xs text-gray-500 dark:text-gray-500 space-y-1">
-          <li>• New node types and shapes</li>
-          <li>• Advanced edge styling</li>
-          <li>• Improved canvas controls</li>
+          <li>• {$_('announcementOne.features.modelBuilding.bullet1')}</li>
+          <li>• {$_('announcementOne.features.modelBuilding.bullet2')}</li>
+          <li>• {$_('announcementOne.features.modelBuilding.bullet3')}</li>
         </ul>
       </CardContent>
     </Card>
@@ -194,19 +190,18 @@
             <GraduationCap class="w-5 h-5 text-rose-600 dark:text-rose-400" />
           </div>
           <CardTitle class="text-base font-semibold"
-            >Interactive Tutorials</CardTitle
+            >{$_('announcementOne.features.tutorials.title')}</CardTitle
           >
         </div>
       </CardHeader>
       <CardContent class="pt-0">
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-          Comprehensive guided tours that demonstrate features with automatic
-          examples and hands-on learning.
+          {$_('announcementOne.features.tutorials.description')}
         </p>
         <ul class="text-xs text-gray-500 dark:text-gray-500 space-y-1">
-          <li>• Step-by-step guidance</li>
-          <li>• Automatic demonstrations</li>
-          <li>• Context-aware help</li>
+          <li>• {$_('announcementOne.features.tutorials.bullet1')}</li>
+          <li>• {$_('announcementOne.features.tutorials.bullet2')}</li>
+          <li>• {$_('announcementOne.features.tutorials.bullet3')}</li>
         </ul>
       </CardContent>
     </Card>

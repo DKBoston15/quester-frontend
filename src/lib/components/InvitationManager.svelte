@@ -9,6 +9,14 @@
   import { api } from "$lib/services/api-client";
   import TeamSizeIndicator from "$lib/components/TeamSizeIndicator/TeamSizeIndicator.svelte";
   import { toast } from "svelte-sonner";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper function for imperative translation access
+  const t = (key: string, values?: Record<string, any>) => {
+    const translate = get(_);
+    return values ? translate(key, { values }) : translate(key);
+  };
 
   const props = $props<{
     resourceType: "organization" | "department" | "project";
@@ -33,12 +41,12 @@
   const emailError = $derived(() => {
     if (!email || email.length === 0) return null;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email) ? null : "Please enter a valid email address";
+    return emailRegex.test(email) ? null : t("invitations.enterValidEmail");
   });
 
   const roleError = $derived(() => {
     if (selectedRoleId === "" && availableRoles().length > 0) {
-      return "Please select a role";
+      return t("invitations.selectRole");
     }
     return null;
   });
@@ -168,9 +176,9 @@
   const duplicateInviteError = $derived(() => {
     if (!normalizedEmail() || emailError()) return null;
     if (isAlreadyMember())
-      return "This user is already a member of this workspace.";
+      return t("invitations.alreadyMember");
     if (isAlreadyInvited())
-      return "This user has already been invited and is pending.";
+      return t("invitations.alreadyInvited");
     return null;
   });
 
@@ -201,12 +209,12 @@
 
     // Validate form
     if (!email || !selectedRoleId || !props.resourceId) {
-      toast.error("Please fill in all required fields");
+      toast.error(t("invitations.fillRequiredFields"));
       return;
     }
 
     if (emailError() || roleError()) {
-      toast.error("Please fix the validation errors before submitting");
+      toast.error(t("invitations.fixValidationErrors"));
       return;
     }
 
@@ -217,8 +225,8 @@
 
     if (!canSendInvitations) {
       const message = props.subscriptionLimits?.maxUsers
-        ? `You've reached the maximum number of users (${props.subscriptionLimits.maxUsers}) for your subscription plan.`
-        : "Your subscription doesn't allow sending invitations.";
+        ? t("invitations.maxUsersReached", { max: props.subscriptionLimits.maxUsers })
+        : t("invitations.subscriptionNoInvites");
       toast.error(message);
       return;
     }
@@ -255,7 +263,7 @@
       // Response from api client is already parsed JSON
 
       // On success
-      toast.success(`Invitation sent to ${email}`);
+      toast.success(t("invitations.invitationSentTo", { email }));
       email = "";
       selectedRoleId = "";
       props.onInviteSent();
@@ -264,7 +272,7 @@
       await loadPendingInvitations();
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Failed to send invitation";
+        err instanceof Error ? err.message : t("invitations.sendFailed");
       toast.error(message);
     } finally {
       isLoading = false;
@@ -293,7 +301,7 @@
       invitationsError =
         err instanceof Error
           ? err.message
-          : "Failed to load pending invitations";
+          : t("invitations.loadFailed");
       pendingInvitations = [];
     } finally {
       invitationsLoading = false;
@@ -311,10 +319,10 @@
       );
 
       // Show success message
-      toast.success("Invitation revoked successfully");
+      toast.success(t("invitations.revokedSuccess"));
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Failed to revoke invitation";
+        err instanceof Error ? err.message : t("invitations.revokeFailed");
       toast.error(message);
     }
   }
@@ -333,7 +341,7 @@
 <div class="space-y-8">
   <!-- Send invitation form -->
   <div>
-    <h3 class="text-lg font-medium mb-4">Send New Invitation</h3>
+    <h3 class="text-lg font-medium mb-4">{$_("invitations.sendNewInvitation")}</h3>
 
     {#if props.subscriptionLimits && props.subscriptionLimits.maxUsers > 0}
       <div class="mb-4">
@@ -356,11 +364,11 @@
     >
       <div class="grid gap-4 md:grid-cols-3">
         <div class="space-y-2">
-          <Label for="email">Email Address</Label>
+          <Label for="email">{$_("invitations.emailAddress")}</Label>
           <Input
             id="email"
             type="email"
-            placeholder="user@example.com"
+            placeholder={$_("invitations.emailPlaceholder")}
             bind:value={email}
             class="border-2 dark:border-dark-border {emailError() ||
             duplicateInviteError()
@@ -378,7 +386,7 @@
         </div>
 
         <div class="space-y-2">
-          <Label for="role">Role</Label>
+          <Label for="role">{$_("invitations.role")}</Label>
           <select
             id="role"
             bind:value={selectedRoleId}
@@ -388,7 +396,7 @@
             required
             disabled={!canSendInvitations}
           >
-            <option value="" disabled>Select role...</option>
+            <option value="" disabled>{$_("invitations.selectRolePlaceholder")}</option>
             {#each availableRoles() as role}
               <option value={role.id}>{role.name}</option>
             {/each}
@@ -412,10 +420,10 @@
               <div
                 class="h-4 w-4 mr-2 border-2 border-t-transparent rounded-full animate-spin"
               ></div>
-              Sending...
+              {$_("invitations.sending")}
             {:else}
               <Send class="h-4 w-4 mr-2" />
-              Send Invitation
+              {$_("invitations.sendInvitation")}
             {/if}
           </Button>
         </div>
@@ -427,18 +435,15 @@
         >
           <Info class="h-4 w-4 mt-0.5 flex-shrink-0" />
           <span class="text-sm">
-            You've reached your maximum of {props.subscriptionLimits.maxUsers} users
-            for the {props.subscriptionLimits.subscriptionPlan} plan.
+            {$_("invitations.maxUsersForPlan", { max: props.subscriptionLimits.maxUsers, plan: props.subscriptionLimits.subscriptionPlan })}
             {#if props.subscriptionLimits.subscriptionPlan === "Enterprise"}
-              Please contact support to adjust your seat count.
+              {$_("invitations.contactSupportSeats")}
             {:else if props.subscriptionLimits.subscriptionPlan === "Quester Pro"}
-              Upgrade to Quester Team for up to 5 users.
+              {$_("invitations.upgradeToTeam")}
             {:else if props.subscriptionLimits.subscriptionPlan === "Quester Team"}
-              Please contact support to discuss enterprise options for larger
-              teams.
+              {$_("invitations.contactSupportEnterprise")}
             {:else}
-              // Default / Research Explorer Upgrade to Quester Pro for up to 2
-              users or Quester Team for up to 5 users.
+              {$_("invitations.upgradeOptions")}
             {/if}
           </span>
         </div>
@@ -448,7 +453,7 @@
 
   <!-- Pending invitations -->
   <div>
-    <h3 class="text-lg font-medium mb-4">Pending Invitations</h3>
+    <h3 class="text-lg font-medium mb-4">{$_("invitations.pendingInvitations")}</h3>
     {#if invitationsLoading}
       <div class="text-center p-6 border-2 dark:border-dark-border rounded-md">
         <div class="space-y-3">
@@ -456,9 +461,9 @@
             class="animate-spin inline-block h-6 w-6 border-2 border-primary border-t-transparent rounded-full"
           ></div>
           <div class="space-y-1">
-            <p class="font-medium">Loading Pending Invitations</p>
+            <p class="font-medium">{$_("invitations.loadingPending")}</p>
             <p class="text-sm text-muted-foreground">
-              Fetching invitation status from server...
+              {$_("invitations.fetchingStatus")}
             </p>
           </div>
         </div>
@@ -469,23 +474,23 @@
       >
         {invitationsError}
         <Button variant="outline" onclick={loadPendingInvitations} class="mt-2">
-          Try Again
+          {$_("common.retry")}
         </Button>
       </div>
     {:else if pendingInvitations.length === 0}
       <div
         class="text-center p-6 border-2 dark:border-dark-border rounded-md text-muted-foreground"
       >
-        No pending invitations
+        {$_("invitations.noPending")}
       </div>
     {:else}
       <Table.Root>
         <Table.Header>
           <Table.Row>
-            <Table.Head>Email</Table.Head>
-            <Table.Head>Role</Table.Head>
-            <Table.Head>Sent</Table.Head>
-            <Table.Head class="text-right">Actions</Table.Head>
+            <Table.Head>{$_("invitations.tableEmail")}</Table.Head>
+            <Table.Head>{$_("invitations.tableRole")}</Table.Head>
+            <Table.Head>{$_("invitations.tableSent")}</Table.Head>
+            <Table.Head class="text-right">{$_("invitations.tableActions")}</Table.Head>
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -509,7 +514,7 @@
                         ? invitation.accessMapping?.projects?.find(
                             (p: any) => p.id === props.resourceId
                           )?.roleName
-                        : undefined) || "Member"}
+                        : undefined) || $_('invitationManager.member')}
                 </Badge>
               </Table.Cell>
               <Table.Cell class="text-muted-foreground">
@@ -523,7 +528,7 @@
                   class="h-8 px-2 text-destructive hover:text-destructive-foreground hover:bg-destructive"
                 >
                   <X class="h-4 w-4" />
-                  <span class="sr-only">Revoke invitation</span>
+                  <span class="sr-only">{$_('srOnly.revokeInvitation')}</span>
                 </Button>
               </Table.Cell>
             </Table.Row>

@@ -6,6 +6,11 @@ import {
   type ChatSession,
 } from "$lib/services/chat-history-api";
 import type { ContextSelectionItem } from "$lib/types/context";
+import { _ } from "svelte-i18n";
+import { get } from "svelte/store";
+
+// Helper function to get translations
+const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
 export interface SearchResult {
   id: string;

@@ -4,7 +4,7 @@
   import * as ToggleGroup from "$lib/components/ui/toggle-group";
   import * as Popover from "$lib/components/ui/popover";
   import { Button } from "$lib/components/ui/button";
-  import { nodeIcons, typeMap } from "$lib/components/graph/data";
+  import { nodeIcons, getTypeLabel } from "$lib/components/graph/data";
   import * as Card from "$lib/components/ui/card";
   import { onMount } from "svelte";
   import { navigate } from "svelte-routing";
@@ -13,6 +13,11 @@
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
   import { GraduationCap, ZoomIn, ZoomOut } from "lucide-svelte";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper for imperative translation access
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   let value = $state("2D");
   let isLoading = $state(true);
@@ -34,8 +39,6 @@
     threeDControls = controls;
   }
 
-  // Define the type for typeMap keys
-  type TypeMapKey = keyof typeof typeMap;
 
   // Check if user has access to graph visualization features
   async function checkGraphAccessCapability() {
@@ -68,93 +71,87 @@
     checkGraphAccessCapability();
   });
 
-  // Define driverObj
-  const driverObj = driver({
-    showProgress: true,
-    popoverClass: "quester-driver-theme",
-    steps: [
-      {
-        element: "#connections-header",
-        popover: {
-          title: "Visualize Your Research Connections",
-          description:
-            "This view maps out the relationships between your literature, notes, keywords, and concepts. It helps you discover hidden patterns, identify research gaps, and understand the structure of your project.",
-          side: "bottom",
-          align: "start",
+  // Create driver.js tour with translations
+  function createDriver() {
+    return driver({
+      showProgress: true,
+      popoverClass: "quester-driver-theme",
+      steps: [
+        {
+          element: "#connections-header",
+          popover: {
+            title: t("tours.connections.visualize.title"),
+            description: t("tours.connections.visualize.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#view-toggle",
-        popover: {
-          title: "Switch Between Dimensions",
-          description:
-            "Toggle between a 2D network graph and an immersive 3D view to explore your connections from different perspectives.",
-          side: "bottom",
-          align: "start",
+        {
+          element: "#view-toggle",
+          popover: {
+            title: t("tours.connections.dimensions.title"),
+            description: t("tours.connections.dimensions.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#legend-button",
-        popover: {
-          title: "Understand the Symbols",
-          description:
-            "Click here to open the legend, which explains what each icon (node) in the graph represents (e.g., literature, note, keyword).",
-          side: "bottom",
-          align: "end",
+        {
+          element: "#legend-button",
+          popover: {
+            title: t("tours.connections.legend.title"),
+            description: t("tours.connections.legend.description"),
+            side: "bottom",
+            align: "end",
+          },
         },
-      },
-      {
-        element: "#controls-toggle-button",
-        popover: {
-          title: "Show/Hide Interaction Hints",
-          description:
-            "Toggle this to display or hide helpful tips on how to navigate and interact with the graph (zooming, panning, selecting).",
-          side: "bottom",
-          align: "end",
+        {
+          element: "#controls-toggle-button",
+          popover: {
+            title: t("tours.connections.controls.title"),
+            description: t("tours.connections.controls.description"),
+            side: "bottom",
+            align: "end",
+          },
         },
-      },
-      {
-        element: "#connections-header",
-        popover: {
-          title: "Interact with the Graph",
-          description:
-            "Explore the graph area below! Use your mouse to zoom, pan, and select nodes. In 2D, you can drag nodes; in 3D, rotate the view. Check the controls hints if needed.",
-          side: "bottom",
-          align: "center",
+        {
+          element: "#connections-header",
+          popover: {
+            title: t("tours.connections.interact.title"),
+            description: t("tours.connections.interact.description"),
+            side: "bottom",
+            align: "center",
+          },
         },
-      },
-      {
-        element: "#connections-header",
-        popover: {
-          title: "Navigate to Literature",
-          description:
-            "Right-click on any literature node (book icons) to open a context menu with quick navigation options. You can instantly jump to the full literature details in a new tab without losing your place in the graph.",
-          side: "bottom",
-          align: "center",
+        {
+          element: "#connections-header",
+          popover: {
+            title: t("tours.connections.navigate.title"),
+            description: t("tours.connections.navigate.description"),
+            side: "bottom",
+            align: "center",
+          },
         },
-      },
-      {
-        element: "#connections-header",
-        popover: {
-          title: "Filter Connected Nodes",
-          description:
-            "Use the context menu to filter the graph and show only nodes connected to a specific literature item. This helps you focus on the immediate connections of a particular research piece. Use 'Reset Filter' to return to the full view.",
-          side: "bottom",
-          align: "center",
+        {
+          element: "#connections-header",
+          popover: {
+            title: t("tours.connections.filter.title"),
+            description: t("tours.connections.filter.description"),
+            side: "bottom",
+            align: "center",
+          },
         },
-      },
-      {
-        element: "#connections-header",
-        popover: {
-          title: "Discover Insights",
-          description:
-            "Use this visualization to see how ideas connect, identify clusters of related work, spot potential research gaps, and gain a deeper understanding of your research landscape.",
-          side: "bottom",
-          align: "start",
+        {
+          element: "#connections-header",
+          popover: {
+            title: t("tours.connections.discover.title"),
+            description: t("tours.connections.discover.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-    ],
-  });
+      ],
+    });
+  }
 
   function handleZoomIn() {
     if (value === "2D") {
@@ -251,7 +248,7 @@
               id="legend-button"
               variant="outline"
               class="w-[6rem] border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-              >Legend</Button
+              >{$_('connections.legend')}</Button
             >
           </Popover.Trigger>
           <Popover.Content
@@ -262,7 +259,7 @@
                 <div
                   class="font-semibold border-b p-3 dark:border-neutral-800 sticky top-0"
                 >
-                  Legend
+                  {$_('connections.legend')}
                 </div>
                 <div class="p-3 space-y-1.5 overflow-y-none max-h-[520px]">
                   {#each Object.entries(nodeIcons) as [key, value]}
@@ -272,10 +269,10 @@
                       >
                         <img
                           src={value}
-                          alt={"Literature"}
+                          alt={$_('connections.literature')}
                           class="w-6 h-6 mr-2 flex-shrink-0"
                         />
-                        <span class="text-sm truncate">Literature</span>
+                        <span class="text-sm truncate">{$_('connections.literature')}</span>
                       </div>
                     {:else}
                       <div
@@ -283,11 +280,11 @@
                       >
                         <img
                           src={value}
-                          alt={key}
+                          alt={getTypeLabel(key)}
                           class="w-6 h-6 mr-2 flex-shrink-0"
                         />
                         <span class="text-sm truncate"
-                          >{typeMap[key as TypeMapKey] || key}</span
+                          >{getTypeLabel(key)}</span
                         >
                       </div>
                     {/if}
@@ -303,7 +300,7 @@
               id="controls-toggle-button"
               variant="outline"
               class="w-[7rem] border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-              >Controls</Button
+              >{$_('connections.controls')}</Button
             >
           </Popover.Trigger>
           <Popover.Content
@@ -314,36 +311,34 @@
                 <div
                   class="font-semibold border-b p-3 dark:border-neutral-800 sticky top-0"
                 >
-                  Interaction Controls
+                  {$_('connections.interactionControls')}
                 </div>
                 <div class="p-3 space-y-3">
                   {#if value === "2D"}
                     <div class="space-y-2">
-                      <h4 class="text-sm font-medium">2D Graph Controls</h4>
+                      <h4 class="text-sm font-medium">{$_('connections.2dGraphControls')}</h4>
                       <ul class="text-xs space-y-1 text-muted-foreground">
                         <li>
-                          <strong>Left Click:</strong> Pan/Select/Drag nodes
+                          <strong>{$_('connections.leftClick')}:</strong> {$_('connections.panSelectDrag')}
                         </li>
-                        <li><strong>Scroll Wheel:</strong> Zoom in/out</li>
+                        <li><strong>{$_('connections.scrollWheel')}:</strong> {$_('connections.zoomInOut')}</li>
                         <li>
-                          <strong>Left Click + Shift:</strong> Select multiple nodes
+                          <strong>{$_('connections.leftClickShift')}:</strong> {$_('connections.selectMultiple')}
                         </li>
                         <li>
-                          <strong>Right Click (Literature):</strong> Context menu
-                          (navigate, filter)
+                          <strong>{$_('connections.rightClickLiterature')}:</strong> {$_('connections.contextMenu')}
                         </li>
                       </ul>
                     </div>
                   {:else if value === "3D"}
                     <div class="space-y-2">
-                      <h4 class="text-sm font-medium">3D Graph Controls</h4>
+                      <h4 class="text-sm font-medium">{$_('connections.3dGraphControls')}</h4>
                       <ul class="text-xs space-y-1 text-muted-foreground">
-                        <li><strong>Left Click:</strong> Rotate view</li>
-                        <li><strong>Scroll Wheel:</strong> Zoom in/out</li>
-                        <li><strong>Right Click (Empty):</strong> Pan view</li>
+                        <li><strong>{$_('connections.leftClick')}:</strong> {$_('connections.rotateView')}</li>
+                        <li><strong>{$_('connections.scrollWheel')}:</strong> {$_('connections.zoomInOut')}</li>
+                        <li><strong>{$_('connections.rightClickEmpty')}:</strong> {$_('connections.panView')}</li>
                         <li>
-                          <strong>Right Click (Literature):</strong> Context menu
-                          (navigate, filter)
+                          <strong>{$_('connections.rightClickLiterature')}:</strong> {$_('connections.contextMenu')}
                         </li>
                       </ul>
                     </div>
@@ -355,11 +350,11 @@
         </Popover.Root>
         <Button
           variant="outline"
-          onclick={() => driverObj.drive()}
+          onclick={() => createDriver().drive()}
           class="border-2 dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
         >
           <GraduationCap class="h-4 w-4 mr-2" />
-          Tour
+          {$_('connections.tour')}
         </Button>
       </div>
     </div>

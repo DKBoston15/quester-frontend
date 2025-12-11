@@ -41,6 +41,11 @@
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
   import { GraduationCap } from "lucide-svelte";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper to get translation value imperatively for driver.js
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   // Define the structure for the daily activity counts
   interface DailyActivityCount {
@@ -578,7 +583,7 @@
         );
         return {
           projectId: project.id,
-          projectName: project.name || "Unnamed Project",
+          projectName: project.name || $_('analytics.unnamedProject'),
           literature: aggregatedCounts.literature,
           notes: aggregatedCounts.notes,
           models: aggregatedCounts.models,
@@ -692,11 +697,11 @@
 
   // Helper to format dates nicely, handling null
   function formatDateTime(isoString: string | null): string {
-    if (!isoString) return "Never";
+    if (!isoString) return t("analytics.never");
     try {
       return DateTime.fromISO(isoString).toLocaleString(DateTime.DATETIME_MED);
     } catch (e) {
-      return "Invalid Date";
+      return t("analytics.invalidDate");
     }
   }
 
@@ -779,132 +784,124 @@
   }
   // --- End Project Activity Table Pagination Logic ---
 
-  const driverObj = driver({
-    showProgress: true,
-    popoverClass: "quester-driver-theme",
-    steps: [
-      {
-        element: "#analytics-header",
-        popover: {
-          title: "Welcome to Organization Analytics",
-          description:
-            "This page provides a high-level overview of activity and engagement across your organization's projects and users. Use it to monitor progress, identify trends, and understand resource usage.",
-          side: "bottom",
-          align: "start",
+  function createDriverObj() {
+    return driver({
+      showProgress: true,
+      popoverClass: "quester-driver-theme",
+      steps: [
+        {
+          element: "#analytics-header",
+          popover: {
+            title: t("tours.analytics.welcome.title"),
+            description: t("tours.analytics.welcome.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#summary-metrics-grid",
-        popover: {
-          title: "Key Performance Indicators",
-          description:
-            "These cards show vital signs for your organization: total users, recent user activity (last 7 and 30 days), and the overall activity rate. Quickly gauge the health and engagement level of your workspace.",
-          side: "bottom",
-          align: "start",
+        {
+          element: "#summary-metrics-grid",
+          popover: {
+            title: t("tours.analytics.summaryMetrics.title"),
+            description: t("tours.analytics.summaryMetrics.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#project-activity-section",
-        popover: {
-          title: "Project Content Activity",
-          description:
-            "This section tracks the creation and modification of research content (Literature, Notes, Models, Outcomes) within each project.",
-          side: "top",
-          align: "start",
+        {
+          element: "#project-activity-section",
+          popover: {
+            title: t("tours.analytics.projectActivity.title"),
+            description: t("tours.analytics.projectActivity.description"),
+            side: "top",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#date-range-selector",
-        popover: {
-          title: "Filter by Time",
-          description:
-            "Adjust the date range (7, 14, 30 days, or All Time) to focus the activity data in the table and charts on specific periods. Useful for tracking recent progress or long-term trends.",
-          side: "bottom",
-          align: "end",
+        {
+          element: "#date-range-selector",
+          popover: {
+            title: t("tours.analytics.dateRange.title"),
+            description: t("tours.analytics.dateRange.description"),
+            side: "bottom",
+            align: "end",
+          },
         },
-      },
-      {
-        element: "#project-search-input",
-        popover: {
-          title: "Find Projects Quickly",
-          description:
-            "Use this search bar to filter the table below and find specific projects by name.",
-          side: "bottom",
-          align: "start",
+        {
+          element: "#project-search-input",
+          popover: {
+            title: t("tours.analytics.projectSearch.title"),
+            description: t("tours.analytics.projectSearch.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#project-activity-table",
-        popover: {
-          title: "Project Activity Details",
-          description:
-            "This table lists projects with recent activity. Click headers to sort. The columns quantify added content, helping identify active research areas. Use the checkboxes to select projects for detailed charting below.",
-          side: "top",
-          align: "start",
+        {
+          element: "#project-activity-table",
+          popover: {
+            title: t("tours.analytics.projectTable.title"),
+            description: t("tours.analytics.projectTable.description"),
+            side: "top",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#project-activity-table tbody tr:first-child td:last-child", // Target actions on the first row
-        popover: {
-          title: "Project Actions",
-          description:
-            "Quickly view the users associated with a project or navigate directly to the project workspace.",
-          side: "left",
-          align: "start",
+        {
+          element: "#project-activity-table tbody tr:first-child td:last-child",
+          popover: {
+            title: t("tours.analytics.projectActions.title"),
+            description: t("tours.analytics.projectActions.description"),
+            side: "left",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#project-activity-charts",
-        popover: {
-          title: "Visualize Project Trends",
-          description:
-            "When you select projects in the table above, detailed activity charts appear here. Compare trends across projects or dive deep into a single project's content creation patterns over the selected date range.",
-          side: "top",
-          align: "start",
+        {
+          element: "#project-activity-charts",
+          popover: {
+            title: t("tours.analytics.projectCharts.title"),
+            description: t("tours.analytics.projectCharts.description"),
+            side: "top",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#user-activity-section",
-        popover: {
-          title: "User Login Activity",
-          description:
-            "Monitor user engagement by tracking login frequency. This helps identify active contributors and users who might need support.",
-          side: "top",
-          align: "start",
+        {
+          element: "#user-activity-section",
+          popover: {
+            title: t("tours.analytics.userActivity.title"),
+            description: t("tours.analytics.userActivity.description"),
+            side: "top",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#user-search-input",
-        popover: {
-          title: "Find Users Quickly",
-          description:
-            "Search for specific users by name or email to check their recent login activity.",
-          side: "bottom",
-          align: "start",
+        {
+          element: "#user-search-input",
+          popover: {
+            title: t("tours.analytics.userSearch.title"),
+            description: t("tours.analytics.userSearch.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#user-activity-table",
-        popover: {
-          title: "User Login Details",
-          description:
-            "See when each user last logged in and how many distinct days they were active over different periods (7, 14, 30 days, All Time). Click headers to sort and easily identify engagement patterns.",
-          side: "top",
-          align: "start",
+        {
+          element: "#user-activity-table",
+          popover: {
+            title: t("tours.analytics.userTable.title"),
+            description: t("tours.analytics.userTable.description"),
+            side: "top",
+            align: "start",
+          },
         },
-      },
-      {
-        element: ".container", // General overview
-        popover: {
-          title: "Monitor Your Organization's Pulse",
-          description:
-            "Regularly use this Analytics page to understand research activity, track user engagement, and make informed decisions about resource allocation and support.",
-          side: "top",
-          align: "center",
+        {
+          element: ".container",
+          popover: {
+            title: t("tours.analytics.overview.title"),
+            description: t("tours.analytics.overview.description"),
+            side: "top",
+            align: "center",
+          },
         },
-      },
-    ],
-  });
+      ],
+    });
+  }
+
+  let driverObj = createDriverObj();
 </script>
 
 <Sidebar.Provider>
@@ -919,23 +916,20 @@
         >
           <div>
             <div class="flex items-center gap-2">
-              <h1 class="text-3xl font-bold">Organization Analytics</h1>
+              <h1 class="text-3xl font-bold">{$_('analytics.organizationAnalytics')}</h1>
               <Tooltip.Root>
                 <Tooltip.Trigger>
                   <Info class="h-5 w-5 text-muted-foreground" />
                 </Tooltip.Trigger>
                 <Tooltip.Content>
                   <p class="text-sm max-w-xs">
-                    View comprehensive analytics about your organization's
-                    activity, including user engagement patterns, project
-                    content creation, and team productivity metrics across all
-                    your projects.
+                    {$_('analytics.analyticsTooltip')}
                   </p>
                 </Tooltip.Content>
               </Tooltip.Root>
             </div>
             <p class="text-muted-foreground mt-2">
-              Activity overview across your projects and users.
+              {$_('analytics.activityOverview')}
             </p>
           </div>
           <!-- Date Range Selector (moved to Project Activity section) -->
@@ -943,10 +937,10 @@
           <Button
             variant="outline"
             onclick={() => driverObj.drive()}
-            aria-label="Learn about Organization Analytics"
+            aria-label={$_('analytics.organizationAnalytics')}
           >
             <GraduationCap class="h-4 w-4 mr-2" />
-            Tour
+            {$_('team.tour')}
           </Button>
         </div>
 
@@ -956,17 +950,15 @@
             class="text-center p-8 bg-destructive/10 border border-destructive rounded-md"
           >
             <ShieldAlert class="w-12 h-12 text-destructive mx-auto mb-4" />
-            <h2 class="text-xl font-bold mb-2">Access Denied</h2>
+            <h2 class="text-xl font-bold mb-2">{$_('analytics.accessDenied')}</h2>
             <p class="mb-4">
-              You don't have permission to view organization analytics. This
-              page requires organization admin, owner, or department admin
-              privileges.
+              {$_('analytics.noPermission')}
             </p>
             <a
               href="/dashboard"
               class="inline-flex items-center justify-center text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 rounded-md"
             >
-              Return to Dashboard
+              {$_('analytics.returnToDashboard')}
             </a>
           </div>
 
@@ -976,13 +968,13 @@
             <div
               class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite] mb-4"
             ></div>
-            <p>Loading analytics data...</p>
+            <p>{$_('analytics.loadingAnalytics')}</p>
           </div>
         {:else if teamManagement?.error}
           <div
             class="text-center p-8 text-destructive bg-destructive/10 border border-destructive rounded-md"
           >
-            <h3 class="font-semibold mb-2">Error Loading Data</h3>
+            <h3 class="font-semibold mb-2">{$_('analytics.errorLoadingData')}</h3>
             <p>{teamManagement.error}</p>
           </div>
         {:else if hasAccess}
@@ -1003,7 +995,7 @@
                     </div>
                     <div>
                       <p class="text-muted-foreground text-sm font-medium">
-                        Total Users
+                        {$_('analytics.totalUsers')}
                       </p>
                       <h3 class="text-left text-2xl font-bold">
                         {summaryMetrics.totalUsers}
@@ -1012,7 +1004,7 @@
                   </div>
                 </Tooltip.Trigger>
                 <Tooltip.Content side="bottom" class="max-w-xs">
-                  <p>Total number of all users in your organization.</p>
+                  <p>{$_('analytics.totalUsersTooltip')}</p>
                 </Tooltip.Content>
               </Tooltip.Root>
 
@@ -1027,7 +1019,7 @@
                     </div>
                     <div>
                       <p class="text-muted-foreground text-sm font-medium">
-                        Active Users (7 Days)
+                        {$_('analytics.activeUsers7Days')}
                       </p>
                       <h3 class="text-left text-2xl font-bold">
                         {summaryMetrics.activeUsersLast7Days}
@@ -1037,8 +1029,7 @@
                 </Tooltip.Trigger>
                 <Tooltip.Content side="bottom" class="max-w-xs">
                   <p>
-                    Number of users who logged in at least once during the past
-                    7 days.
+                    {$_('analytics.activeUsers7DaysTooltip')}
                   </p>
                 </Tooltip.Content>
               </Tooltip.Root>
@@ -1054,7 +1045,7 @@
                     </div>
                     <div>
                       <p class="text-muted-foreground text-sm font-medium">
-                        Active Users (30 Days)
+                        {$_('analytics.activeUsers30Days')}
                       </p>
                       <h3 class="text-left text-2xl font-bold">
                         {summaryMetrics.activeUsersLast30Days}
@@ -1064,8 +1055,7 @@
                 </Tooltip.Trigger>
                 <Tooltip.Content side="bottom" class="max-w-xs">
                   <p>
-                    Number of users who logged in at least once during the past
-                    30 days.
+                    {$_('analytics.activeUsers30DaysTooltip')}
                   </p>
                 </Tooltip.Content>
               </Tooltip.Root>
@@ -1081,7 +1071,7 @@
                     </div>
                     <div>
                       <p class="text-muted-foreground text-sm font-medium">
-                        Activity Rate (7d)
+                        {$_('analytics.activityRate7d')}
                       </p>
                       <h3 class="text-left text-2xl font-bold">
                         {summaryMetrics.averageActivePercentage}%
@@ -1091,9 +1081,7 @@
                 </Tooltip.Trigger>
                 <Tooltip.Content side="bottom" class="max-w-xs">
                   <p>
-                    Percentage of total possible user-days with login activity
-                    in the last 7 days. Calculated as: (total active days /
-                    (total users × 7 days)) × 100%.
+                    {$_('analytics.activityRateTooltip')}
                   </p>
                 </Tooltip.Content>
               </Tooltip.Root>
@@ -1105,7 +1093,7 @@
               <div
                 class="text-center p-8 bg-muted/50 border border-border rounded-md"
               >
-                <p class="text-muted-foreground">No projects available.</p>
+                <p class="text-muted-foreground">{$_('analytics.noProjectsAvailable')}</p>
               </div>
             {:else}
               <div class="space-y-8">
@@ -1117,12 +1105,10 @@
                     <h2 class="text-xl font-bold flex flex-col items-start">
                       <div class="flex items-center gap-2">
                         <LineChart class="w-5 h-5 text-primary" />
-                        <span>Project Activity (Content Added)</span>
+                        <span>{$_('analytics.projectActivityContentAdded')}</span>
                       </div>
                       <p class="text-sm text-muted-foreground mt-2">
-                        Click on project rows to view their activity charts
-                        below. You can select multiple projects to compare their
-                        activity.
+                        {$_('analytics.selectProjectsHint')}
                       </p>
                     </h2>
 
@@ -1141,7 +1127,7 @@
                           for="r7"
                           class={`flex items-center justify-center rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${selectedRange === "7" ? "bg-primary text-white dark:text-black" : "bg-card text-card-foreground"}`}
                         >
-                          7 Days
+                          {$_('analytics.days7')}
                         </Label>
                         <RadioGroup.Item
                           value="14"
@@ -1152,7 +1138,7 @@
                           for="r14"
                           class={`flex items-center justify-center rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${selectedRange === "14" ? "bg-primary text-white dark:text-black" : "bg-card text-card-foreground"}`}
                         >
-                          14 Days
+                          {$_('analytics.days14')}
                         </Label>
                         <RadioGroup.Item
                           value="30"
@@ -1163,7 +1149,7 @@
                           for="r30"
                           class={`flex items-center justify-center rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${selectedRange === "30" ? "bg-primary text-white dark:text-black" : "bg-card text-card-foreground"}`}
                         >
-                          30 Days
+                          {$_('analytics.days30')}
                         </Label>
                         <RadioGroup.Item
                           value="all"
@@ -1174,7 +1160,7 @@
                           for="rAll"
                           class={`flex items-center justify-center rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${selectedRange === "all" ? "bg-primary text-white dark:text-black" : "bg-card text-card-foreground"}`}
                         >
-                          All Time
+                          {$_('analytics.allTime')}
                         </Label>
                       </RadioGroup.Root>
                     </div>
@@ -1185,7 +1171,7 @@
                     <Input
                       id="project-search-input"
                       type="search"
-                      placeholder="Search projects by name..."
+                      placeholder={$_('analytics.searchProjectsByName')}
                       bind:value={projectSearchTerm}
                       class="max-w-sm"
                     />
@@ -1196,12 +1182,10 @@
                       class="text-center p-8 bg-muted/50 border border-border rounded-md"
                     >
                       <p class="text-muted-foreground">
-                        No projects with activity data found for this
-                        organization.
+                        {$_('analytics.noProjectsWithActivity')}
                       </p>
                       <p class="text-sm text-muted-foreground mt-2">
-                        Activity data is collected when team members create or
-                        modify resources in a project.
+                        {$_('analytics.activityDataCollection')}
                       </p>
                     </div>
                   {:else}
@@ -1215,7 +1199,7 @@
                           <TableHeader>
                             <TableRow>
                               <TableHead class="w-[50px]">
-                                <span class="sr-only">Select</span>
+                                <span class="sr-only">{$_('srOnly.select')}</span>
                               </TableHead>
                               <TableHead
                                 class="cursor-pointer hover:bg-muted/50 transition-colors"
@@ -1223,7 +1207,7 @@
                                   handleProjectSortClick("projectName")}
                               >
                                 <div class="flex items-center gap-1">
-                                  Project
+                                  {$_('analytics.project')}
                                   {#if projectSortColumn === "projectName"}
                                     {#if projectSortDirection === "asc"}<ChevronUp
                                         class="h-4 w-4"
@@ -1262,7 +1246,7 @@
                                         />
                                       {/if}
                                     </Tooltip.Trigger>
-                                    <Tooltip.Content>Literature</Tooltip.Content
+                                    <Tooltip.Content>{$_('analytics.literature')}</Tooltip.Content
                                     >
                                   </Tooltip.Root>
                                 </div>
@@ -1291,7 +1275,7 @@
                                         />
                                       {/if}
                                     </Tooltip.Trigger>
-                                    <Tooltip.Content>Notes</Tooltip.Content>
+                                    <Tooltip.Content>{$_('analytics.notes')}</Tooltip.Content>
                                   </Tooltip.Root>
                                 </div>
                               </TableHead>
@@ -1319,7 +1303,7 @@
                                         />
                                       {/if}
                                     </Tooltip.Trigger>
-                                    <Tooltip.Content>Models</Tooltip.Content>
+                                    <Tooltip.Content>{$_('analytics.models')}</Tooltip.Content>
                                   </Tooltip.Root>
                                 </div>
                               </TableHead>
@@ -1348,11 +1332,11 @@
                                         />
                                       {/if}
                                     </Tooltip.Trigger>
-                                    <Tooltip.Content>Outcomes</Tooltip.Content>
+                                    <Tooltip.Content>{$_('analytics.outcomes')}</Tooltip.Content>
                                   </Tooltip.Root>
                                 </div>
                               </TableHead>
-                              <TableHead class="text-right">Actions</TableHead>
+                              <TableHead class="text-right">{$_('analytics.actions')}</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -1432,7 +1416,7 @@
                                             project.projectId
                                           )}
                                       >
-                                        View Users
+                                        {$_('analytics.viewUsers')}
                                       </Button>
                                       <Button
                                         variant="outline"
@@ -1443,7 +1427,7 @@
                                             `/project/${project.projectId}`
                                           )}
                                       >
-                                        Go to Project
+                                        {$_('analytics.goToProject')}
                                       </Button>
                                     </div>
                                   </TableCell>
@@ -1506,7 +1490,7 @@
                     {#if selectedProjectsData.length > 0}
                       <div class="mt-6 space-y-6" id="project-activity-charts">
                         <h3 class="text-lg font-semibold">
-                          Selected Project Activity Details
+                          {$_('analytics.selectedProjectDetails')}
                         </h3>
                         <div
                           class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
@@ -1539,7 +1523,7 @@
                 <div id="user-activity-section">
                   <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
                     <Users class="w-5 h-5 text-primary" />
-                    <span>User Login Activity</span>
+                    <span>{$_('analytics.userLoginActivity')}</span>
                   </h2>
 
                   <!-- User Search Input -->
@@ -1547,7 +1531,7 @@
                     <Input
                       id="user-search-input"
                       type="search"
-                      placeholder="Search users by name or email..."
+                      placeholder={$_('analytics.searchUsersPlaceholder')}
                       bind:value={userSearchTerm}
                       class="max-w-sm"
                     />
@@ -1558,7 +1542,7 @@
                       class="text-center p-8 bg-muted/50 border border-border rounded-md"
                     >
                       <p class="text-muted-foreground">
-                        No user login data available.
+                        {$_('analytics.noUserLoginData')}
                       </p>
                     </div>
                   {:else}
@@ -1575,7 +1559,7 @@
                                 onclick={() => handleSortClick("user")}
                               >
                                 <div class="flex items-center gap-1">
-                                  User
+                                  {$_('analytics.user')}
                                   {#if sortColumn === "user"}
                                     {#if sortDirection === "asc"}<ChevronUp
                                         class="h-4 w-4"
@@ -1594,7 +1578,7 @@
                                 onclick={() => handleSortClick("lastLogin")}
                               >
                                 <div class="flex items-center gap-1">
-                                  Last Login
+                                  {$_('analytics.lastLogin')}
                                   {#if sortColumn === "lastLogin"}
                                     {#if sortDirection === "asc"}<ChevronUp
                                         class="h-4 w-4"
@@ -1615,7 +1599,7 @@
                                 <div
                                   class="flex items-center justify-end gap-1"
                                 >
-                                  Active Days (7d)
+                                  {$_('analytics.activeDays7d')}
                                   {#if sortColumn === "days7"}
                                     {#if sortDirection === "asc"}<ChevronUp
                                         class="h-4 w-4"
@@ -1636,7 +1620,7 @@
                                 <div
                                   class="flex items-center justify-end gap-1"
                                 >
-                                  Active Days (14d)
+                                  {$_('analytics.activeDays14d')}
                                   {#if sortColumn === "days14"}
                                     {#if sortDirection === "asc"}<ChevronUp
                                         class="h-4 w-4"
@@ -1657,7 +1641,7 @@
                                 <div
                                   class="flex items-center justify-end gap-1"
                                 >
-                                  Active Days (30d)
+                                  {$_('analytics.activeDays30d')}
                                   {#if sortColumn === "days30"}
                                     {#if sortDirection === "asc"}<ChevronUp
                                         class="h-4 w-4"
@@ -1678,7 +1662,7 @@
                                 <div
                                   class="flex items-center justify-end gap-1"
                                 >
-                                  Active Days (All)
+                                  {$_('analytics.activeDaysAll')}
                                   {#if sortColumn === "daysAll"}
                                     {#if sortDirection === "asc"}<ChevronUp
                                         class="h-4 w-4"

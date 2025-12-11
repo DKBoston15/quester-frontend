@@ -21,6 +21,34 @@
   } from "lucide-svelte";
   import { API_BASE_URL } from '$lib/config';
   import { openUrlInNewTab } from '$lib/utils/browser';
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper function for imperative translation access
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
+
+  // Status translation mapping
+  const statusTranslations: Record<string, string> = {
+    "Not Started": "literature.status.notStarted",
+    "Reading": "literature.status.reading",
+    "Note Taking": "literature.status.noteTaking",
+    "Completed": "literature.status.completed",
+    "Archived": "literature.status.archived",
+  };
+
+  // Type translation mapping
+  const typeTranslations: Record<string, string> = {
+    "Journal Article": "literatureDetails.types.journalArticle",
+    "Literature Review": "literatureDetails.types.literatureReview",
+    "Book": "literatureDetails.types.book",
+    "Book Chapter": "literatureDetails.types.bookChapter",
+    "Conference Presentation": "literatureDetails.types.conferencePresentation",
+    "Conference Proceedings": "literatureDetails.types.conferenceProceedings",
+    "Dissertation": "literatureDetails.types.dissertation",
+    "Website": "literatureDetails.types.website",
+    "Gray Literature": "literatureDetails.types.grayLiterature",
+    "Other": "literatureDetails.types.other",
+  };
 
   // Register required modules
   ModuleRegistry.registerModules([ClientSideRowModelModule]);
@@ -79,217 +107,229 @@
     container.appendChild(iconContainer);
 
     const text = document.createElement("span");
-    text.textContent = status;
+    // Translate the status text
+    const translationKey = statusTranslations[status];
+    text.textContent = translationKey ? t(translationKey) : status;
     container.appendChild(text);
 
     return container;
   }
 
-  const columnDefs: ColDef<Literature>[] = [
-    {
-      headerName: "",
-      width: 50,
-      checkboxSelection: true,
-      headerCheckboxSelection: true,
-      resizable: false,
-      sortable: false,
-      filter: false,
-      suppressMenu: true,
-      lockPosition: "left",
-    },
-    {
-      field: "name",
-      headerName: "Title",
-      flex: 2,
-      sortable: true,
-      filter: true,
-      filterParams: {
-        buttons: ["reset", "apply"],
-        closeOnApply: true,
-        suppressAndOrCondition: true,
-      },
-      cellClass: "font-medium",
-    },
-    {
-      field: "authors",
-      headerName: "Authors",
-      flex: 2,
-      sortable: true,
-      filter: true,
-      filterParams: {
-        buttons: ["reset", "apply"],
-        closeOnApply: true,
-        suppressAndOrCondition: true,
-      },
-      valueFormatter: (params: ValueFormatterParams<Literature>) => {
-        if (Array.isArray(params.value)) {
-          return params.value.join(", ");
-        }
-        return "";
-      },
-    },
-    {
-      field: "status",
-      headerName: "Status",
-      width: 160,
-      sortable: true,
-      filter: true,
-      cellRenderer: StatusCellRenderer,
-      filterParams: {
-        buttons: ["reset", "apply"],
-        closeOnApply: true,
-      },
-    },
-    {
-      field: "publisherName",
-      headerName: "Publisher",
-      flex: 1,
-      sortable: true,
-      filter: true,
-      filterParams: {
-        buttons: ["reset", "apply"],
-        closeOnApply: true,
-        suppressAndOrCondition: true,
-      },
-    },
-    {
-      field: "publishYear",
-      headerName: "Year",
-      width: 100,
-      sortable: true,
-      filter: "agNumberColumnFilter",
-      filterParams: {
-        buttons: ["reset", "apply"],
-        closeOnApply: true,
-        suppressAndOrCondition: true,
-      },
-      type: "numericColumn",
-      suppressMenu: true,
-    },
-    {
-      field: "type",
-      headerName: "Type",
-      width: 120,
-      sortable: true,
-      filter: true,
-      filterParams: {
-        buttons: ["reset", "apply"],
-        closeOnApply: true,
-      },
-    },
-    {
-      field: "createdAt",
-      headerName: "Added On",
-      width: 150,
-      sortable: true,
-      filter: "agDateColumnFilter",
-      filterParams: {
-        buttons: ["reset", "apply"],
-        closeOnApply: true,
-        suppressAndOrCondition: true,
-        comparator: (filterLocalDateAtMidnight: Date, cellValue: string) => {
-          const cellDate = new Date(cellValue);
+  function TypeCellRenderer(params: ICellRendererParams<Literature>) {
+    const typeValue = params.value || "";
+    const translationKey = typeTranslations[typeValue];
+    return translationKey ? t(translationKey) : typeValue;
+  }
 
-          if (isNaN(cellDate.getTime())) return -1;
-          if (isNaN(filterLocalDateAtMidnight.getTime())) return -1;
-
-          const cellDateMidnight = new Date(
-            cellDate.getFullYear(),
-            cellDate.getMonth(),
-            cellDate.getDate()
-          );
-
-          if (cellDateMidnight < filterLocalDateAtMidnight) {
-            return -1;
-          } else if (cellDateMidnight > filterLocalDateAtMidnight) {
-            return 1;
-          } else {
-            return 0;
+  // Function to get translated column definitions
+  function getColumnDefs(): ColDef<Literature>[] {
+    return [
+      {
+        headerName: "",
+        width: 50,
+        checkboxSelection: true,
+        headerCheckboxSelection: true,
+        resizable: false,
+        sortable: false,
+        filter: false,
+        suppressMenu: true,
+        lockPosition: "left",
+      },
+      {
+        field: "name",
+        headerName: t("literature.tableHeaders.title"),
+        flex: 2,
+        sortable: true,
+        filter: true,
+        filterParams: {
+          buttons: ["reset", "apply"],
+          closeOnApply: true,
+          suppressAndOrCondition: true,
+        },
+        cellClass: "font-medium",
+      },
+      {
+        field: "authors",
+        headerName: t("literature.tableHeaders.authors"),
+        flex: 2,
+        sortable: true,
+        filter: true,
+        filterParams: {
+          buttons: ["reset", "apply"],
+          closeOnApply: true,
+          suppressAndOrCondition: true,
+        },
+        valueFormatter: (params: ValueFormatterParams<Literature>) => {
+          if (Array.isArray(params.value)) {
+            return params.value.join(", ");
           }
+          return "";
         },
       },
-      valueFormatter: (params: ValueFormatterParams<Literature>) => {
-        if (params.value) {
-          try {
-            // Assuming params.value is an ISO string like "2024-07-25T10:30:00.000Z"
-            const date = new Date(params.value);
-            return date.toLocaleDateString("en-CA"); // Format as YYYY-MM-DD
-          } catch (e) {
-            console.error("Error formatting date:", e);
-            return params.value; // Return original value if formatting fails
+      {
+        field: "status",
+        headerName: t("literature.tableHeaders.status"),
+        width: 160,
+        sortable: true,
+        filter: true,
+        cellRenderer: StatusCellRenderer,
+        filterParams: {
+          buttons: ["reset", "apply"],
+          closeOnApply: true,
+        },
+      },
+      {
+        field: "publisherName",
+        headerName: t("literature.tableHeaders.publisher"),
+        flex: 1,
+        sortable: true,
+        filter: true,
+        filterParams: {
+          buttons: ["reset", "apply"],
+          closeOnApply: true,
+          suppressAndOrCondition: true,
+        },
+      },
+      {
+        field: "publishYear",
+        headerName: t("literature.tableHeaders.year"),
+        width: 100,
+        sortable: true,
+        filter: "agNumberColumnFilter",
+        filterParams: {
+          buttons: ["reset", "apply"],
+          closeOnApply: true,
+          suppressAndOrCondition: true,
+        },
+        type: "numericColumn",
+        suppressMenu: true,
+      },
+      {
+        field: "type",
+        headerName: t("literature.tableHeaders.type"),
+        width: 150,
+        sortable: true,
+        filter: true,
+        cellRenderer: TypeCellRenderer,
+        filterParams: {
+          buttons: ["reset", "apply"],
+          closeOnApply: true,
+        },
+      },
+      {
+        field: "createdAt",
+        headerName: t("literature.tableHeaders.addedOn"),
+        width: 150,
+        sortable: true,
+        filter: "agDateColumnFilter",
+        filterParams: {
+          buttons: ["reset", "apply"],
+          closeOnApply: true,
+          suppressAndOrCondition: true,
+          comparator: (filterLocalDateAtMidnight: Date, cellValue: string) => {
+            const cellDate = new Date(cellValue);
+
+            if (isNaN(cellDate.getTime())) return -1;
+            if (isNaN(filterLocalDateAtMidnight.getTime())) return -1;
+
+            const cellDateMidnight = new Date(
+              cellDate.getFullYear(),
+              cellDate.getMonth(),
+              cellDate.getDate()
+            );
+
+            if (cellDateMidnight < filterLocalDateAtMidnight) {
+              return -1;
+            } else if (cellDateMidnight > filterLocalDateAtMidnight) {
+              return 1;
+            } else {
+              return 0;
+            }
+          },
+        },
+        valueFormatter: (params: ValueFormatterParams<Literature>) => {
+          if (params.value) {
+            try {
+              // Assuming params.value is an ISO string like "2024-07-25T10:30:00.000Z"
+              const date = new Date(params.value);
+              return date.toLocaleDateString("en-CA"); // Format as YYYY-MM-DD
+            } catch (e) {
+              console.error("Error formatting date:", e);
+              return params.value; // Return original value if formatting fails
+            }
           }
-        }
-        return "";
+          return "";
+        },
+        suppressMenu: true,
       },
-      suppressMenu: true,
-    },
-    {
-      field: "sourceFileId",
-      headerName: "File",
-      width: 100,
-      sortable: true,
-      comparator: (a: string | undefined, b: string | undefined) => {
-        const aHas = !!a;
-        const bHas = !!b;
-        if (aHas === bHas) return 0;
-        // In ascending order: items without a file (false) come before those with a file (true)
-        return aHas ? 1 : -1;
+      {
+        field: "sourceFileId",
+        headerName: t("literature.tableHeaders.file"),
+        width: 100,
+        sortable: true,
+        comparator: (a: string | undefined, b: string | undefined) => {
+          const aHas = !!a;
+          const bHas = !!b;
+          if (aHas === bHas) return 0;
+          // In ascending order: items without a file (false) come before those with a file (true)
+          return aHas ? 1 : -1;
+        },
+        filter: false,
+        suppressMenu: true,
+        // Ensure content in this cell is vertically centered
+        cellStyle: { display: 'flex', alignItems: 'center', justifyContent: 'center' },
+        cellRenderer: (params: ICellRendererParams<Literature>) => {
+          if (!params.value) {
+            return '';
+          }
+
+          const container = document.createElement('div');
+          // Fill the full cell height and center icons
+          container.className = 'h-full flex items-center justify-center gap-1';
+
+          // Preview button
+          const previewButton = document.createElement('button');
+          previewButton.className = 'inline-flex items-center justify-center p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors leading-none';
+          previewButton.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          `;
+          previewButton.title = t("literature.previewDocument");
+
+          previewButton.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            await previewDocument(params.value, params.data?.name || 'document');
+          });
+
+          // Download button
+          const downloadButton = document.createElement('button');
+          downloadButton.className = 'inline-flex items-center justify-center p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors leading-none';
+          downloadButton.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7,10 12,15 17,10"/>
+              <line x1="12" x2="12" y1="15" y2="3"/>
+            </svg>
+          `;
+          downloadButton.title = t("literature.downloadDocument");
+
+          downloadButton.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            await downloadDocument(params.value, params.data?.name || 'document');
+          });
+
+          container.appendChild(previewButton);
+          container.appendChild(downloadButton);
+          return container;
+        },
       },
-      filter: false,
-      suppressMenu: true,
-      // Ensure content in this cell is vertically centered
-      cellStyle: { display: 'flex', alignItems: 'center', justifyContent: 'center' },
-      cellRenderer: (params: ICellRendererParams<Literature>) => {
-        if (!params.value) {
-          return '';
-        }
-        
-        const container = document.createElement('div');
-        // Fill the full cell height and center icons
-        container.className = 'h-full flex items-center justify-center gap-1';
-        
-        // Preview button
-        const previewButton = document.createElement('button');
-        previewButton.className = 'inline-flex items-center justify-center p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors leading-none';
-        previewButton.innerHTML = `
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
-            <circle cx="12" cy="12" r="3"/>
-          </svg>
-        `;
-        previewButton.title = 'Preview document';
-        
-        previewButton.addEventListener('click', async (e) => {
-          e.stopPropagation();
-          await previewDocument(params.value, params.data?.name || 'document');
-        });
-        
-        // Download button
-        const downloadButton = document.createElement('button');
-        downloadButton.className = 'inline-flex items-center justify-center p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors leading-none';
-        downloadButton.innerHTML = `
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="7,10 12,15 17,10"/>
-            <line x1="12" x2="12" y1="15" y2="3"/>
-          </svg>
-        `;
-        downloadButton.title = 'Download document';
-        
-        downloadButton.addEventListener('click', async (e) => {
-          e.stopPropagation();
-          await downloadDocument(params.value, params.data?.name || 'document');
-        });
-        
-        container.appendChild(previewButton);
-        container.appendChild(downloadButton);
-        return container;
-      },
-    },
-  ];
+    ];
+  }
 
   const gridOptions: GridOptions<Literature> = {
-    columnDefs,
+    columnDefs: getColumnDefs(),
     rowData: props.data,
     rowClass: "row-class cursor-pointer hover:bg-muted",
     defaultColDef: {

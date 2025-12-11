@@ -9,6 +9,7 @@
   import { Card } from "$lib/components/ui/card";
   import { Badge } from "$lib/components/ui/badge";
   import { FileText, Clock } from "lucide-svelte";
+  import { _ } from "svelte-i18n";
 
   interface Props {
     literature: Literature[];
@@ -89,17 +90,17 @@
 <Card class="h-full flex flex-col">
   <div class="p-4 border-b">
     <div class="flex items-center justify-between">
-      <h3 class="text-lg font-semibold">Bibliography Preview</h3>
+      <h3 class="text-lg font-semibold">{$_('referenceExport.bibliographyPreview')}</h3>
       <div class="flex items-center gap-3 text-sm text-muted-foreground">
         <div class="flex items-center gap-1">
           <FileText class="h-4 w-4" />
-          <span>~{pageCount} page{pageCount !== 1 ? "s" : ""}</span>
+          <span>~{pageCount} {pageCount !== 1 ? $_('referenceExport.pages') : $_('referenceExport.page')}</span>
         </div>
         <div class="flex items-center gap-1">
           <Clock class="h-4 w-4" />
-          <span>{wordCount} words</span>
+          <span>{wordCount} {$_('referenceExport.words')}</span>
         </div>
-        <Badge variant="outline">{citationStyle} Style</Badge>
+        <Badge variant="outline">{citationStyle} {$_('referenceExport.style')}</Badge>
       </div>
     </div>
   </div>
@@ -107,7 +108,7 @@
   <div class="flex-1 overflow-y-auto p-6 min-h-0">
     <div id="reference-preview-content" class="space-y-4">
       <div class="text-center mb-8">
-        <h1 class="text-2xl font-bold mb-2">Bibliography</h1>
+        <h1 class="text-2xl font-bold mb-2">{$_('referenceExport.bibliography')}</h1>
         <p class="text-muted-foreground">
           Generated on {new Date().toLocaleDateString("en-US", {
             year: "numeric",
@@ -120,7 +121,7 @@
       {#if formattedCitations.length === 0}
         <div class="text-center py-12 text-muted-foreground">
           <FileText class="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p class="text-lg font-medium">No references selected</p>
+          <p class="text-lg font-medium">{$_("printTemplate.noReferencesAvailable")}</p>
           <p class="text-sm">
             Select some literature items to see the bibliography preview
           </p>
@@ -184,13 +185,12 @@
       <div
         class="flex items-center justify-between text-sm text-muted-foreground"
       >
-        <span
-          >Total: {formattedCitations.length} reference{formattedCitations.length !==
-          1
-            ? "s"
-            : ""}</span
-        >
-        <span>Sorted alphabetically by author</span>
+        <span>
+          {formattedCitations.length === 1
+            ? $_('referencePreview.totalReference')
+            : $_('referencePreview.totalReferences', { values: { count: formattedCitations.length } })}
+        </span>
+        <span>{$_('referencePreview.sortedAlphabetically')}</span>
       </div>
     </div>
   {/if}

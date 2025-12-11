@@ -15,8 +15,17 @@
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { InfoIcon, Check } from "lucide-svelte";
   import { projectStore } from "$lib/stores/ProjectStore";
+  import { auth } from "$lib/stores/AuthStore.svelte";
+  import { localeStore } from "$lib/stores/LocaleStore.svelte";
   import { toast } from "svelte-sonner";
   import { normalizeDesignDetail } from "$lib/utils/design";
+  import { _ } from "svelte-i18n";
+  import {
+    translateDesignName,
+    isValidDesignType,
+    isSupportedLocale,
+    type DesignType as TranslationDesignType
+  } from "$lib/utils/designTranslations";
 
   const designTypes = [
     "research",
@@ -109,19 +118,37 @@
     };
   }
 
-  const typeLabels: Record<DesignType, string> = {
-    research: "Research",
-    sampling: "Sampling",
-    measurement: "Measurement",
-    analytic: "Analytic",
-  };
+  // Get translated design type name
+  function getTypeLabel(type: DesignType): string {
+    return $_(`designTypes.${type}`);
+  }
+
+  // Check if current user is the owner of the project
+  function isProjectOwner(): boolean {
+    const currentUserId = auth.user?.id;
+    const projectOwnerId = projectStore.currentProject?.userId;
+    if (!currentUserId || !projectOwnerId) return false;
+    return String(currentUserId) === String(projectOwnerId);
+  }
+
+  // Translate design name for display (only for non-owners)
+  function getTranslatedDesignName(designType: DesignType, name: string): string {
+    if (isProjectOwner()) {
+      return name;
+    }
+    const currentLocale = localeStore.locale;
+    if (isValidDesignType(designType) && isSupportedLocale(currentLocale)) {
+      return translateDesignName(designType as TranslationDesignType, name, currentLocale);
+    }
+    return name;
+  }
 
   function getTriggerLabel(type: DesignType): string {
     const selections = localDesigns[type].selections;
     if (selections.length === 0) {
-      return `Select ${typeLabels[type]} designs`;
+      return $_('researchDesigns.selectDesigns', { values: { type: getTypeLabel(type) } });
     }
-    return selections.join(", ");
+    return selections.map(s => getTranslatedDesignName(type, s)).join(", ");
   }
 
   function getFieldId(type: DesignType, suffix: string): string {
@@ -269,20 +296,20 @@
   <CardHeader>
     <div class="flex justify-between items-center">
       <CardTitle class="flex items-center gap-2">
-        Project Designs
+        {$_('researchDesigns.title')}
         <Tooltip.Root>
           <Tooltip.Trigger>
             <InfoIcon class="h-5 w-5" />
           </Tooltip.Trigger>
           <Tooltip.Content>
             <p class="text-sm max-w-xs">
-              Define your research methodology across different design types.
+              {$_('researchDesigns.defineMethodology')}
             </p>
           </Tooltip.Content>
         </Tooltip.Root>
       </CardTitle>
       {#if !editMode}
-        <Button size="sm" onclick={() => (editMode = true)}>Edit</Button>
+        <Button size="sm" onclick={() => (editMode = true)}>{$_('common.edit')}</Button>
       {/if}
     </div>
   </CardHeader>
@@ -297,7 +324,7 @@
             class="capitalize px-4 data-[state=active]:bg-background data-[state=active]:border-b-2 rounded-none data-[state=active]:font-medium"
             onclick={() => (currentTab = type)}
           >
-            {type}
+            {$_(`designTypes.${type}`)}
           </Tabs.Trigger>
         {/each}
       </Tabs.List>
@@ -327,13 +354,13 @@
                     for={designsControlId}
                     class="text-sm font-semibold capitalize text-foreground"
                   >
-                    {type} Designs
+                    {$_('researchDesigns.designsLabel', { values: { type: getTypeLabel(type) } })}
                   </label>
                   <p
                     id={designsDescriptionId}
                     class="text-xs text-muted-foreground mt-1"
                   >
-                    Select all {type} designs that apply to this project.
+                    {$_('researchDesigns.selectDesignsHelp', { values: { type: getTypeLabel(type).toLowerCase() } })}
                   </p>
                 </div>
                 <Select.Root
@@ -350,7 +377,7 @@
                     )}
                   items={(projectStore.designs[type] || []).map((option) => ({
                     value: option.name,
-                    label: option.name,
+                    label: getTranslatedDesignName(type, option.name),
                   }))}
                 >
                   <Select.Trigger
@@ -369,11 +396,11 @@
                   >
                     {#if (projectStore.designs[type] || []).length > 0}
                       {#each projectStore.designs[type] || [] as option}
-                        <Select.Item value={option.name} label={option.name} />
+                        <Select.Item value={option.name} label={getTranslatedDesignName(type, option.name)} />
                       {/each}
                     {:else}
                       <div class="px-3 py-2 text-sm text-muted-foreground">
-                        No saved {type} designs yet. Add one below.
+                        {$_('researchDesigns.noSavedDesigns', { values: { type: getTypeLabel(type).toLowerCase() } })}
                       </div>
                     {/if}
                   </Select.Content>
@@ -385,7 +412,7 @@
                   <div class="flex flex-col gap-3 sm:flex-row">
                     <Input
                       type="text"
-                      placeholder={`Enter new ${type} design name`}
+                      placeholder={$_('researchDesigns.enterNewDesign', { values: { type: getTypeLabel(type).toLowerCase() } })}
                       bind:value={newDesignNames[type]}
                       class="flex-1"
                       onkeydown={(event) =>
@@ -401,7 +428,7 @@
                         disabled={designCreationPending === type}
                         class="px-6"
                       >
-                        {designCreationPending === type ? "Adding…" : "Add"}
+                        {designCreationPending === type ? $_('researchDesigns.adding') : $_('common.add')}
                       </Button>
                       <Button
                         variant="ghost"
@@ -409,7 +436,7 @@
                         onclick={() => cancelAddDesign(type)}
                         disabled={designCreationPending === type}
                       >
-                        Cancel
+                        {$_('common.cancel')}
                       </Button>
                     </div>
                   </div>
@@ -423,7 +450,7 @@
                     }}
                     class="w-full sm:w-auto"
                   >
-                    + Add new {type} design
+                    {$_('researchDesigns.addNewDesign', { values: { type: getTypeLabel(type).toLowerCase() } })}
                   </Button>
                 {/if}
               </div>
@@ -435,20 +462,19 @@
                     for={descriptionControlId}
                     class="text-sm font-semibold capitalize text-foreground"
                   >
-                    {type} Design Description
+                    {$_('researchDesigns.designDescription', { values: { type: getTypeLabel(type) } })}
                   </label>
                   <p
                     id={descriptionHelpId}
                     class="text-xs text-muted-foreground mt-1"
                   >
-                    Use this space to capture context, assumptions, or rationale
-                    for the selected designs.
+                    {$_('researchDesigns.descriptionHelp')}
                   </p>
                 </div>
                 <Textarea.Textarea
                   id={descriptionControlId}
                   rows={4}
-                  placeholder={`Describe the ${type} design approach for this project...`}
+                  placeholder={$_('researchDesigns.describeApproach', { values: { type: getTypeLabel(type).toLowerCase() } })}
                   bind:value={localDesigns[type].description}
                   class="resize-none"
                   aria-describedby={descriptionHelpId}
@@ -459,24 +485,24 @@
             <div class="space-y-4">
               <div>
                 <h4 class="text-sm font-medium mb-2 capitalize">
-                  {type} Designs
+                  {$_('researchDesigns.designsLabel', { values: { type: getTypeLabel(type) } })}
                 </h4>
                 {#if localDesigns[type].selections.length > 0}
                   <div class="flex flex-wrap gap-2">
                     {#each localDesigns[type].selections as selection}
-                      <Badge variant="outline">{selection}</Badge>
+                      <Badge variant="outline">{getTranslatedDesignName(type, selection)}</Badge>
                     {/each}
                   </div>
                 {:else}
                   <p class="text-sm text-muted-foreground">
-                    No {type} design specified
+                    {$_('researchDesigns.noDesignSpecified', { values: { type: getTypeLabel(type).toLowerCase() } })}
                   </p>
                 {/if}
               </div>
               {#if localDesigns[type].description.trim().length > 0}
                 <div class="border-t pt-4">
                   <h4 class="text-sm font-medium mb-2 capitalize">
-                    {type} Design Description
+                    {$_('researchDesigns.designDescription', { values: { type: getTypeLabel(type) } })}
                   </h4>
                   <p class="text-sm text-muted-foreground whitespace-pre-wrap">
                     {localDesigns[type].description}
@@ -496,10 +522,10 @@
         onclick={() => (editMode = false)}
         disabled={isPending}
       >
-        Cancel
+        {$_('common.cancel')}
       </Button>
       <Button onclick={saveDesigns} disabled={isPending}>
-        {isPending ? "Saving..." : "Save"}
+        {isPending ? $_('common.saving') : $_('common.save')}
       </Button>
     </CardFooter>
   {/if}

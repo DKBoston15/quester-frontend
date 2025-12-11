@@ -9,6 +9,7 @@
   import Check from "@lucide/svelte/icons/check";
   import ChevronsUpDown from "@lucide/svelte/icons/chevrons-up-down";
   import { Building, FolderKanban, Folder } from "lucide-svelte";
+  import { _ } from "svelte-i18n";
 
   type ResourceType = "organization" | "department" | "project";
 
@@ -48,17 +49,17 @@
     // For now, return basic info - could be enhanced with parent relationships
     switch (type) {
       case "organization":
-        return "Organization";
+        return $_('resourceSelector.organization');
       case "department":
         return item.organizationName
-          ? `${item.organizationName} › Department`
-          : "Department";
+          ? `${item.organizationName} › ${$_('resourceSelector.department')}`
+          : $_('resourceSelector.department');
       case "project":
         return item.organizationName && item.departmentName
-          ? `${item.organizationName} › ${item.departmentName} › Project`
-          : "Project";
+          ? `${item.organizationName} › ${item.departmentName} › ${$_('resourceSelector.project')}`
+          : $_('resourceSelector.project');
       default:
-        return "Resource";
+        return $_('resourceSelector.selectResource');
     }
   }
 
@@ -151,7 +152,7 @@
   });
 
   const selectedLabel = $derived(() => {
-    return selectedResource()?.label ?? "Select a resource...";
+    return selectedResource()?.label ?? $_('resourceSelector.selectResourceFallback');
   });
 
   const selectedIcon = $derived(() => {
@@ -199,12 +200,10 @@
 <div class="space-y-4">
   <div class="flex items-center gap-2">
     <p class="text-sm text-muted-foreground">
-      Select which team you want to manage:
+      {$_('resourceSelector.selectResource')}
     </p>
     <Badge variant="outline" class="text-xs">
-      {props.resources.organizations?.length || 0} orgs,
-      {props.resources.departments?.length || 0} depts,
-      {props.resources.projects?.length || 0} projects
+      {$_('resourceSelector.resourceCounts', { values: { orgs: props.resources.organizations?.length || 0, depts: props.resources.departments?.length || 0, projects: props.resources.projects?.length || 0 } })}
     </Badge>
   </div>
 
@@ -233,7 +232,7 @@
             {:else}
               <Building class="h-4 w-4 text-muted-foreground" />
               <span class="text-muted-foreground"
-                >Select organization, department, or project...</span
+                >{$_('resourceSelector.selectPlaceholder')}</span
               >
             {/if}
           </div>
@@ -248,15 +247,15 @@
     >
       <Command.Root filter={filterResources}>
         <Command.Input
-          placeholder="Search organizations, departments, or projects..."
+          placeholder={$_('resourceSelector.searchPlaceholder')}
         />
         <Command.List class="max-h-[300px] overflow-auto">
           <Command.Empty>
             <div class="flex flex-col items-center gap-2 py-6">
               <Building class="h-8 w-8 text-muted-foreground" />
-              <p class="text-sm text-muted-foreground">No resources found</p>
+              <p class="text-sm text-muted-foreground">{$_('resourceSelector.noResourcesFound')}</p>
               <p class="text-xs text-muted-foreground">
-                Try adjusting your search terms
+                {$_('resourceSelector.tryAdjusting')}
               </p>
             </div>
           </Command.Empty>

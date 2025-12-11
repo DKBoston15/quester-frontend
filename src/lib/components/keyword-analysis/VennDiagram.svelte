@@ -5,6 +5,7 @@
   import { Card } from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { DownloadIcon } from "lucide-svelte";
+  import { _ } from "svelte-i18n";
 
   // Define a consistent color scheme for up to 10 keywords
   const colorScheme = [
@@ -606,11 +607,9 @@
 </script>
 
 <Card class="p-4">
-  <h3 class="text-lg font-semibold mb-4">Keyword Overlap</h3>
+  <h3 class="text-lg font-semibold mb-4">{$_("keywordAnalysis.keywordOverlap")}</h3>
   <p class="text-sm text-muted-foreground mb-4">
-    Values show Google Scholar search result counts. Numbers represent total
-    documents containing the keywords (individual) or keyword combinations
-    (overlaps), not exclusive regions.
+    {$_("keywordAnalysis.keywordOverlapDescription")}
   </p>
   <div class="flex flex-col gap-4">
     <div class="flex flex-wrap gap-2">
@@ -633,10 +632,10 @@
         size="sm"
         onclick={downloadVennDiagramPNG}
         disabled={selectedKeywords.length < 2}
-        title="Download Venn Diagram as PNG"
+        title={$_("keywordAnalysis.downloadPNG")}
       >
         <DownloadIcon class="h-4 w-4 mr-2" />
-        Download PNG
+        {$_("keywordAnalysis.downloadPNG")}
       </Button>
     </div>
 
@@ -646,7 +645,7 @@
     >
       {#if selectedKeywords.length < 2}
         <p class="text-muted-foreground">
-          Select 2-3 keywords to see their overlap
+          {$_("keywordAnalysis.selectKeywordsForOverlap")}
         </p>
       {:else}
         <svg

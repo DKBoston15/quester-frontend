@@ -16,6 +16,7 @@
   import { projectStore } from "$lib/stores/ProjectStore";
   import { isDarkMode } from "$lib/utils/mode-watcher";
   import type { ForceGraph3DInstance } from "3d-force-graph";
+  import { _ } from "svelte-i18n";
   import type { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
   import GraphContextMenu from "./GraphContextMenu.svelte";
   import { navigate } from "svelte-routing";
@@ -788,7 +789,7 @@
               variant="outline"
               class="w-[6rem] border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
               disabled={!isGraphReady}
-              >Settings</Button
+              >{$_('common.settings')}</Button
             >
           </Popover.Trigger>
           <Popover.Content
@@ -808,7 +809,7 @@
                   }}
                   disabled={showIcons}
                 >
-                  {!labels ? "Labels On" : "Labels Off"}
+                  {!labels ? $_('graph.labelsOn') : $_('graph.labelsOff')}
                 </Button>
                 <Button
                   onclick={() => {
@@ -822,7 +823,7 @@
                   }}
                   disabled={labels}
                 >
-                  {!showIcons ? "Show Icons" : "Hide Icons"}
+                  {!showIcons ? $_('graph.showIcons') : $_('graph.hideIcons')}
                 </Button>
                 <Button
                   onclick={() => {
@@ -832,9 +833,9 @@
                     }
                   }}
                 >
-                  {!stickNodes ? "Stick Nodes" : "Unstick Nodes"}
+                  {!stickNodes ? $_('graph.stickNodes') : $_('graph.unstickNodes')}
                 </Button>
-                <Button onclick={startTimelapse}>Start Timelapse</Button>
+                <Button onclick={startTimelapse}>{$_('threeD.startTimelapse')}</Button>
               </Card.Content>
             </Card.Root>
           </Popover.Content>
@@ -845,7 +846,7 @@
               variant="outline"
               class="w-[6rem] border-2 border-black dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
               disabled={!isGraphReady}
-              >Filter</Button
+              >{$_('graph.filter')}</Button
             >
           </Popover.Trigger>
           <Popover.Content
@@ -853,7 +854,7 @@
           >
             <Card.Root>
               <Card.Header>
-                <Card.Title>Filter</Card.Title>
+                <Card.Title>{$_('graph.filterTitle')}</Card.Title>
                 <Card.Description>
                   Toggle visibility of different node types
                 </Card.Description>
@@ -883,7 +884,7 @@
   {#if originalGraphData}
     {#if originalGraphData.nodes.length == 0}
       <div class="flex flex-col items-center justify-center h-[60vh] text-center">
-        <h3 class="text-2xl font-semibold mb-4">No data to display yet!</h3>
+        <h3 class="text-2xl font-semibold mb-4">{$_('emptyStates.noData')}</h3>
         <p class="text-lg text-muted-foreground">
           Add literature to see your graph start to populate.
         </p>

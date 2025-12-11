@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { outcomeStore } from "$lib/stores/OutcomeStore";
   import OutcomeEditor from "$lib/components/outcomes/OutcomeEditor.svelte";
+  import { _ } from "svelte-i18n";
 
   const props = $props<{
     outcomeId: string;
@@ -16,7 +17,7 @@
 <div class="h-full">
   {#if outcomeStore.isLoading}
     <div class="flex h-full items-center justify-center">
-      <p class="text-lg text-muted-foreground">Loading outcome...</p>
+      <p class="text-lg text-muted-foreground">{$_('emptyStates.loadingOutcome')}</p>
     </div>
   {:else if outcomeStore.error}
     <div class="flex h-full items-center justify-center">
@@ -32,7 +33,7 @@
     />
   {:else}
     <div class="flex h-full items-center justify-center">
-      <p class="text-lg text-muted-foreground">Outcome not found</p>
+      <p class="text-lg text-muted-foreground">{$_('emptyStates.outcomeNotFound')}</p>
     </div>
   {/if}
 </div>

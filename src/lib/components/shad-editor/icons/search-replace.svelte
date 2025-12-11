@@ -13,6 +13,7 @@
     ChevronDown,
   } from "lucide-svelte";
   import type { ToolBarIconProps } from "./types.js";
+  import { _ } from "svelte-i18n";
 
   let {
     editor,
@@ -88,7 +89,7 @@
           </Button>
         </Tooltip.Trigger>
         <Tooltip.Content>
-          <p>Search And Replace Text</p>
+          <p>{$_('editor.search.title')}</p>
         </Tooltip.Content>
       </Tooltip.Root>
     </Tooltip.Provider>
@@ -105,7 +106,7 @@
     </Popover.Close>
     <div class="flex items-center justify-between">
       <Input
-        placeholder="Enter Text to search.."
+        placeholder={$_('editor.search.searchPlaceholder')}
         bind:value={searchText}
         oninput={() => updateSearchTerm()}
         class="mr-1"
@@ -122,7 +123,7 @@
             </Button>
           </Tooltip.Trigger>
           <Tooltip.Content>
-            <p>Previous Match</p>
+            <p>{$_('editor.search.previousMatch')}</p>
           </Tooltip.Content>
         </Tooltip.Root>
       </Tooltip.Provider>
@@ -138,14 +139,14 @@
             </Button>
           </Tooltip.Trigger>
           <Tooltip.Content>
-            <p>Next Match</p>
+            <p>{$_('editor.search.nextMatch')}</p>
           </Tooltip.Content>
         </Tooltip.Root>
       </Tooltip.Provider>
     </div>
     <div class="flex items-center justify-between">
       <Input
-        placeholder="Enter Text to Replace.."
+        placeholder={$_('editor.search.replacePlaceholder')}
         bind:value={replaceText}
         oninput={() => updateSearchTerm()}
         class="mr-1"
@@ -162,7 +163,7 @@
             </Button>
           </Tooltip.Trigger>
           <Tooltip.Content>
-            <p>Replace Current Match</p>
+            <p>{$_('editor.search.replaceCurrent')}</p>
           </Tooltip.Content>
         </Tooltip.Root>
       </Tooltip.Provider>
@@ -178,7 +179,7 @@
             </Button>
           </Tooltip.Trigger>
           <Tooltip.Content>
-            <p>Replace All Matches</p>
+            <p>{$_('editor.search.replaceAll')}</p>
           </Tooltip.Content>
         </Tooltip.Root>
       </Tooltip.Provider>
@@ -192,7 +193,7 @@
           bind:checked={caseSensitive}
           onchange={() => updateSearchTerm()}
         />
-        <p>Case Sensitive</p>
+        <p>{$_('editor.search.caseSensitive')}</p>
       </div>
       <div class="flex items-center gap-2">
         {searchCount > 0 ? searchIndex + 1 : 0} / {searchCount}

@@ -2,6 +2,7 @@
   import { Button } from "$lib/components/ui/button";
   import { Plus } from "lucide-svelte";
   import type { ComponentType } from "svelte";
+  import { _ } from "svelte-i18n";
 
   type EmptyStateVariant =
     | "data-empty"
@@ -58,7 +59,7 @@
     variant
   )}"
   role="region"
-  aria-label="Empty state"
+  aria-label={$_('ariaLabels.emptyState')}
 >
   {#if Icon}
     <Icon class="h-12 w-12 text-muted-foreground" />

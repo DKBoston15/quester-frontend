@@ -21,6 +21,14 @@
   import { API_BASE_URL } from "$lib/config";
   import { onMount, createEventDispatcher } from "svelte";
   import { processingJobsStore } from "$lib/stores/ProcessingJobsStore.svelte";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper function for imperative translation access
+  const t = (key: string, values?: Record<string, any>) => {
+    const translate = get(_);
+    return values ? translate(key, { values }) : translate(key);
+  };
 
   const dispatch = createEventDispatcher();
 
@@ -192,7 +200,7 @@
 
     } catch (err) {
       console.error('Error fetching processing status:', err);
-      error = err instanceof Error ? err.message : 'Failed to fetch status';
+      error = err instanceof Error ? err.message : t('processingStatus.failedToFetchStatus');
     } finally {
       isLoading = false;
     }
@@ -345,15 +353,15 @@
         {#if status?.job}
           {#snippet jobStatusIcon()}
             {@const StatusIcon = getStatusIcon(status.job.status)}
-            <StatusIcon 
+            <StatusIcon
               class="h-5 w-5 {status.job.status === 'processing' ? 'animate-spin' : ''}"
             />
           {/snippet}
           {@render jobStatusIcon()}
-          <span>Document Processing</span>
+          <span>{$_("processingStatus.documentProcessing")}</span>
         {:else}
           <Loader2 class="h-5 w-5 animate-spin" />
-          <span>Loading...</span>
+          <span>{$_("processingStatus.loading")}</span>
         {/if}
       </CardTitle>
       
@@ -391,9 +399,9 @@
           <div class="flex items-center justify-between text-sm">
             <span class="text-muted-foreground">
               {#if isUploading}
-                Uploading {status.job.totalItems} {status.job.totalItems === 1 ? 'file' : 'files'}...
+                {$_("processingStatus.uploadingFiles", { values: { count: status.job.totalItems } })}
               {:else}
-                Processing {status.job.totalItems} {status.job.totalItems === 1 ? 'document' : 'documents'}...
+                {$_("processingStatus.processingDocuments", { values: { count: status.job.totalItems } })}
               {/if}
             </span>
             <span class="font-semibold">{Math.round(status.job.progress || 0)}%</span>
@@ -408,29 +416,29 @@
       <div class="flex items-center justify-between gap-4 p-3 pr-6 bg-muted/50 rounded-lg flex-wrap overflow-hidden">
         <div class="flex items-center gap-2 text-sm min-w-0">
           <Files class="h-4 w-4 text-muted-foreground flex-shrink-0" />
-          <span class="text-muted-foreground">Total Files:</span>
+          <span class="text-muted-foreground">{$_("processingStatus.totalFiles")}:</span>
           <span class="font-medium truncate">{status.job.totalItems}</span>
         </div>
-        
+
         <div class="flex items-center gap-2 text-sm min-w-0">
           <CalendarClock class="h-4 w-4 text-muted-foreground flex-shrink-0" />
-          <span class="text-muted-foreground">Started:</span>
+          <span class="text-muted-foreground">{$_("processingStatus.started")}:</span>
           <span class="font-medium truncate">
             {#if status.job.startedAt}
-              {new Date(status.job.startedAt).toLocaleTimeString('en-US', { 
+              {new Date(status.job.startedAt).toLocaleTimeString('en-US', {
                 hour: 'numeric',
                 minute: '2-digit',
-                hour12: true 
+                hour12: true
               })}
             {:else}
-              Pending
+              {$_("processingStatus.pending")}
             {/if}
           </span>
         </div>
-        
+
         <div class="flex items-center gap-2 text-sm min-w-0">
           <Timer class="h-4 w-4 text-muted-foreground flex-shrink-0" />
-          <span class="text-muted-foreground">Duration:</span>
+          <span class="text-muted-foreground">{$_("processingStatus.duration")}:</span>
           <span class="font-medium truncate">
             {#if status.job.startedAt}
               {formatDuration(status.job.startedAt, status.job.completedAt)}
@@ -446,7 +454,7 @@
         <div class="p-3 bg-destructive/10 text-destructive rounded-lg">
           <div class="flex items-center space-x-2 mb-1">
             <AlertCircle class="h-4 w-4" />
-            <span class="font-medium">Error</span>
+            <span class="font-medium">{$_("processingStatus.error")}</span>
           </div>
           <p class="text-sm">{status.job.errorMessage}</p>
         </div>
@@ -455,18 +463,18 @@
       <!-- Results Summary -->
       {#if status.job.results && status.job.status === 'completed'}
         <div class="p-3 bg-muted/50 rounded-lg border border-muted">
-          <h4 class="font-medium mb-2 text-sm">Processing Complete</h4>
+          <h4 class="font-medium mb-2 text-sm">{$_("processingStatus.processingComplete")}</h4>
           <div class="grid grid-cols-2 gap-4 text-sm">
             <div class="flex items-center gap-2">
               <CheckCircle2 class="h-4 w-4 text-green-600" />
-              <span class="text-muted-foreground">Successful:</span>
+              <span class="text-muted-foreground">{$_("processingStatus.successful")}:</span>
               <span class="font-semibold text-green-600">
                 {status.job.results.successfulDocuments || 0}
               </span>
             </div>
             <div class="flex items-center gap-2">
               <AlertCircle class="h-4 w-4 text-destructive" />
-              <span class="text-muted-foreground">Failed:</span>
+              <span class="text-muted-foreground">{$_("processingStatus.failed")}:</span>
               <span class="font-semibold text-destructive">
                 {status.job.results.failedDocuments || 0}
               </span>
@@ -481,7 +489,7 @@
           <Collapsible.Trigger asChild let:builder>
             <Button builders={[builder]} variant="ghost" class="w-full justify-between p-0">
               <span class="font-medium">
-                File Details ({status.files.length})
+                {$_("processingStatus.fileDetails")} ({status.files.length})
               </span>
               <ChevronDown class="h-4 w-4 transition-transform {isExpanded ? 'rotate-180' : ''}" />
             </Button>
@@ -521,17 +529,17 @@
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4 text-xs text-muted-foreground">
-                  <div>Size: {formatFileSize(file.size)}</div>
-                  <div>Type: {file.fileType}</div>
+                  <div>{$_("processingStatus.size")}: {formatFileSize(file.size)}</div>
+                  <div>{$_("processingStatus.type")}: {file.fileType}</div>
                   {#if file.pageCount}
-                    <div>Pages: {file.pageCount}</div>
+                    <div>{$_("processingStatus.pages")}: {file.pageCount}</div>
                   {/if}
-                  <div>Updated: {formatDate(file.updatedAt)}</div>
+                  <div>{$_("processingStatus.updated")}: {formatDate(file.updatedAt)}</div>
                 </div>
 
                 {#if file.extractionErrors && file.extractionErrors.length > 0}
                   <div class="mt-2 p-2 bg-destructive/10 text-destructive rounded">
-                    <div class="text-xs font-medium mb-1">Extraction Errors:</div>
+                    <div class="text-xs font-medium mb-1">{$_("processingStatus.extractionErrors")}:</div>
                     <ul class="text-xs list-disc list-inside">
                       {#each file.extractionErrors as error}
                         <li>{error}</li>

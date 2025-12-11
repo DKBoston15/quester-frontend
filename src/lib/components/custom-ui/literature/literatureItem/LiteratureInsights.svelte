@@ -7,6 +7,8 @@
   import { slide } from "svelte/transition";
   import { quintOut } from "svelte/easing";
   import type { Literature } from "$lib/types/literature";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
 
   type InsightRule = {
     field: keyof Literature;
@@ -20,69 +22,70 @@
     checkFn?: (literature: Literature) => boolean;
   };
 
-  const insightRules: InsightRule[] = [
-    {
-      field: "name",
-      severity: "error",
-      message: "Missing Literature Title",
-      description:
-        "Add a title to help identify and reference this literature.",
-      // action: {
-      //   label: "Add Title",
-      //   tab: "details",
-      // },
-    },
-    {
-      field: "authors",
-      severity: "error",
-      message: "Missing Authors",
-      description: "Add the authors of this literature for proper citation.",
-      // action: {
-      //   label: "Add Authors",
-      //   tab: "details",
-      // },
-    },
-    {
-      field: "publishYear",
-      severity: "error",
-      message: "Missing Publication Year",
-      description: "Add the publication year for chronological reference.",
-      // action: {
-      //   label: "Add Year",
-      //   tab: "details",
-      // },
-    },
-    {
-      field: "publisherName",
-      severity: "error",
-      message: "Missing Publisher",
-      description: "Add the publisher information for complete citation.",
-      // action: {
-      //   label: "Add Publisher",
-      //   tab: "details",
-      // },
-    },
-    {
-      field: "type",
-      severity: "warning",
-      message: "Literature Type Not Set",
-      description: "Specify the type of literature for better organization.",
-      // action: {
-      //   label: "Set Type",
-      //   tab: "details",
-      // },
-    },
-    {
-      field: "status",
-      severity: "warning",
-      message: "Reading Status Not Set",
-      description: "Set the reading status to track your progress.",
-      // action: {
-      //   label: "Set Status",
-      //   tab: "status",
-      // },
-    },
-  ];
+  function getInsightRules(): InsightRule[] {
+    return [
+      {
+        field: "name",
+        severity: "error",
+        message: get(_)('literatureInsightsRules.missingTitle'),
+        description: get(_)('literatureInsightsRules.missingTitleDesc'),
+        // action: {
+        //   label: "Add Title",
+        //   tab: "details",
+        // },
+      },
+      {
+        field: "authors",
+        severity: "error",
+        message: get(_)('literatureInsightsRules.missingAuthors'),
+        description: get(_)('literatureInsightsRules.missingAuthorsDesc'),
+        // action: {
+        //   label: "Add Authors",
+        //   tab: "details",
+        // },
+      },
+      {
+        field: "publishYear",
+        severity: "error",
+        message: get(_)('literatureInsightsRules.missingYear'),
+        description: get(_)('literatureInsightsRules.missingYearDesc'),
+        // action: {
+        //   label: "Add Year",
+        //   tab: "details",
+        // },
+      },
+      {
+        field: "publisherName",
+        severity: "error",
+        message: get(_)('literatureInsightsRules.missingPublisher'),
+        description: get(_)('literatureInsightsRules.missingPublisherDesc'),
+        // action: {
+        //   label: "Add Publisher",
+        //   tab: "details",
+        // },
+      },
+      {
+        field: "type",
+        severity: "warning",
+        message: get(_)('literatureInsightsRules.typeNotSet'),
+        description: get(_)('literatureInsightsRules.typeNotSetDesc'),
+        // action: {
+        //   label: "Set Type",
+        //   tab: "details",
+        // },
+      },
+      {
+        field: "status",
+        severity: "warning",
+        message: get(_)('literatureInsightsRules.statusNotSet'),
+        description: get(_)('literatureInsightsRules.statusNotSetDesc'),
+        // action: {
+        //   label: "Set Status",
+        //   tab: "status",
+        // },
+      },
+    ];
+  }
 
   const { literature, onTabChange } = $props<{
     literature: Literature;
@@ -133,8 +136,9 @@
   }
 
   $effect(() => {
-    insights = checkInsights(literature, insightRules);
-    completionPercentage = getCompletionPercentage(literature, insightRules);
+    const rules = getInsightRules();
+    insights = checkInsights(literature, rules);
+    completionPercentage = getCompletionPercentage(literature, rules);
   });
 </script>
 
@@ -144,7 +148,7 @@
       <div class="flex items-center justify-between px-6 pt-6">
         <div class="flex items-center gap-2">
           <Card.Title class="text-xl flex items-center gap-2">
-            Literature Health
+            {$_('literatureInsightsRules.literatureHealth')}
             {#if completionPercentage === 100}
               <Tooltip.Provider>
                 <Tooltip.Root>
@@ -152,7 +156,7 @@
                     <Sparkles class="h-5 w-5 text-yellow-500" />
                   </Tooltip.Trigger>
                   <Tooltip.Content>
-                    <p class="text-sm">All setup tasks completed!</p>
+                    <p class="text-sm">{$_('literatureInsights.allSetupCompleted')}</p>
                   </Tooltip.Content>
                 </Tooltip.Root>
               </Tooltip.Provider>
@@ -160,7 +164,7 @@
           </Card.Title>
           <span class="text-sm text-muted-foreground">
             ({insights.length}
-            {insights.length === 1 ? "task" : "tasks"} remaining)
+            {insights.length === 1 ? $_('literatureInsightsRules.taskRemaining') : $_('literatureInsightsRules.tasksRemaining')} {$_('literatureInsightsRules.remaining')})
           </span>
         </div>
         <Accordion.Trigger
@@ -177,12 +181,11 @@
                 <Tooltip.Trigger
                   class="hover:text-foreground/70 transition-colors"
                 >
-                  <span>Literature Setup Progress</span>
+                  <span>{$_('literatureInsightsRules.literatureSetupProgress')}</span>
                 </Tooltip.Trigger>
                 <Tooltip.Content>
                   <p class="text-sm max-w-xs">
-                    Complete these tasks to improve your literature's
-                    organization and citation quality
+                    {$_('literatureInsightsRules.progressTooltip')}
                   </p>
                 </Tooltip.Content>
               </Tooltip.Root>
@@ -204,7 +207,7 @@
                 <div
                   class="bg-black dark:bg-white text-white dark:text-black text-xs px-2 py-1 rounded-full"
                 >
-                  {completionPercentage}% complete
+                  {completionPercentage}% {$_('literatureInsightsRules.complete')}
                 </div>
               </div>
             {/if}
@@ -225,7 +228,7 @@
                   <h3
                     class="text-sm font-bold text-red-500 flex items-center gap-2"
                   >
-                    Required Fields
+                    {$_('literatureInsightsRules.requiredFields')}
                     <span
                       class="text-xs bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full"
                     >
@@ -247,7 +250,7 @@
                             <span
                               class="text-xs px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400"
                             >
-                              Required
+                              {$_('literatureInsightsRules.required')}
                             </span>
                           </h4>
                           <p class="text-sm text-muted-foreground">
@@ -274,7 +277,7 @@
                   <h3
                     class="text-sm font-bold text-yellow-500 flex items-center gap-2"
                   >
-                    Recommended Fields
+                    {$_('literatureInsightsRules.recommendedFields')}
                     <span
                       class="text-xs bg-yellow-100 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 px-2 py-0.5 rounded-full"
                     >
@@ -296,7 +299,7 @@
                             <span
                               class="text-xs px-2 py-0.5 rounded-full bg-yellow-100 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400"
                             >
-                              Recommended
+                              {$_('literatureInsightsRules.recommended')}
                             </span>
                           </h4>
                           <p class="text-sm text-muted-foreground">
@@ -323,9 +326,9 @@
               transition:slide={{ duration: 300, easing: quintOut }}
             >
               <CheckCircle2 class="h-12 w-12 text-green-500 mx-auto mb-4" />
-              <p class="text-lg">All literature fields completed!</p>
+              <p class="text-lg">{$_('literatureInsights.allFieldsCompleted')}</p>
               <p class="text-sm text-muted-foreground mt-2">
-                This literature entry is well-documented and ready for citation.
+                {$_('literatureInsightsRules.wellDocumented')}
               </p>
             </div>
           {/if}

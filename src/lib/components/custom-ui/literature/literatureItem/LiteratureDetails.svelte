@@ -12,6 +12,7 @@
   import { literatureStore } from "$lib/stores/LiteratureStore";
   import type { Literature } from "$lib/types/literature";
   import { format, parse } from "date-fns";
+  import { _ } from "svelte-i18n";
 
   const dispatch = createEventDispatcher();
   const { literature: propLiterature } = $props<{ literature?: Literature }>();
@@ -270,11 +271,11 @@
   <div class="grid gap-3" id="lit-detail-title-section">
     <Label for="name">
       {#if selectedType === "Book Chapter"}
-        Book
+        {$_("literatureDetails.book")}
       {:else if selectedType === "Conference Presentation"}
-        Presentation Title
+        {$_("literatureDetails.presentationTitle")}
       {:else}
-        Title
+        {$_("literatureDetails.title")}
       {/if}
     </Label>
     {#if editMode.details}
@@ -282,7 +283,7 @@
         id="name"
         type="text"
         bind:value={editingLiterature.name}
-        placeholder="Title"
+        placeholder={$_("literatureDetails.title")}
       />
     {:else}
       <p class="break-words">{literature.name || ""}</p>
@@ -295,9 +296,9 @@
         for={selectedType === "Book Chapter" ? "chapterTitle" : "secondName"}
       >
         {#if selectedType === "Book Chapter"}
-          Chapter Title
+          {$_("literatureDetails.chapterTitle")}
         {:else if selectedType === "Conference Presentation"}
-          Conference Name
+          {$_("literatureDetails.conferenceName")}
         {/if}
       </Label>
       {#if editMode.details}
@@ -306,14 +307,14 @@
             id="chapterTitle"
             type="text"
             bind:value={editingLiterature.chapterTitle}
-            placeholder="Chapter Title"
+            placeholder={$_("literatureDetails.chapterTitle")}
           />
         {:else}
           <Input
             id="secondName"
             type="text"
             bind:value={editingLiterature.secondName}
-            placeholder="Second Name"
+            placeholder={$_("literatureDetails.conferenceName")}
           />
         {/if}
       {:else}
@@ -334,13 +335,11 @@
         </Tooltip.Trigger>
         <Tooltip.Content class="max-w-[20rem]">
           <p>
-            We highly recommend using the following format for authors: Last
-            Name, First Initial <br />
-            EX: <b>Smith, J or Stanley, R</b>
+            {$_("literatureDetails.authorFormatTip")}
           </p>
         </Tooltip.Content>
       </Tooltip.Root>
-      <Label for="authors">Authors</Label>
+      <Label for="authors">{$_("literatureDetails.authors")}</Label>
     </div>
 
     {#if editMode.details}
@@ -349,7 +348,7 @@
           ? editingLiterature.authors
           : []) as string[]}
         on:change={(e) => (editingLiterature.authors = e.detail.tags)}
-        placeholder="Authors"
+        placeholder={$_("literatureDetails.authors")}
       />
     {:else}
       <div class="flex flex-wrap">
@@ -364,14 +363,14 @@
 
   {#if selectedType === "Book Chapter" || selectedType === "Book"}
     <div class="grid gap-3">
-      <Label for="editors">Editors</Label>
+      <Label for="editors">{$_("literatureDetails.editors")}</Label>
       {#if editMode.details}
         <TagInput
           tags={(Array.isArray(editingLiterature.editors)
             ? editingLiterature.editors
             : []) as string[]}
         on:change={(e) => (editingLiterature.editors = e.detail.tags)}
-          placeholder="Editors"
+          placeholder={$_("literatureDetails.editors")}
         />
       {:else}
         <div class="flex flex-wrap">
@@ -387,13 +386,13 @@
 
   <div class="grid grid-cols-2 gap-4">
     <div class="grid gap-3" id="lit-detail-publisher-section">
-      <Label for="publisherName">Publisher</Label>
+      <Label for="publisherName">{$_("literatureDetails.publisher")}</Label>
       {#if editMode.details}
         <Input
           id="publisherName"
           type="text"
           bind:value={editingLiterature.publisherName}
-          placeholder="Publisher"
+          placeholder={$_("literatureDetails.publisher")}
         />
       {:else}
         <p>{literature.publisherName || ""}</p>
@@ -401,13 +400,13 @@
     </div>
     {#if selectedType !== "Conference Presentation"}
       <div class="grid gap-3" id="lit-detail-year-section">
-        <Label for="publishYear">Publish Year</Label>
+        <Label for="publishYear">{$_("literatureDetails.publishYear")}</Label>
         {#if editMode.details}
           <Input
             id="publishYear"
             type="text"
             bind:value={editingLiterature.publishYear}
-            placeholder="Publish Year"
+            placeholder={$_("literatureDetails.publishYear")}
           />
         {:else}
           <p>{literature.publishYear || ""}</p>
@@ -415,13 +414,13 @@
       </div>
     {:else}
       <div class="grid gap-3" id="lit-detail-city-section">
-        <Label for="city">City</Label>
+        <Label for="city">{$_("literatureDetails.city")}</Label>
         {#if editMode.details}
           <Input
             id="city"
             type="text"
             bind:value={editingLiterature.city}
-            placeholder="City"
+            placeholder={$_("literatureDetails.city")}
           />
         {:else}
           <p>{literature.city || ""}</p>
@@ -433,26 +432,26 @@
   {#if selectedType !== "Book" && selectedType !== "Book Chapter" && selectedType !== "Conference Presentation"}
     <div class="grid grid-cols-2 gap-4">
       <div class="grid gap-3">
-        <Label for="volume">Volume</Label>
+        <Label for="volume">{$_("literatureDetails.volume")}</Label>
         {#if editMode.details}
           <Input
             id="volume"
             type="text"
             bind:value={editingLiterature.volume}
-            placeholder="Volume"
+            placeholder={$_("literatureDetails.volume")}
           />
         {:else}
           <p>{literature.volume || ""}</p>
         {/if}
       </div>
       <div class="grid gap-3">
-        <Label for="issue">Issue</Label>
+        <Label for="issue">{$_("literatureDetails.issue")}</Label>
         {#if editMode.details}
           <Input
             id="issue"
             type="text"
             bind:value={editingLiterature.issue}
-            placeholder="Issue"
+            placeholder={$_("literatureDetails.issue")}
           />
         {:else}
           <p>{literature.issue || ""}</p>
@@ -464,26 +463,26 @@
   {#if selectedType !== "Book" && selectedType !== "Conference Presentation"}
     <div class="grid grid-cols-2 gap-4">
       <div class="grid gap-3">
-        <Label for="startPage">Start Page</Label>
+        <Label for="startPage">{$_("literatureDetails.startPage")}</Label>
         {#if editMode.details}
           <Input
             id="startPage"
             type="text"
             bind:value={editingLiterature.startPage}
-            placeholder="Start Page"
+            placeholder={$_("literatureDetails.startPage")}
           />
         {:else}
           <p>{literature.startPage || ""}</p>
         {/if}
       </div>
       <div class="grid gap-3">
-        <Label for="endPage">End Page</Label>
+        <Label for="endPage">{$_("literatureDetails.endPage")}</Label>
         {#if editMode.details}
           <Input
             id="endPage"
             type="text"
             bind:value={editingLiterature.endPage}
-            placeholder="End Page"
+            placeholder={$_("literatureDetails.endPage")}
           />
         {:else}
           <p>{literature.endPage || ""}</p>
@@ -495,7 +494,7 @@
   {#if selectedType === "Conference Presentation"}
     <div class="grid grid-cols-2 gap-4">
       <div class="grid gap-3">
-        <Label for="startDate">Start Date</Label>
+        <Label for="startDate">{$_("literatureDetails.startDate")}</Label>
         {#if editMode.details}
           <div class="relative w-full">
             <Input
@@ -508,7 +507,7 @@
                   : undefined;
               }}
               class="pl-10 text-base"
-              placeholder="Pick a start date"
+              placeholder={$_("literatureDetails.pickStartDate")}
             />
             <CalendarIcon
               class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 dark:text-gray-400"
@@ -521,7 +520,7 @@
         {/if}
       </div>
       <div class="grid gap-3">
-        <Label for="endDate">End Date</Label>
+        <Label for="endDate">{$_("literatureDetails.endDate")}</Label>
         {#if editMode.details}
           <div class="relative w-full">
             <Input
@@ -534,7 +533,7 @@
                   : undefined;
               }}
               class="pl-10 text-base"
-              placeholder="Pick an end date"
+              placeholder={$_("literatureDetails.pickEndDate")}
             />
             <CalendarIcon
               class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 dark:text-gray-400"
@@ -551,7 +550,7 @@
 
   <div class="grid grid-cols-2 gap-4">
     <div class="grid gap-3" id="lit-detail-type-section">
-      <Label for="type">Type</Label>
+      <Label for="type">{$_("literatureDetails.type")}</Label>
       {#if editMode.details}
         <select
           id="type"
@@ -559,31 +558,29 @@
           bind:value={selectedType}
           onchange={handleTypeChange}
         >
-          <option value="Journal Article">Journal Article</option>
-          <option value="Literature Review">Literature Review</option>
-          <option value="Book">Book</option>
-          <option value="Book Chapter">Book Chapter</option>
-          <option value="Conference Presentation"
-            >Conference Presentation</option
-          >
-          <option value="Conference Proceedings">Conference Proceedings</option>
-          <option value="Dissertation">Dissertation</option>
-          <option value="Website">Website</option>
-          <option value="Gray Literature">Gray Literature</option>
-          <option value="Other">Other</option>
+          <option value="Journal Article">{$_("literatureDetails.types.journalArticle")}</option>
+          <option value="Literature Review">{$_("literatureDetails.types.literatureReview")}</option>
+          <option value="Book">{$_("literatureDetails.types.book")}</option>
+          <option value="Book Chapter">{$_("literatureDetails.types.bookChapter")}</option>
+          <option value="Conference Presentation">{$_("literatureDetails.types.conferencePresentation")}</option>
+          <option value="Conference Proceedings">{$_("literatureDetails.types.conferenceProceedings")}</option>
+          <option value="Dissertation">{$_("literatureDetails.types.dissertation")}</option>
+          <option value="Website">{$_("literatureDetails.types.website")}</option>
+          <option value="Gray Literature">{$_("literatureDetails.types.grayLiterature")}</option>
+          <option value="Other">{$_("literatureDetails.types.other")}</option>
         </select>
       {:else}
         <p>{selectedType}</p>
       {/if}
     </div>
     <div class="grid gap-3 min-w-0" id="lit-detail-link-section">
-      <Label for="link">Link</Label>
+      <Label for="link">{$_("literatureDetails.link")}</Label>
       {#if editMode.details}
         <Input
           id="link"
           type="text"
           bind:value={editingLiterature.link}
-          placeholder="Link"
+          placeholder={$_("literatureDetails.link")}
         />
       {:else}
         <p class="break-all max-w-full">{literature.link || ""}</p>
@@ -598,14 +595,14 @@
       id="lit-detail-cancel-button"
       size="sm"
       variant="ghost"
-      onclick={cancelEdit}>Cancel</Button
+      onclick={cancelEdit}>{$_("common.cancel")}</Button
     >
     <Button id="lit-detail-save-button" size="sm" onclick={updateField}
-      >Save</Button
+      >{$_("common.save")}</Button
     >
   {:else}
     <Button id="lit-detail-edit-button" size="sm" onclick={enterEditMode}
-      >Edit</Button
+      >{$_("common.edit")}</Button
     >
   {/if}
 </div>

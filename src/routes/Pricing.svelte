@@ -14,6 +14,7 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { api } from "$lib/services/api-client";
+  import { _ } from "svelte-i18n";
 
   const props = $props<{
     organizationId: string;

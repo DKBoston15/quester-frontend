@@ -5,6 +5,11 @@
   import { Badge } from "$lib/components/ui/badge";
   import { Alert, AlertDescription } from "$lib/components/ui/alert";
   import { X } from "lucide-svelte";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper function for imperative translation access
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   const dispatch = createEventDispatcher<{ submit: string[] }>();
 
@@ -24,12 +29,12 @@
     if (!keyword) return;
 
     if (keywords.includes(keyword)) {
-      error = "Keyword already added";
+      error = t("keywordAnalysis.keywordAlreadyAdded");
       return;
     }
 
     if (keywords.length >= 7) {
-      error = "Maximum 7 keywords allowed";
+      error = t("keywordAnalysis.maxKeywords");
       return;
     }
 
@@ -45,7 +50,7 @@
 
   function handleSubmit() {
     if (keywords.length < 2) {
-      error = "Please add at least 2 keywords";
+      error = t("keywordAnalysis.minKeywords");
       return;
     }
     dispatch("submit", keywords);
@@ -60,7 +65,7 @@
         <button
           class="ml-1 hover:text-destructive"
           onclick={() => removeKeyword(i)}
-          aria-label="Remove keyword"
+          aria-label={$_('keywords.removeKeyword')}
         >
           <X class="w-3 h-3" />
         </button>
@@ -68,7 +73,7 @@
     {/each}
     <Input
       type="text"
-      placeholder="Type a keyword and press enter..."
+      placeholder={$_("keywordAnalysis.keywordPlaceholder")}
       class="border-none !outline-none flex-1 min-w-[200px]"
       bind:value={currentInput}
       onkeydown={handleKeydown}
@@ -87,16 +92,16 @@
       disabled={keywords.length < 2}
       onclick={handleSubmit}
     >
-      Analyze Keywords
+      {$_("keywordAnalysis.analyzeKeywords")}
     </Button>
   </div>
 
   <div class="text-sm text-muted-foreground">
-    <p>Tips:</p>
+    <p>{$_("keywordAnalysis.tips")}</p>
     <ul class="list-disc list-inside">
-      <li>Press Enter or comma to add a keyword</li>
-      <li>Add up to 7 keywords for best results</li>
-      <li>Use specific, research-focused terms</li>
+      <li>{$_("keywordAnalysis.tipPressEnter")}</li>
+      <li>{$_("keywordAnalysis.tipMaxKeywords")}</li>
+      <li>{$_("keywordAnalysis.tipSpecificTerms")}</li>
     </ul>
   </div>
 </div>

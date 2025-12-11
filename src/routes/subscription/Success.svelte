@@ -4,6 +4,7 @@
   import { DarkmodeToggle } from "$lib/components/ui/darkmode-toggle";
   import { onMount } from "svelte";
   import { api } from "$lib/services/api-client";
+  import { _ } from "svelte-i18n";
 
   let isLoading = $state(true);
   let error = $state("");
@@ -20,7 +21,7 @@
         setTimeout(processSubscription, Math.pow(2, retryCount - 1) * 1000);
         return;
       } else {
-        error = "Could not load organization details. Please refresh the page.";
+        error = $_('subscriptionSuccess.couldNotLoadOrganization');
         isLoading = false;
         return;
       }
@@ -46,7 +47,7 @@
         navigate("/onboarding", { state: { step: 3 } });
       }
     } catch (err) {
-      error = err instanceof Error ? err.message : "An error occurred";
+      error = err instanceof Error ? err.message : $_('common.anErrorOccurred');
     } finally {
       isLoading = false;
     }
@@ -87,7 +88,7 @@
         <h2
           class=" text-3xl font-bold text-black dark:text-dark-text-primary mb-2"
         >
-          Processing Your Subscription
+          {$_('subscriptionSuccess.processingSubscription')}
         </h2>
         <div
           class="mt-4 h-1 w-12 bg-yellow-400 dark:bg-dark-accent-yellow"
@@ -103,7 +104,7 @@
             class="mt-4 text-blue-600 hover:text-blue-800 underline"
             onclick={() => navigate("/dashboard")}
           >
-            Go to Dashboard
+            {$_('subscriptionSuccess.goToDashboard')}
           </button>
         </div>
       {:else}
@@ -114,7 +115,7 @@
                 class="w-8 h-8 border-4 border-blue-400 dark:border-dark-accent-blue border-t-transparent rounded-full animate-spin"
               ></div>
               <p class="text-lg text-black dark:text-dark-text-primary">
-                Please wait while we process your subscription for
+                {$_('subscriptionSuccess.pleaseWaitProcessing')}
                 <span class="font-bold">{currentOrg?.name}</span>...
               </p>
             </div>

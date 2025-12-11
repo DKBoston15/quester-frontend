@@ -8,6 +8,7 @@
   import * as Popover from "$lib/components/ui/popover/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
   import type { ToolBarIconProps } from "./types.js";
+  import { _ } from "svelte-i18n";
 
   let {
     editor,
@@ -43,21 +44,21 @@
           </Button>
         </Tooltip.Trigger>
         <Tooltip.Content>
-          <p>Add Or Remove Link</p>
+          <p>{$_('editor.link.addOrRemove')}</p>
         </Tooltip.Content>
       </Tooltip.Root>
     </Tooltip.Provider>
   </Popover.Trigger>
   <Popover.Content class="bg-popover shadow-lg *:my-2">
     <div class="flex items-center justify-between">
-      <h1 class="text-xl font-bold">Link</h1>
+      <h1 class="text-xl font-bold">{$_('editor.link.title')}</h1>
       <Popover.Close>
         <X class="size-4 text-muted-foreground" />
       </Popover.Close>
     </div>
-    <p>Insert or remove link from selected text.</p>
+    <p>{$_('editor.link.description')}</p>
     <Input
-      placeholder="Enter link to attach.."
+      placeholder={$_('editor.link.placeholder')}
       value={editor?.getAttributes("link").href}
       onchange={(e) => {
         //@ts-ignore
@@ -67,13 +68,13 @@
     />
     <div class="flex items-center justify-end gap-2">
       <Button size="sm" onclick={() => {}}>
-        <Popover.Close>Insert</Popover.Close>
+        <Popover.Close>{$_('editor.link.insert')}</Popover.Close>
       </Button>
       <Button
         variant="destructive"
         onclick={() => {
           editor.chain().focus().extendMarkRange("link").unsetLink().run();
-        }}>Remove</Button
+        }}>{$_('editor.link.remove')}</Button
       >
     </div>
   </Popover.Content>

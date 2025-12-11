@@ -1,0 +1,3756 @@
+{
+  "common": {
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "deleting": "Suppression...",
+    "loading": "Chargement...",
+    "search": "Rechercher",
+    "close": "Fermer",
+    "confirm": "Confirmer",
+    "yes": "Oui",
+    "no": "Non",
+    "optional": "Facultatif",
+    "saving": "Enregistrement...",
+    "unknown": "Inconnu",
+    "unexpectedError": "Une erreur inattendue s'est produite",
+    "anErrorOccurred": "Une erreur s'est produite",
+    "none": "Aucun",
+    "untitled": "Sans titre",
+    "continue": "Continuer",
+    "add": "Ajouter",
+    "adding": "Ajout en cours...",
+    "creating": "Création en cours...",
+    "retry": "Réessayer",
+    "tutorial": "Tutoriel",
+    "error": "Erreur",
+    "settings": "Paramètres",
+    "tour": "Visite guidée",
+    "refresh": "Actualiser",
+    "join": "Rejoindre",
+    "move": "Déplacer",
+    "actions": "Actions",
+    "project": "Projet",
+    "department": "Département",
+    "organization": "Organisation",
+    "announcements": {
+      "affected": "Affectés",
+      "date": "Date",
+      "duration": "Durée"
+    }
+  },
+  "designTypes": {
+    "research": "Recherche",
+    "sampling": "Échantillonnage",
+    "measurement": "Mesure",
+    "analytic": "Analytique"
+  },
+  "designs": {
+    "analytic": {
+      "associative": "Associatif",
+      "descriptive": "Descriptif",
+      "emergent": "Émergent",
+      "narrative": "Narratif",
+      "predictive": "Prédictif",
+      "thematic": "Thématique",
+      "metaAnalysis": "Méta-analyse",
+      "secondary": "Secondaire"
+    },
+    "measurement": {
+      "extant": "Existant",
+      "interview": "Entretien",
+      "instrument": "Instrument",
+      "survey": "Enquête"
+    },
+    "research": {
+      "caseStudy": "Étude de cas",
+      "convergentParallel": "Parallèle convergent",
+      "correlational": "Corrélationnel",
+      "descriptive": "Descriptif",
+      "experimental": "Expérimental",
+      "explanatorySequential": "Séquentiel explicatif",
+      "exploratorySequential": "Séquentiel exploratoire",
+      "review": "Revue",
+      "survey": "Enquête"
+    },
+    "sampling": {
+      "cluster": "Par grappes",
+      "simpleRandomSampling": "Échantillonnage aléatoire simple (EAS)",
+      "stratified": "Stratifié",
+      "systematic": "Systématique",
+      "convenience": "De commodité",
+      "purposive": "Raisonné",
+      "quota": "Par quotas",
+      "snowball": "Boule de neige",
+      "voluntaryResponse": "Réponse volontaire"
+    }
+  },
+  "datePicker": {
+    "selectDate": "Sélectionner une date"
+  },
+  "auth": {
+    "signIn": "Se connecter",
+    "signOut": "Se déconnecter",
+    "signUp": "S'inscrire",
+    "continueWith": "Continuer avec {provider}",
+    "checkingAuth": "Vérification de l'authentification...",
+    "authPersist": "Si cela persiste, vous pouvez essayer de :",
+    "refreshPage": "Actualiser la page",
+    "clearCache": "Vider le cache de votre navigateur",
+    "resetAuth": "Cliquez ici pour réinitialiser l'authentification",
+    "redirecting": "Redirection..."
+  },
+  "signIn": {
+    "welcome": "Bienvenue",
+    "subtitle": "Connectez-vous à Quester pour accéder à votre espace de recherche",
+    "openWorkspace": "Ouvrir l'espace de recherche",
+    "changeTheme": "Changer le thème"
+  },
+  "landing": {
+    "heroTitle": "Gérez vos projets de recherche",
+    "heroSubtitle": "Organisez, suivez et collaborez sur des projets de recherche avec votre équipe",
+    "getStarted": "Commencer",
+    "learnMore": "En savoir plus"
+  },
+  "navigation": {
+    "dashboard": "Tableau de bord",
+    "projects": "Projets",
+    "settings": "Paramètres",
+    "teamManagement": "Gestion d'équipe",
+    "pricing": "Tarification",
+    "organizationAnalytics": "Analytiques",
+    "switchOrganization": "Changer d'organisation",
+    "userMenu": "Menu utilisateur",
+    "mainMenu": "Menu principal",
+    "collapse": "Réduire",
+    "expand": "Développer"
+  },
+  "sidebar": {
+    "workspace": "Espace de travail",
+    "selectWorkspace": "Sélectionner un espace de travail",
+    "recentProjects": "Projets récents",
+    "viewAllProjects": "Voir tous les projets",
+    "noRecentProjects": "Aucun projet récent",
+    "newProject": "Nouveau projet",
+    "searchProjects": "Rechercher des projets...",
+    "managePlan": "Gérer le forfait",
+    "analytics": "Analytique",
+    "toggleSidebar": "Afficher/Masquer la barre latérale"
+  },
+  "projectSidebar": {
+    "overview": "Aperçu",
+    "literature": "Littérature",
+    "notes": "Notes",
+    "researchAssistant": "Assistant IA",
+    "insights": "Analyses",
+    "models": "Modèles",
+    "outcomes": "Résultats",
+    "analytics": "Analytique",
+    "connections": "Connexions",
+    "progress": "Progression",
+    "settings": "Paramètres",
+    "project": "Projet",
+    "activeProject": "Projet actif",
+    "analysis": "Analyse",
+    "tracking": "Suivi",
+    "researcher": "Chercheur"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "welcome": "Bienvenue, {name} !",
+    "workspaceOverview": "Voici ce qui se passe dans votre espace de travail.",
+    "loadingDashboard": "Chargement de votre tableau de bord...",
+    "tour": "Visite guidée",
+    "tutorial": "Tutoriel",
+    "organizationStructure": "Structure de l'organisation",
+    "organizationStructureDescription": "Gérez vos départements et projets",
+    "projects": "Projets",
+    "totalProjects": "{count} projets au total",
+    "teamMembers": "Membres de l'équipe",
+    "memberCount": "{count} membres",
+    "departments": "Départements",
+    "departmentCount": "{count} départements",
+    "failedToInitialize": "Échec de l'initialisation du tableau de bord",
+    "failedToLoadDashboard": "Échec du chargement du tableau de bord"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "subtitle": "Gérez votre compte et vos préférences",
+    "profile": "Profil",
+    "organization": "Organisation",
+    "billing": "Facturation",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "email": "E-mail",
+    "orcidUrl": "URL du profil ORCID",
+    "orcidDescription": "Votre identifiant ORCID fournit un identifiant numérique persistant qui vous distingue des autres chercheurs.",
+    "learnMoreOrcid": "En savoir plus sur ORCID",
+    "orcidValidation": "Veuillez entrer une URL ORCID valide (ex. : https://orcid.org/0000-0000-0000-0000)",
+    "saveChanges": "Enregistrer les modifications",
+    "saving": "Enregistrement...",
+    "profileUpdated": "Profil mis à jour avec succès !",
+    "failedToUpdate": "Échec de la mise à jour du profil",
+    "organizationSettings": "Paramètres de l'organisation",
+    "configureSettings": "Configurer les paramètres pour {name}",
+    "noPermission": "Vous n'avez pas la permission de gérer les paramètres de l'organisation",
+    "orgNotAvailable": "Les paramètres de l'organisation ne sont pas disponibles avec votre forfait actuel. Veuillez mettre à niveau pour accéder aux paramètres de l'organisation.",
+    "subscription": "Abonnement",
+    "currentPlan": "Forfait actuel : {plan}",
+    "noPlan": "Aucun forfait",
+    "subscribeToPlan": "S'abonner à un forfait",
+    "subscribeDescription": "Choisissez un forfait d'abonnement pour continuer à utiliser Quester",
+    "viewPlans": "Voir les forfaits",
+    "language": "Langue",
+    "selectLanguage": "Sélectionner la langue",
+    "languageDescription": "Choisissez votre langue préférée pour l'interface de l'application. Les modifications prennent effet immédiatement.",
+    "profileInformation": "Informations du profil",
+    "languagePreferences": "Préférences de langue"
+  },
+  "team": {
+    "title": "Gestion d'équipe",
+    "subtitle": "Gérez les membres de votre équipe, les invitations et les rôles",
+    "members": "Membres",
+    "invitations": "Invitations",
+    "roles": "Rôles",
+    "invite": "Inviter un membre",
+    "inviteDescription": "Inviter un nouveau membre dans votre organisation",
+    "pendingInvites": "Invitations en attente",
+    "memberSince": "Membre depuis {date}",
+    "lastActive": "Dernière activité {date}",
+    "removeMember": "Retirer le membre",
+    "changeRole": "Changer le rôle",
+    "owner": "Propriétaire",
+    "admin": "Administrateur",
+    "member": "Membre",
+    "noMembers": "Aucun membre trouvé",
+    "searchMembers": "Rechercher des membres...",
+    "inviteSent": "Invitation envoyée avec succès",
+    "inviteFailed": "Échec de l'envoi de l'invitation",
+    "memberRemoved": "Membre retiré avec succès",
+    "roleChanged": "Rôle modifié avec succès",
+    "settingUp": "Configuration de la gestion d'équipe",
+    "loadingResources": "Chargement de vos ressources et autorisations...",
+    "selectResourceTooltip": "Sélectionnez une ressource pour gérer ses membres d'équipe, rôles et autorisations.",
+    "selectResourceToManage": "Sélectionnez une ressource pour gérer son équipe",
+    "organizations": "Organisations",
+    "departments": "Départements",
+    "projects": "Projets",
+    "selectResource": "Sélectionner une ressource",
+    "selectResourceDescription": "Choisissez une organisation, un département ou un projet dans la barre latérale pour gérer ses membres d'équipe et autorisations.",
+    "organizationAccess": "Accès à l'organisation",
+    "joining": "Adhésion...",
+    "joinProject": "Rejoindre le projet",
+    "joinDepartment": "Rejoindre le département",
+    "tour": "Visite guidée",
+    "manageTeamFor": "Gérer les membres de l'équipe et leurs rôles pour ce/cette {resourceType}",
+    "teamMembers": "Membres de l'équipe",
+    "inviteTeam": "Inviter l'équipe",
+    "teamInvitations": "Invitations d'équipe",
+    "sendInvitationsDescription": "Envoyer des invitations pour ajouter de nouveaux membres à cette organisation",
+    "addExistingUsers": "Ajouter des utilisateurs existants",
+    "addExistingUsersDescription": "Ajouter des utilisateurs qui sont déjà membres de l'organisation parente",
+    "inviteTeamMembers": "Inviter des membres d'équipe",
+    "inviteModalDescription": "Pour les {resourceType}s, vous pouvez ajouter des membres existants de l'organisation ou utiliser la fonctionnalité d'invitation principale de l'organisation.",
+    "welcomeToTeamManagement": "Bienvenue dans la gestion d'équipe !",
+    "tourPrompt": "Souhaitez-vous une visite rapide pour apprendre à gérer efficacement vos équipes ?",
+    "startTour": "Commencer la visite",
+    "skipForNow": "Passer pour l'instant",
+    "restartTourHint": "Vous pouvez redémarrer la visite à tout moment en utilisant le bouton \"Visite guidée\" dans l'en-tête.",
+    "successfullyJoined": "Vous avez rejoint le/la {resourceType} avec succès",
+    "tourCompleted": "Visite terminée ! Vous êtes prêt à gérer vos équipes.",
+    "canRestartTour": "Vous pouvez toujours redémarrer la visite depuis le menu d'aide",
+    "tourSteps": {
+      "chooseTeam": {
+        "title": "Choisissez votre équipe",
+        "description": "Sélectionnez une organisation, un département ou un projet dans la barre latérale pour commencer à gérer les membres de l'équipe."
+      },
+      "teamMembers": {
+        "title": "Vos membres d'équipe",
+        "description": "Ici, vous pouvez voir tous les membres de l'équipe, leurs rôles et gérer leurs permissions d'accès."
+      },
+      "inviteMembers": {
+        "title": "Inviter de nouveaux membres",
+        "description": "Envoyez des invitations par e-mail pour ajouter de nouvelles personnes à votre organisation."
+      },
+      "addUsers": {
+        "title": "Ajouter des utilisateurs existants",
+        "description": "Ajoutez des personnes qui sont déjà dans votre organisation à ce projet ou département spécifique."
+      }
+    }
+  },
+  "teamManagement": {
+    "title": "Gestion d'équipe",
+    "organization": "Organisation",
+    "department": "Département",
+    "project": "Projet",
+    "failedToJoin": "Échec de l'adhésion. Veuillez réessayer.",
+    "roles": {
+      "owner": "Propriétaire",
+      "admin": "Administrateur",
+      "manager": "Gestionnaire",
+      "member": "Membre"
+    },
+    "errors": {
+      "failedToLoadResources": "Échec du chargement des ressources",
+      "failedToLoadSettings": "Échec du chargement des paramètres de l'organisation",
+      "failedToSaveSettings": "Échec de l'enregistrement des paramètres de l'organisation",
+      "failedToLoadProjectDetails": "Échec du chargement des détails du projet",
+      "noUserContext": "Aucun contexte utilisateur disponible",
+      "invalidResourceId": "ID de ressource invalide",
+      "operationFailed": "L'opération a échoué"
+    }
+  },
+  "projects": {
+    "title": "Projets",
+    "newProject": "Nouveau projet",
+    "projectName": "Nom du projet",
+    "projectDescription": "Description du projet",
+    "keywords": "Mots-clés",
+    "purpose": "Objectif",
+    "status": "Statut",
+    "createdAt": "Créé le",
+    "updatedAt": "Mis à jour le",
+    "noProjects": "Aucun projet",
+    "createFirst": "Créez votre premier projet pour commencer",
+    "searchProjects": "Rechercher des projets...",
+    "filterByStatus": "Filtrer par statut",
+    "viewProject": "Voir le projet",
+    "editProject": "Modifier le projet",
+    "deleteProject": "Supprimer le projet",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce projet ?",
+    "archiveProject": "Archiver le projet"
+  },
+  "projectSettings": {
+    "title": "Paramètres",
+    "tooltip": "Configurez les paramètres de votre projet, gérez les conceptions personnalisées et les options d'exportation ou de suppression des données de votre projet de recherche.",
+    "generalSettings": "Paramètres généraux",
+    "projectName": "Nom du projet",
+    "enterProjectName": "Entrez le nom du projet",
+    "selectProjectFirst": "Aucun projet sélectionné. Veuillez d'abord sélectionner un projet.",
+    "saveChanges": "Enregistrer les modifications",
+    "dangerZone": "Zone de danger",
+    "exportProjectData": "Exporter les données du projet",
+    "exportDescription": "Téléchargez toutes les données de votre projet, y compris la littérature, les notes, les résultats et les analyses, sous forme de fichier zip.",
+    "exportData": "Exporter les données",
+    "exporting": "Exportation...",
+    "deleteProject": "Supprimer le projet",
+    "deleteDescription": "Supprimez définitivement ce projet et toutes ses données associées. Cette action est irréversible.",
+    "deleteConfirmMessage": "Êtes-vous sûr de vouloir supprimer ce projet ? Cette action est irréversible.",
+    "projectLabel": "Projet",
+    "noProjectSelected": "Aucun projet sélectionné",
+    "nameCannotBeEmpty": "Le nom du projet ne peut pas être vide",
+    "nameUpdatedSuccess": "Nom du projet mis à jour avec succès",
+    "nameUpdateFailed": "Échec de la mise à jour du nom du projet",
+    "exportFailed": "Échec du démarrage de l'exportation du projet",
+    "deletedSuccess": "Projet supprimé avec succès",
+    "deleteFailed": "Échec de la suppression du projet"
+  },
+  "literature": {
+    "title": "Littérature",
+    "addDocument": "Ajouter un document",
+    "uploadDocument": "Télécharger un document",
+    "searchLiterature": "Rechercher dans la littérature...",
+    "noDocuments": "Aucun document",
+    "addFirstDocument": "Ajoutez votre premier document pour commencer",
+    "processing": "Traitement",
+    "processed": "Traité",
+    "failed": "Échoué",
+    "authors": "Auteurs",
+    "publishedDate": "Date de publication",
+    "abstract": "Résumé",
+    "citations": "Citations",
+    "references": "Références",
+    "documentDetails": "Détails du document",
+    "viewPdf": "Voir le PDF",
+    "downloadPdf": "Télécharger le PDF",
+    "deleteDocument": "Supprimer le document",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce document ?",
+    "addLiterature": "Ajouter de la littérature",
+    "exportReferences": "Exporter les références",
+    "manageAndOrganize": "Gérez et organisez la littérature de votre projet",
+    "tooltip": "Gérez et organisez la littérature de votre projet. Ajoutez des sources, suivez l'état de lecture et construisez votre bibliothèque de recherche en un seul endroit.",
+    "loadingLiterature": "Chargement de la littérature...",
+    "noLiteratureAdded": "Aucune littérature ajoutée",
+    "previewDocument": "Aperçu du document",
+    "downloadDocument": "Télécharger le document",
+    "tableHeaders": {
+      "title": "Titre",
+      "authors": "Auteurs",
+      "status": "Statut",
+      "publisher": "Éditeur",
+      "year": "Année",
+      "type": "Type",
+      "addedOn": "Ajouté le",
+      "file": "Fichier"
+    },
+    "status": {
+      "notStarted": "Non commencé",
+      "reading": "En lecture",
+      "noteTaking": "Prise de notes",
+      "completed": "Terminé",
+      "archived": "Archivé"
+    }
+  },
+  "insights": {
+    "title": "Analyses",
+    "tooltip": "Analysez les modèles de mots-clés et les relations dans votre recherche pour découvrir les thèmes émergents et les connexions dans votre littérature.",
+    "description": "Obtenez des informations sur les modèles de mots-clés et les relations dans votre recherche",
+    "types": {
+      "researchFocus": "Focus de recherche",
+      "contentAnalysis": "Analyse de contenu",
+      "researchGaps": "Lacunes de recherche",
+      "insight": "Analyse"
+    },
+    "aiConfidence": "Confiance IA : {confidencePercentage}%",
+    "regenerateInsight": "Régénérer l'analyse",
+    "supportingData": "Données à l'appui",
+    "loadingInsights": "Chargement des analyses...",
+    "viewHistory": "Voir l'historique des analyses",
+    "noInsightsYet": "Aucune analyse pour l'instant",
+    "history": {
+      "title": "Historique des analyses",
+      "description": "Voir toutes les analyses précédemment générées pour ce projet",
+      "loading": "Chargement de l'historique des analyses...",
+      "emptyHeading": "Aucune analyse historique",
+      "emptyDescription": "Ce projet n'a pas encore d'analyses historiques. Générez des analyses pour les voir ici !",
+      "insightCount": "{count} analyse",
+      "insightsCount": "{count} analyses"
+    },
+    "relativeDate": {
+      "today": "Aujourd'hui",
+      "yesterday": "Hier",
+      "daysAgo": "Il y a {count} jours",
+      "weeksAgo": "Il y a {count} semaines",
+      "monthsAgo": "Il y a {count} mois",
+      "yearsAgo": "Il y a {count} ans"
+    }
+  },
+  "overview": {
+    "title": "Aperçu du projet",
+    "description": "Obtenez une vue d'ensemble du statut de votre projet et de ses composants clés.",
+    "addEvent": "Ajouter un événement",
+    "projectKeywords": "Mots-clés du projet"
+  },
+  "literatureView": {
+    "backToLiterature": "Retour à la littérature",
+    "viewDocument": "Voir le document",
+    "actions": "Actions",
+    "downloadDocument": "Télécharger le document",
+    "reportIssue": "Signaler un problème",
+    "attachDocument": "Joindre un document",
+    "deleteLiterature": "Supprimer",
+    "deleteConfirmation": "Êtes-vous sûr de vouloir supprimer \"{name}\" ? Cette action est irréversible.",
+    "tourAriaLabel": "En savoir plus sur la vue Littérature",
+    "citedFromPage": "Cet élément a été cité à partir de la page {page}.",
+    "openAtPage": "Ouvrir le document à la page {page}",
+    "noAuthorsListed": "Aucun auteur répertorié",
+    "editors": "Éditeurs",
+    "attachDocumentTo": "Joindre un document à \"{name}\"",
+    "attachDocumentDescription": "Téléchargez un fichier PDF, DOCX, DOC ou TXT. Nous extrairons le texte et les métadonnées.",
+    "reportIssueDescription": "Aidez-nous à nous améliorer en signalant des problèmes avec \"{name}\"",
+    "whatWentWrong": "Qu'est-ce qui n'a pas fonctionné ? (facultatif)",
+    "feedbackPlaceholder": "Décrivez le problème que vous avez remarqué (ex. : métadonnées incorrectes, texte manquant, extraction erronée)...",
+    "feedbackThankYou": "Vos commentaires nous aideront à nous améliorer. Merci !",
+    "submitting": "Envoi...",
+    "submitReport": "Envoyer le rapport",
+    "loadingDetails": "Chargement des détails de la littérature...",
+    "details": "Détails",
+    "addedOn": "Ajouté le",
+    "keywords": "Mots-clés"
+  },
+  "connections": {
+    "title": "Connexions",
+    "legend": "Légende",
+    "controls": "Contrôles",
+    "tour": "Visite",
+    "interactionControls": "Contrôles d'interaction",
+    "2dGraphControls": "Contrôles du graphique 2D",
+    "3dGraphControls": "Contrôles du graphique 3D",
+    "leftClick": "Clic gauche",
+    "rightClick": "Clic droit",
+    "rightClickEmpty": "Clic droit (vide)",
+    "rightClickLiterature": "Clic droit (littérature)",
+    "scrollWheel": "Molette de défilement",
+    "leftClickShift": "Clic gauche + Maj",
+    "panSelectDrag": "Panoramique/Sélectionner/Déplacer les nœuds",
+    "zoomInOut": "Zoom avant/arrière",
+    "selectMultiple": "Sélectionner plusieurs nœuds",
+    "rotateView": "Rotation de la vue",
+    "panView": "Panoramique",
+    "toggle2D": "Basculer en 2D",
+    "toggle3D": "Basculer en 3D",
+    "contextMenu": "Menu contextuel (naviguer, filtrer)",
+    "filterDescription": "Basculer la visibilité des différents types de nœuds",
+    "navigateToLiterature": "Naviguer vers la littérature",
+    "filterConnectedNodes": "Filtrer les nœuds connectés",
+    "resetFilter": "Réinitialiser le filtre",
+    "literature": "Littérature"
+  },
+  "models": {
+    "title": "Modèles",
+    "newModel": "Nouveau modèle",
+    "modelName": "Nom du modèle",
+    "modelDescription": "Description du modèle",
+    "noModels": "Aucun modèle",
+    "createFirst": "Créez votre premier modèle pour commencer",
+    "searchModels": "Rechercher des modèles...",
+    "viewModel": "Voir le modèle",
+    "editModel": "Modifier le modèle",
+    "deleteModel": "Supprimer le modèle",
+    "createModel": "Créer un modèle",
+    "manageResearchModels": "Créez et gérez vos modèles de recherche",
+    "tooltip": "Créez et gérez des modèles de recherche pour visualiser vos concepts et relations.",
+    "loadingModels": "Chargement des modèles...",
+    "noModelsCreated": "Aucun modèle créé",
+    "createFirstModel": "Créez votre premier modèle",
+    "createNewModel": "Créer un nouveau modèle",
+    "giveModelName": "Donnez un nom à votre modèle. Vous pourrez le modifier plus tard.",
+    "name": "Nom",
+    "deleteModelTitle": "Supprimer le modèle",
+    "deleteModelConfirm": "Êtes-vous sûr de vouloir supprimer \"{name}\" ? Cette action est irréversible.",
+    "renameModel": "Renommer le modèle",
+    "enterNewName": "Entrez un nouveau nom pour \"{name}\"",
+    "rename": "Renommer",
+    "created": "Créé",
+    "updated": "Mis à jour",
+    "loadingModel": "Chargement du modèle...",
+    "modelNotFound": "Modèle introuvable",
+    "toolbar": {
+      "addNodes": "Ajouter des nœuds",
+      "rectangle": "Rectangle",
+      "circle": "Cercle",
+      "ellipse": "Ellipse",
+      "viewSettings": "Paramètres d'affichage",
+      "showGrid": "Afficher la grille",
+      "snapToGrid": "Aligner sur la grille",
+      "backgroundColorForDownload": "Couleur de fond pour le téléchargement",
+      "transparent": "Transparent",
+      "downloadImage": "Télécharger l'image"
+    },
+    "customization": {
+      "connectionSettings": "Paramètres de connexion",
+      "reset": "Réinitialiser",
+      "type": "Type",
+      "color": "Couleur",
+      "width": "Largeur",
+      "animated": "Animé",
+      "background": "Arrière-plan",
+      "border": "Bordure",
+      "shape": "Forme",
+      "showHandles": "Afficher les poignées",
+      "opacity": "Opacité",
+      "size": "Taille",
+      "weight": "Épaisseur",
+      "align": "Alignement",
+      "shadow": "Ombre",
+      "edgeTypes": {
+        "default": "Par défaut",
+        "step": "Escalier",
+        "smoothStep": "Escalier lissé",
+        "straight": "Droit",
+        "bezier": "Bézier"
+      },
+      "borderStyles": {
+        "solid": "Plein",
+        "dashed": "Tirets",
+        "dotted": "Pointillés",
+        "double": "Double"
+      },
+      "shapes": {
+        "square": "Carré",
+        "rounded": "Arrondi"
+      },
+      "textAlign": {
+        "left": "Gauche",
+        "center": "Centre",
+        "right": "Droite"
+      },
+      "fontWeight": {
+        "normal": "Normal",
+        "bold": "Gras",
+        "light": "Léger"
+      }
+    },
+    "node": {
+      "style": "Style",
+      "text": "Texte",
+      "effects": "Effets",
+      "duplicate": "Dupliquer",
+      "bringToFront": "↑ Premier plan",
+      "sendToBack": "↓ Arrière-plan",
+      "bringToFrontTitle": "Mettre au premier plan",
+      "sendToBackTitle": "Mettre à l'arrière-plan"
+    }
+  },
+  "notes": {
+    "title": "Notes",
+    "newNote": "Nouvelle note",
+    "noteTitle": "Titre de la note",
+    "noteContent": "Contenu de la note",
+    "noNotes": "Aucune note",
+    "createFirst": "Créez votre première note pour commencer",
+    "lastEdited": "Dernière modification {date}",
+    "saveNote": "Enregistrer la note",
+    "deleteNote": "Supprimer la note",
+    "tooltip": "Créez, gérez et organisez vos notes de recherche et de littérature. Utilisez la vue partagée et le mode focus pour une productivité accrue. (Basculer le mode focus : Cmd/Ctrl+B)",
+    "description": "Créez, gérez et organisez vos notes de recherche et de littérature",
+    "literatureNotes": "Notes de littérature",
+    "researchNotes": "Notes de recherche",
+    "loadingNotes": "Chargement des notes...",
+    "noNoteSelected": "Aucune note sélectionnée",
+    "selectOrCreateNote": "Sélectionnez une note dans la barre latérale ou créez-en une nouvelle",
+    "createNewNote": "Créer une nouvelle note",
+    "sections": {
+      "introduction": "Introduction",
+      "methods": "Méthodes",
+      "results": "Résultats",
+      "discussion": "Discussion",
+      "conclusion": "Conclusion",
+      "references": "Références",
+      "other": "Autre"
+    },
+    "editor": {
+      "untitledNote": "Note sans titre",
+      "rename": "Renommer",
+      "renameTitle": "Renommer le titre",
+      "saveTitle": "Enregistrer le titre",
+      "cancelRename": "Annuler le renommage",
+      "saveChanges": "Enregistrer les modifications",
+      "saving": "Enregistrement",
+      "saved": "Enregistré {time}",
+      "sessionExpired": "Session expirée - non enregistré",
+      "deleteNote": "Supprimer la note",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette note ? Cette action est irréversible.",
+      "section": "Section",
+      "startWriting": "Commencez à écrire..."
+    }
+  },
+  "outcomes": {
+    "title": "Résultats",
+    "newOutcome": "Nouveau résultat",
+    "outcomeName": "Nom du résultat",
+    "outcomeDescription": "Description du résultat",
+    "noOutcomes": "Aucun résultat",
+    "createFirst": "Créez votre premier résultat pour commencer",
+    "searchOutcomes": "Rechercher des résultats...",
+    "viewOutcome": "Voir le résultat",
+    "editOutcome": "Modifier le résultat",
+    "deleteOutcome": "Supprimer le résultat",
+    "tooltip": "Créez et gérez des résultats de recherche pour suivre vos conclusions et questions.",
+    "createOutcome": "Créer un résultat",
+    "createAndManage": "Créez et gérez les résultats de votre projet",
+    "loadingOutcomes": "Chargement des résultats...",
+    "noOutcomesCreated": "Aucun résultat créé",
+    "createFirstOutcome": "Créez votre premier résultat",
+    "createNewOutcome": "Créer un nouveau résultat",
+    "giveOutcomeName": "Donnez un nom à votre résultat et sélectionnez un modèle.",
+    "type": "Type",
+    "researchOutcome": "Résultat de recherche",
+    "link": "Lien",
+    "name": "Nom",
+    "enterName": "Entrez un nom",
+    "url": "URL",
+    "template": "Modèle",
+    "selectTemplate": "Sélectionnez un modèle",
+    "templatesLabel": "Modèles",
+    "deleteOutcomeTitle": "Supprimer le résultat",
+    "deleteOutcomeConfirm": "Êtes-vous sûr de vouloir supprimer \"{name}\" ? Cette action est irréversible.",
+    "editOutcomeTitle": "Modifier le résultat",
+    "updateNameAndUrl": "Mettre à jour le/la {type} pour \"{name}\"",
+    "updateName": "nom",
+    "updateNameAndUrlType": "nom et URL",
+    "saveChanges": "Enregistrer les modifications",
+    "renameOutcome": "Renommer le résultat",
+    "created": "Créé",
+    "updated": "Mis à jour",
+    "deleteConfirmation": "Êtes-vous sûr de vouloir supprimer ce résultat ? Cette action est irréversible.",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "startWriting": "Commencez à rédiger votre résultat...",
+    "createdDate": "Créé le {date}",
+    "updatedDate": "Mis à jour le {date}",
+    "templates": {
+      "link": "Lien",
+      "researchQuestion": {
+        "name": "Question de recherche",
+        "title": "Question de recherche",
+        "primaryQuestion": "Question de recherche principale",
+        "primaryQuestionPrompt": "Énoncez votre question de recherche principale ici - assurez-vous qu'elle est spécifique, mesurable et qu'il est possible d'y répondre",
+        "components": "Composantes de la question de recherche",
+        "defineScope": "Définir la portée et les limites de la recherche",
+        "identifyVariables": "Identifier les variables clés et leurs relations",
+        "specifyPopulation": "Spécifier la population cible ou le contexte",
+        "defineTimeframe": "Définir le calendrier de l'étude",
+        "subQuestions": "Sous-questions",
+        "subQuestion1": "Quels aspects ou dimensions spécifiques doivent être étudiés ?",
+        "subQuestion2": "Quels facteurs contextuels doivent être pris en compte ?",
+        "subQuestion3": "Quelles approches méthodologiques seront utilisées ?",
+        "hypotheses": "Hypothèses de recherche (le cas échéant)"
+      },
+      "researchFinding": {
+        "title": "Résultat de recherche",
+        "keyFinding": "Résultat clé",
+        "keyFindingPrompt": "Énoncez votre résultat principal de manière claire et concise",
+        "evidenceAnalysis": "Preuves et analyse",
+        "primaryEvidence": "Preuve principale :",
+        "supportingData": "Données complémentaires :",
+        "statisticalSignificance": "Signification statistique (le cas échéant) :",
+        "implicationsImpact": "Implications et impact",
+        "domain": "Domaine",
+        "impact": "Impact",
+        "recommendations": "Recommandations",
+        "theory": "Théorie",
+        "practice": "Pratique",
+        "policy": "Politique",
+        "limitationsFuture": "Limites et recherches futures",
+        "limitations": "Limites :",
+        "futureResearch": "Orientations de recherche futures :"
+      },
+      "researchGap": {
+        "title": "Lacune de recherche",
+        "gapIdentification": "Identification de la lacune",
+        "gapIdentificationPrompt": "Articulez clairement la lacune dans la littérature de recherche actuelle",
+        "literatureReview": "Résumé de la revue de littérature",
+        "currentKnowledge": "Connaissances actuelles",
+        "knowledgeGaps": "Lacunes de connaissances",
+        "gapAnalysis": "Analyse des lacunes",
+        "theoreticalGaps": "Lacunes théoriques identifiées",
+        "methodologicalGaps": "Lacunes méthodologiques identifiées",
+        "empiricalGaps": "Lacunes empiriques identifiées",
+        "practicalGaps": "Lacunes pratiques/appliquées identifiées",
+        "significance": "Importance de la lacune",
+        "theoreticalSignificance": "Importance théorique :",
+        "practicalSignificance": "Importance pratique :",
+        "potentialImpact": "Impact potentiel de combler cette lacune :"
+      },
+      "researchAbstract": {
+        "title": "Résumé de recherche",
+        "background": "Contexte",
+        "backgroundPrompt": "Fournissez le contexte et identifiez le problème de recherche",
+        "objectives": "Objectifs",
+        "primaryObjective": "Objectif principal :",
+        "secondaryObjectives": "Objectifs secondaires :",
+        "methods": "Méthodes",
+        "methodsPrompt": "Décrivez la conception de recherche, la méthodologie et l'approche d'analyse",
+        "results": "Résultats",
+        "resultsPrompt": "Résumez les résultats clés et leur signification",
+        "conclusions": "Conclusions",
+        "conclusionsPrompt": "Énoncez les conclusions principales et les implications",
+        "keywords": "Mots-clés",
+        "keyword1": "Mot-clé 1",
+        "keyword2": "Mot-clé 2",
+        "keyword3": "Mot-clé 3"
+      },
+      "researchGrant": {
+        "title": "Subvention de recherche",
+        "projectDescription": "Description du projet",
+        "projectDescriptionPrompt": "Fournissez le contexte et identifiez le problème de recherche",
+        "relevantLiterature": "Littérature pertinente",
+        "primaryObjective": "Objectif principal :",
+        "secondaryObjectives": "Objectifs secondaires :",
+        "conceptualModel": "Modèle conceptuel, théorique ou empirique",
+        "summaryDesigns": "Résumé des conceptions",
+        "summaryDesignsPrompt": "Décrivez les conceptions de recherche, d'échantillonnage, de mesure et d'analyse",
+        "knowledgeGained": "Connaissances acquises",
+        "knowledgeGainedPrompt": "Résumez les résultats attendus et leur signification",
+        "principalInvestigators": "Chercheurs principaux",
+        "principalInvestigatorsPrompt": "Identifiez et décrivez l'expertise des chercheurs principaux et co-principaux",
+        "wordCount": "Nombre de mots",
+        "wordCountPrompt": "Indiquez le nombre de mots du brouillon",
+        "references": "Références",
+        "referencesPrompt": "Listez les références en utilisant un format cohérent"
+      }
+    },
+    "templateNames": {
+      "Link": "Lien",
+      "ResearchQuestion": "Question de recherche",
+      "ResearchFinding": "Résultat de recherche",
+      "ResearchGap": "Lacune de recherche",
+      "ResearchAbstract": "Résumé de recherche",
+      "ResearchGrant": "Subvention de recherche"
+    },
+    "outcomeTypes": {
+      "QUESTION": "Question",
+      "FINDING": "Résultat",
+      "GAP": "Lacune",
+      "ABSTRACT": "Résumé",
+      "GRANT": "Subvention",
+      "LINK": "Lien"
+    }
+  },
+  "chat": {
+    "title": "Chat",
+    "newChat": "Nouvelle conversation",
+    "sendMessage": "Envoyer le message",
+    "typeMessage": "Tapez un message...",
+    "thinking": "Réflexion...",
+    "regenerate": "Régénérer",
+    "copyMessage": "Copier le message",
+    "deleteMessage": "Supprimer le message",
+    "clearChat": "Effacer la conversation",
+    "exportChat": "Exporter la conversation",
+    "aiAssistant": "Assistant de recherche IA",
+    "noMessages": "Aucun message",
+    "startConversation": "Commencez une conversation avec votre assistant de recherche IA",
+    "chatWithResearchData": "Discutez avec vos données de recherche",
+    "history": "Historique",
+    "chatHistory": "Historique des conversations",
+    "searchConversations": "Rechercher des conversations...",
+    "noMatchingConversations": "Aucune conversation correspondante",
+    "tryAdjustingSearch": "Essayez d'ajuster vos termes de recherche",
+    "noPreviousConversations": "Aucune conversation précédente",
+    "startNewConversation": "Commencez une nouvelle conversation",
+    "chatSession": "Session de chat",
+    "deleteChatSession": "Supprimer la session de chat",
+    "deleteChatSessionConfirm": "Êtes-vous sûr de vouloir supprimer cette session de chat ? Cette action est irréversible.",
+    "deleteSession": "Supprimer la session",
+    "aiIsThinking": "L'IA réfléchit...",
+    "aiToolsUsed": "Outils d'analyse IA utilisés :",
+    "referencedSources": "Sources référencées :",
+    "usedSources": "{count} sources de votre recherche utilisées",
+    "usingProjectContext": "Utilisation du contexte du projet actuel",
+    "youAreTyping": "Vous êtes en train d'écrire...",
+    "askAboutResearch": "Posez des questions sur votre recherche, obtenez des analyses ou explorez vos données...",
+    "enterToSend": "pour envoyer",
+    "shiftEnterNewLine": "pour nouvelle ligne",
+    "enter": "Entrée",
+    "shiftEnter": "Maj+Entrée",
+    "summarizeResearch": "Résumez mes résultats de recherche récents",
+    "summarizeDescription": "Obtenez un aperçu de vos derniers progrès de recherche",
+    "keyThemes": "Quels sont les thèmes clés dans ma littérature ?",
+    "keyThemesDescription": "Identifiez les modèles et tendances dans vos sources",
+    "findGaps": "Aidez-moi à trouver des lacunes de recherche",
+    "findGapsDescription": "Découvrez des domaines inexplorés dans votre domaine",
+    "nextSteps": "Quelles sont mes prochaines étapes de recherche ?",
+    "nextStepsDescription": "Obtenez des recommandations pour poursuivre votre travail",
+    "relevance": "{percent}% de pertinence",
+    "literaturePage": "Page de littérature",
+    "failedToDeleteSession": "Échec de la suppression de la session",
+    "justNow": "À l'instant",
+    "createAsNote": "Créer comme note",
+    "previewDocument": "Aperçu du document",
+    "welcomeDescription": "Posez des questions sur votre recherche, obtenez des informations de votre littérature ou explorez des modèles dans vos données. Je suis là pour accélérer votre processus de recherche.",
+    "toolNames": {
+      "get_literature_count": "Compteur de littérature",
+      "get_relevant_content": "Recherche de contenu",
+      "semantic_search": "Recherche sémantique",
+      "analyze_literature_gaps": "Analyse des lacunes",
+      "suggest_research_directions": "Suggestions de recherche",
+      "summarize_search_results": "Résumé de recherche",
+      "compare_methodologies": "Comparaison des méthodologies"
+    }
+  },
+  "onboarding": {
+    "welcome": "Bienvenue sur Quester",
+    "welcomeSubtitle": "Configurons votre compte",
+    "chooseWorkspaceType": "Choisissez votre type d'espace de travail",
+    "choosePersonalPlan": "Choisissez votre forfait personnel",
+    "chooseTeamPlan": "Choisissez votre forfait équipe",
+    "createDepartments": "Créer des départements",
+    "createFirstProject": "Créez votre premier projet",
+    "workspaceName": "Nom de l'espace de travail",
+    "workspaceType": "Type d'espace de travail",
+    "workspaceExists": "Vous avez déjà un espace de travail créé",
+    "personalWorkspace": "Espace de travail personnel",
+    "forIndividualUse": "Pour une utilisation individuelle",
+    "organizationWorkspace": "Espace de travail organisation",
+    "forTeams": "Pour les équipes et les entreprises",
+    "createWorkspace": "Créer l'espace de travail",
+    "numberOfDepartments": "Nombre de départements",
+    "departmentName": "Nom du département {number}",
+    "continueToProject": "Continuer vers la création de projet",
+    "createProject": "Créer le projet",
+    "selectDepartment": "Sélectionner un département",
+    "selectDepartmentPlaceholder": "Sélectionnez un département...",
+    "step1Title": "Créez votre organisation",
+    "step1Description": "Configurez votre espace de travail",
+    "step2Title": "Choisissez votre forfait",
+    "step2Description": "Sélectionnez un forfait d'abonnement",
+    "step3Title": "Invitez des membres d'équipe",
+    "step3Description": "Ajoutez des collaborateurs à votre espace de travail",
+    "step4Title": "Créez votre premier projet",
+    "step4Description": "Commencez à organiser votre recherche",
+    "skipForNow": "Passer pour l'instant",
+    "completeSetup": "Terminer la configuration",
+    "errorOccurred": "Une erreur s'est produite"
+  },
+  "pricing": {
+    "title": "Choisissez votre forfait",
+    "subtitle": "Sélectionnez le forfait qui correspond le mieux à vos besoins",
+    "monthly": "Mensuel",
+    "yearly": "Annuel",
+    "perMonth": "par mois",
+    "perYear": "par an",
+    "currentPlan": "Forfait actuel",
+    "upgrade": "Mettre à niveau",
+    "downgrade": "Rétrograder",
+    "selectPlan": "Sélectionner le forfait",
+    "features": "Fonctionnalités",
+    "mostPopular": "Le plus populaire",
+    "enterprise": "Entreprise",
+    "contactUs": "Nous contacter",
+    "customPricing": "Tarification personnalisée pour les grandes organisations",
+    "saveUpTo": "Économisez jusqu'à {percent}%",
+    "save": "Économisez {percent}%",
+    "workspace": "Espace de travail",
+    "noPlansAvailable": "Aucun forfait d'abonnement disponible.",
+    "getStarted": "Commencer",
+    "teamValue": "Valeur équipe",
+    "customSolution": "Solution personnalisée",
+    "perfectForTrying": "Parfait pour essayer Quester",
+    "fullFeaturedIndividual": "Forfait complet pour les particuliers",
+    "fullFeaturedTeam": "Forfait complet pour les équipes",
+    "customizedSolutions": "Solutions personnalisées pour les équipes et les institutions",
+    "backToWorkspace": "Retour à la sélection de l'espace de travail",
+    "thankYouInterest": "Merci pour votre intérêt !",
+    "teamWillReach": "Un membre de notre équipe vous contactera bientôt pour planifier une démonstration.",
+    "getFullDemo": "Obtenez une démonstration complète du fonctionnement de Quester",
+    "businessEmail": "E-mail professionnel",
+    "companyUniversity": "Nom de l'entreprise/université",
+    "placeholders": {
+      "firstName": "Jean",
+      "lastName": "Dupont",
+      "company": "Acme Inc."
+    },
+    "failedToFetchPlans": "Échec de la récupération des forfaits",
+    "everythingInTeamPlan": "Tout ce qui est inclus dans le forfait Équipe",
+    "customUserLimit": "Limite d'utilisateurs personnalisée",
+    "prioritySupport": "Support prioritaire",
+    "slaGuarantees": "Garanties SLA"
+  },
+  "analytics": {
+    "title": "Analytique",
+    "projectAnalyticsTooltip": "Visualisez et analysez la collection de littérature et le contenu des notes de votre projet. Suivez les tendances des publications, identifiez les thèmes communs et obtenez des informations sur votre paysage de recherche.",
+    "organizationAnalytics": "Analytiques",
+    "overview": "Aperçu",
+    "projects": "Projets",
+    "members": "Membres",
+    "activity": "Activité",
+    "timeRange": "Période",
+    "last7Days": "7 derniers jours",
+    "last14Days": "14 derniers jours",
+    "last30Days": "30 derniers jours",
+    "last90Days": "90 derniers jours",
+    "allTime": "Tout le temps",
+    "noData": "Aucune donnée disponible",
+    "totalProjects": "Total des projets",
+    "activeProjects": "Projets actifs",
+    "completedProjects": "Projets terminés",
+    "totalMembers": "Total des membres",
+    "activeMembers": "Membres actifs",
+    "activityOverview": "Aperçu de l'activité dans vos projets et utilisateurs.",
+    "analyticsTooltip": "Consultez des analyses complètes sur l'activité de votre organisation, y compris les modèles d'engagement des utilisateurs, la création de contenu de projet et les métriques de productivité de l'équipe dans tous vos projets.",
+    "accessDenied": "Accès refusé",
+    "noPermission": "Vous n'avez pas la permission de consulter les analyses de l'organisation. Cette page nécessite des privilèges d'administrateur d'organisation, de propriétaire ou d'administrateur de département.",
+    "returnToDashboard": "Retourner au tableau de bord",
+    "loadingAnalytics": "Chargement des données analytiques...",
+    "errorLoadingData": "Erreur de chargement des données",
+    "totalUsers": "Total des utilisateurs",
+    "totalUsersTooltip": "Nombre total de tous les utilisateurs dans votre organisation.",
+    "activeUsers7Days": "Utilisateurs actifs (7 jours)",
+    "activeUsers7DaysTooltip": "Nombre d'utilisateurs qui se sont connectés au moins une fois au cours des 7 derniers jours.",
+    "activeUsers30Days": "Utilisateurs actifs (30 jours)",
+    "activeUsers30DaysTooltip": "Nombre d'utilisateurs qui se sont connectés au moins une fois au cours des 30 derniers jours.",
+    "activityRate7d": "Taux d'activité (7j)",
+    "activityRateTooltip": "Pourcentage du total des jours-utilisateurs possibles avec une activité de connexion au cours des 7 derniers jours. Calculé comme : (total des jours actifs / (total des utilisateurs × 7 jours)) × 100%.",
+    "noProjectsAvailable": "Aucun projet disponible.",
+    "projectActivityContentAdded": "Activité du projet (Contenu ajouté)",
+    "selectProjectsHint": "Cliquez sur les lignes de projet pour voir leurs graphiques d'activité ci-dessous. Vous pouvez sélectionner plusieurs projets pour comparer leur activité.",
+    "days7": "7 jours",
+    "days14": "14 jours",
+    "days30": "30 jours",
+    "searchProjectsByName": "Rechercher des projets par nom...",
+    "noProjectsWithActivity": "Aucun projet avec des données d'activité trouvé pour cette organisation.",
+    "activityDataCollection": "Les données d'activité sont collectées lorsque les membres de l'équipe créent ou modifient des ressources dans un projet.",
+    "project": "Projet",
+    "literature": "Littérature",
+    "notes": "Notes",
+    "models": "Modèles",
+    "outcomes": "Résultats",
+    "actions": "Actions",
+    "viewUsers": "Voir les utilisateurs",
+    "unnamedProject": "Projet sans nom",
+    "goToProject": "Aller au projet",
+    "selectedProjectDetails": "Détails de l'activité du projet sélectionné",
+    "userLoginActivity": "Activité de connexion des utilisateurs",
+    "searchUsersPlaceholder": "Rechercher des utilisateurs par nom ou e-mail...",
+    "noUserLoginData": "Aucune donnée de connexion utilisateur disponible.",
+    "user": "Utilisateur",
+    "lastLogin": "Dernière connexion",
+    "activeDays7d": "Jours actifs (7j)",
+    "activeDays14d": "Jours actifs (14j)",
+    "activeDays30d": "Jours actifs (30j)",
+    "activeDaysAll": "Jours actifs (Tout)",
+    "never": "Jamais",
+    "invalidDate": "Date invalide",
+    "toggleYearsTimePeriods": "Basculer entre les années individuelles et les périodes",
+    "viewChartFullscreen": "Voir le graphique en plein écran",
+    "loadingData": "Chargement des données...",
+    "noDataToAnalyze": "Aucune donnée à analyser pour l'instant !",
+    "tabs": {
+      "overview": "Aperçu",
+      "notesAnalysis": "Analyse des notes",
+      "literatureAnalysis": "Analyse de la littérature",
+      "designsAnalysis": "Analyse des conceptions"
+    },
+    "chartTitles": {
+      "prevalentPublishers": "Éditeurs prédominants",
+      "prevalentKeywords": "Mots-clés prédominants",
+      "distributionOfPublicationYears": "Distribution des années de publication",
+      "publicationYearFrequencyDistribution": "Distribution de fréquence par année de publication",
+      "typesOfLiterature": "Types de littérature",
+      "literatureTypesByPublicationYear": "Types de littérature par année de publication",
+      "noteSectionTypes": "Types de sections de notes",
+      "notesPrevalentNouns": "Notes - Noms prédominants",
+      "notesPrevalentVerbs": "Notes - Verbes prédominants",
+      "notesPrevalentAdjectives": "Notes - Adjectifs prédominants",
+      "literatureTitlesPrevalentNouns": "Titres de littérature - Noms prédominants",
+      "literatureTitlesPrevalentVerbs": "Titres de littérature - Verbes prédominants",
+      "literatureTitlesPrevalentAdjectives": "Titres de littérature - Adjectifs prédominants",
+      "prevalentResearchDesigns": "Conceptions de recherche prédominantes",
+      "prevalentSamplingDesigns": "Conceptions d'échantillonnage prédominantes",
+      "prevalentMeasurementDesigns": "Conceptions de mesure prédominantes",
+      "prevalentAnalyticDesigns": "Conceptions analytiques prédominantes"
+    },
+    "chartLabels": {
+      "individual": "Individuel",
+      "timePeriods": "Périodes"
+    }
+  },
+  "errors": {
+    "generic": "Une erreur s'est produite. Veuillez réessayer.",
+    "network": "Erreur réseau. Veuillez vérifier votre connexion.",
+    "unauthorized": "Vous n'êtes pas autorisé à effectuer cette action.",
+    "notFound": "La ressource demandée est introuvable.",
+    "validation": "Veuillez vérifier vos entrées et réessayer.",
+    "serverError": "Erreur serveur. Veuillez réessayer plus tard.",
+    "timeout": "Délai d'attente dépassé. Veuillez réessayer.",
+    "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
+    "invalidInput": "Entrée invalide fournie.",
+    "permissionDenied": "Permission refusée.",
+    "invalidProjectId": "ID de projet invalide",
+    "invalidProjectOrLiteratureId": "ID de projet ou de littérature invalide",
+    "invalidProjectOrModelId": "ID de projet ou de modèle invalide",
+    "invalidProjectOrOutcomeId": "ID de projet ou de résultat invalide",
+    "failedToLoad": "Échec du chargement des données",
+    "failedToSave": "Échec de l'enregistrement des modifications",
+    "failedToDelete": "Échec de la suppression",
+    "failedToCreateOrganization": "Échec de la création de l'organisation",
+    "failedToLoadChatSession": "Échec du chargement de la session de chat",
+    "failedToGetResponse": "Échec de l'obtention de la réponse",
+    "failedToLoadAchievements": "Échec du chargement des réalisations. Veuillez réessayer plus tard.",
+    "invalidLiteratureOrProjectId": "ID de littérature ou de projet invalide",
+    "noRoleSelected": "Aucun rôle sélectionné",
+    "lastOwnerCannotChange": "Le rôle du dernier propriétaire de l'organisation ne peut pas être modifié",
+    "pleaseSelectRole": "Veuillez sélectionner un rôle",
+    "failedToUpdateRole": "Échec de la mise à jour du rôle",
+    "anUnexpectedErrorOccurred": "Une erreur inattendue s'est produite",
+    "failedToUpdateSettings": "Échec de la mise à jour des paramètres",
+    "failedToJoin": "Échec de l'adhésion. Veuillez réessayer.",
+    "failedToFetchPlans": "Échec de la récupération des forfaits",
+    "failedToInitializeDashboard": "Échec de l'initialisation du tableau de bord",
+    "failedToLoadLiterature": "Échec du chargement de la littérature"
+  },
+  "validation": {
+    "required": "Ce champ est obligatoire",
+    "email": "Veuillez entrer une adresse e-mail valide",
+    "minLength": "Doit contenir au moins {min} caractères",
+    "maxLength": "Doit contenir au maximum {max} caractères",
+    "passwordMismatch": "Les mots de passe ne correspondent pas",
+    "invalidUrl": "Veuillez entrer une URL valide",
+    "invalidNumber": "Veuillez entrer un nombre valide"
+  },
+  "tours": {
+    "dashboard": {
+      "welcome": {
+        "title": "Bienvenue sur votre tableau de bord",
+        "description": "C'est votre centre principal pour naviguer dans votre espace de travail Quester. Consultez la structure de votre organisation et gérez les paramètres."
+      },
+      "organizationStructure": {
+        "title": "Structure de l'organisation",
+        "description": "Consultez et gérez vos départements et projets ici. Explorons cette section."
+      },
+      "viewModeToggle": {
+        "title": "Changer de vue",
+        "description": "Basculez entre une vue hiérarchique 'Arborescence' et une vue plate 'Liste' pour voir vos projets et départements."
+      },
+      "newDepartment": {
+        "title": "Créer des départements",
+        "description": "Organisez vos projets en créant des départements (si votre rôle et votre abonnement le permettent)."
+      },
+      "newProject": {
+        "title": "Créer des projets",
+        "description": "Démarrez de nouveaux projets de recherche directement depuis ici (selon les autorisations et l'abonnement)."
+      },
+      "search": {
+        "title": "Rechercher des projets",
+        "description": "Trouvez rapidement des projets en recherchant par leur nom."
+      },
+      "filter": {
+        "title": "Filtrer votre vue",
+        "description": "Activez cette option pour afficher uniquement les projets dont vous êtes membre."
+      }
+    },
+    "settings": {
+      "header": {
+        "title": "Gérez vos paramètres",
+        "description": "Cette zone vous permet de gérer vos informations de profil personnel et, le cas échéant, les paramètres de votre organisation."
+      },
+      "tabs": {
+        "title": "Naviguer entre les zones de paramètres",
+        "description": "Utilisez ces onglets pour naviguer entre vos paramètres de profil personnel et les paramètres de l'organisation (si disponibles avec votre forfait)."
+      },
+      "profile": {
+        "title": "Vos informations de profil",
+        "description": "Mettez à jour votre prénom et nom ici. Votre adresse e-mail ne peut pas être modifiée."
+      },
+      "saveButton": {
+        "title": "Enregistrer les modifications du profil",
+        "description": "Cliquez ici pour enregistrer toutes les mises à jour apportées à votre nom."
+      },
+      "organizationTab": {
+        "title": "Onglet Paramètres de l'organisation",
+        "description": "Accédez aux paramètres de votre organisation actuelle ici. Cet onglet peut être désactivé selon votre forfait d'abonnement."
+      },
+      "organizationContent": {
+        "title": "Paramètres spécifiques à l'organisation",
+        "description": "Gérez les invitations et les autorisations de création de contenu pour votre organisation. Notez que certains paramètres peuvent être réservés aux propriétaires."
+      },
+      "disableInvitations": {
+        "title": "Contrôler les invitations",
+        "description": "(Propriétaire uniquement) Activez ou désactivez la possibilité pour quiconque d'inviter de nouveaux membres dans cette organisation."
+      },
+      "allowMemberInvites": {
+        "title": "Déléguer les invitations",
+        "description": "(Propriétaire uniquement) Si les invitations sont activées, choisissez si les membres réguliers et les administrateurs (pas seulement les propriétaires) peuvent inviter d'autres personnes."
+      },
+      "membersCreateProjects": {
+        "title": "Autorisation de création de projet",
+        "description": "(Admin/Propriétaire) Décidez si les membres réguliers doivent être autorisés à créer de nouveaux projets au sein de cette organisation."
+      },
+      "keepUpdated": {
+        "title": "Gardez vos informations à jour",
+        "description": "Consultez régulièrement vos paramètres de profil et d'organisation pour vous assurer qu'ils reflètent vos besoins et préférences actuels."
+      }
+    },
+    "teamManagement": {
+      "chooseTeam": {
+        "title": "Choisissez votre équipe",
+        "description": "Sélectionnez une organisation, un département ou un projet dans la barre latérale pour commencer à gérer ses membres d'équipe."
+      },
+      "teamMembers": {
+        "title": "Vos membres d'équipe",
+        "description": "Ici, vous pouvez voir tous les membres de l'équipe, leurs rôles et gérer leurs autorisations d'accès."
+      },
+      "invitations": {
+        "title": "Inviter de nouveaux membres",
+        "description": "Envoyez des invitations par e-mail pour ajouter de nouvelles personnes à votre organisation."
+      },
+      "addUsers": {
+        "title": "Ajouter des utilisateurs existants",
+        "description": "Ajoutez des personnes qui sont déjà dans votre organisation à ce projet ou département spécifique."
+      }
+    },
+    "analytics": {
+      "welcome": {
+        "title": "Bienvenue dans l'analytique de l'organisation",
+        "description": "Cette page fournit un aperçu de haut niveau de l'activité et de l'engagement dans les projets et utilisateurs de votre organisation. Utilisez-la pour suivre les progrès, identifier les tendances et comprendre l'utilisation des ressources."
+      },
+      "summaryMetrics": {
+        "title": "Indicateurs clés de performance",
+        "description": "Ces cartes affichent les signes vitaux de votre organisation : total des utilisateurs, activité récente des utilisateurs (7 et 30 derniers jours) et le taux d'activité global. Évaluez rapidement la santé et le niveau d'engagement de votre espace de travail."
+      },
+      "projectActivity": {
+        "title": "Activité de contenu du projet",
+        "description": "Cette section suit la création et la modification du contenu de recherche (Littérature, Notes, Modèles, Résultats) dans chaque projet."
+      },
+      "dateRange": {
+        "title": "Filtrer par période",
+        "description": "Ajustez la plage de dates (7, 14, 30 jours ou Tout le temps) pour concentrer les données d'activité dans le tableau et les graphiques sur des périodes spécifiques. Utile pour suivre les progrès récents ou les tendances à long terme."
+      },
+      "projectSearch": {
+        "title": "Trouver des projets rapidement",
+        "description": "Utilisez cette barre de recherche pour filtrer le tableau ci-dessous et trouver des projets spécifiques par nom."
+      },
+      "projectTable": {
+        "title": "Détails de l'activité du projet",
+        "description": "Ce tableau liste les projets avec une activité récente. Cliquez sur les en-têtes pour trier. Les colonnes quantifient le contenu ajouté, aidant à identifier les domaines de recherche actifs. Utilisez les cases à cocher pour sélectionner des projets pour les graphiques détaillés ci-dessous."
+      },
+      "projectActions": {
+        "title": "Actions du projet",
+        "description": "Consultez rapidement les utilisateurs associés à un projet ou naviguez directement vers l'espace de travail du projet."
+      },
+      "projectCharts": {
+        "title": "Visualiser les tendances du projet",
+        "description": "Lorsque vous sélectionnez des projets dans le tableau ci-dessus, des graphiques d'activité détaillés apparaissent ici. Comparez les tendances entre les projets ou plongez dans les modèles de création de contenu d'un seul projet sur la plage de dates sélectionnée."
+      },
+      "userActivity": {
+        "title": "Activité de connexion des utilisateurs",
+        "description": "Surveillez l'engagement des utilisateurs en suivant la fréquence de connexion. Cela aide à identifier les contributeurs actifs et les utilisateurs qui pourraient avoir besoin de soutien."
+      },
+      "userSearch": {
+        "title": "Trouver des utilisateurs rapidement",
+        "description": "Recherchez des utilisateurs spécifiques par nom ou e-mail pour vérifier leur activité de connexion récente."
+      },
+      "userTable": {
+        "title": "Détails de connexion des utilisateurs",
+        "description": "Voyez quand chaque utilisateur s'est connecté pour la dernière fois et combien de jours distincts il a été actif sur différentes périodes (7, 14, 30 jours, Tout le temps). Cliquez sur les en-têtes pour trier et identifier facilement les modèles d'engagement."
+      },
+      "overview": {
+        "title": "Surveillez le pouls de votre organisation",
+        "description": "Utilisez régulièrement cette page d'analytique pour comprendre l'activité de recherche, suivre l'engagement des utilisateurs et prendre des décisions éclairées sur l'allocation des ressources et le support."
+      }
+    },
+    "literature": {
+      "header": {
+        "title": "Gérez votre littérature",
+        "description": "Cette page est votre centre principal pour organiser tous les articles, livres et autres sources de votre projet. Gardez tout en un seul endroit !"
+      },
+      "addButton": {
+        "title": "Ajouter de nouvelles sources facilement",
+        "description": "Cliquez ici pour ajouter de nouveaux éléments de littérature. Vous pouvez coller des références formatées ou entrer les détails manuellement."
+      },
+      "search": {
+        "title": "Trouver de la littérature rapidement",
+        "description": "Utilisez cette barre de recherche pour filtrer instantanément votre liste de littérature par titre, auteur, année ou mot-clé."
+      },
+      "table": {
+        "title": "Votre bibliothèque de littérature",
+        "description": "Toute votre littérature ajoutée apparaît ici. Cliquez sur les en-têtes de colonne pour trier, ou cliquez sur une ligne pour voir/modifier les détails."
+      },
+      "addTwoWays": {
+        "title": "Ajouter de la littérature : deux méthodes",
+        "description": "Voyons comment ajouter de la littérature. Quester peut analyser automatiquement les références collées ou vous pouvez entrer les détails manuellement."
+      },
+      "pasteReference": {
+        "title": "Ajouter via référence (Collage)",
+        "description": "Collez une ou plusieurs références ici (comme APA, MLA). Quester essaiera d'extraire les détails automatiquement. Cela économise beaucoup de saisie !"
+      },
+      "manualEntry": {
+        "title": "Passer à la saisie manuelle",
+        "description": "Alternativement, cliquez ici pour ajouter les détails champ par champ."
+      },
+      "manualFields": {
+        "title": "Ajouter manuellement",
+        "description": "Remplissez les champs nécessaires comme Titre, Auteurs, Année, etc. Cela vous donne un contrôle total sur l'entrée."
+      },
+      "finishAdding": {
+        "title": "Terminer l'ajout",
+        "description": "Une fois que vous avez ajouté vos références, confirmez-les ou enregistrez-les. C'est ainsi que vous construisez votre bibliothèque de littérature !"
+      },
+      "organize": {
+        "title": "Prêt à organiser ?",
+        "description": "Utilisez cette page pour gérer efficacement votre revue de littérature. Gardez les sources organisées, suivez l'état de lecture et trouvez facilement ce dont vous avez besoin."
+      }
+    },
+    "models": {
+      "header": {
+        "title": "Gérez vos modèles de recherche",
+        "description": "C'est ici que vous créez, consultez et organisez des modèles visuels de vos concepts de recherche et de leurs relations. Les modèles vous aident à cartographier les théories et les idées complexes."
+      },
+      "createButton": {
+        "title": "Créer un nouveau modèle",
+        "description": "Cliquez ici pour démarrer un nouveau modèle. Donnez-lui un nom et vous serez dirigé vers l'éditeur pour commencer à cartographier vos idées."
+      },
+      "search": {
+        "title": "Trouver vos modèles",
+        "description": "Utilisez la barre de recherche pour trouver rapidement des modèles spécifiques par nom à mesure que votre collection s'agrandit."
+      },
+      "grid": {
+        "title": "Votre collection de modèles",
+        "description": "Tous vos modèles créés sont affichés ici. Cliquez sur une carte pour ouvrir l'éditeur. Vous pouvez également renommer ou supprimer des modèles en utilisant les icônes qui apparaissent au survol."
+      },
+      "visualize": {
+        "title": "Visualisez votre recherche",
+        "description": "Utilisez les modèles pour structurer visuellement vos pensées, théories et connexions au sein de votre recherche. C'est un moyen puissant de gagner en clarté et de communiquer des idées complexes."
+      }
+    },
+    "modelView": {
+      "loading": {
+        "title": "Chargement de votre modèle",
+        "description": "Quester vérifie maintenant vos autorisations d'accès et charge les données du modèle sélectionné. Cela ne prend généralement qu'un instant."
+      },
+      "welcome": {
+        "title": "Bienvenue dans le constructeur de modèles !",
+        "description": "Faisons une visite interactive ! Je vais vous montrer comment construire des modèles en ajoutant automatiquement des nœuds et en les connectant. Regardez pendant que nous explorons chaque fonctionnalité !"
+      },
+      "toolbar": {
+        "title": "Barre d'outils de construction de modèles",
+        "description": "Cette barre d'outils vous permet d'ajouter différents types de nœuds pour construire votre modèle. Regardez pendant que je crée un nœud pour vous !"
+      },
+      "firstNode": {
+        "title": "Votre premier nœud !",
+        "description": "Voici le nœud que j'ai créé pour vous ! Vous pouvez le faire glisser, le redimensionner en utilisant les poignées et double-cliquer pour modifier son contenu. Cliquez dessus pour voir les options d'édition !"
+      },
+      "nodeMenu": {
+        "title": "Menu d'édition de nœud",
+        "description": "Parfait ! Lorsque vous sélectionnez un nœud, ce menu apparaît. Ici, vous pouvez personnaliser l'apparence du nœud - changer les couleurs, les bordures, le style du texte et ajouter des effets. Essayez de cliquer sur les différents onglets !"
+      },
+      "addingNodes": {
+        "title": "Ajouter plus de nœuds",
+        "description": "Laissez-moi ajouter un autre nœud pour que nous puissions les connecter avec des flèches !"
+      },
+      "connecting": {
+        "title": "Connecter les nœuds avec des flèches",
+        "description": "Parfait ! Maintenant, je vais vous montrer comment connecter les nœuds. Regardez pendant que je crée automatiquement une connexion entre ces deux nœuds. En pratique, vous feriez glisser d'une poignée de nœud à une autre."
+      },
+      "arrows": {
+        "title": "Les flèches montrent les relations",
+        "description": "Excellent ! Cette flèche montre la relation entre vos concepts. Cliquez sur n'importe quelle flèche pour personnaliser son apparence - changer les couleurs, ajouter des pointes de flèche ou la rendre animée !"
+      },
+      "customizeArrows": {
+        "title": "Personnalisez vos flèches",
+        "description": "Ce panneau est apparu quand j'ai sélectionné la flèche ! Ici, vous pouvez changer le style de la flèche, la couleur, l'épaisseur, ajouter des pointes de flèche et même la rendre animée pour montrer des relations dynamiques."
+      },
+      "navigation": {
+        "title": "Contrôles de navigation",
+        "description": "Utilisez ces contrôles pour zoomer avant/arrière, ajuster l'ensemble de votre modèle à la vue et verrouiller/déverrouiller le panoramique du canevas. Très pratique pour les modèles grands et complexes !"
+      },
+      "minimap": {
+        "title": "Minimap pour les grands modèles",
+        "description": "Cette minimap montre un aperçu de l'ensemble de votre modèle. Cliquez et faites glisser à l'intérieur pour naviguer rapidement sur de grands canevas. C'est particulièrement utile pour les modèles de recherche complexes !"
+      },
+      "building": {
+        "title": "Construire votre modèle de recherche",
+        "description": "Maintenant vous connaissez les bases ! Ajoutez des nœuds rectangulaires pour les concepts, des nœuds circulaires pour les variables, connectez-les avec des flèches pour montrer les relations. Utilisez les paramètres de grille et d'alignement pour garder les choses organisées. Vous êtes prêt à construire votre modèle de recherche !"
+      }
+    },
+    "outcomes": {
+      "header": {
+        "title": "Gérez vos résultats",
+        "description": "Cette page est l'endroit où vous créez, consultez et gérez tous les résultats, conclusions ou liens liés à votre projet de recherche."
+      },
+      "createButton": {
+        "title": "Initier la création de résultat",
+        "description": "Cliquer sur ce bouton ouvre une boîte de dialogue où vous pouvez commencer à créer un nouveau résultat (une conclusion de recherche, une question ou un lien)."
+      },
+      "search": {
+        "title": "Trouver des résultats rapidement",
+        "description": "Utilisez cette barre de recherche pour filtrer votre liste de résultats par nom."
+      },
+      "grid": {
+        "title": "Votre collection de résultats",
+        "description": "Tous vos résultats sont affichés ici sous forme de cartes. Cliquez sur une carte pour voir/modifier (pour les résultats) ou ouvrir (pour les liens). Survolez une carte pour voir les options de modification/suppression."
+      },
+      "journalSuggestions": {
+        "title": "Obtenir des suggestions de revues",
+        "description": "En fonction de la littérature que vous avez ajoutée, Quester suggère des revues pertinentes pour une publication potentielle. Cliquez sur 'Expliquer' pour plus de détails sur le score."
+      },
+      "conferenceSuggestions": {
+        "title": "Trouver des conférences pertinentes",
+        "description": "De même, Quester suggère des conférences où votre recherche pourrait être bien adaptée pour une présentation."
+      },
+      "createOutcome": {
+        "title": "Créons un résultat",
+        "description": "Nous allons parcourir le processus de création. Vous pouvez créer un résultat de recherche détaillé ou un simple lien."
+      },
+      "selectType": {
+        "title": "1. Sélectionnez le type de résultat",
+        "description": "Tout d'abord, catégorisez votre résultat. Choisissez 'Résultat de recherche' pour les conclusions, questions ou analyses qui nécessitent une documentation détaillée (en utilisant un modèle), ou 'Lien' pour simplement enregistrer des URLs externes pertinentes."
+      },
+      "nameOutcome": {
+        "title": "2. Nommez votre résultat",
+        "description": "Fournissez un nom clair et concis qui résume ce résultat ou ce lien. Cela vous aide à l'identifier plus tard."
+      },
+      "addDetails": {
+        "title": "3. Ajouter des détails (selon le type)",
+        "description": "Si vous créez un 'Lien', collez l'URL ici. Si vous créez un 'Résultat de recherche', choisissez un modèle (comme 'Conclusion clé' ou 'Question de recherche') pour structurer les informations que vous ajouterez ensuite."
+      },
+      "createSubmit": {
+        "title": "4. Créer le résultat",
+        "description": "Cliquer ici enregistre le résultat. Les types 'Lien' sont enregistrés immédiatement. Les types 'Résultat de recherche' ouvriront un éditeur dédié basé sur le modèle que vous avez sélectionné, prêt pour vous documenter les détails."
+      },
+      "manageExisting": {
+        "title": "Gérer les résultats existants",
+        "description": "Survolez n'importe quelle carte pour révéler des boutons permettant de renommer (icône crayon) ou supprimer (icône corbeille) le résultat."
+      },
+      "ready": {
+        "title": "Prêt à documenter vos conclusions ?",
+        "description": "Utilisez la page Résultats pour garder une trace des résultats clés, des questions et des liens utiles tout au long de votre processus de recherche. Restez organisé !"
+      }
+    },
+    "connections": {
+      "visualize": {
+        "title": "Visualisez vos connexions de recherche",
+        "description": "Cette vue cartographie les relations entre votre littérature, vos notes, mots-clés et concepts. Elle vous aide à découvrir des modèles cachés, identifier des lacunes de recherche et comprendre la structure de votre projet."
+      },
+      "dimensions": {
+        "title": "Basculer entre les dimensions",
+        "description": "Basculez entre un graphique de réseau 2D et une vue 3D immersive pour explorer vos connexions sous différentes perspectives."
+      },
+      "legend": {
+        "title": "Comprendre les symboles",
+        "description": "Cliquez ici pour ouvrir la légende, qui explique ce que chaque icône (nœud) dans le graphique représente (ex. : littérature, note, mot-clé)."
+      },
+      "controls": {
+        "title": "Afficher/Masquer les conseils d'interaction",
+        "description": "Activez cette option pour afficher ou masquer les conseils utiles sur la façon de naviguer et d'interagir avec le graphique (zoom, panoramique, sélection)."
+      },
+      "interact": {
+        "title": "Interagir avec le graphique",
+        "description": "Explorez la zone du graphique ci-dessous ! Utilisez votre souris pour zoomer, faire un panoramique et sélectionner des nœuds. En 2D, vous pouvez faire glisser les nœuds ; en 3D, faites pivoter la vue. Consultez les conseils de contrôle si nécessaire."
+      },
+      "navigate": {
+        "title": "Naviguer vers la littérature",
+        "description": "Faites un clic droit sur n'importe quel nœud de littérature (icônes de livre) pour ouvrir un menu contextuel avec des options de navigation rapide. Vous pouvez accéder instantanément aux détails complets de la littérature dans un nouvel onglet sans perdre votre place dans le graphique."
+      },
+      "filter": {
+        "title": "Filtrer les nœuds connectés",
+        "description": "Utilisez le menu contextuel pour filtrer le graphique et afficher uniquement les nœuds connectés à un élément de littérature spécifique. Cela vous aide à vous concentrer sur les connexions immédiates d'une pièce de recherche particulière. Utilisez 'Réinitialiser le filtre' pour revenir à la vue complète."
+      },
+      "discover": {
+        "title": "Découvrir des insights",
+        "description": "Utilisez cette visualisation pour voir comment les idées se connectent, identifier des clusters de travaux connexes, repérer des lacunes potentielles de recherche et acquérir une compréhension plus profonde de votre paysage de recherche."
+      }
+    },
+    "notes": {
+      "welcome": {
+        "title": "Bienvenue dans les Notes",
+        "description": "Capturez, organisez et gérez vos notes de recherche et de littérature. Utilisez les contrôles ici pour gérer votre vue et créer de nouvelles notes."
+      },
+      "filterType": {
+        "title": "Filtrer par type de note",
+        "description": "Basculez entre l'affichage des notes spécifiquement liées aux éléments de littérature et les notes de recherche générales pour votre projet."
+      },
+      "notesList": {
+        "title": "Votre liste de notes",
+        "description": "Toutes vos notes pour le type sélectionné apparaissent ici. Utilisez la barre de recherche en haut pour les filtrer instantanément."
+      },
+      "createNote": {
+        "title": "Créer une nouvelle note",
+        "description": "Cliquez ici pour commencer une nouvelle note. Elle sera automatiquement enregistrée pendant que vous tapez."
+      },
+      "editor": {
+        "title": "Éditeur de texte enrichi",
+        "description": "Écrivez et formatez vos notes ici. Les modifications sont enregistrées automatiquement. Vous pouvez attacher des notes aux entrées de littérature depuis l'éditeur."
+      },
+      "splitView": {
+        "title": "Activer la vue partagée",
+        "description": "Basculez entre l'affichage d'une note ou deux notes côte à côte pour la comparaison ou la référence."
+      },
+      "focusMode": {
+        "title": "Activer le mode focus",
+        "description": "Masquez la barre latérale pour vous concentrer uniquement sur l'éditeur. Utilisez le bouton ou Cmd/Ctrl+B pour basculer."
+      },
+      "ready": {
+        "title": "Prêt à prendre des notes ?",
+        "description": "Utilisez ces fonctionnalités pour garder vos pensées organisées et connectées à vos sources de recherche."
+      }
+    },
+    "overview": {
+      "welcome": {
+        "title": "Bienvenue dans l'aperçu de votre projet",
+        "description": "C'est votre centre principal pour gérer votre projet de recherche. Explorons les sections clés qui vous aident à rester organisé et concentré."
+      },
+      "projectCore": {
+        "title": "Définissez le cœur de votre projet",
+        "description": "Commencez ici en définissant clairement l'objectif de votre projet et en définissant son statut actuel. Un objectif clair garde votre recherche concentrée, tandis que le statut aide à suivre les progrès et le financement. Utilisez l'outil de réécriture IA pour affiner votre énoncé !"
+      },
+      "keywords": {
+        "title": "Étiquetez vos thèmes de recherche",
+        "description": "Ajoutez des mots-clés pertinents pour catégoriser votre projet. Cela facilite sa recherche ultérieure et aide Quester à connecter les idées connexes dans votre recherche. Visez 3 à 7 termes clés."
+      },
+      "methodology": {
+        "title": "Décrivez votre méthodologie",
+        "description": "Documentez vos conceptions de recherche, d'échantillonnage, de mesure et d'analyse. Définir clairement votre méthodologie assure la cohérence et la rigueur tout au long de votre projet."
+      },
+      "deliverables": {
+        "title": "Suivez vos livrables",
+        "description": "Gérez vos productions de recherche comme les articles, rapports ou présentations. Suivez leur statut et leurs échéances pour rester au top de vos objectifs de publication."
+      },
+      "health": {
+        "title": "Vérifiez la santé de votre projet",
+        "description": "Cette carte met en évidence les étapes de configuration manquantes ou les domaines nécessitant une attention, garantissant que votre projet est bien structuré. Examiner régulièrement les insights aide à maintenir l'élan."
+      },
+      "nextSteps": {
+        "title": "Concentrez vos prochaines étapes",
+        "description": "Consultez les éléments de littérature prioritaires nécessitant une révision et les mises à jour récentes ici. Cela vous aide à aborder les tâches les plus importantes en premier et à rester informé des progrès."
+      },
+      "ready": {
+        "title": "Prêt à commencer ?",
+        "description": "Utilisez régulièrement cette page d'aperçu pour garder votre recherche organisée, concentrée et sur la bonne voie, de la conception à la publication. Explorez chaque section pour tirer le meilleur parti de Quester !"
+      }
+    },
+    "progress": {
+      "header": {
+        "title": "Suivez votre parcours de recherche",
+        "description": "Cette page visualise l'activité, les jalons et les réalisations de votre projet, vous aidant à comprendre vos progrès au fil du temps."
+      },
+      "researchLevel": {
+        "title": "Votre niveau de recherche",
+        "description": "Gagnez des points d'expérience (XP) en complétant des activités de recherche et des réalisations. Montez de niveau pour débloquer de nouveaux titres reflétant votre maîtrise !"
+      },
+      "viewLevels": {
+        "title": "Explorer tous les niveaux",
+        "description": "Cliquez ici pour voir tous les niveaux de recherche disponibles, leurs exigences en XP et leurs descriptions."
+      },
+      "tabs": {
+        "title": "Naviguer entre les vues de progression",
+        "description": "Basculez entre la vue 'Chronologie du projet', montrant les événements chronologiques, et la vue 'Réalisations', suivant des jalons spécifiques."
+      },
+      "timeline": {
+        "title": "Chronologie du projet",
+        "description": "Voyez les événements clés du projet comme la création, les changements de statut, les ajouts de littérature et la création de notes disposés chronologiquement. Cliquez sur les éléments pour plus de détails."
+      },
+      "switchToAchievements": {
+        "title": "Passer aux réalisations",
+        "description": "Voyons maintenant les réalisations spécifiques que vous pouvez débloquer."
+      },
+      "achievements": {
+        "title": "Réalisations",
+        "description": "Débloquez des réalisations en effectuant des actions spécifiques comme ajouter de la littérature, écrire des notes ou utiliser des fonctionnalités de manière cohérente. Les réalisations complétées accordent des XP vers votre niveau de recherche."
+      },
+      "monitor": {
+        "title": "Surveillez votre élan",
+        "description": "Consultez cette page régulièrement pour visualiser votre activité de recherche, célébrer les jalons et rester motivé dans votre parcours !"
+      }
+    },
+    "literatureView": {
+      "header": {
+        "title": "Détails de l'élément de littérature",
+        "description": "Cette page fournit une vue détaillée d'un seul élément de littérature. Ici, vous pouvez gérer ses détails, suivre le statut, ajouter des mots-clés, voir les insights et générer des citations."
+      },
+      "goBack": {
+        "title": "Retour",
+        "description": "Retournez à la liste principale de littérature de ce projet."
+      },
+      "viewDocument": {
+        "title": "Voir le document",
+        "description": "Ouvrez le fichier du document original dans votre navigateur pour la lecture et la révision."
+      },
+      "downloadDocument": {
+        "title": "Télécharger le document",
+        "description": "Téléchargez le fichier du document original sur votre ordinateur."
+      },
+      "deleteItem": {
+        "title": "Supprimer l'élément",
+        "description": "Supprimez définitivement cet élément de littérature et toutes les notes associées de votre projet."
+      },
+      "trackStatus": {
+        "title": "Suivre le statut de lecture",
+        "description": "Surveillez et mettez à jour la progression de la lecture et du traitement de cet élément de littérature. Cliquez sur 'Changer le statut' pour mettre à jour."
+      },
+      "coreInfo": {
+        "title": "Informations de base",
+        "description": "Consultez et modifiez les détails fondamentaux de cet élément de littérature, tels que le titre, les auteurs, l'année de publication et le type. Cliquez sur 'Modifier' pour apporter des changements."
+      },
+      "methodology": {
+        "title": "Détails de la méthodologie",
+        "description": "Catégorisez les conceptions de recherche, d'échantillonnage, de mesure et d'analyse utilisées dans cette littérature selon le cadre de votre projet. Cliquez sur 'Modifier' pour modifier."
+      },
+      "health": {
+        "title": "Santé et configuration de la littérature",
+        "description": "Vérifiez la complétude de cette entrée de littérature. Développez cette section pour voir les champs recommandés à remplir pour une meilleure organisation et qualité de citation."
+      },
+      "addKeywords": {
+        "title": "Ajouter des mots-clés",
+        "description": "Étiquetez cette littérature avec des mots-clés pertinents. Cela aide à organiser vos sources et à identifier les connexions thématiques dans votre recherche."
+      },
+      "generateCitations": {
+        "title": "Générer des citations",
+        "description": "Générez rapidement des citations dans divers styles courants (APA, MLA, etc.) basés sur les détails entrés. Utilisez le menu déroulant pour sélectionner un style et le bouton pour copier."
+      },
+      "manageSource": {
+        "title": "Gérez votre source",
+        "description": "Utilisez cette vue détaillée pour documenter, analyser et intégrer complètement cette pièce de littérature dans votre projet de recherche."
+      }
+    },
+    "projectSettings": {
+      "configure": {
+        "title": "Configurez votre projet",
+        "description": "Gérez les paramètres de base de votre projet, les conceptions personnalisées et les options de données ici."
+      },
+      "projectName": {
+        "title": "Mettre à jour le nom du projet",
+        "description": "Changez le nom du projet ici et cliquez sur 'Enregistrer les modifications' une fois terminé."
+      },
+      "customDesigns": {
+        "title": "Gérer les conceptions personnalisées",
+        "description": "Ajoutez, modifiez ou supprimez des options personnalisées pour vos conceptions de recherche, d'échantillonnage, de mesure et d'analyse pour adapter Quester à votre méthodologie spécifique."
+      },
+      "dangerZone": {
+        "title": "Zone de danger",
+        "description": "Attention ! Cette section contient des actions comme l'exportation ou la suppression définitive de votre projet."
+      },
+      "exportData": {
+        "title": "Exporter les données du projet",
+        "description": "Téléchargez un fichier zip contenant toutes les données de votre projet (littérature, notes, conceptions, etc.) pour sauvegarde ou utilisation ailleurs."
+      },
+      "deleteProject": {
+        "title": "Supprimer le projet",
+        "description": "Supprimez définitivement ce projet et toutes ses données. Cette action ne peut pas être annulée, procédez donc avec prudence !"
+      }
+    },
+    "keywordAnalysis": {
+      "welcome": {
+        "title": "Bienvenue dans l'analyse de mots-clés",
+        "description": "Cet outil vous aide à comprendre la fréquence et les relations des mots-clés dans la littérature de votre projet. Découvrez des modèles, identifiez des lacunes de recherche et affinez votre focus."
+      },
+      "startFirst": {
+        "title": "Démarrez votre première analyse",
+        "description": "Vous n'avez pas encore effectué d'analyses. Cliquez sur 'Créer votre première analyse' pour commencer à explorer les connexions de mots-clés."
+      },
+      "inputKeywords": {
+        "title": "Entrez vos mots-clés",
+        "description": "Entrez 2 à 10 mots-clés pertinents pour vos questions de recherche. Quester recherchera ensuite les occurrences et co-occurrences dans votre littérature."
+      },
+      "exploring": {
+        "title": "Explorer votre analyse de mots-clés",
+        "description": "Cette analyse révèle des modèles dans vos mots-clés sélectionnés à travers la littérature de votre projet. Décomposons les résultats."
+      },
+      "resultsOverview": {
+        "title": "Aperçu des résultats de l'analyse",
+        "description": "Ici, vous trouverez un résumé, des visualisations et des tableaux détaillés montrant comment vos mots-clés apparaissent et se chevauchent dans vos sources."
+      },
+      "aiSummary": {
+        "title": "Résumé généré par l'IA",
+        "description": "Lisez une interprétation générée par l'IA des modèles de mots-clés, des lacunes de recherche potentielles et des zones de forte concentration. Un excellent point de départ pour les insights !"
+      },
+      "frequencyChart": {
+        "title": "Graphique de distribution de fréquence",
+        "description": "Visualisez la fréquence d'apparition de chaque mot-clé individuellement. Identifiez les termes les plus dominants dans votre ensemble de littérature."
+      },
+      "vennDiagram": {
+        "title": "Chevauchement des mots-clés (Diagramme de Venn)",
+        "description": "Sélectionnez 2 ou 3 mots-clés pour voir leur co-occurrence visuellement. Cliquez sur les sections pour filtrer la littérature contenant des combinaisons spécifiques de mots-clés (ouvre Google Scholar)."
+      },
+      "frequencyTable": {
+        "title": "Tableau de distribution de fréquence",
+        "description": "Voyez les décomptes exacts et les pourcentages pour chaque mot-clé. Cliquez sur les décomptes pour voir les résultats correspondants sur Google Scholar. Téléchargez les données en CSV."
+      },
+      "crossTable": {
+        "title": "Tableau de distribution croisée",
+        "description": "Examinez la fréquence de co-occurrence pour chaque paire de mots-clés. Identifiez quels termes apparaissent fréquemment ensemble. Téléchargez en CSV."
+      },
+      "tripleTable": {
+        "title": "Tableau de distribution à trois voies",
+        "description": "Explorez la co-occurrence pour des combinaisons de trois mots-clés. Disponible lorsque 3+ mots-clés sont analysés. Téléchargez en CSV."
+      },
+      "previousAnalyses": {
+        "title": "Analyses précédentes",
+        "description": "Accédez à vos analyses passées ici. Cliquez sur une pour voir à nouveau ses résultats ou supprimez les analyses dont vous n'avez plus besoin."
+      },
+      "newAnalysis": {
+        "title": "Exécuter une nouvelle analyse",
+        "description": "Explorez différentes combinaisons de mots-clés ou mettez à jour votre analyse à mesure que votre littérature s'enrichit en exécutant une nouvelle analyse à tout moment."
+      }
+    }
+  },
+  "progress": {
+    "title": "Progression",
+    "researchLevel": "Niveau de recherche",
+    "viewAll": "Voir tout",
+    "progressTo": "Progression vers {level}",
+    "pointsUntilNext": "{points} points jusqu'au niveau suivant",
+    "maximumLevelAchieved": "Niveau maximum atteint !",
+    "pinnacleOfMastery": "Vous avez atteint le sommet de la maîtrise en recherche",
+    "projectTimeline": "Chronologie du projet",
+    "achievements": "Réalisations",
+    "complete": "Terminé",
+    "researchLevels": "Niveaux de recherche",
+    "yourJourney": "Votre parcours vers la maîtrise de la recherche",
+    "andBeyond": "et au-delà",
+    "close": "Fermer",
+    "noAdditionalDetails": "Aucun détail supplémentaire disponible",
+    "additionalInfo": "Informations supplémentaires",
+    "nodes": "Nœuds",
+    "edges": "Arêtes",
+    "updatedFields": "Champs mis à jour",
+    "eventDetailsTitle": "Détails de l'événement",
+    "type": "Type",
+    "created": "Créé",
+    "createdBy": "Créé par",
+    "eventTime": "Heure de l'événement",
+    "description": "Description",
+    "additionalDetails": "Détails supplémentaires",
+    "tags": "Étiquettes",
+    "literatureAdded": "Littérature ajoutée ({count} éléments)",
+    "authors": "Auteurs",
+    "year": "Année",
+    "publisher": "Éditeur",
+    "eventDescriptions": {
+      "createdAndUpdatedModel": "Modèle créé et mis à jour : {name}",
+      "createdModel": "Modèle créé : {name}",
+      "updatedModel": "Modèle mis à jour : {name}",
+      "createdAndUpdatedOutcome": "Résultat {type} créé et mis à jour : {name}",
+      "createdOutcome": "Résultat {type} créé : {name}",
+      "updatedOutcome": "Résultat {type} mis à jour : {name}",
+      "createdInsight": "1 analyse de mots-clés créée",
+      "createdInsights": "{count} analyses de mots-clés créées",
+      "addedLiteratureItem": "1 élément de littérature ajouté au projet",
+      "addedLiteratureItems": "{count} éléments de littérature ajoutés au projet",
+      "createdNote": "1 note créée",
+      "createdNotes": "{count} notes créées"
+    },
+    "eventDetails": {
+      "modelName": "Nom du modèle : {name}",
+      "name": "Nom : {name}",
+      "type": "Type : {type}",
+      "section": "Section : {section}",
+      "events": "Événements : {events}",
+      "previousStatus": "Statut précédent : {status}",
+      "newStatus": "Nouveau statut : {status}",
+      "designType": "Type de conception : {type}",
+      "previousValue": "Précédent : {value}",
+      "newValue": "Nouveau : {value}",
+      "keywords": "Mots-clés : {keywords}",
+      "noAuthors": "Aucun auteur",
+      "untitledNote": "Note sans titre",
+      "researchType": "recherche"
+    },
+    "unknownBulkAction": "Action groupée inconnue : {action}",
+    "exportInitiated": "Exportation initiée",
+    "archiveNotImplemented": "Fonctionnalité d'archivage pas encore implémentée",
+    "deletedEvents": "{count} événements supprimés",
+    "noCustomEventsSelected": "Aucun événement personnalisé sélectionné pour l'action groupée",
+    "unknownModel": "Modèle inconnu",
+    "loadAchievementsFailed": "Échec du chargement des réalisations. Veuillez réessayer plus tard.",
+    "levels": {
+      "sparkOfCuriosity": {
+        "name": "Étincelle de curiosité",
+        "description": "Votre parcours de recherche commence"
+      },
+      "illuminator": {
+        "name": "Illuminateur",
+        "description": "Éclairant de nouvelles connaissances"
+      },
+      "knowledgeWeaver": {
+        "name": "Tisseur de connaissances",
+        "description": "Connectant idées et insights"
+      },
+      "insightArchitect": {
+        "name": "Architecte d'insights",
+        "description": "Construisant des cadres de compréhension"
+      },
+      "wisdomSculptor": {
+        "name": "Sculpteur de sagesse",
+        "description": "Façonnant la connaissance en sagesse"
+      },
+      "enlightenmentExplorer": {
+        "name": "Explorateur de l'illumination",
+        "description": "S'aventurant dans les profondeurs de la découverte"
+      },
+      "sageOfScholars": {
+        "name": "Sage des érudits",
+        "description": "Maître de l'excellence en recherche"
+      }
+    },
+    "eventTitles": {
+      "projectCreated": "Projet créé : {name}",
+      "projectInitialized": "Projet initialisé",
+      "projectStatusChanged": "Statut du projet modifié",
+      "designUpdated": "Conception mise à jour",
+      "modelCreatedAndUpdated": "Modèle créé et mis à jour",
+      "modelActivity": "{count} activités de modèle",
+      "modelCreated": "Modèle créé",
+      "modelCreatedMultiple": "{count} modèles créés",
+      "modelUpdated": "Modèle mis à jour",
+      "modelUpdatedMultiple": "{count} modèles mis à jour",
+      "outcomeCreatedAndUpdated": "Résultat créé et mis à jour",
+      "outcomeActivity": "{count} activités de résultat",
+      "outcomeCreated": "Résultat créé",
+      "outcomeCreatedMultiple": "{count} résultats créés",
+      "outcomeUpdated": "Résultat mis à jour",
+      "outcomeUpdatedMultiple": "{count} résultats mis à jour",
+      "createdInsight": "Analyse créée",
+      "createdInsights": "{count} analyses créées",
+      "addedLiteratureItem": "Élément de littérature ajouté",
+      "addedLiteratureItems": "{count} éléments de littérature ajoutés",
+      "createdNote": "Note créée",
+      "createdNotes": "{count} notes créées",
+      "nEvents": "{count} événements",
+      "oneEvent": "1 événement"
+    },
+    "achievementGroups": {
+      "noteTaking": "Prise de notes",
+      "literatureCollection": "Collection de littérature",
+      "consistency": "Cohérence",
+      "keywordResearch": "Recherche de mots-clés",
+      "researchDesign": "Conception de recherche",
+      "customDesigns": "Conceptions personnalisées",
+      "visualization": "Visualisation"
+    },
+    "eventTypes": {
+      "project": "Projet",
+      "literature": "Littérature",
+      "notes": "Notes",
+      "models": "Modèles",
+      "outcomes": "Résultats",
+      "status": "Changements de statut",
+      "design": "Changements de conception",
+      "insights": "Perspectives",
+      "custom": "Événements personnalisés"
+    },
+    "achievementNames": {
+      "ADD_CUSTOM_MEASUREMENT_DESIGN": "Ajoutez votre propre conception de mesure",
+      "QUICK_NOTES_3": "Rédigez 3 notes rapides",
+      "KEYWORD_ANALYSIS": "Effectuez une analyse de mots-clés",
+      "NOTES_30": "Prenez 30 notes",
+      "ADD_CUSTOM_ANALYTIC_DESIGN": "Ajoutez votre propre conception analytique",
+      "ADD_LITERATURE_10": "Ajoutez 10 éléments de littérature",
+      "LOG_30_DAYS": "Connectez-vous pendant 30 jours consécutifs",
+      "LOG_7_DAYS": "Connectez-vous pendant 7 jours consécutifs",
+      "ADD_LITERATURE_3": "Ajoutez 3 éléments de littérature",
+      "KEYWORDS_5": "Identifiez 5 mots-clés",
+      "NOTES_10": "Prenez 10 notes",
+      "LOG_3_DAYS": "Connectez-vous pendant 3 jours consécutifs",
+      "ADD_CUSTOM_RESEARCH_DESIGN": "Ajoutez votre propre conception de recherche",
+      "ONBOARDING_COMPLETE_ONBOARDING": "Terminez l'intégration",
+      "LOG_90_DAYS": "Connectez-vous pendant 90 jours consécutifs",
+      "QUICK_NOTES_15": "Rédigez 15 notes rapides",
+      "LOG_60_DAYS": "Connectez-vous pendant 60 jours consécutifs",
+      "KEYWORDS_25": "Identifiez 25 mots-clés",
+      "DESIGNS_30": "Identifiez 30 conceptions",
+      "ADD_LITERATURE_30": "Ajoutez 30 éléments de littérature",
+      "ADD_CUSTOM_SAMPLING_DESIGN": "Ajoutez votre propre conception d'échantillonnage",
+      "NOTES_3": "Prenez 3 notes",
+      "VIS_MODEL": "Créez un modèle",
+      "ADD_LITERATURE_20": "Ajoutez 20 éléments de littérature",
+      "DESIGNS_10": "Identifiez 10 conceptions",
+      "KEYWORDS_50": "Identifiez 50 mots-clés",
+      "DESIGNS_3": "Identifiez 3 conceptions",
+      "QUICK_NOTES_7": "Rédigez 7 notes rapides",
+      "ONBOARDING_ADD_3_LITERATURE": "Ajoutez 3 éléments de littérature"
+    },
+    "categoryNames": {
+      "Expanding Horizons": "Élargir les horizons",
+      "Quick Thinker": "Penseur rapide",
+      "Keyword Researcher": "Chercheur de mots-clés",
+      "Note-Taking Master": "Maître des notes",
+      "Collector": "Collectionneur",
+      "Consistency": "Cohérence",
+      "Onboarding": "Intégration",
+      "Explorer": "Explorateur",
+      "Visualization Expert": "Expert en visualisation"
+    }
+  },
+  "time": {
+    "justNow": "À l'instant",
+    "minutesAgo": "Il y a {count, plural, one {# minute} other {# minutes}}",
+    "hoursAgo": "Il y a {count, plural, one {# heure} other {# heures}}",
+    "daysAgo": "Il y a {count, plural, one {# jour} other {# jours}}",
+    "weeksAgo": "Il y a {count, plural, one {# semaine} other {# semaines}}",
+    "monthsAgo": "Il y a {count, plural, one {# mois} other {# mois}}",
+    "yearsAgo": "Il y a {count, plural, one {# an} other {# ans}}"
+  },
+  "teamMembers": {
+    "title": "Membres de l'équipe",
+    "searchPlaceholder": "Rechercher des membres...",
+    "tableName": "Nom",
+    "tableEmail": "E-mail",
+    "tableRole": "Rôle",
+    "tableActions": "Actions",
+    "noUsersMatchingSearch": "Aucun utilisateur correspondant à votre recherche",
+    "noMembersYet": "Aucun membre d'équipe pour l'instant",
+    "tryAdjustingSearch": "Essayez d'ajuster vos termes de recherche",
+    "membersWillAppear": "Les membres de l'équipe apparaîtront ici une fois ajoutés",
+    "you": "Vous",
+    "roleLabel": "Rôle",
+    "roleOwnerDescription": "Contrôle total sur ce/cette {resourceType}, y compris la gestion de l'équipe et les paramètres.",
+    "roleAdminDescription": "Peut gérer les membres de l'équipe et la plupart des paramètres pour ce/cette {resourceType}.",
+    "roleMemberDescription": "Peut accéder et contribuer à ce/cette {resourceType}.",
+    "roleGenericDescription": "Rôle {role} dans ce/cette {resourceType}.",
+    "organizationOwner": "Propriétaire de l'organisation",
+    "organizationAdmin": "Administrateur de l'organisation",
+    "orgOwnerAccessDescription": "Cet utilisateur a un accès complet à ce projet car il est propriétaire de l'organisation parente.",
+    "orgAdminAccessDescription": "Cet utilisateur a un accès administrateur à ce projet grâce à son rôle dans l'organisation.",
+    "manage": "Gérer",
+    "remove": "Retirer",
+    "cannotRemoveLastOwner": "Impossible de retirer le dernier propriétaire de l'organisation",
+    "memberRemovedSuccess": "{name} a été retiré de l'équipe",
+    "removeFailed": "Échec du retrait de l'utilisateur",
+    "removeDialogTitle": "Retirer un membre de l'équipe",
+    "removeOwnerElevatedWarning": "Vous êtes sur le point de retirer un propriétaire de projet en utilisant vos privilèges d'organisation. Êtes-vous sûr de vouloir continuer ?",
+    "removeConfirmMessage": "Êtes-vous sûr de vouloir retirer {name} de ce/cette {resourceType} ?"
+  },
+  "invitationManager": {
+    "member": "Membre"
+  },
+  "invitations": {
+    "enterValidEmail": "Veuillez entrer une adresse e-mail valide",
+    "selectRole": "Veuillez sélectionner un rôle",
+    "alreadyMember": "Cet e-mail est déjà membre de cette ressource",
+    "alreadyInvited": "Cet e-mail a déjà été invité",
+    "fillRequiredFields": "Veuillez remplir tous les champs obligatoires",
+    "fixValidationErrors": "Veuillez corriger les erreurs de validation avant de soumettre",
+    "maxUsersReached": "Vous avez atteint le maximum de {max} utilisateurs pour votre forfait",
+    "subscriptionNoInvites": "Votre abonnement ne permet pas d'envoyer des invitations",
+    "invitationSentTo": "Invitation envoyée à {email}",
+    "sendFailed": "Échec de l'envoi de l'invitation",
+    "loadFailed": "Échec du chargement des invitations",
+    "revokedSuccess": "Invitation révoquée avec succès",
+    "revokeFailed": "Échec de la révocation de l'invitation",
+    "sendNewInvitation": "Envoyer une nouvelle invitation",
+    "emailAddress": "Adresse e-mail",
+    "emailPlaceholder": "collegue@exemple.com",
+    "role": "Rôle",
+    "selectRolePlaceholder": "Sélectionnez un rôle...",
+    "sending": "Envoi...",
+    "sendInvitation": "Envoyer l'invitation",
+    "pendingInvitations": "Invitations en attente",
+    "loadingPending": "Chargement des invitations en attente...",
+    "fetchingStatus": "Récupération du statut de l'invitation",
+    "noPending": "Aucune invitation en attente",
+    "tableEmail": "E-mail",
+    "tableRole": "Rôle",
+    "tableSent": "Envoyée",
+    "tableActions": "Actions",
+    "maxUsersForPlan": "Vous avez atteint le maximum de {max} utilisateurs pour votre forfait {plan}.",
+    "contactSupportSeats": "Contactez le support pour ajouter plus de places.",
+    "upgradeToTeam": "Passez à Quester Team pour plus de places.",
+    "contactSupportEnterprise": "Contactez le support pour les options Entreprise.",
+    "upgradeOptions": "Envisagez de mettre à niveau votre forfait pour plus de places."
+  },
+  "keywordAnalysis": {
+    "title": "Analyse de mots-clés",
+    "newAnalysis": "Nouvelle analyse",
+    "selectProjectFirst": "Veuillez d'abord sélectionner un projet",
+    "selectProjectToStart": "Sélectionnez un projet pour commencer",
+    "loadFailed": "Échec du chargement des analyses de mots-clés",
+    "createFailed": "Échec de la création de l'analyse de mots-clés",
+    "canceledOrTimedOut": "L'analyse de mots-clés a été annulée ou a expiré.",
+    "deleteFailed": "Échec de la suppression de l'analyse",
+    "switchingAnalysis": "Changement d'analyse...",
+    "noAnalysesYet": "Aucune analyse de mots-clés pour l'instant",
+    "createFirstDescription": "Créez votre première analyse pour commencer à explorer les connexions de mots-clés dans votre littérature.",
+    "createFirstAnalysis": "Créer votre première analyse",
+    "previousAnalyses": "Analyses précédentes",
+    "keywords": "Mots-clés",
+    "frequencyDistribution": "Distribution de fréquence",
+    "frequencyDistributionFigure": "Figure de distribution de fréquence",
+    "downloadPNG": "Télécharger PNG",
+    "keywordOverlap": "Chevauchement des mots-clés",
+    "keywordOverlapDescription": "Les valeurs montrent le nombre de résultats de recherche Google Scholar. Les chiffres représentent le total des documents contenant les mots-clés (individuels) ou les combinaisons de mots-clés (chevauchements), pas des régions exclusives.",
+    "selectKeywordsForOverlap": "Sélectionnez 2-3 mots-clés pour voir leur chevauchement",
+    "vennDiagramFigures": "Figures du diagramme de Venn des mots-clés",
+    "analysisResults": "Résultats de l'analyse",
+    "summary": "Résumé",
+    "copyText": "Copier le texte",
+    "crossDistribution": "Distribution croisée",
+    "threeWayDistribution": "Distribution à trois voies",
+    "table1": "Tableau 1",
+    "table2": "Tableau 2",
+    "table3": "Tableau 3",
+    "frequencyDistributionTable": "Distribution de fréquence des termes clés",
+    "crossDistributionTable": "Distribution croisée des termes clés",
+    "threeWayDistributionTable": "Distribution à trois voies des termes clés",
+    "keyTerm": "Terme clé",
+    "frequency": "Fréquence",
+    "percentage": "Pourcentage (%)",
+    "cumulativePercentage": "Pourcentage cumulé (%)",
+    "total": "Total",
+    "keyword1": "Mot-clé 1",
+    "keyword2": "Mot-clé 2",
+    "keyword3": "Mot-clé 3",
+    "downloadCSV": "Télécharger CSV",
+    "tooltipScholarNote": "Les chiffres peuvent différer de l'interface Google Scholar car nous affichons les valeurs exactes de la base de données, tandis que l'interface de Scholar affiche des approximations.",
+    "noTripleCombinations": "Aucune combinaison triple trouvée",
+    "tripleDataUnavailable": "Données non disponibles pour l'analyse de mots-clés à trois voies.",
+    "suggestedKeywords": "Mots-clés suggérés",
+    "summaryCopied": "Résumé copié dans le presse-papiers !",
+    "copyFailed": "Échec de la copie du résumé.",
+    "keywordAlreadyAdded": "Mot-clé déjà ajouté",
+    "maxKeywords": "Maximum 7 mots-clés autorisés",
+    "minKeywords": "Veuillez ajouter au moins 2 mots-clés",
+    "keywordPlaceholder": "Tapez un mot-clé et appuyez sur Entrée...",
+    "analyzeKeywords": "Analyser les mots-clés",
+    "tips": "Conseils :",
+    "tipPressEnter": "Appuyez sur Entrée ou virgule pour ajouter un mot-clé",
+    "tipMaxKeywords": "Ajoutez jusqu'à 7 mots-clés pour de meilleurs résultats",
+    "tipSpecificTerms": "Utilisez des termes spécifiques axés sur la recherche"
+  },
+  "addLiterature": {
+    "title": "Ajouter de la littérature",
+    "pasteReferences": "Coller des références",
+    "manualEntry": "Saisie manuelle",
+    "uploadDocuments": "Télécharger des documents",
+    "pasteYourReferences": "Collez vos références",
+    "pasteHerePlaceholder": "Collez vos références ici, séparées par des lignes vides...",
+    "processing": "Traitement...",
+    "processReferences": "Traiter les références",
+    "analyzingExtracting": "Analyse et extraction des références...",
+    "referencesSavedSuccess": "Références enregistrées avec succès !",
+    "savingReferences": "Enregistrement des références...",
+    "extractedReferences": "Références extraites",
+    "untitledReference": "Référence sans titre",
+    "noAuthors": "Aucun auteur",
+    "ready": "Prêt",
+    "needsReview": "À vérifier",
+    "book": "Livre",
+    "presentationTitle": "Titre de la présentation",
+    "nameTitle": "Nom (Titre)",
+    "authors": "Auteurs",
+    "addAuthors": "Ajouter des auteurs",
+    "conferenceName": "Nom de la conférence",
+    "enterConferenceName": "Entrez le nom de la conférence",
+    "chapterTitle": "Titre du chapitre",
+    "enterChapterTitle": "Entrez le titre du chapitre",
+    "editors": "Éditeurs",
+    "addEditors": "Ajouter des éditeurs",
+    "type": "Type",
+    "publisher": "Éditeur",
+    "publisherName": "Nom de l'éditeur",
+    "year": "Année",
+    "publicationYear": "Année de publication",
+    "city": "Ville",
+    "volume": "Volume",
+    "volumeNumber": "Numéro de volume",
+    "issue": "Numéro",
+    "issueNumber": "Numéro de parution",
+    "startDate": "Date de début",
+    "endDate": "Date de fin",
+    "startPage": "Page de début",
+    "endPage": "Page de fin",
+    "link": "Lien",
+    "urlToLiterature": "URL vers la littérature",
+    "saving": "Enregistrement...",
+    "addLiterature": "Ajouter la littérature",
+    "uploadYourFiles": "Téléchargez vos fichiers",
+    "saveAllReferences": "Enregistrer toutes les références",
+    "editReference": "Modifier la référence",
+    "titleLabel": "Titre",
+    "updateReference": "Mettre à jour la référence",
+    "titleAuthorEditorRequired": "Le titre et au moins un auteur ou éditeur sont requis",
+    "titleAuthorRequired": "Le titre et au moins un auteur sont requis",
+    "saveFailed": "Échec de l'enregistrement de la littérature",
+    "failedToProcessReferences": "Échec du traitement des références",
+    "failedToSaveLiterature": "Échec de l'enregistrement de la littérature"
+  },
+  "literatureTable": {
+    "columns": {
+      "title": "Titre",
+      "authors": "Auteurs",
+      "status": "Statut",
+      "publisher": "Éditeur",
+      "year": "Année",
+      "type": "Type",
+      "addedOn": "Ajouté le",
+      "file": "Fichier"
+    },
+    "status": {
+      "notStarted": "Non commencé",
+      "reading": "En lecture",
+      "noteTaking": "Prise de notes",
+      "completed": "Terminé",
+      "archived": "Archivé"
+    },
+    "previewDocument": "Aperçu du document",
+    "downloadDocument": "Télécharger le document"
+  },
+  "literatureSelector": {
+    "linkLiterature": "Lier la littérature...",
+    "searchPlaceholder": "Rechercher dans la littérature...",
+    "noLiteratureFound": "Aucune littérature trouvée."
+  },
+  "processingStatus": {
+    "documentProcessing": "Traitement du document",
+    "loading": "Chargement...",
+    "uploadingFiles": "Téléchargement de {count, plural, one {# fichier} other {# fichiers}}...",
+    "processingDocuments": "Traitement de {count, plural, one {# document} other {# documents}}...",
+    "totalFiles": "Total des fichiers",
+    "started": "Commencé",
+    "pending": "En attente",
+    "duration": "Durée",
+    "error": "Erreur",
+    "processingComplete": "Traitement terminé",
+    "successful": "Réussi",
+    "failed": "Échoué",
+    "fileDetails": "Détails du fichier",
+    "size": "Taille",
+    "type": "Type",
+    "pages": "Pages",
+    "updated": "Mis à jour",
+    "extractionErrors": "Erreurs d'extraction",
+    "failedToFetchStatus": "Échec de la récupération du statut de traitement"
+  },
+  "documentUpload": {
+    "dropOrBrowse": "Déposez les documents ici ou cliquez pour parcourir",
+    "supportedFormats": "Prend en charge les fichiers PDF, DOCX, DOC et TXT (max 25 Mo chacun, jusqu'à 5 fichiers par téléchargement)",
+    "whenMetadataExtracted": "Lorsque les métadonnées sont extraites",
+    "fillEmptyOnly": "Remplir uniquement les champs vides (recommandé)",
+    "overrideExisting": "Remplacer les champs existants par les valeurs extraites",
+    "selectFiles": "Sélectionner des fichiers",
+    "uploadError": "Erreur de téléchargement",
+    "improvingProcessing": "Nous améliorons constamment notre traitement de documents.",
+    "feedbackNote": "Si vous remarquez que quelque chose concernant votre document a été mal traité après le téléchargement, veuillez cliquer sur le bouton drapeau rouge dans la littérature afin que nous puissions examiner et améliorer notre processus.",
+    "fileSizeExceeds": "La taille du fichier dépasse la limite de 25 Mo",
+    "unsupportedFileType": "Type de fichier non pris en charge",
+    "validationErrors": "Erreurs de validation du fichier",
+    "maxFilesExceeded": "Vous pouvez télécharger jusqu'à 5 fichiers à la fois"
+  },
+  "literatureDetails": {
+    "title": "Titre",
+    "book": "Livre",
+    "presentationTitle": "Titre de la présentation",
+    "chapterTitle": "Titre du chapitre",
+    "conferenceName": "Nom de la conférence",
+    "authors": "Auteurs",
+    "authorFormatTip": "Nous recommandons fortement d'utiliser le format suivant pour les auteurs : Nom, Initiale du prénom. Ex : Dupont, J ou Martin, R",
+    "editors": "Éditeurs",
+    "publisher": "Éditeur",
+    "publishYear": "Année de publication",
+    "city": "Ville",
+    "volume": "Volume",
+    "issue": "Numéro",
+    "startPage": "Page de début",
+    "endPage": "Page de fin",
+    "startDate": "Date de début",
+    "endDate": "Date de fin",
+    "pickStartDate": "Choisir une date de début",
+    "pickEndDate": "Choisir une date de fin",
+    "type": "Type",
+    "link": "Lien",
+    "types": {
+      "journalArticle": "Article de revue",
+      "literatureReview": "Revue de littérature",
+      "book": "Livre",
+      "bookChapter": "Chapitre de livre",
+      "conferencePresentation": "Présentation de conférence",
+      "conferenceProceedings": "Actes de conférence",
+      "dissertation": "Thèse",
+      "website": "Site web",
+      "grayLiterature": "Littérature grise",
+      "other": "Autre"
+    }
+  },
+  "literatureStatus": {
+    "readingStatus": "Statut de lecture",
+    "changeStatus": "Changer le statut"
+  },
+  "exportReferences": {
+    "title": "Exporter les références",
+    "description": "Prévisualisez et exportez vos références sélectionnées dans différents formats",
+    "referencesSelected": "{selected} sur {total} références sélectionnées",
+    "all": "Tout",
+    "none": "Aucun",
+    "exporting": "Exportation...",
+    "copyToClipboard": "Copier dans le presse-papiers",
+    "download": "Télécharger",
+    "noReferencesSelected": "Aucune référence sélectionnée",
+    "noReferencesSelectedForExport": "Aucune référence sélectionnée pour l'exportation",
+    "noReferencesToCopy": "Aucune référence à copier",
+    "missingDataWarning": "{count} références manquent de titre ou d'auteurs. L'exportation peut être incomplète.",
+    "exportSuccess": "{format} exporté avec succès avec {count} références",
+    "exportFailed": "Échec de l'exportation des références",
+    "copiedToClipboard": "{count} références copiées dans le presse-papiers",
+    "copyFailed": "Échec de la copie dans le presse-papiers",
+    "bibliography": "Bibliographie",
+    "bibliographyPreview": "Aperçu de la bibliographie",
+    "generatedOn": "Généré le",
+    "researchBibliography": "Bibliographie de recherche",
+    "page": "page",
+    "pages": "pages",
+    "words": "mots",
+    "style": "Style",
+    "noReferencesAvailable": "Aucune référence disponible.",
+    "wordDocx": "Word (DOCX)"
+  },
+  "researchProducts": {
+    "title": "Produits du projet",
+    "types": {
+      "professionalism": "Professionnalisme",
+      "writing": "Rédaction",
+      "analysis": "Analyse"
+    },
+    "status": {
+      "planned": "Planifié",
+      "inProgress": "En cours",
+      "completed": "Terminé",
+      "archived": "Archivé"
+    },
+    "productNamePlaceholder": "Nom du produit",
+    "dueDatePlaceholder": "Choisir une date d'échéance",
+    "descriptionPlaceholder": "Description (facultatif)",
+    "noProductsFound": "Aucun produit de recherche trouvé",
+    "manageOutputs": "Gérez vos productions et livrables de recherche.",
+    "noProductsAddedYet": "Aucun produit ajouté pour l'instant. Ajoutez votre premier produit de recherche ci-dessus.",
+    "cancelEdit": "Annuler la modification",
+    "updateProduct": "Mettre à jour le produit",
+    "addProduct": "Ajouter un produit",
+    "addNewProduct": "Ajouter un nouveau produit",
+    "editProductTitle": "Modifier le produit",
+    "remove": "Supprimer"
+  },
+  "aiRewrite": {
+    "shorten": "Raccourcir",
+    "shortenTooltip": "Réduire de 20-40% sans perdre le sens.",
+    "plainLanguage": "Langage simple",
+    "plainLanguageTooltip": "Remplacer le jargon par des termes courants tout en gardant la science.",
+    "smart": "SMART",
+    "smartTooltip": "Transformer l'objectif en quelque chose de mesurable et délimité dans le temps.",
+    "journalReady": "Prêt pour revue",
+    "journalReadyTooltip": "Objectif concis, neutre, style manuscrit.",
+    "customPrompt": "Instruction personnalisée",
+    "customPlaceholder": "ex. mettre en évidence les sources de données et supprimer le superflu",
+    "rewriting": "Réécriture...",
+    "start": "Démarrer",
+    "generating": "Génération...",
+    "purposeUpdated": "Objectif mis à jour avec Quester.",
+    "undo": "Annuler",
+    "restoredPurpose": "L'objectif précédent a été restauré.",
+    "unableToRestore": "Impossible de restaurer l'objectif précédent."
+  },
+  "projectReading": {
+    "title": "Lecture du projet",
+    "recentUpdates": "Mises à jour récentes",
+    "filter": "Filtrer",
+    "filterActions": "Filtrer les actions",
+    "filterDescription": "Filtrer la littérature par statut et sévérité",
+    "needsAttention": "Nécessite attention",
+    "recentlyUpdated": "Récemment mis à jour",
+    "status": "Statut",
+    "severity": "Sévérité",
+    "allStatuses": "Tous les statuts",
+    "noteTaking": "Prise de notes",
+    "reading": "En lecture",
+    "notStarted": "Non commencé",
+    "allSeverities": "Toutes les sévérités",
+    "errorsOnly": "Erreurs uniquement",
+    "warningsOnly": "Avertissements uniquement",
+    "viewDetails": "Voir les détails",
+    "error": "Erreur",
+    "errors": "Erreurs",
+    "warning": "Avertissement",
+    "warnings": "Avertissements",
+    "untitledLiterature": "Littérature sans titre",
+    "noLiteratureNeedsAttention": "Aucune littérature ne nécessite d'attention",
+    "noLiteratureNeedsAttentionDesc": "Aucune littérature ne nécessite d'attention pour le moment.",
+    "noRecentUpdates": "Pas de mises à jour récentes",
+    "noRecentUpdatesDesc": "Aucune littérature n'a été mise à jour récemment.",
+    "lastUpdated": "Dernière mise à jour {date}",
+    "missingLiteratureTitle": "Titre de littérature manquant",
+    "missingAuthors": "Auteurs manquants",
+    "missingPublicationYear": "Année de publication manquante",
+    "missingPublisher": "Éditeur manquant",
+    "noKeywordsIdentified": "Aucun mot-clé identifié",
+    "literatureTypeNotSet": "Type de littérature non défini",
+    "readingStatusNotSet": "Statut de lecture non défini"
+  },
+  "citationFormats": {
+    "apa": "APA",
+    "mla": "MLA",
+    "chicago": "Chicago",
+    "harvard": "Harvard",
+    "ieee": "IEEE",
+    "asa": "ASA"
+  },
+  "reference": {
+    "heading": "Référence",
+    "copiedSuccess": "Référence copiée dans le presse-papiers",
+    "copyFailed": "Échec de la copie de la référence",
+    "noDate": "s.d."
+  },
+  "announcements": {
+    "view": "Voir",
+    "history": "Historique",
+    "date": "Date",
+    "duration": "Durée",
+    "affected": "Affecté",
+    "viewDetails": "Voir les détails",
+    "dismiss": "Ignorer",
+    "systemAnnouncement": "Annonce système",
+    "noAnnouncements": "Aucune annonce",
+    "noAnnouncementsAvailable": "Aucune annonce disponible",
+    "unread": "Non lu",
+    "loadingAnnouncements": "Chargement des annonces..."
+  },
+  "pendingInvites": {
+    "title": "Invitations en attente",
+    "youHaveInvites": "Vous avez {count} {count, plural, one {invitation} other {invitations}} en attente",
+    "viewInvites": "Voir les invitations",
+    "noInvites": "Aucune invitation en attente",
+    "accept": "Accepter",
+    "decline": "Refuser",
+    "accepting": "Acceptation...",
+    "declining": "Refus...",
+    "inviteTo": "Invitation à {name}",
+    "invitedBy": "Invité par {name}",
+    "role": "Rôle : {role}",
+    "acceptSuccess": "Invitation acceptée avec succès",
+    "acceptFailed": "Échec de l'acceptation de l'invitation",
+    "declineSuccess": "Invitation refusée",
+    "declineFailed": "Échec du refus de l'invitation",
+    "loadingInvites": "Chargement des invitations...",
+    "failedToLoad": "Échec du chargement des invitations",
+    "failedToAccept": "Échec de l'acceptation de l'invitation"
+  },
+  "customEvents": {
+    "validation": {
+      "titleRequired": "Le titre de l'événement est requis",
+      "titleMaxLength": "Le titre doit contenir 200 caractères ou moins",
+      "descriptionMaxLength": "La description doit contenir 1000 caractères ou moins"
+    },
+    "types": {
+      "research_milestone": {
+        "label": "Jalon de recherche",
+        "description": "Marquez les réalisations significatives de votre parcours de recherche",
+        "example": "ex. : Collecte de données terminée, Manuscrit soumis"
+      },
+      "grant_application": {
+        "label": "Demande de subvention",
+        "description": "Suivez les échéances et jalons importants liés aux subventions",
+        "example": "ex. : Date limite de soumission de subvention, Notification d'attribution"
+      },
+      "presentation": {
+        "label": "Présentation",
+        "description": "Enregistrez les présentations de conférence et les exposés",
+        "example": "ex. : Présentation de conférence, Séminaire départemental"
+      },
+      "publication": {
+        "label": "Publication",
+        "description": "Suivez les soumissions et acceptations de publications",
+        "example": "ex. : Article soumis, Article publié"
+      },
+      "collaboration": {
+        "label": "Collaboration",
+        "description": "Documentez les réunions collaboratives et les partenariats",
+        "example": "ex. : Partenariat initié, Réunion de recherche conjointe"
+      },
+      "training": {
+        "label": "Formation",
+        "description": "Enregistrez les ateliers, cours et activités de développement des compétences",
+        "example": "ex. : Atelier suivi, Certification obtenue"
+      },
+      "data_collection": {
+        "label": "Collecte de données",
+        "description": "Suivez les activités de collecte de données et le travail de terrain",
+        "example": "ex. : Enquête distribuée, Entretien réalisé"
+      },
+      "ethics_review": {
+        "label": "Révision éthique",
+        "description": "Enregistrez les soumissions au comité d'éthique et les approbations",
+        "example": "ex. : Soumission au comité d'éthique, Approbation éthique reçue"
+      },
+      "other": {
+        "label": "Autre",
+        "description": "Tout autre événement significatif du projet",
+        "example": "ex. : Jalon ou événement personnalisé"
+      }
+    },
+    "deleteTitle": "Supprimer l'événement personnalisé",
+    "removeDetail": "Supprimer le détail",
+    "removeTag": "Supprimer l'étiquette"
+  },
+  "projectActivityChart": {
+    "literature": "Littérature",
+    "notes": "Notes",
+    "models": "Modèles",
+    "outcomes": "Résultats",
+    "noData": "Aucune donnée",
+    "noActivityDataAvailable": "Aucune donnée d'activité disponible",
+    "noActivityDataFor": "Aucune donnée d'activité pour {projectName}",
+    "count": "Nombre",
+    "publications": "Publications"
+  },
+  "literatureDesigns": {
+    "researchDesigns": "Conceptions de recherche",
+    "defineMethodology": "Définissez la méthodologie de recherche utilisée dans cette littérature.",
+    "selectDesign": "Sélectionner la conception {type}",
+    "noDesignSpecified": "Aucune conception {type} spécifiée",
+    "addNewDesign": "Ajouter une nouvelle conception",
+    "captureContext": "Capturez le contexte de recherche pertinent de cette littérature.",
+    "descriptionPlaceholder": "Décrivez cette conception...",
+    "designDescription": "Description de la conception",
+    "designs": "Conceptions",
+    "newDesignPlaceholder": "Entrez le nom de la conception",
+    "noSavedDesigns": "Aucune conception enregistrée",
+    "selectDesignAria": "Sélectionner les conceptions pour cette littérature",
+    "selectDesigns": "Sélectionner les conceptions",
+    "selectDesignsHelp": "Choisissez parmi les conceptions de recherche de votre projet"
+  },
+  "projectOverviewCard": {
+    "projectOverview": "Aperçu du projet",
+    "purposeStatement": "Énoncé d'objectif",
+    "purposeTooltip": "Un objectif de recherche est un énoncé établissant l'intention de l'étude.",
+    "aiRewrite": "Réécriture IA",
+    "aiRewriteTooltip": "Laissez l'IA vous aider à améliorer votre énoncé d'objectif. Vous pouvez fournir des instructions spécifiques ou laisser Quester l'améliorer automatiquement.",
+    "rewriting": "Réécriture...",
+    "start": "Démarrer",
+    "generating": "Génération...",
+    "noPurposeDefined": "Aucun objectif défini",
+    "projectStatus": "Statut du projet",
+    "status": "Statut :",
+    "notSet": "Non défini",
+    "newPurposeSaved": "Le nouvel objectif a été enregistré."
+  },
+  "literatureStore": {
+    "noProjectId": "Aucun ID de projet fourni",
+    "errorLoadingLiterature": "Erreur lors du chargement de la littérature",
+    "errorAddingLiterature": "Erreur lors de l'ajout de la littérature",
+    "errorUpdatingLiterature": "Erreur lors de la mise à jour de la littérature",
+    "errorDeletingLiterature": "Erreur lors de la suppression de la littérature"
+  },
+  "notesStore": {
+    "userNotAuthenticated": "Utilisateur non authentifié",
+    "noteNotFound": "Note introuvable",
+    "failedToUpdateNote": "Échec de la mise à jour de la note"
+  },
+  "insightsStore": {
+    "failedToLoadInsights": "Échec du chargement des analyses",
+    "failedToGenerateInsights": "Échec de la génération des analyses",
+    "failedToLoadHistoricalInsights": "Échec du chargement des analyses historiques"
+  },
+  "grantStore": {
+    "noProjectId": "Aucun ID de projet fourni",
+    "noGrantId": "Aucun ID de subvention fourni",
+    "errorOccurred": "Une erreur s'est produite"
+  },
+  "globalSearchStore": {
+    "failedToAutoSaveSession": "Échec de l'enregistrement automatique de la session",
+    "failedToLoadChatHistory": "Échec du chargement de l'historique de chat",
+    "failedToSaveSession": "Échec de l'enregistrement de la session",
+    "failedToLoadSession": "Échec du chargement de la session",
+    "failedToDeleteSession": "Échec de la suppression de la session",
+    "failedToUpdateSession": "Échec de la mise à jour de la session",
+    "failedToSearchChatHistory": "Échec de la recherche dans l'historique de chat",
+    "navigateToProjectForChat": "Veuillez naviguer vers un projet pour utiliser le chat IA en mode projet actuel",
+    "navigateToProjectForSearch": "Veuillez naviguer vers un projet pour rechercher dans le projet actuel"
+  },
+  "modelStore": {
+    "noProjectIdProvided": "Aucun ID de projet fourni",
+    "noModelIdProvided": "Aucun ID de modèle fourni",
+    "anErrorOccurred": "Une erreur s'est produite",
+    "receivedInvalidModelData": "Données de modèle invalides reçues de l'API",
+    "apiResponseNoModelData": "La réponse de l'API ne contenait pas de données de modèle.",
+    "flowElementNotFound": "Élément de flux introuvable"
+  },
+  "customEventsStore": {
+    "projectIdRequired": "L'ID de projet est requis",
+    "eventNotFound": "Événement introuvable",
+    "failedToLoadEventDetails": "Échec du chargement des détails de l'événement",
+    "eventCreatedSuccess": "Événement créé avec succès !",
+    "eventCreatedDescription": "\"{title}\" a été ajouté à votre chronologie"
+  },
+  "outcomeStore": {
+    "noProjectIdProvided": "Aucun ID de projet fourni",
+    "noOutcomeIdProvided": "Aucun ID de résultat fourni",
+    "outcomeNotFound": "Résultat introuvable",
+    "errorOccurred": "Une erreur s'est produite"
+  },
+  "organizationSettings": {
+    "title": "Paramètres de l'organisation",
+    "subtitle": "Gérez les paramètres et les autorisations de votre organisation.",
+    "tooltip": "Configurez et gérez les paramètres de votre organisation, y compris les autorisations de l'équipe, les contrôles d'invitation et les politiques de création de projets.",
+    "loadingSettings": "Chargement des paramètres...",
+    "refresh": "Actualiser",
+    "tourButton": "Visite guidée",
+    "tourAriaLabel": "En savoir plus sur les paramètres de l'organisation",
+    "selectOrganization": "Sélectionner une organisation",
+    "selectOrganizationDescription": "Sélectionnez une organisation pour gérer ses paramètres",
+    "tour": {
+      "header": {
+        "title": "Centre des paramètres de l'organisation",
+        "description": "Cette page permet aux administrateurs et aux propriétaires de gérer les paramètres spécifiques à l'organisation sélectionnée."
+      },
+      "selector": {
+        "title": "Sélectionnez votre organisation",
+        "description": "Si vous appartenez à plusieurs organisations, utilisez ce sélecteur pour basculer entre elles et gérer leurs paramètres spécifiques."
+      },
+      "refresh": {
+        "title": "Actualiser les données",
+        "description": "Cliquez ici pour recharger les derniers paramètres et informations d'équipe pour l'organisation sélectionnée."
+      },
+      "teamSettings": {
+        "title": "Paramètres de l'équipe et des autorisations",
+        "description": "Cette section contient des contrôles pour gérer la façon dont les utilisateurs interagissent au sein de l'organisation, y compris les invitations et les autorisations de création de contenu."
+      },
+      "disableInvitations": {
+        "title": "Contrôler les invitations",
+        "description": "(Propriétaire uniquement) Activez ou désactivez la possibilité pour quiconque d'inviter de nouveaux membres dans cette organisation."
+      },
+      "allowMemberInvites": {
+        "title": "Déléguer les invitations",
+        "description": "(Propriétaire uniquement) Si les invitations sont activées, choisissez si les membres réguliers et les administrateurs (pas seulement les propriétaires) peuvent inviter d'autres personnes."
+      },
+      "membersCreateProjects": {
+        "title": "Autorisation de création de projet",
+        "description": "(Admin/Propriétaire) Décidez si les membres réguliers doivent être autorisés à créer de nouveaux projets au sein de cette organisation."
+      },
+      "membersCreateDepartments": {
+        "title": "Création de département (Membres)",
+        "description": "(Propriétaire uniquement) Contrôlez si les membres réguliers peuvent créer de nouveaux départements."
+      },
+      "adminsCreateDepartments": {
+        "title": "Création de département (Admins)",
+        "description": "(Propriétaire uniquement) Contrôlez si les administrateurs peuvent créer de nouveaux départements."
+      },
+      "overview": {
+        "title": "Gérez votre organisation",
+        "description": "Utilisez ces paramètres pour configurer la façon dont votre équipe collabore et gère la recherche au sein de Quester."
+      }
+    }
+  },
+  "grants": {
+    "types": {
+      "standard": "Subvention standard",
+      "research": "Subvention de recherche",
+      "training": "Subvention de formation",
+      "equipment": "Subvention d'équipement",
+      "fellowship": "Bourse",
+      "career": "Développement de carrière",
+      "collaborative": "Recherche collaborative",
+      "other": "Autre"
+    },
+    "status": {
+      "active": "Actif",
+      "pending": "En attente",
+      "completed": "Terminé",
+      "cancelled": "Annulé",
+      "expired": "Expiré"
+    },
+    "labels": {
+      "amount": "Montant",
+      "duration": "Durée"
+    },
+    "form": {
+      "title": "Nom de la subvention *",
+      "titlePlaceholder": "ex. : Bourse de développement de carrière NSF",
+      "recipient": "Bénéficiaire",
+      "recipientPlaceholder": "ex. : Université de Paris",
+      "awardNumber": "Numéro d'attribution",
+      "awardNumberPlaceholder": "ex. : ANR-2023-001",
+      "startDate": "Date de début",
+      "endDate": "Date de fin",
+      "awardInstrument": "Instrument d'attribution",
+      "selectAwardInstrument": "Sélectionner l'instrument d'attribution",
+      "statusLabel": "Statut",
+      "selectStatus": "Sélectionner le statut",
+      "directorateDivision": "Direction/Division",
+      "directorateDivisionPlaceholder": "ex. : Direction de l'ingénierie",
+      "amountLabel": "Montant (€)",
+      "amountPlaceholder": "ex. : 500000",
+      "principalInvestigators": "Chercheurs principaux",
+      "addPI": "Ajouter un CP",
+      "piPlaceholder": "ex. : Dr. Jean Dupont",
+      "coPrincipalInvestigators": "Co-chercheurs principaux",
+      "addCoPI": "Ajouter un Co-CP",
+      "copiPlaceholder": "ex. : Dr. Marie Martin",
+      "programManager": "Responsable de programme",
+      "programManagerPlaceholder": "ex. : Dr. Responsable Programme",
+      "programManagerEmail": "E-mail du responsable de programme",
+      "programManagerEmailPlaceholder": "ex. : rp@anr.fr",
+      "programManagerPhone": "Téléphone du responsable de programme",
+      "programManagerPhonePlaceholder": "ex. : 01 23 45 67 89",
+      "editGrant": "Modifier la subvention",
+      "addNewGrant": "Ajouter une nouvelle subvention",
+      "updateGrant": "Mettre à jour la subvention",
+      "addGrant": "Ajouter la subvention"
+    },
+    "validation": {
+      "grantNameRequired": "Le nom de la subvention est requis",
+      "endDateAfterStart": "La date de fin doit être postérieure à la date de début",
+      "amountMustBeNumber": "Le montant doit être un nombre valide",
+      "invalidEmail": "Doit être une adresse e-mail valide"
+    },
+    "display": {
+      "notSpecified": "Non spécifié",
+      "awardNumber": "N° d'attribution",
+      "principalInvestigator": "Chercheur principal",
+      "principalInvestigators": "Chercheurs principaux",
+      "coPrincipalInvestigator": "Co-chercheur principal",
+      "coPrincipalInvestigators": "Co-chercheurs principaux",
+      "recipientLabel": "Bénéficiaire :",
+      "awardInstrumentLabel": "Instrument d'attribution :",
+      "directorateLabel": "Direction :",
+      "programManagerLabel": "Responsable de programme :",
+      "pmEmail": "E-mail RP :",
+      "pmPhone": "Tél. RP :",
+      "deleteGrant": "Supprimer la subvention",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer \"{name}\" ? Cette action est irréversible.",
+      "deleteGrantButton": "Supprimer la subvention",
+      "grantUpdated": "Subvention mise à jour avec succès",
+      "grantUpdateFailed": "Échec de la mise à jour de la subvention",
+      "grantDeleted": "Subvention supprimée avec succès",
+      "grantDeleteFailed": "Échec de la suppression de la subvention",
+      "projectGrants": "Subventions du projet",
+      "addGrantButton": "Ajouter une subvention",
+      "manageGrantInfo": "Gérez les informations complètes sur les subventions, y compris les opportunités de financement et autres détails de subvention.",
+      "noGrantsFound": "Aucune subvention trouvée",
+      "addFirstGrant": "Ajoutez votre première subvention pour commencer.",
+      "loadingGrants": "Chargement des subventions...",
+      "grantAdded": "Subvention ajoutée avec succès",
+      "grantAddFailed": "Échec de l'ajout de la subvention",
+      "tryAgain": "Réessayer",
+      "showLess": "Afficher moins ({count} subventions)",
+      "showAll": "Afficher tout ({count} subventions)"
+    }
+  },
+  "timeline": {
+    "tags": "Étiquettes",
+    "custom": "Personnalisé",
+    "details": "Détails",
+    "searchPlaceholder": "Rechercher des événements de chronologie...",
+    "startDate": "Date de début",
+    "endDate": "Date de fin",
+    "addNote": "Ajouter une note d'implémentation ou un détail",
+    "addTag": "Ajouter des étiquettes pour la catégorisation",
+    "moreOptions": "Plus d'options",
+    "openOptionsMenu": "Ouvrir le menu d'options de l'événement",
+    "groupByDays": "Grouper par jours",
+    "groupByWeeks": "Grouper par semaines",
+    "groupByMonths": "Grouper par mois",
+    "weekOf": "Semaine du {start} au {end}",
+    "days": "Jours",
+    "weeks": "Semaines",
+    "months": "Mois",
+    "filters": "Filtres",
+    "export": "Exporter",
+    "exportSelected": "Exporter la sélection",
+    "exportFormat": "Format d'exportation",
+    "addEvent": "Ajouter un événement",
+    "archiveSelected": "Archiver la sélection",
+    "bulkActions": "Actions groupées",
+    "clear": "Effacer",
+    "clearAll": "Tout effacer",
+    "createdBy": "Créé par",
+    "csvFile": "Fichier CSV",
+    "customEventTypes": "Types d'événements personnalisés",
+    "dateRange": "Plage de dates",
+    "deleteSelected": "Supprimer la sélection",
+    "editSelected": "Modifier la sélection",
+    "eventTypes": "Types d'événements",
+    "filterTimeline": "Filtrer la chronologie",
+    "jsonFile": "Fichier JSON",
+    "search": "Rechercher",
+    "selected": "sélectionné(s)"
+  },
+  "editor": {
+    "placeholder": {
+      "heading": "Quel est le titre ?",
+      "paragraph": "Appuyez sur / ou écrivez quelque chose..."
+    },
+    "imageTooLarge": "Image trop volumineuse ! Taille du fichier : {filesize} Mo",
+    "toolbar": {
+      "bold": "Gras (⌘B)",
+      "italic": "Italique (⌘I)",
+      "underline": "Souligné (⌘U)",
+      "strikethrough": "Barré (⌘⇧S)",
+      "code": "Code (⌘E)",
+      "superscript": "Exposant (⌘.)",
+      "subscript": "Indice (⌘,)",
+      "blockQuote": "Citation (⌘⇧B)",
+      "taskList": "Liste de tâches (⌘⇧9)",
+      "codeBlock": "Bloc de code",
+      "undo": "Annuler (⌘Z)",
+      "redo": "Rétablir (⌘Maj+Z)",
+      "addImage": "Ajouter une image",
+      "addVideo": "Ajouter une vidéo",
+      "addAudio": "Ajouter un audio",
+      "table": "Tableau",
+      "highlighter": "Surligneur (⌘⇧H)",
+      "exportData": "Exporter les données"
+    },
+    "table": {
+      "cols": "Colonnes",
+      "insert": "Insérer un tableau",
+      "insertTableAria": "Insérer un tableau avec des dimensions personnalisées",
+      "maxSize": "Taille maximale : {size}",
+      "rows": "Lignes"
+    },
+    "textFormatting": "Formatage du texte",
+    "heading1": "Titre 1",
+    "heading2": "Titre 2",
+    "heading3": "Titre 3",
+    "paragraph": "Paragraphe",
+    "codeBlock": "Bloc de code",
+    "quickColors": "Couleurs rapides",
+    "textColor": "Couleur du texte",
+    "backgroundColors": "Couleurs de fond",
+    "textAlignment": "Alignement du texte",
+    "alignLeft": "Aligner à gauche",
+    "alignCenter": "Centrer",
+    "alignRight": "Aligner à droite",
+    "alignJustify": "Justifier",
+    "removeColor": "Supprimer la couleur",
+    "orderedList": "Liste numérotée",
+    "bulletList": "Liste à puces (⌘⇧8)",
+    "pickAColor": "Choisir une couleur",
+    "fontSize": {
+      "title": "Taille de police",
+      "tiny": "Très petit",
+      "smaller": "Plus petit",
+      "small": "Petit",
+      "medium": "Moyen",
+      "large": "Grand",
+      "extraLarge": "Très grand"
+    },
+    "colors": {
+      "default": "Par défaut",
+      "blue": "Bleu",
+      "brown": "Marron",
+      "green": "Vert",
+      "grey": "Gris",
+      "orange": "Orange",
+      "pink": "Rose",
+      "purple": "Violet",
+      "red": "Rouge",
+      "yellow": "Jaune"
+    },
+    "link": {
+      "title": "Lien",
+      "addOrRemove": "Ajouter ou supprimer un lien",
+      "description": "Insérer ou supprimer un lien du texte sélectionné.",
+      "placeholder": "Entrez le lien à joindre...",
+      "insert": "Insérer",
+      "remove": "Supprimer",
+      "editLink": "Modifier le lien",
+      "copyLink": "Copier le lien",
+      "removeLink": "Supprimer le lien",
+      "setLink": "Définir le lien",
+      "invalidURL": "URL invalide"
+    },
+    "search": {
+      "title": "Rechercher et remplacer du texte",
+      "searchPlaceholder": "Entrez le texte à rechercher...",
+      "replacePlaceholder": "Entrez le texte de remplacement...",
+      "previousMatch": "Correspondance précédente",
+      "nextMatch": "Correspondance suivante",
+      "replaceCurrent": "Remplacer la correspondance actuelle",
+      "replaceAll": "Remplacer toutes les correspondances",
+      "caseSensitive": "Sensible à la casse"
+    },
+    "media": {
+      "image": {
+        "title": "Image",
+        "addImage": "Ajouter une image",
+        "description": "Insérer l'URL de l'image",
+        "urlPlaceholder": "Entrez l'URL de l'image...",
+        "or": "OU",
+        "pickImage": "Choisir une image"
+      },
+      "video": {
+        "title": "Vidéo",
+        "insertVideo": "Insérer une vidéo",
+        "description": "Insérer l'URL de la vidéo",
+        "urlPlaceholder": "Entrez l'URL de la vidéo...",
+        "or": "OU",
+        "pickVideo": "Choisir une vidéo",
+        "addVideo": "Ajouter une vidéo"
+      },
+      "audio": {
+        "title": "Audio",
+        "insertAudio": "Insérer un audio",
+        "description": "Insérer l'URL de l'audio",
+        "urlPlaceholder": "Entrez l'URL de l'audio...",
+        "or": "OU",
+        "pickAudio": "Choisir un audio",
+        "addAudio": "Ajouter un audio"
+      },
+      "caption": "Légende",
+      "duplicate": "Dupliquer",
+      "fullScreen": "Plein écran",
+      "imageCaption": "Légende de l'image",
+      "videoCaption": "Légende de la vidéo",
+      "audioCaption": "Légende de l'audio"
+    },
+    "export": {
+      "html": "Exporter en HTML",
+      "markdown": "Exporter en Markdown",
+      "text": "Exporter en texte",
+      "json": "Exporter en JSON"
+    },
+    "table": {
+      "insertTable": "Insérer un tableau",
+      "cells": "Cellules",
+      "merge": "Fusionner",
+      "split": "Diviser",
+      "mergeOrSplit": "Fusionner ou diviser",
+      "row": "Ligne",
+      "insertAbove": "Insérer au-dessus",
+      "insertBelow": "Insérer en dessous",
+      "deleteRow": "Supprimer la ligne",
+      "column": "Colonne",
+      "insertBefore": "Insérer avant",
+      "insertAfter": "Insérer après",
+      "delete": "Supprimer",
+      "deleteTable": "Supprimer",
+      "rowsColumns": "Lignes : {rows}, Colonnes : {cols}",
+      "addRowAfter": "Ajouter une ligne après",
+      "addRowBefore": "Ajouter une ligne avant",
+      "addColumnAfter": "Ajouter une colonne après",
+      "addColumnBefore": "Ajouter une colonne avant",
+      "deleteColumn": "Supprimer la colonne"
+    },
+    "highlighter": {
+      "title": "Choisir une couleur de surlignage",
+      "removeHighlight": "Supprimer le surlignage"
+    },
+    "slashCommands": {
+      "groups": {
+        "format": "Format",
+        "insert": "Insérer"
+      },
+      "heading1": {
+        "label": "Titre 1",
+        "description": "Titre de section haute priorité"
+      },
+      "heading2": {
+        "label": "Titre 2",
+        "description": "Titre de section moyenne priorité"
+      },
+      "heading3": {
+        "label": "Titre 3",
+        "description": "Titre de section basse priorité"
+      },
+      "bulletList": {
+        "label": "Liste à puces",
+        "description": "Liste non ordonnée d'éléments"
+      },
+      "numberedList": {
+        "label": "Liste numérotée",
+        "description": "Liste ordonnée d'éléments"
+      },
+      "taskList": {
+        "label": "Liste de tâches",
+        "description": "Liste de tâches avec éléments à faire"
+      },
+      "blockquote": {
+        "label": "Citation",
+        "description": "Élément pour les citations"
+      },
+      "codeBlock": {
+        "label": "Bloc de code",
+        "description": "Bloc de code avec coloration syntaxique"
+      },
+      "image": {
+        "label": "Image",
+        "description": "Insérer une image"
+      },
+      "video": {
+        "label": "Insérer une vidéo",
+        "description": "Insérer une vidéo"
+      },
+      "audio": {
+        "label": "Insérer un audio",
+        "description": "Insérer un audio"
+      },
+      "table": {
+        "label": "Insérer un tableau",
+        "description": "Insérer un tableau"
+      },
+      "horizontalRule": {
+        "label": "Ligne horizontale",
+        "description": "Insérer un séparateur horizontal"
+      }
+    }
+  },
+  "organizationDialogs": {
+    "createProject": {
+      "title": "Créer un nouveau projet",
+      "dialogDescription": "Créer un nouveau projet dans {organizationName}.",
+      "name": "Nom",
+      "namePlaceholder": "Entrez le nom du projet",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Entrez la description du projet (facultatif)",
+      "department": "Département",
+      "noDepartment": "Aucun département",
+      "cancel": "Annuler",
+      "creating": "Création...",
+      "create": "Créer le projet"
+    },
+    "createDepartment": {
+      "title": "Créer un nouveau département",
+      "dialogDescription": "Créer un nouveau département dans {organizationName}.",
+      "name": "Nom",
+      "namePlaceholder": "Entrez le nom du département",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Entrez la description du département (facultatif)",
+      "cancel": "Annuler",
+      "creating": "Création...",
+      "create": "Créer le département"
+    },
+    "moveProject": {
+      "title": "Déplacer le projet",
+      "description": "Sélectionnez un département vers lequel déplacer le projet. Choisissez \"Aucun département\" pour le retirer de tout département.",
+      "department": "Département",
+      "noDepartment": "Aucun département",
+      "cancel": "Annuler",
+      "moving": "Déplacement...",
+      "move": "Déplacer le projet"
+    },
+    "deleteConfirm": {
+      "areYouSure": "Êtes-vous absolument sûr ?",
+      "departmentWarning": "Cette action est irréversible. Cela supprimera définitivement le département \"{name}\".",
+      "cancel": "Annuler",
+      "delete": "Supprimer"
+    },
+    "treeView": {
+      "treeView": "Vue arborescence",
+      "listView": "Vue liste",
+      "newDepartment": "Nouveau département",
+      "newProject": "Nouveau projet",
+      "searchProjects": "Rechercher des projets...",
+      "myProjects": "Mes projets",
+      "retry": "Réessayer",
+      "noOrganizationsFound": "Aucune organisation trouvée",
+      "noAccessYet": "Vous n'avez pas encore accès à des organisations.",
+      "join": "Rejoindre",
+      "move": "Déplacer",
+      "noProjectsMatch": "Aucun projet ne correspond à \"{query}\"",
+      "tryDifferentKeywords": "Essayez d'utiliser des mots-clés différents ou effacez votre recherche",
+      "notMemberOfAny": "Vous n'êtes membre d'aucun projet",
+      "disableFilter": "Essayez de désactiver le filtre \"Mes projets\" pour voir tous les projets",
+      "noProjectsFound": "Aucun projet trouvé",
+      "clearFilters": "Effacer les filtres",
+      "noDepartmentsOrProjects": "Aucun département ni projet",
+      "project": "Projet",
+      "department": "Département",
+      "organization": "Organisation",
+      "actions": "Actions"
+    },
+    "treeNode": {
+      "departmentActions": "Actions du département",
+      "newProject": "Nouveau projet",
+      "renameDepartment": "Renommer le département",
+      "deleteDepartment": "Supprimer le département",
+      "moveTooltip": "Déplacez ou supprimez d'abord tous les projets de ce département.",
+      "departmentName": "Nom du département",
+      "noProjectsInDepartment": "Aucun projet dans ce département",
+      "moveToDepartment": "Déplacer vers le département",
+      "actions": "Actions"
+    }
+  },
+  "emptyStates": {
+    "loadingProject": "Chargement du projet...",
+    "loadingOutcome": "Chargement du résultat...",
+    "outcomeNotFound": "Résultat introuvable",
+    "noData": "Aucune donnée disponible",
+    "noDataFilter": "Aucune donnée ne correspond à vos filtres actuels",
+    "loading": "Chargement...",
+    "loadingUsers": "Chargement des utilisateurs...",
+    "noUsersFound": "Aucun utilisateur trouvé pour ce projet."
+  },
+  "globalSearch": {
+    "chatHistory": "Historique des conversations",
+    "searchPlaceholder": "Rechercher dans l'historique des conversations...",
+    "starred": "Favoris",
+    "clear": "Effacer",
+    "sessionsCount": "{count} sur {total} sessions",
+    "noMatchingSessions": "Aucune session correspondante trouvée",
+    "noChatSessions": "Aucune session de chat pour l'instant",
+    "startConversation": "Commencez une conversation pour voir votre historique de chat",
+    "untitledChat": "Conversation sans titre",
+    "messages": "{count} messages",
+    "clickToOpen": "Cliquez pour ouvrir",
+    "deleteChatSession": "Supprimer la session de chat",
+    "deleteConfirmation": "Êtes-vous sûr de vouloir supprimer cette session de chat ? Cette action est irréversible.",
+    "cancel": "Annuler",
+    "deleteSession": "Supprimer la session",
+    "justNow": "À l'instant",
+    "noMessagesYet": "Aucun message pour l'instant",
+    "searchScope": "Portée de la recherche",
+    "currentProject": "Projet actuel",
+    "allProjects": "Tous les projets",
+    "resultsFound": "{count} résultats trouvés",
+    "searchDescription": "Trouvez des notes, de la littérature, des projets, des résultats, des modèles et des analyses de mots-clés dans tout votre espace de travail",
+    "categories": {
+      "notes": "Notes",
+      "literature": "Littérature",
+      "projects": "Projets",
+      "outcomes": "Résultats",
+      "models": "Modèles",
+      "keywordAnalyses": "Analyses de mots-clés"
+    },
+    "placeholder": "Rechercher dans tous vos projets, notes et littérature...",
+    "recentSearches": "Recherches récentes",
+    "noResultsHint": "Essayez d'ajuster vos termes de recherche ou vérifiez l'orthographe",
+    "updated": "Mis à jour {date}",
+    "relevance": "Pertinence : {percent}%",
+    "toSearch": "pour rechercher",
+    "toClose": "pour fermer",
+    "noDate": "Pas de date"
+  },
+  "forms": {
+    "placeholder": {
+      "contactName": "Votre nom",
+      "contactEmail": "Votre e-mail",
+      "searchNotes": "Rechercher des notes...",
+      "purpose": "Décrivez l'objectif et les buts de votre projet de recherche...",
+      "eventTitle": "Titre de l'événement",
+      "eventDescription": "Description de l'événement (facultatif)"
+    }
+  },
+  "resourceSelector": {
+    "selectResource": "Sélectionnez l'équipe que vous souhaitez gérer :",
+    "selectResourceFallback": "Sélectionnez une ressource...",
+    "resourceCounts": "{orgs} orgs, {depts} dépts, {projects} projets",
+    "selectPlaceholder": "Sélectionnez une organisation, un département ou un projet...",
+    "searchPlaceholder": "Rechercher des organisations, départements ou projets...",
+    "noResourcesFound": "Aucune ressource trouvée",
+    "tryAdjusting": "Essayez d'ajuster vos termes de recherche",
+    "organization": "Organisation",
+    "department": "Département",
+    "project": "Projet"
+  },
+  "treeNodeItem": {
+    "actionFailed": "Action échouée",
+    "failedToDeleteDepartment": "Échec de la suppression du département : {error}"
+  },
+  "projectUsers": {
+    "title": "Utilisateurs dans {projectName}",
+    "defaultTitle": "Utilisateurs du projet",
+    "description": "Liste des utilisateurs ayant accès à ce projet.",
+    "loadingUsers": "Chargement des utilisateurs...",
+    "errorLoading": "Erreur lors du chargement des utilisateurs : {error}",
+    "noUsersFound": "Aucun utilisateur trouvé pour ce projet.",
+    "name": "Nom",
+    "email": "E-mail",
+    "close": "Fermer"
+  },
+  "timelineControls": {
+    "tags": "Étiquettes",
+    "custom": "Personnalisé",
+    "details": "Détails"
+  },
+  "stores": {
+    "announcement": {
+      "networkError": "Erreur réseau. Veuillez vérifier votre connexion."
+    },
+    "project": {
+      "failedToLoad": "Échec du chargement du projet"
+    },
+    "notes": {
+      "untitledNote": "Note sans titre",
+      "other": "Autre",
+      "noProjectId": "Aucun ID de projet fourni"
+    }
+  },
+  "resourceUserManager": {
+    "loadingUsers": "Chargement des utilisateurs disponibles...",
+    "searchPlaceholder": "Rechercher des utilisateurs par nom ou e-mail...",
+    "noUsersFound": "Aucun utilisateur trouvé correspondant à votre recherche"
+  },
+  "noteList": {
+    "searchLiterature": "Rechercher dans la littérature...",
+    "noLiteratureFound": "Aucune littérature trouvée.",
+    "noPreviewAvailable": "Aucun aperçu disponible",
+    "openInLeftPanel": "Ouvrir dans le panneau gauche",
+    "openInRightPanel": "Ouvrir dans le panneau droit",
+    "openNote": "Ouvrir la note",
+    "noNotesFound": "Aucune note trouvée",
+    "literature": "Littérature",
+    "noLiteratureConnected": "Aucune littérature connectée",
+    "literatureDataNotFound": "Données de littérature introuvables",
+    "errorExtractingPreview": "Erreur lors de l'extraction de l'aperçu",
+    "untitledNote": "Note sans titre",
+    "tryAdjustingSearch": "Essayez d'ajuster vos termes de recherche"
+  },
+  "outcomeEditor": {
+    "startWriting": "Commencez à rédiger votre résultat...",
+    "deleteTitle": "Supprimer le résultat",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce résultat ? Cette action est irréversible."
+  },
+  "designManager": {
+    "addNewOption": "Ajouter une nouvelle option de conception",
+    "saveNow": "Enregistrer maintenant",
+    "title": "Gérer les conceptions du projet",
+    "tooltip": "Les options de conception ci-dessous seront disponibles pour décrire à la fois le projet actuel et la littérature associée à ce projet.",
+    "description": "Personnalisez les options de conception qui seront disponibles pour ce projet.",
+    "currentProject": "Projet actuel : {name}",
+    "failedToUpdateDesigns": "Échec de la mise à jour des conceptions",
+    "autoSaveMessage": "Les modifications sont enregistrées automatiquement au fur et à mesure.",
+    "selectProjectMessage": "Veuillez sélectionner un projet pour gérer ses conceptions.",
+    "noDesignsYet": "Aucune conception de {type} ajoutée pour l'instant. Ajoutez la première ci-dessus.",
+    "designNameEmpty": "Le nom de la conception ne peut pas être vide",
+    "designExists": "Une conception avec ce nom existe déjà",
+    "syncFailed": "Conception renommée, mais les enregistrements associés n'ont pas pu être mis à jour",
+    "updatedSuccess": "Conceptions mises à jour avec succès"
+  },
+  "feedback": {
+    "thankYouDescription": "Merci de nous aider à nous améliorer !",
+    "tryAgainDescription": "Veuillez réessayer ou contacter le support si le problème persiste.",
+    "processingIssueTitle": "Problème de traitement signalé pour \"{name}\""
+  },
+  "projectOverview": {
+    "title": "Aperçu du projet",
+    "purposeStatement": "Énoncé de l'objectif",
+    "projectStatus": "Statut du projet",
+    "statusLabel": "Statut",
+    "notSet": "Non défini",
+    "noPurposeDefined": "Aucun objectif défini",
+    "rewriteGuide": "Facultatif : Guidez la réécriture (ex. : 'Rendez-le plus concis' ou 'Mettez l'accent sur la méthodologie')",
+    "selectStatus": "Sélectionner le statut"
+  },
+  "keywords": {
+    "placeholder": "Mots-clés",
+    "removeKeyword": "Supprimer le mot-clé"
+  },
+  "literatureItem": {
+    "enterTitle": "Entrez le titre de l'article ou du livre",
+    "chapterTitle": "Titre du chapitre",
+    "secondTitle": "Second titre"
+  },
+  "researchDesigns": {
+    "title": "Conceptions du projet",
+    "edit": "Modifier",
+    "defineMethodology": "Définissez votre méthodologie de recherche à travers différents types de conception.",
+    "designsLabel": "Conceptions de {type}",
+    "designDescription": "Description de la conception {type}",
+    "selectDesignsHelp": "Sélectionnez toutes les conceptions de {type} qui s'appliquent à ce projet.",
+    "noSavedDesigns": "Aucune conception de {type} enregistrée. Ajoutez-en une ci-dessous.",
+    "enterNewDesign": "Entrez le nom de la nouvelle conception {type}",
+    "addNewDesign": "+ Ajouter une nouvelle conception {type}",
+    "noDesignSpecified": "Aucune conception {type} spécifiée",
+    "descriptionHelp": "Utilisez cet espace pour capturer le contexte, les hypothèses ou la justification des conceptions sélectionnées.",
+    "describeApproach": "Décrivez l'approche de conception {type} pour ce projet...",
+    "selectDesigns": "Sélectionner les conceptions {type}",
+    "adding": "Ajout en cours…",
+    "addedDesign": "Conception {type} ajoutée"
+  },
+  "projectInsights": {
+    "allTasksCompleted": "Toutes les tâches de configuration du projet sont terminées !",
+    "missingProjectName": "Nom du projet manquant",
+    "giveProjectName": "Donnez à votre projet un nom clair et descriptif pour l'identifier facilement.",
+    "missingPurposeStatement": "Énoncé d'objectif manquant",
+    "createPurposeStatement": "Créez un énoncé d'objectif clair pour définir les buts de votre projet.",
+    "missingGrantInfo": "Informations de subvention manquantes",
+    "addGrantInfo": "Ajoutez des informations de subvention pour suivre les sources de financement.",
+    "missingProjectDesigns": "Conceptions de projet manquantes",
+    "addDesigns": "Ajoutez des conceptions de recherche, d'échantillonnage, de mesure ou d'analyse à votre projet.",
+    "missingProjectKeywords": "Mots-clés du projet manquants",
+    "addKeywords": "Ajoutez des mots-clés pour aider à catégoriser et rechercher votre projet.",
+    "projectStatusNotSet": "Statut du projet non défini",
+    "setStatus": "Définissez le statut actuel de votre projet pour suivre les progrès.",
+    "projectHealth": "Santé du projet",
+    "task": "tâche",
+    "tasks": "tâches",
+    "remaining": "restante(s)",
+    "projectSetupProgress": "Progression de la configuration du projet",
+    "progressTooltip": "Complétez ces tâches pour améliorer l'organisation et l'efficacité de votre projet",
+    "percentComplete": "{percent}% terminé",
+    "requiredSetup": "Configuration requise",
+    "required": "Requis",
+    "recommendedSetup": "Configuration recommandée",
+    "recommended": "Recommandé"
+  },
+  "graph": {
+    "filter": "Filtrer",
+    "filterTitle": "Filtre",
+    "labelsOn": "Étiquettes activées",
+    "labelsOff": "Étiquettes désactivées",
+    "iconsOn": "Icônes activées",
+    "iconsOff": "Icônes désactivées",
+    "showIcons": "Afficher les icônes",
+    "hideIcons": "Masquer les icônes",
+    "stickNodes": "Fixer les nœuds",
+    "unstickNodes": "Libérer les nœuds",
+    "timelapse": "Timelapse"
+  },
+  "nextBestActions": {
+    "filter": "Filtrer",
+    "filterActions": "Filtrer les actions",
+    "noLiteratureNeedsAttention": "Aucune littérature ne nécessite d'attention",
+    "noRecentUpdates": "Aucune mise à jour récente",
+    "allStatuses": "Tous les statuts",
+    "noteTaking": "Prise de notes",
+    "reading": "En lecture",
+    "notStarted": "Non commencé",
+    "allSeverities": "Toutes les sévérités",
+    "errorsOnly": "Erreurs uniquement",
+    "warningsOnly": "Avertissements uniquement",
+    "status": "Statut",
+    "severity": "Sévérité",
+    "needsAttention": "Nécessite une attention",
+    "recentlyUpdated": "Récemment mis à jour",
+    "viewDetails": "Voir les détails",
+    "untitledLiterature": "Littérature sans titre",
+    "lastUpdated": "Dernière mise à jour {date}",
+    "error": "Erreur",
+    "errors": "Erreurs",
+    "warning": "Avertissement",
+    "warnings": "Avertissements",
+    "projectReading": "Lecture du projet",
+    "recentUpdates": "Mises à jour récentes",
+    "filterDescription": "Filtrer la littérature par statut et sévérité"
+  },
+  "globalSearchDialog": {
+    "search": "Rechercher",
+    "noResultsFound": "Aucun résultat trouvé",
+    "searchYourResearch": "Recherchez dans votre recherche",
+    "searching": "Recherche en cours..."
+  },
+  "roles": {
+    "selectRole": "Sélectionner un rôle",
+    "noRolesAvailable": "Aucun rôle disponible. Utilisation des rôles de secours codés en dur.",
+    "owner": "Propriétaire",
+    "admin": "Administrateur",
+    "member": "Membre",
+    "viewer": "Lecteur",
+    "editor": "Éditeur"
+  },
+  "printTemplate": {
+    "noReferencesAvailable": "Aucune référence disponible.",
+    "citationStyle": "Style de citation : {style}",
+    "bibliography": "Bibliographie",
+    "generatedOnBy": "Généré le {date} par Quester",
+    "generatedOnByFor": "Généré le {date} par Quester pour {author}",
+    "reference": "1 référence",
+    "references": "{count} références",
+    "unknownTitle": "Titre inconnu",
+    "noDate": "s.d."
+  },
+  "teamSettings": {
+    "errorOccurred": "Une erreur s'est produite",
+    "failedToUpdateSettings": "Échec de la mise à jour des paramètres",
+    "invitationSettings": "Paramètres d'invitation",
+    "disableInvitations": "Désactiver les invitations",
+    "disableInvitationsDescription": "Lorsque activé, aucun nouveau membre ne peut être invité à ce/cette {resourceType}",
+    "ownerOnly": "Propriétaire uniquement",
+    "allowMemberInvitations": "Autoriser les invitations des membres",
+    "allowMemberInvitationsDescription": "Autoriser les membres réguliers et les administrateurs à inviter de nouveaux membres dans ce/cette {resourceType}",
+    "invitationSettingsAdminOnly": "Les paramètres d'invitation ne peuvent être consultés que par les administrateurs de l'organisation.",
+    "contentCreationPermissions": "Autorisations de création de contenu",
+    "membersCanCreateProjects": "Les membres peuvent créer des projets",
+    "membersCanCreateProjectsDescription": "Autoriser les membres réguliers à créer de nouveaux projets dans cette organisation",
+    "membersCanCreateDepartments": "Les membres peuvent créer des départements",
+    "membersCanCreateDepartmentsDescription": "Autoriser les membres réguliers à créer de nouveaux départements dans cette organisation",
+    "adminsCanCreateDepartments": "Les administrateurs peuvent créer des départements",
+    "adminsCanCreateDepartmentsDescription": "Autoriser les utilisateurs administrateurs à créer de nouveaux départements dans cette organisation",
+    "departmentSettings": "Paramètres du département",
+    "projectSettings": "Paramètres du projet"
+  },
+  "subscription": {
+    "errorOccurred": "Une erreur s'est produite"
+  },
+  "notesView": {
+    "toggleSplitView": "Activer/désactiver la vue partagée",
+    "toggleFocusMode": "Activer/désactiver le mode focus (Cmd/Ctrl+B)"
+  },
+  "aiChat": {
+    "unsavedChanges": "Modifications non enregistrées",
+    "sendMessage": "Envoyer le message",
+    "searchContextAvailable": "Contexte de recherche disponible",
+    "referencedContext": "Contexte référencé",
+    "usingProjectContext": "Utilisation du contexte du projet actuel"
+  },
+  "media": {
+    "back": "Retour"
+  },
+  "keyInsights": {
+    "title": "Insights clés",
+    "description": "Analyse alimentée par l'IA des modèles et tendances de votre recherche",
+    "checkingLimit": "Vérification de la limite quotidienne...",
+    "generateNew": "Générer de nouveaux insights pour ce projet"
+  },
+  "userRoleForm": {
+    "selectRole": "Sélectionner un rôle",
+    "userDataNotFound": "Données utilisateur introuvables",
+    "updateSuccess": "Rôle de l'utilisateur mis à jour avec succès",
+    "updateFailed": "Échec de la mise à jour du rôle de l'utilisateur",
+    "changeRoleFor": "Changer le rôle pour",
+    "role": "Rôle",
+    "updating": "Mise à jour...",
+    "updateRole": "Mettre à jour le rôle",
+    "noRoleSelected": "Aucun rôle sélectionné"
+  },
+  "projectStatus": {
+    "planning": "Planification",
+    "inProgress": "En cours",
+    "writing": "Rédaction",
+    "review": "Révision",
+    "revision": "Correction",
+    "completed": "Terminé",
+    "archived": "Archivé",
+    "currentStatusDescription": "Statut actuel de votre projet."
+  },
+  "customEventForm": {
+    "coreDetails": "Détails essentiels de votre événement",
+    "classificationTiming": "Classification et calendrier",
+    "addNewEvent": "Ajouter un nouvel événement personnalisé à la chronologie de votre projet",
+    "updateEvent": "Mettre à jour les détails de cet événement personnalisé"
+  },
+  "timelineEmpty": {
+    "readyToCapture": "Prêt à capturer votre premier jalon"
+  },
+  "roleManager": {
+    "chooseRole": "Choisir un rôle",
+    "updateRoleFor": "Mettre à jour le rôle pour {userName}",
+    "updating": "Mise à jour...",
+    "updateRole": "Mettre à jour le rôle"
+  },
+  "organizationStructure": {
+    "failedToLoadData": "Échec du chargement des données de l'organisation",
+    "failedToCreateProject": "Échec de la création du projet",
+    "failedToCreateDepartment": "Échec de la création du département",
+    "failedToMoveProject": "Échec du déplacement du projet",
+    "failedToJoinProject": "Échec de l'adhésion au projet",
+    "failedToJoinDepartment": "Échec de l'adhésion au département"
+  },
+  "textColor": {
+    "pickColor": "Choisir une couleur de texte"
+  },
+  "referencePreview": {
+    "sortedAlphabetically": "Trié alphabétiquement par auteur",
+    "totalReference": "Total : 1 référence",
+    "totalReferences": "Total : {count} références"
+  },
+  "literatureInsights": {
+    "allSetupCompleted": "Toutes les tâches de configuration sont terminées !",
+    "allFieldsCompleted": "Tous les champs de littérature sont remplis !"
+  },
+  "publisherScore": {
+    "explain": "Expliquer",
+    "suggestedJournalsConferences": "Revues et conférences suggérées"
+  },
+  "announcementHistory": {
+    "view": "Voir",
+    "title": "Historique des annonces",
+    "description": "Parcourez toutes les annonces et mises à jour de la plateforme"
+  },
+  "threeD": {
+    "startTimelapse": "Démarrer le timelapse"
+  },
+  "toasts": {
+    "feedbackSubmitted": "Commentaire soumis avec succès !",
+    "failedToSubmitFeedback": "Échec de la soumission du commentaire",
+    "successfullyRewrotePurpose": "Objectif réécrit avec succès !",
+    "failedToRewritePurpose": "Échec de la réécriture de l'objectif",
+    "selectProjectToManageDesigns": "Veuillez sélectionner un projet pour gérer ses conceptions",
+    "designNameCannotBeEmpty": "Le nom de la conception ne peut pas être vide",
+    "designAlreadyExists": "Une conception avec ce nom existe déjà",
+    "designsUpdatedSuccessfully": "Conceptions mises à jour avec succès",
+    "pleaseSelectUserAndRole": "Veuillez sélectionner un utilisateur et un rôle",
+    "eventDetailsCopied": "Détails de l'événement copiés dans le presse-papiers",
+    "failedToCopyDetails": "Échec de la copie des détails dans le presse-papiers",
+    "eventDeletedPermanently": "Événement supprimé définitivement",
+    "failedToDeleteEvent": "Échec de la suppression de l'événement"
+  },
+  "nextBestActionsFilters": {
+    "allStatuses": "Tous les statuts",
+    "noteTaking": "Prise de notes",
+    "reading": "En lecture",
+    "notStarted": "Non commencé",
+    "allSeverities": "Toutes les sévérités",
+    "errorsOnly": "Erreurs uniquement",
+    "warningsOnly": "Avertissements uniquement"
+  },
+  "customEventContextMenu": {
+    "editEvent": "Modifier l'événement",
+    "copyDetails": "Copier les détails",
+    "deletePermanently": "Supprimer définitivement",
+    "titleLabel": "Titre : {title}",
+    "descriptionLabel": "Description : {description}",
+    "typeLabel": "Type : {type}",
+    "dateLabel": "Date : {date}",
+    "tagsLabel": "Étiquettes : {tags}",
+    "detailsLabel": "Détails",
+    "deleteConfirmation": "Êtes-vous sûr de vouloir supprimer définitivement \"{title}\" ? Cette action est irréversible.",
+    "deleteEvent": "Supprimer l'événement"
+  },
+  "exportFormats": {
+    "copyToClipboard": "Copier dans le presse-papiers",
+    "pdf": "PDF",
+    "word": "Word (DOCX)",
+    "bibtex": "BibTeX",
+    "ris": "RIS",
+    "csv": "CSV"
+  },
+  "chartLabels": {
+    "count": "Nombre",
+    "publications": "Publications",
+    "noActivityDataAvailable": "Aucune donnée d'activité disponible"
+  },
+  "addLiteraturePlaceholders": {
+    "chapterTitle": "Titre du chapitre",
+    "secondTitle": "Second titre"
+  },
+  "teamSizeIndicator": {
+    "upgradePlanToInvite": "Mettez à niveau votre forfait pour inviter des utilisateurs.",
+    "teamMembers": "Membres de l'équipe",
+    "seatsUsed": "{current} sur {max} places utilisées",
+    "seatRemaining": "1 place restante",
+    "seatsRemaining": "{count} places restantes",
+    "userLimitReached": "Limite d'utilisateurs atteinte",
+    "maxUsersReached": "Vous avez atteint le maximum de {max} utilisateurs pour votre forfait {plan}.",
+    "almostAtLimit": "Presque à la limite d'utilisateurs",
+    "oneSeatRemaining": "Il vous reste 1 place sur votre forfait {plan}.",
+    "seatsRemainingOnPlan": "Il vous reste {count} places sur votre forfait {plan}.",
+    "considerTeamUpgrade": "Envisagez de passer à un forfait équipe pour plus de places",
+    "contactSupportEnterprise": "Contactez le support pour les options entreprise",
+    "contactSupportSeats": "Contactez le support pour des places supplémentaires",
+    "upgradeToTeam": "Passer au forfait équipe"
+  },
+  "referenceExport": {
+    "bibliography": "Bibliographie",
+    "bibliographyPreview": "Aperçu de la bibliographie",
+    "noReferencesAvailable": "Aucune référence disponible",
+    "page": "page",
+    "pages": "pages",
+    "style": "Style",
+    "words": "mots"
+  },
+  "emptyStateDescriptions": {
+    "addLiteratureForAnalytics": "Ajoutez de la littérature et des notes pour voir vos analyses.",
+    "addLiteratureForInsights": "Ajoutez de la littérature et des notes à votre projet pour générer des insights alimentés par l'IA sur vos modèles de recherche.",
+    "addFirstResearchProduct": "Ajoutez votre premier produit de recherche pour commencer.",
+    "addLiteratureForGraph": "Ajoutez de la littérature pour voir votre graphique se remplir.",
+    "projectWellConfigured": "Votre projet est bien configuré et prêt pour la recherche.",
+    "noLiteratureNeedsAttention": "Aucune littérature ne nécessite d'attention pour le moment.",
+    "noLiteratureUpdatedRecently": "Aucune littérature n'a été mise à jour récemment.",
+    "noDesignsAddedYet": "Aucune conception {type} ajoutée pour l'instant. Ajoutez votre première ci-dessus.",
+    "noProjectSelected": "Aucun projet sélectionné. Veuillez d'abord sélectionner un projet."
+  },
+  "projectInsightsDescriptions": {
+    "giveProjectName": "Donnez à votre projet un nom clair et descriptif pour l'identifier facilement."
+  },
+  "announcementOne": {
+    "majorUpdate": "Mise à jour majeure",
+    "platformUpdate": "Mise à jour de la plateforme Quester 2.5",
+    "features": {
+      "teamManagement": {
+        "title": "Refonte de la gestion d'équipe",
+        "description": "Refonte complète de la navigation d'équipe avec une nouvelle interface de barre latérale remplaçant l'ancien système de menu déroulant.",
+        "bullet1": "Navigation persistante par barre latérale",
+        "bullet2": "Changement d'équipe rapide",
+        "bullet3": "Aperçu d'équipe amélioré"
+      },
+      "globalSearch": {
+        "title": "Recherche globale et chat IA",
+        "description": "Recherche puissante dans tous vos projets avec assistance IA intégrée pour les questions de recherche.",
+        "bullet1": "Recherche inter-projets",
+        "bullet2": "Chat de recherche alimenté par l'IA",
+        "bullet3": "Découverte intelligente de contenu"
+      },
+      "keyInsights": {
+        "title": "IA Key Insights",
+        "description": "Analyse pilotée par l'IA qui identifie automatiquement les modèles et insights de vos données de recherche.",
+        "bullet1": "Détection automatique des modèles",
+        "bullet2": "Recommandations de recherche",
+        "bullet3": "Synthèse intelligente des données"
+      },
+      "referenceExport": {
+        "title": "Suite d'exportation de références",
+        "description": "Exportez vos références dans plusieurs formats académiques pour une intégration transparente avec votre flux de travail.",
+        "bullet1": "Plusieurs formats de citation",
+        "bullet2": "Capacités d'exportation en masse",
+        "bullet3": "Conformité aux normes académiques"
+      },
+      "modelBuilding": {
+        "title": "Améliorations de la construction de modèles",
+        "description": "Outils de modélisation visuelle avancés avec des types de nœuds améliorés, une personnalisation des arêtes et des améliorations de flux de travail.",
+        "bullet1": "Nouveaux types et formes de nœuds",
+        "bullet2": "Style d'arête avancé",
+        "bullet3": "Contrôles de canevas améliorés"
+      },
+      "tutorials": {
+        "title": "Tutoriels interactifs",
+        "description": "Visites guidées complètes qui démontrent les fonctionnalités avec des exemples automatiques et un apprentissage pratique.",
+        "bullet1": "Guidance étape par étape",
+        "bullet2": "Démonstrations automatiques",
+        "bullet3": "Aide contextuelle"
+      }
+    }
+  },
+  "announcementTwo": {
+    "timeRemaining": "Temps restant",
+    "expired": "Expiré",
+    "dayRemaining": "1 jour restant",
+    "daysRemaining": "{days} jours restants",
+    "hourRemaining": "1 heure restante",
+    "hoursRemaining": "{hours} heures restantes",
+    "lessThanHour": "Moins d'une heure restante"
+  },
+  "sidebarTrigger": {
+    "toggleSidebar": "Afficher/Masquer la barre latérale"
+  },
+  "stripe": {
+    "processing": "Traitement..."
+  },
+  "protectedRoute": {
+    "redirecting": "Redirection..."
+  },
+  "srOnly": {
+    "select": "Sélectionner",
+    "toggleTheme": "Changer le thème",
+    "morePages": "Plus de pages",
+    "revokeInvitation": "Révoquer l'invitation",
+    "removeTag": "Supprimer {tag}"
+  },
+  "toastsExtra": {
+    "rewritingPurpose": "Réécriture de l'objectif...",
+    "feedbackSubmittedSuccessfully": "Commentaire soumis avec succès !",
+    "failedToSubmitFeedback": "Échec de la soumission du commentaire",
+    "pleaseSelectUserAndRole": "Veuillez sélectionner un utilisateur et un rôle"
+  },
+  "ariaLabels": {
+    "toggleYearsTimePeriods": "Basculer entre les années individuelles et les périodes",
+    "sendMessage": "Envoyer le message",
+    "emptyState": "État vide",
+    "removeDetail": "Supprimer le détail",
+    "removeTag": "Supprimer l'étiquette",
+    "deleteDepartment": "Supprimer le département",
+    "back": "Retour"
+  },
+  "literatureKeywords": {
+    "placeholder": "Mots-clés"
+  },
+  "graphData": {
+    "typeMap": {
+      "keyword": "Mot-clé",
+      "publisher": "Éditeur",
+      "authors": "Auteurs",
+      "year": "Année",
+      "researchDesign": "Conception de recherche",
+      "samplingDesign": "Conception d'échantillonnage",
+      "measurementDesign": "Conception de mesure",
+      "analyticDesign": "Conception analytique",
+      "model": "Modèle",
+      "type": "Type",
+      "note": "Note"
+    },
+    "untitledNote": "Note sans titre"
+  },
+  "modelTutorial": {
+    "modelBuildingTools": {
+      "title": "Outils de construction de modèles",
+      "description": "Ajoutez des nœuds Rectangle ou Cercle, activez la visibilité et l'alignement sur la grille, et téléchargez votre modèle sous forme d'image à l'aide de cette barre d'outils."
+    },
+    "modelingCanvas": {
+      "title": "Votre canevas de modélisation",
+      "description": "C'est votre espace de travail principal. Faites glisser les nœuds depuis la barre d'outils pour les ajouter. Connectez les nœuds en faisant glisser entre leurs poignées."
+    },
+    "canvasControls": {
+      "title": "Contrôles du canevas",
+      "description": "Utilisez ces contrôles pour zoomer avant/arrière, ajuster l'ensemble du modèle à la vue et verrouiller/déverrouiller le panoramique du canevas."
+    },
+    "minimapNavigation": {
+      "title": "Navigation par minimap",
+      "description": "Cela fournit un aperçu de l'ensemble de votre modèle. Cliquez et faites glisser dans la minimap pour naviguer rapidement sur de grands canevas."
+    },
+    "nodes": {
+      "title": "Nœuds",
+      "description": "Les nœuds représentent les concepts ou variables clés de votre modèle. Cliquez pour sélectionner, redimensionnez à l'aide des poignées et double-cliquez (si applicable) pour modifier le contenu."
+    },
+    "edges": {
+      "title": "Arêtes",
+      "description": "Les arêtes montrent les relations ou connexions entre vos concepts. Cliquez sur une arête pour la sélectionner et personnaliser son apparence à l'aide du panneau qui apparaît."
+    },
+    "edgeCustomization": {
+      "title": "Personnalisation des arêtes",
+      "description": "Lorsqu'une arête est sélectionnée, utilisez ce panneau pour changer son style, sa couleur, ses pointes de flèche et son animation pour communiquer clairement la nature de la relation."
+    },
+    "modelViewContainer": {
+      "title": "Conteneur de vue du modèle",
+      "description": "C'est le conteneur pour la vue du modèle. Il est utilisé pour appliquer tout style ou contrainte de mise en page supplémentaire."
+    },
+    "tutorialNode": "Nœud de tutoriel"
+  },
+  "edgeCustomization": {
+    "markerOne": "Marqueur un",
+    "markerTwo": "Marqueur deux"
+  },
+  "announcementLaunch": {
+    "bugFixes": "Corrections de bugs",
+    "userSuggestions": "Suggestions des utilisateurs implémentées"
+  },
+  "manageSubscription": {
+    "loading": "Chargement...",
+    "upgradePlan": "Mettre à niveau votre forfait",
+    "manageSubscription": "Gérer l'abonnement",
+    "failedToCreatePortalSession": "Échec de la création de la session du portail"
+  },
+  "subscriptionSuccess": {
+    "processingSubscription": "Traitement de votre abonnement",
+    "couldNotLoadOrganization": "Impossible de charger les détails de l'organisation. Veuillez actualiser la page.",
+    "pleaseWaitProcessing": "Veuillez patienter pendant que nous traitons votre abonnement pour",
+    "goToDashboard": "Aller au tableau de bord"
+  },
+  "researchDesignsCard": {
+    "projectDesigns": "Conceptions du projet",
+    "selectDesign": "Sélectionner la conception {type}",
+    "noDesignSpecified": "Aucune conception {type} spécifiée"
+  },
+  "keyInsightsExtra": {
+    "history": "Historique",
+    "generating": "Génération...",
+    "regenerate": "Régénérer",
+    "dailyLimitReached": "Vous avez atteint votre limite quotidienne d'insights",
+    "generatingInsights": "Génération des insights...",
+    "loadingInsights": "Chargement des insights...",
+    "dailyLimitMessage": "Vous avez atteint le maximum de 3 générations d'insights par jour pour optimiser les coûts d'IA. Vos insights seront actualisés demain.",
+    "tryAgain": "Réessayer",
+    "generateInsights": "Générer des insights",
+    "insightsAutoUpdated": "Les insights sont automatiquement mis à jour lorsque les données de votre projet changent de manière significative.",
+    "aiPoweredAnalysis": "Analyse alimentée par l'IA",
+    "justNow": "À l'instant",
+    "minutesAgo": "Il y a {minutes}m",
+    "hoursAgo": "Il y a {hours}h",
+    "daysAgoShort": "Il y a {days}j"
+  },
+  "publisherScoreExtra": {
+    "noJournalSuggestionsYet": "Aucune suggestion de revue disponible pour l'instant. Continuez à ajouter de la littérature pour obtenir des suggestions.",
+    "journalSuggestionsForPublication": "Suggestions de revues pour publication",
+    "journalSuggestionsExplanation": "Les suggestions de revues utilisent des évaluations pondérées pour les articles de revues et les revues de littérature afin de vous aider à déterminer les revues que vous devriez envisager d'explorer pour vos recherches et publications. Les scores sont calculés en fonction de la récence de publication, de la diversité des auteurs et de la pertinence des mots-clés.",
+    "conferenceSuggestionsForPresentation": "Suggestions de conférences pour présentation",
+    "noConferenceSuggestionsYet": "Aucune suggestion de conférence disponible pour l'instant. Continuez à ajouter de la littérature pour obtenir des suggestions.",
+    "conferenceSuggestionsExplanation": "Les suggestions de conférences utilisent des évaluations pondérées pour les actes de conférence et les présentations afin de vous aider à déterminer les conférences auxquelles vous devriez envisager d'assister ou de présenter. Les scores sont calculés en fonction de la récence de publication, de la diversité des auteurs et de la pertinence des mots-clés.",
+    "suggestedJournalsAndConferences": "Revues et conférences suggérées",
+    "noJournalAndReviewSuggestions": "Aucune suggestion de revue et de révision disponible.",
+    "noConferenceSuggestions": "Aucune suggestion de conférence disponible.",
+    "noSuggestionsAvailable": "Aucune suggestion disponible."
+  },
+  "organizationFallbacks": {
+    "noDepartment": "Aucun département",
+    "noOrganization": "Aucune organisation",
+    "noProjectsFound": "Aucun projet trouvé",
+    "noProjectsMatchQuery": "Aucun projet ne correspond à \"{query}\"",
+    "tryDisablingFilter": "Essayez de désactiver le filtre \"Mes projets\" pour voir tous les projets",
+    "notMemberOfProjects": "Vous n'êtes membre d'aucun projet",
+    "tryDifferentKeywords": "Essayez d'utiliser des mots-clés différents ou effacez votre recherche"
+  },
+  "chatHistory": {
+    "noMessagesYet": "Aucun message pour l'instant",
+    "unknownError": "Erreur inconnue"
+  },
+  "literatureInsightsRules": {
+    "missingTitle": "Titre de la littérature manquant",
+    "missingTitleDesc": "Ajoutez un titre pour identifier et référencer facilement cette littérature.",
+    "missingAuthors": "Auteurs manquants",
+    "missingAuthorsDesc": "Ajoutez les auteurs de cette littérature pour une citation correcte.",
+    "missingYear": "Année de publication manquante",
+    "missingYearDesc": "Ajoutez l'année de publication pour une référence chronologique.",
+    "missingPublisher": "Éditeur manquant",
+    "missingPublisherDesc": "Ajoutez les informations de l'éditeur pour une citation complète.",
+    "typeNotSet": "Type de littérature non défini",
+    "typeNotSetDesc": "Spécifiez le type de littérature pour une meilleure organisation.",
+    "statusNotSet": "Statut de lecture non défini",
+    "statusNotSetDesc": "Définissez le statut de lecture pour suivre votre progression.",
+    "literatureHealth": "Santé de la littérature",
+    "taskRemaining": "tâche",
+    "tasksRemaining": "tâches",
+    "remaining": "restante(s)",
+    "literatureSetupProgress": "Progression de la configuration de la littérature",
+    "progressTooltip": "Complétez ces tâches pour améliorer l'organisation et la qualité de citation de votre littérature",
+    "complete": "terminé",
+    "requiredFields": "Champs obligatoires",
+    "required": "Requis",
+    "recommendedFields": "Champs recommandés",
+    "recommended": "Recommandé",
+    "wellDocumented": "Cette entrée de littérature est bien documentée et prête pour la citation."
+  },
+  "resourceUserManagerExtra": {
+    "noMoreUsersAvailable": "Plus d'utilisateurs de l'organisation disponibles à ajouter",
+    "user": "Utilisateur",
+    "role": "Rôle",
+    "actions": "Actions",
+    "selectRole": "Sélectionner un rôle",
+    "adding": "Ajout...",
+    "add": "Ajouter",
+    "addExistingUsersToDepartment": "Ajouter des utilisateurs existants au département",
+    "addExistingUsersToProject": "Ajouter des utilisateurs existants au projet",
+    "userAddedSuccess": "Utilisateur ajouté au/à la {resourceType} avec succès",
+    "errorAddingUser": "Erreur lors de l'ajout de l'utilisateur au/à la {resourceType}"
+  },
+  "roleManagerExtra": {
+    "confirmElevatedPermissions": "Vous êtes sur le point de modifier le rôle d'un propriétaire de projet en utilisant vos privilèges d'organisation. Êtes-vous sûr de vouloir continuer ?"
+  },
+  "progressPage": {
+    "projectCreated": "Projet créé : {name}",
+    "projectInitialized": "Le projet a été initialisé",
+    "custom": "Personnalisé",
+    "progress": "Progression"
+  },
+  "modelsPage": {
+    "newModel": "Nouveau modèle"
+  },
+  "outcomesPage": {
+    "newOutcome": "Nouveau résultat"
+  },
+  "customEventFormExtra": {
+    "createCustomEvent": "Créer un événement personnalisé",
+    "editCustomEvent": "Modifier l'événement personnalisé",
+    "createEvent": "Créer l'événement",
+    "updateEvent": "Mettre à jour l'événement",
+    "basicInformation": "Informations de base",
+    "eventTitle": "Titre de l'événement",
+    "description": "Description",
+    "eventDetails": "Détails de l'événement",
+    "eventType": "Type d'événement",
+    "eventDateTime": "Date et heure de l'événement",
+    "advancedOptions": "Options avancées",
+    "additionalDetails": "Détails supplémentaires",
+    "upToFiveItems": "(jusqu'à 5 éléments)",
+    "tags": "Étiquettes",
+    "upToTenTags": "(jusqu'à 10 étiquettes)",
+    "cancel": "Annuler",
+    "charactersCount": "{count}/200 caractères",
+    "descriptionCount": "{count}/1000 caractères"
+  },
+  "analyticsTutorial": {
+    "exploreAnalytics": {
+      "title": "Explorez l'analytique de votre projet",
+      "description": "Cette section visualise les tendances clés et les modèles de votre littérature et de vos notes, vous aidant à comprendre votre paysage de recherche."
+    },
+    "navigateViews": {
+      "title": "Naviguez entre les différentes vues",
+      "description": "Utilisez ces onglets pour basculer entre différentes catégories d'analyse : Aperçu, Contenu des notes, Titres de littérature et Méthodes de conception de recherche."
+    },
+    "projectOverview": {
+      "title": "Aperçu du projet",
+      "description": "Voyez les tendances de haut niveau comme les éditeurs prédominants, les mots-clés communs, la distribution des années de publication, les types de littérature et une ventilation détaillée des types de littérature par année de publication."
+    },
+    "notesContentAnalysis": {
+      "title": "Analyse du contenu des notes",
+      "description": "Analysez le contenu de vos notes en identifiant les noms, verbes et adjectifs les plus fréquents utilisés."
+    },
+    "literatureTitleAnalysis": {
+      "title": "Analyse des titres de littérature",
+      "description": "Découvrez les noms, verbes et adjectifs communs apparaissant dans les titres de votre littérature collectée."
+    },
+    "researchDesignInsights": {
+      "title": "Insights sur la conception de recherche",
+      "description": "Comprenez les méthodologies utilisées dans votre littérature, y compris les conceptions de recherche, d'échantillonnage, de mesure et d'analyse prédominantes."
+    },
+    "viewFullscreen": {
+      "title": "Voir en plein écran",
+      "description": "Cliquez sur cette icône sur n'importe quelle carte de graphique pour voir une version plus grande dans une fenêtre modale pour une inspection plus facile."
+    },
+    "literatureTypesByYear": {
+      "title": "Types de littérature par année",
+      "description": "Ce graphique à barres empilées montre la distribution des différents types de littérature à travers les années de publication, vous aidant à identifier les tendances dans les approches de recherche au fil du temps."
+    },
+    "noDataYet": {
+      "title": "Pas encore de données ?",
+      "description": "Si vous voyez un message 'Aucune donnée', commencez par ajouter de la littérature et des notes à votre projet. Les analyses apparaîtront automatiquement lorsque vous ajouterez du contenu."
+    },
+    "gainDeeperInsights": {
+      "title": "Obtenez des insights plus profonds",
+      "description": "Consultez régulièrement ces analyses pour repérer les tendances, identifier les lacunes et comprendre le focus de vos matériaux de recherche."
+    }
+  },
+  "documentUploadPanel": {
+    "uploadFailed": "Échec du téléchargement"
+  },
+  "contextSelector": {
+    "contextFocus": "Focus du contexte",
+    "contextFocusDescription": "Sélectionnez des éléments pour concentrer les réponses de l'IA sur des parties spécifiques de votre recherche.",
+    "clear": "Effacer",
+    "noContextSelected": "Aucun élément de contexte sélectionné. L'IA utilisera l'ensemble de votre projet.",
+    "removeFromContext": "Retirer {title} du contexte",
+    "searchAllProjects": "Rechercher des éléments dans tous les projets accessibles",
+    "searchThisProject": "Rechercher dans ce projet des notes, littérature, résultats...",
+    "chooseProject": "Choisissez un projet pour cibler les sélections de contexte.",
+    "searching": "Recherche en cours...",
+    "noMatchingItems": "Aucun élément correspondant. Essayez un autre terme de recherche.",
+    "selected": "Sélectionné",
+    "selectProjectError": "Sélectionnez un projet pour cibler le contexte de l'assistant.",
+    "failedToLoadContext": "Échec du chargement des suggestions de contexte",
+    "types": {
+      "literature": "Littérature",
+      "note": "Note",
+      "outcome": "Résultat",
+      "model": "Modèle",
+      "keywordAnalysis": "Analyse de mots-clés",
+      "document": "Document",
+      "documentChunk": "Fragment de document",
+      "project": "Projet"
+    }
+  },
+  "graphContextMenu": {
+    "node": "Nœud",
+    "navigateToLiterature": "Naviguer vers la littérature",
+    "filterConnectedNodes": "Filtrer les nœuds connectés",
+    "resetFilter": "Réinitialiser le filtre"
+  }
+}

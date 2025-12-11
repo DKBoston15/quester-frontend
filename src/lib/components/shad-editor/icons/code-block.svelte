@@ -4,6 +4,7 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import { cn } from "$lib/utils.js";
   import type { ToolBarIconProps } from "./types.js";
+  import { _ } from "svelte-i18n";
 
   let {
     editor,
@@ -27,7 +28,7 @@
       avoidCollisions
       class="border bg-background p-2 font-medium text-foreground"
     >
-      <p>Code Block</p>
+      <p>{$_('editor.toolbar.codeBlock')}</p>
     </Tooltip.Content>
   </Tooltip.Root>
 </Tooltip.Provider>

@@ -16,43 +16,65 @@
   import { projectStore } from "$lib/stores/ProjectStore";
   import { toast } from "svelte-sonner";
   import { api } from "$lib/services/api-client";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
 
-  const projectStatusOptions = [
-    { value: "Planning", label: "Planning" },
-    { value: "In Progress", label: "In Progress" },
-    { value: "Writing", label: "Writing" },
-    { value: "Review", label: "Review" },
-    { value: "Revision", label: "Revision" },
-    { value: "Completed", label: "Completed" },
-    { value: "Archived", label: "Archived" },
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
+
+  // Status values must remain in English for backend compatibility
+  const projectStatusValues = [
+    "Planning",
+    "In Progress",
+    "Writing",
+    "Review",
+    "Revision",
+    "Completed",
+    "Archived",
   ] as const;
 
-  const aiRewritePresets = [
+  // Translation keys for status labels
+  const statusTranslationKeys: Record<string, string> = {
+    "Planning": "projectStatus.planning",
+    "In Progress": "projectStatus.inProgress",
+    "Writing": "projectStatus.writing",
+    "Review": "projectStatus.review",
+    "Revision": "projectStatus.revision",
+    "Completed": "projectStatus.completed",
+    "Archived": "projectStatus.archived",
+  };
+
+  function getStatusLabel(status: string): string {
+    const key = statusTranslationKeys[status];
+    return key ? $_(key) : status;
+  }
+
+  // Labels and tooltips are translated, instructions remain in English for AI
+  const getAiRewritePresets = () => [
     {
-      label: "Shorten",
-      tooltip: "Make this 20–40% shorter without losing meaning.",
+      label: t("aiRewrite.shorten"),
+      tooltip: t("aiRewrite.shortenTooltip"),
       instruction:
         "Preset: Shorten — Make the statement 20–40% shorter and ≤240 characters while preserving key entities, methods, and outcomes. Output only the rewritten statement.",
     },
     {
-      label: "Plain-Language",
-      tooltip: "Swap jargon for everyday terms—keep the science.",
+      label: t("aiRewrite.plainLanguage"),
+      tooltip: t("aiRewrite.plainLanguageTooltip"),
       instruction:
         "Preset: Plain-Language — Rewrite for non-experts (~9th–10th grade). Replace jargon with common terms, expand acronyms once, use active voice, and keep essential technical nouns. Output only the rewritten statement.",
     },
     {
-      label: "SMART",
-      tooltip: "Turn the goal into a measurable, time-bound objective.",
+      label: t("aiRewrite.smart"),
+      tooltip: t("aiRewrite.smartTooltip"),
       instruction:
         "Preset: SMART — Reframe as Specific, Measurable, Achievable, Relevant, Time-bound using only details present. If metrics/timeframes are missing, use general measurable phrasing (e.g., 'within the study period') without inventing numbers. Output only the rewritten statement.",
     },
     {
-      label: "Journal-Ready",
-      tooltip: "Concise, neutral, manuscript-style objective.",
+      label: t("aiRewrite.journalReady"),
+      tooltip: t("aiRewrite.journalReadyTooltip"),
       instruction:
         "Preset: Journal-Ready — Rewrite in formal academic tone, concise (1–2 sentences), neutral, and outcome-focused. Include method keywords when present and avoid causal claims unless design supports them. Output only the rewritten statement.",
     },
-  ] as const;
+  ];
 
   const PURPOSE_CHAR_MIN = 120;
   const PURPOSE_CHAR_MAX = 280;
@@ -240,14 +262,14 @@
   <Card>
     <CardHeader>
       <div class="flex justify-between items-center">
-        <CardTitle class="">Project Overview</CardTitle>
+        <CardTitle class="">{$_('projectOverview.title')}</CardTitle>
         {#if !editMode.purpose && !editMode.status}
           <Button
             size="sm"
             onclick={() => {
               editMode.purpose = true;
               editMode.status = true;
-            }}>Edit</Button
+            }}>{$_('common.edit')}</Button
           >
         {/if}
       </div>
@@ -269,7 +291,7 @@
               </p>
             </Tooltip.Content>
           </Tooltip.Root>
-          <h3 class="text-sm font-bold">Purpose Statement</h3>
+          <h3 class="text-sm font-bold">{$_('projectOverview.purposeStatement')}</h3>
         </div>
 
         {#if editMode.purpose}
@@ -292,7 +314,7 @@
               </span>
             </div>
             <div class="flex flex-wrap gap-2 pt-1">
-              {#each aiRewritePresets as preset (preset.label)}
+              {#each getAiRewritePresets() as preset (preset.label)}
                 <Tooltip.Root>
                   <Tooltip.Trigger asChild>
                     <Button
@@ -318,14 +340,14 @@
                 disabled={isRewriting}
                 onclick={() => (showCustomInstruction = !showCustomInstruction)}
               >
-                Custom prompt
+                {$_('aiRewrite.customPrompt')}
               </Button>
             </div>
             {#if showCustomInstruction}
               <div class="flex flex-wrap gap-2">
                 <Input
                   bind:value={customInstruction}
-                  placeholder="e.g. highlight data sources and trim filler"
+                  placeholder={$_('aiRewrite.customPlaceholder')}
                   class="flex-1 min-w-[220px]"
                 />
                 <div class="flex gap-2">
@@ -336,9 +358,9 @@
                   >
                     {#if isRewriting}
                       <Loader2Icon class="h-4 w-4 animate-spin mr-2" />
-                      Rewriting...
+                      {$_('aiRewrite.rewriting')}
                     {:else}
-                      Start
+                      {$_('aiRewrite.start')}
                     {/if}
                   </Button>
                   <Button
@@ -350,7 +372,7 @@
                     }}
                     disabled={isRewriting}
                   >
-                    Cancel
+                    {$_('common.cancel')}
                   </Button>
                 </div>
               </div>
@@ -359,7 +381,7 @@
         {:else if isRewriting}
           <div class="relative">
             <p class="text-muted-foreground whitespace-pre-wrap">
-              {streamingContent || "Generating..."}
+              {streamingContent || $_('aiRewrite.generating')}
             </p>
             <div class="absolute top-0 right-0">
               <Loader2Icon class="h-4 w-4 animate-spin" />
@@ -367,20 +389,20 @@
           </div>
         {:else}
           <p class="text-muted-foreground whitespace-pre-wrap">
-            {currentPurpose || "No purpose defined"}
+            {currentPurpose || $_('projectOverview.noPurposeDefined')}
           </p>
         {/if}
 
         {#if previousPurpose && !isRewriting}
           <div class="text-xs text-muted-foreground">
-            Purpose updated with Quester.
+            {$_('aiRewrite.purposeUpdated')}
             <button
               type="button"
               class="ml-1 font-medium underline hover:text-foreground disabled:opacity-50"
               onclick={undoLastRewrite}
               disabled={isPending}
             >
-              Undo
+              {$_('aiRewrite.undo')}
             </button>
           </div>
         {/if}
@@ -394,10 +416,10 @@
               <InfoIcon class="h-5 w-5" />
             </Tooltip.Trigger>
             <Tooltip.Content>
-              <p class="text-sm max-w-xs">Current status of your project.</p>
+              <p class="text-sm max-w-xs">{$_('projectStatus.currentStatusDescription')}</p>
             </Tooltip.Content>
           </Tooltip.Root>
-          <h3 class="text-sm font-bold">Project Status</h3>
+          <h3 class="text-sm font-bold">{$_('projectOverview.projectStatus')}</h3>
         </div>
 
         {#if editMode.status}
@@ -406,21 +428,21 @@
               <Select.Trigger class="w-full">
                 {#if currentStatus}
                   <Badge variant={getBadgeVariant(currentStatus)}
-                    >{currentStatus}</Badge
+                    >{getStatusLabel(currentStatus)}</Badge
                   >
                 {:else}
-                  <span>Select status</span>
+                  <span>{$_('projectOverview.selectStatus')}</span>
                 {/if}
               </Select.Trigger>
               <Select.Content>
                 <Select.Group>
-                  {#each projectStatusOptions as option}
+                  {#each projectStatusValues as status}
                     <Select.Item
-                      value={option.value}
-                      onclick={() => handleStatusSelect(option.value)}
+                      value={status}
+                      onclick={() => handleStatusSelect(status)}
                     >
-                      <Badge variant={getBadgeVariant(option.value)}
-                        >{option.label}</Badge
+                      <Badge variant={getBadgeVariant(status)}
+                        >{getStatusLabel(status)}</Badge
                       >
                     </Select.Item>
                   {/each}
@@ -431,13 +453,13 @@
         {:else}
           <div class="space-y-2">
             <div class="flex items-center gap-3">
-              <span class="text-muted-foreground">Status:</span>
+              <span class="text-muted-foreground">{$_('projectOverview.statusLabel')}:</span>
               {#if currentStatus}
                 <Badge variant={getBadgeVariant(currentStatus)}
-                  >{currentStatus}</Badge
+                  >{getStatusLabel(currentStatus)}</Badge
                 >
               {:else}
-                <span class="text-muted-foreground">Not set</span>
+                <span class="text-muted-foreground">{$_('projectOverview.notSet')}</span>
               {/if}
             </div>
           </div>
@@ -454,10 +476,10 @@
           }}
           disabled={isPending}
         >
-          Cancel
+          {$_('common.cancel')}
         </Button>
         <Button onclick={saveProjectOverview} disabled={isPending}>
-          {isPending ? "Saving..." : "Save"}
+          {isPending ? $_('common.saving') : $_('common.save')}
         </Button>
       </CardFooter>
     {/if}

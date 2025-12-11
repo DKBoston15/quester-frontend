@@ -5,6 +5,7 @@
 	import { ArrowDownFromLine, ArrowUpFromLine, Trash } from 'lucide-svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { isRowGripSelected } from './utils.js';
+	import { _ } from 'svelte-i18n';
 	interface Props {
 		editor: Editor;
 	}
@@ -34,7 +35,7 @@
 		onclick={() => editor.chain().focus().addRowAfter().run()}
 	>
 		<ArrowDownFromLine />
-		<span>Add Row After</span>
+		<span>{$_('editor.table.addRowAfter')}</span>
 	</Button>
 	<Button
 		variant="ghost"
@@ -42,7 +43,7 @@
 		onclick={() => editor.chain().focus().addRowBefore().run()}
 	>
 		<ArrowUpFromLine />
-		<span>Add Row Before</span>
+		<span>{$_('editor.table.addRowBefore')}</span>
 	</Button>
 	<Button
 		variant="ghost"
@@ -50,6 +51,6 @@
 		onclick={() => editor.chain().focus().deleteRow().run()}
 	>
 		<Trash />
-		<span>Delete Row</span>
+		<span>{$_('editor.table.deleteRow')}</span>
 	</Button>
 </BubbleMenu>

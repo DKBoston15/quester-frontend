@@ -3,6 +3,7 @@
   import ChevronLeft from "@lucide/svelte/icons/chevron-left";
   import { buttonVariants } from "$lib/components/ui/button/index.js";
   import { cn } from "$lib/utils.js";
+  import { t } from "svelte-i18n";
 
   let {
     ref = $bindable(null),
@@ -14,7 +15,7 @@
 
 {#snippet Fallback()}
   <ChevronLeft class="size-4" />
-  <span>Previous</span>
+  <span>{$t('common.previous')}</span>
 {/snippet}
 
 <PaginationPrimitive.PrevButton

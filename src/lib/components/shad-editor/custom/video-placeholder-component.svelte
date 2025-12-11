@@ -5,6 +5,7 @@
 	import { NodeViewWrapper } from 'svelte-tiptap';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import { _ } from 'svelte-i18n';
 	const { node, editor, selected, deleteNode, updateAttributes }: NodeViewProps = $props();
 
 	/**
@@ -23,20 +24,20 @@
 		>
 			<div contenteditable="false" class="flex w-full items-center justify-start p-4">
 				<Video class="mr-2" />
-				<span>Insert an Video</span>
+				<span>{$_('editor.media.video.insertVideo')}</span>
 			</div>
 		</Popover.Trigger>
 		<Popover.Content class="bg-popover shadow-lg *:my-2">
 			<div class="flex items-center justify-between">
-				<h1 class="text-xl font-bold">Video</h1>
+				<h1 class="text-xl font-bold">{$_('editor.media.video.title')}</h1>
 				<Popover.Close>
 					<X class="size-4 text-muted-foreground" />
 				</Popover.Close>
 			</div>
-			<p>Insert Video url</p>
-			<Input placeholder="Enter video url..." type="url" bind:value={src} class="w-full" />
-			<p class="font-bold">OR</p>
-			<p>Pick a Video</p>
+			<p>{$_('editor.media.video.description')}</p>
+			<Input placeholder={$_('editor.media.video.urlPlaceholder')} type="url" bind:value={src} class="w-full" />
+			<p class="font-bold">{$_('editor.media.video.or')}</p>
+			<p>{$_('editor.media.video.pickVideo')}</p>
 			<Input
 				id="picture"
 				type="file"
@@ -62,7 +63,7 @@
 				<video {src} controls class="h-fit w-fit">
 					<track kind="captions" />
 				</video>
-				<Button onclick={() => editor.chain().focus().setVideo(src).run()}>Add Video</Button>
+				<Button onclick={() => editor.chain().focus().setVideo(src).run()}>{$_('editor.media.video.addVideo')}</Button>
 			{/if}
 		</Popover.Content>
 	</Popover.Root>

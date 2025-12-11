@@ -7,6 +7,11 @@
   import { teamManagement } from "$lib/stores/TeamManagementStore";
   import { auth } from "$lib/stores/AuthStore";
   import { Badge } from "$lib/components/ui/badge";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper for imperative translation access
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   // Props
   let { resourceType } = $props<{
@@ -140,11 +145,11 @@
         disabled,
       });
       if (!success) {
-        throw new Error(teamManagement.error || "Failed to update settings");
+        throw new Error(teamManagement.error || t("teamSettings.failedToUpdateSettings"));
       }
     } catch (err) {
       console.error("Error updating invitation settings:", err);
-      saveError = err instanceof Error ? err.message : "An error occurred";
+      saveError = err instanceof Error ? err.message : t("teamSettings.errorOccurred");
     } finally {
       isSaving = false;
       setTimeout(() => {
@@ -166,11 +171,11 @@
         allowed
       );
       if (!success) {
-        throw new Error(teamManagement.error || "Failed to update settings");
+        throw new Error(teamManagement.error || t("teamSettings.failedToUpdateSettings"));
       }
     } catch (err) {
       console.error("Error updating member invitation settings:", err);
-      saveError = err instanceof Error ? err.message : "An error occurred";
+      saveError = err instanceof Error ? err.message : t("teamSettings.errorOccurred");
     } finally {
       isSaving = false;
       setTimeout(() => {
@@ -193,11 +198,11 @@
         allowed
       );
       if (!success) {
-        throw new Error(teamManagement.error || "Failed to update settings");
+        throw new Error(teamManagement.error || t("teamSettings.failedToUpdateSettings"));
       }
     } catch (err) {
       console.error("Error updating members create projects settings:", err);
-      saveError = err instanceof Error ? err.message : "An error occurred";
+      saveError = err instanceof Error ? err.message : t("teamSettings.errorOccurred");
     } finally {
       isSaving = false;
       setTimeout(() => {
@@ -219,11 +224,11 @@
         allowed
       );
       if (!success) {
-        throw new Error(teamManagement.error || "Failed to update settings");
+        throw new Error(teamManagement.error || t("teamSettings.failedToUpdateSettings"));
       }
     } catch (err) {
       console.error("Error updating members create departments settings:", err);
-      saveError = err instanceof Error ? err.message : "An error occurred";
+      saveError = err instanceof Error ? err.message : t("teamSettings.errorOccurred");
     } finally {
       isSaving = false;
       setTimeout(() => {
@@ -245,11 +250,11 @@
         allowed
       );
       if (!success) {
-        throw new Error(teamManagement.error || "Failed to update settings");
+        throw new Error(teamManagement.error || t("teamSettings.failedToUpdateSettings"));
       }
     } catch (err) {
       console.error("Error updating admins create departments settings:", err);
-      saveError = err instanceof Error ? err.message : "An error occurred";
+      saveError = err instanceof Error ? err.message : t("teamSettings.errorOccurred");
     } finally {
       isSaving = false;
       setTimeout(() => {
@@ -262,7 +267,7 @@
 <div class="space-y-6">
   <!-- Invitation Settings -->
   <div class="space-y-4">
-    <h3 class="text-lg font-medium">Invitation Settings</h3>
+    <h3 class="text-lg font-medium">{$_('teamSettings.invitationSettings')}</h3>
 
     {#if isOwner || isAdmin}
       <!-- Disable Invitations (owner-controlled but visible to admins) -->
@@ -271,9 +276,9 @@
         class="flex items-center justify-between space-x-2"
       >
         <Label for="disable-invitations" class="flex flex-col space-y-1">
-          <span>Disable Invitations</span>
+          <span>{$_('teamSettings.disableInvitations')}</span>
           <span class="text-sm text-muted-foreground">
-            When enabled, no new members can be invited to this {resourceType}
+            {$_('teamSettings.disableInvitationsDescription', { values: { resourceType } })}
           </span>
           {#if !isOwner}
             <Badge
@@ -281,7 +286,7 @@
               class="text-xs w-fit mt-1 bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200"
             >
               <Lock class="h-3 w-3 mr-1" />
-              Owner Only
+              {$_('teamSettings.ownerOnly')}
             </Badge>
           {/if}
         </Label>
@@ -305,9 +310,9 @@
           class="flex items-center justify-between space-x-2"
         >
           <Label for="allow-member-invitations" class="flex flex-col space-y-1">
-            <span>Allow Member Invitations</span>
+            <span>{$_('teamSettings.allowMemberInvitations')}</span>
             <span class="text-sm text-muted-foreground">
-              Allow regular members and admins to invite new members to this {resourceType}
+              {$_('teamSettings.allowMemberInvitationsDescription', { values: { resourceType } })}
             </span>
             {#if !isOwner}
               <Badge
@@ -315,7 +320,7 @@
                 class="text-xs w-fit mt-1 bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200"
               >
                 <Lock class="h-3 w-3 mr-1" />
-                Owner Only
+                {$_('teamSettings.ownerOnly')}
               </Badge>
             {/if}
           </Label>
@@ -334,7 +339,7 @@
       {/if}
     {:else}
       <p class="text-sm text-muted-foreground italic">
-        Invitation settings can only be viewed by organization administrators.
+        {$_('teamSettings.invitationSettingsAdminOnly')}
       </p>
     {/if}
   </div>
@@ -344,7 +349,7 @@
   <!-- Organization-specific settings -->
   {#if resourceType === "organization"}
     <div class="space-y-4">
-      <h3 class="text-lg font-medium">Content Creation Permissions</h3>
+      <h3 class="text-lg font-medium">{$_('teamSettings.contentCreationPermissions')}</h3>
 
       <!-- Project Creation (visible to everyone with permission to manage) -->
       <div
@@ -352,9 +357,9 @@
         class="flex items-center justify-between space-x-2"
       >
         <Label for="members-create-projects" class="flex flex-col space-y-1">
-          <span>Members Can Create Projects</span>
+          <span>{$_('teamSettings.membersCanCreateProjects')}</span>
           <span class="text-sm text-muted-foreground">
-            Allow regular members to create new projects in this organization
+            {$_('teamSettings.membersCanCreateProjectsDescription')}
           </span>
         </Label>
         <Switch
@@ -381,10 +386,9 @@
             for="members-create-departments"
             class="flex flex-col space-y-1"
           >
-            <span>Members Can Create Departments</span>
+            <span>{$_('teamSettings.membersCanCreateDepartments')}</span>
             <span class="text-sm text-muted-foreground">
-              Allow regular members to create new departments in this
-              organization
+              {$_('teamSettings.membersCanCreateDepartmentsDescription')}
             </span>
             {#if !isOwner}
               <Badge
@@ -392,7 +396,7 @@
                 class="text-xs w-fit mt-1 bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200"
               >
                 <Lock class="h-3 w-3 mr-1" />
-                Owner Only
+                {$_('teamSettings.ownerOnly')}
               </Badge>
             {/if}
           </Label>
@@ -418,9 +422,9 @@
             for="admins-create-departments"
             class="flex flex-col space-y-1"
           >
-            <span>Admins Can Create Departments</span>
+            <span>{$_('teamSettings.adminsCanCreateDepartments')}</span>
             <span class="text-sm text-muted-foreground">
-              Allow admin users to create new departments in this organization
+              {$_('teamSettings.adminsCanCreateDepartmentsDescription')}
             </span>
             {#if !isOwner}
               <Badge
@@ -428,7 +432,7 @@
                 class="text-xs w-fit mt-1 bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200"
               >
                 <Lock class="h-3 w-3 mr-1" />
-                Owner Only
+                {$_('teamSettings.ownerOnly')}
               </Badge>
             {/if}
           </Label>
@@ -451,7 +455,7 @@
   <!-- Department-specific settings -->
   {#if resourceType === "department"}
     <div class="space-y-4">
-      <h3 class="text-lg font-medium">Department Settings</h3>
+      <h3 class="text-lg font-medium">{$_('teamSettings.departmentSettings')}</h3>
       <!-- Add department-specific settings here -->
     </div>
   {/if}
@@ -459,7 +463,7 @@
   <!-- Project-specific settings -->
   {#if resourceType === "project"}
     <div class="space-y-4">
-      <h3 class="text-lg font-medium">Project Settings</h3>
+      <h3 class="text-lg font-medium">{$_('teamSettings.projectSettings')}</h3>
       <!-- Add project-specific settings here -->
     </div>
   {/if}

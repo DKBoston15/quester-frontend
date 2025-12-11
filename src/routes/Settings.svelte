@@ -12,8 +12,9 @@
     CardDescription,
     CardContent,
   } from "$lib/components/ui/card";
-  import { User, Building2, GraduationCap, CreditCard } from "lucide-svelte";
+  import { User, Building2, GraduationCap, CreditCard, Globe } from "lucide-svelte";
   import * as Tabs from "$lib/components/ui/tabs";
+  import * as Select from "$lib/components/ui/select";
   import TeamSettings from "$lib/components/TeamSettings.svelte";
   import ManageSubscription from "$lib/components/ManageSubscription.svelte";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
@@ -22,6 +23,13 @@
   import { api } from "$lib/services/api-client";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+  import { localeStore } from "$lib/stores/LocaleStore.svelte";
+  import { SUPPORTED_LOCALES, type SupportedLocale } from "$lib/i18n";
+
+  // Helper to get translation value imperatively for driver.js
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   let activeTab = $state("profile");
   let isLoading = $state(false);
@@ -36,6 +44,13 @@
   let lastName = $state(auth.user?.lastName || "");
   let email = $state(auth.user?.email || "");
   let orcidUrl = $state(auth.user?.orcidUrl || "");
+  let selectedLocale = $state<SupportedLocale>(localeStore.locale);
+
+  // Handle locale change
+  async function handleLocaleChange(newLocale: SupportedLocale) {
+    selectedLocale = newLocale;
+    await localeStore.setLocale(newLocale, auth.user?.id);
+  }
 
   // Validation state
   let orcidError = $state<string | null>(null);
@@ -46,7 +61,7 @@
 
     const orcidPattern = /^https:\/\/orcid\.org\/\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/;
     if (!orcidPattern.test(url)) {
-      return "Please enter a valid ORCID URL (e.g., https://orcid.org/0000-0000-0000-0000)";
+      return t("settings.orcidValidation");
     }
     return null;
   }
@@ -169,149 +184,137 @@
 
       message = {
         type: "success",
-        text: "Profile updated successfully!",
+        text: t("settings.profileUpdated"),
       };
     } catch (err) {
       message = {
         type: "error",
-        text: err instanceof Error ? err.message : "Failed to update profile",
+        text: err instanceof Error ? err.message : t("settings.failedToUpdate"),
       };
     } finally {
       isLoading = false;
     }
   }
 
-  const driverObj = driver({
-    showProgress: true,
-    popoverClass: "quester-driver-theme",
-    steps: [
-      {
-        element: "#settings-header",
-        popover: {
-          title: "Manage Your Settings",
-          description:
-            "This area allows you to manage your personal profile information and, if applicable, settings for your organization.",
-          side: "bottom",
-          align: "start",
+  // Create settings tour with translated steps
+  function createSettingsTour() {
+    const driverInstance = driver({
+      showProgress: true,
+      popoverClass: "quester-driver-theme",
+      steps: [
+        {
+          element: "#settings-header",
+          popover: {
+            title: t("tours.settings.header.title"),
+            description: t("tours.settings.header.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#settings-tabs",
-        popover: {
-          title: "Switch Between Settings Areas",
-          description:
-            "Use these tabs to navigate between your personal Profile settings and the Organization settings (if available on your plan).",
-          side: "bottom",
-          align: "start",
+        {
+          element: "#settings-tabs",
+          popover: {
+            title: t("tours.settings.tabs.title"),
+            description: t("tours.settings.tabs.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#profile-tab-content",
-        popover: {
-          title: "Your Profile Information",
-          description:
-            "Update your first and last name here. Your email address cannot be changed.",
-          side: "top",
-          align: "start",
+        {
+          element: "#profile-tab-content",
+          popover: {
+            title: t("tours.settings.profile.title"),
+            description: t("tours.settings.profile.description"),
+            side: "top",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#profile-save-button",
-        popover: {
-          title: "Save Profile Changes",
-          description: "Click here to save any updates made to your name.",
-          side: "left",
-          align: "start",
+        {
+          element: "#profile-save-button",
+          popover: {
+            title: t("tours.settings.saveButton.title"),
+            description: t("tours.settings.saveButton.description"),
+            side: "left",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#organization-tab-trigger", // Target the trigger, even if disabled
-        popover: {
-          title: "Organization Settings Tab",
-          description:
-            "Access settings for your current organization here. This tab may be disabled depending on your subscription plan.",
-          side: "bottom",
-          align: "start",
+        {
+          element: "#organization-tab-trigger",
+          popover: {
+            title: t("tours.settings.organizationTab.title"),
+            description: t("tours.settings.organizationTab.description"),
+            side: "bottom",
+            align: "start",
+          },
+          onHighlightStarted: (element) => {
+            if (!element?.hasAttribute("disabled")) {
+              activeTab = "organization";
+            }
+          },
         },
-        onHighlightStarted: (element) => {
-          // If the element is disabled, driver.js might skip it.
-          // We might need to manually switch tab if it's enabled
-          if (!element?.hasAttribute("disabled")) {
-            activeTab = "organization";
-          }
+        {
+          element: "#organization-tab-content",
+          popover: {
+            title: t("tours.settings.organizationContent.title"),
+            description: t("tours.settings.organizationContent.description"),
+            side: "top",
+            align: "start",
+          },
+          onHighlightStarted: () => {
+            if (hasOrgSettingsAccess) {
+              activeTab = "organization";
+            }
+          },
         },
-      },
-      {
-        element: "#organization-tab-content", // Target the content area for the org settings
-        popover: {
-          title: "Organization-Specific Settings",
-          description:
-            "Manage invitations and content creation permissions for your organization. Note that some settings may be owner-only.",
-          side: "top",
-          align: "start",
+        {
+          element: "#setting-disable-invitations",
+          popover: {
+            title: t("tours.settings.disableInvitations.title"),
+            description: t("tours.settings.disableInvitations.description"),
+            side: "top",
+            align: "start",
+          },
+          onHighlightStarted: () => {
+            if (!hasOrgSettingsAccess) driverInstance.moveNext();
+          },
         },
-        onHighlightStarted: () => {
-          // Ensure the org tab is active for this step
-          if (hasOrgSettingsAccess) {
-            activeTab = "organization";
-          } else {
-            // If user shouldn't have access, maybe skip this step or handle differently?
-            // For now, we assume the tab won't be active if no access.
-          }
+        {
+          element: "#setting-allow-member-invites",
+          popover: {
+            title: t("tours.settings.allowMemberInvites.title"),
+            description: t("tours.settings.allowMemberInvites.description"),
+            side: "top",
+            align: "start",
+          },
+          onHighlightStarted: () => {
+            if (!hasOrgSettingsAccess) driverInstance.moveNext();
+          },
         },
-      },
-      // Add steps for specific org settings if the tab is active
-      {
-        element: "#setting-disable-invitations",
-        popover: {
-          title: "Control Invitations",
-          description:
-            "(Owner Only) Enable or disable the ability for anyone to invite new members to this organization.",
-          side: "top",
-          align: "start",
+        {
+          element: "#setting-members-create-projects",
+          popover: {
+            title: t("tours.settings.membersCreateProjects.title"),
+            description: t("tours.settings.membersCreateProjects.description"),
+            side: "top",
+            align: "start",
+          },
+          onHighlightStarted: () => {
+            if (!hasOrgSettingsAccess) driverInstance.moveNext();
+          },
         },
-        onHighlightStarted: () => {
-          if (!hasOrgSettingsAccess) driverObj.moveNext(); // Skip if no access
+        {
+          element: ".container",
+          popover: {
+            title: t("tours.settings.keepUpdated.title"),
+            description: t("tours.settings.keepUpdated.description"),
+            side: "top",
+            align: "center",
+          },
         },
-      },
-      {
-        element: "#setting-allow-member-invites",
-        popover: {
-          title: "Delegate Invitations",
-          description:
-            "(Owner Only) If invitations are enabled, choose whether regular members and admins (not just owners) can invite others.",
-          side: "top",
-          align: "start",
-        },
-        onHighlightStarted: () => {
-          if (!hasOrgSettingsAccess) driverObj.moveNext(); // Skip if no access
-        },
-      },
-      {
-        element: "#setting-members-create-projects",
-        popover: {
-          title: "Project Creation Permission",
-          description:
-            "(Admin/Owner) Decide if regular members should be allowed to create new projects within this organization.",
-          side: "top",
-          align: "start",
-        },
-        onHighlightStarted: () => {
-          if (!hasOrgSettingsAccess) driverObj.moveNext(); // Skip if no access
-        },
-      },
-      {
-        element: ".container", // General overview
-        popover: {
-          title: "Keep Your Information Up-to-Date",
-          description:
-            "Regularly review your profile and organization settings to ensure they reflect your current needs and preferences.",
-          side: "top",
-          align: "center",
-        },
-      },
-    ],
-  });
+      ],
+    });
+    return driverInstance;
+  }
 </script>
 
 <Sidebar.Provider>
@@ -323,20 +326,20 @@
         <div class="mb-8" id="settings-header">
           <div class="flex justify-between items-center">
             <h1 class="text-3xl font-bold mb-2 flex items-center gap-2">
-              Settings
+              {$_('settings.title')}
             </h1>
             <!-- Add Learn Button -->
             <Button
               variant="outline"
-              onclick={() => driverObj.drive()}
-              aria-label="Learn about Settings"
+              onclick={() => createSettingsTour().drive()}
+              aria-label={$_('dashboard.tour')}
             >
               <GraduationCap class="h-4 w-4 mr-2" />
-              Tour
+              {$_('dashboard.tour')}
             </Button>
           </div>
           <p class="text-muted-foreground">
-            Manage your account and preferences
+            {$_('settings.subtitle')}
           </p>
         </div>
 
@@ -357,7 +360,7 @@
                     onclick={() => (activeTab = "profile")}
                   >
                     <User class="h-4 w-4 mr-2" />
-                    Profile
+                    {$_('settings.profile')}
                   </Tabs.Trigger>
                   {#if hasOrgSettingsAccess}
                     <Tabs.Trigger
@@ -366,7 +369,7 @@
                       onclick={() => (activeTab = "organization")}
                     >
                       <Building2 class="h-4 w-4 mr-2" />
-                      Organization
+                      {$_('settings.organization')}
                     </Tabs.Trigger>
                   {:else}
                     <Tooltip.Provider>
@@ -379,7 +382,7 @@
                             class="opacity-50 cursor-not-allowed"
                           >
                             <Building2 class="h-4 w-4 mr-2" />
-                            Organization
+                            {$_('settings.organization')}
                           </Tabs.Trigger>
                         </Tooltip.Trigger>
                         <Tooltip.Content
@@ -387,9 +390,7 @@
                           sideOffset={10}
                           class="w-56 z-[9999]"
                         >
-                          Organization settings are not available on your
-                          current plan. Please upgrade to access organization
-                          settings.
+                          {$_('settings.orgNotAvailable')}
                         </Tooltip.Content>
                       </Tooltip.Root>
                     </Tooltip.Provider>
@@ -401,7 +402,7 @@
                       onclick={() => (activeTab = "billing")}
                     >
                       <CreditCard class="h-4 w-4 mr-2" />
-                      Billing
+                      {$_('settings.billing')}
                     </Tabs.Trigger>
                   {/if}
                 </Tabs.List>
@@ -411,104 +412,144 @@
             <CardContent class="pt-6">
               <!-- Profile Tab -->
               {#if activeTab === "profile"}
-                <form
-                  id="profile-tab-content"
-                  class="space-y-6"
-                  onsubmit={(e) => {
-                    e.preventDefault();
-                    saveProfile();
-                  }}
-                >
-                  <div class="grid gap-4 md:grid-cols-2">
+                <div id="profile-tab-content" class="space-y-6">
+                  <!-- Profile Information Section -->
+                  <form
+                    class="space-y-4 p-4 border rounded-lg dark:border-dark-border"
+                    onsubmit={(e) => {
+                      e.preventDefault();
+                      saveProfile();
+                    }}
+                  >
+                    <h3 class="text-lg font-medium">{$_('settings.profileInformation')}</h3>
+                    <div class="grid gap-4 md:grid-cols-2">
+                      <div class="space-y-2">
+                        <Label for="firstName">{$_('settings.firstName')}</Label>
+                        <Input
+                          id="firstName"
+                          placeholder={$_('settings.firstName')}
+                          bind:value={firstName}
+                          class="border-2  dark:border-dark-border"
+                        />
+                      </div>
+                      <div class="space-y-2">
+                        <Label for="lastName">{$_('settings.lastName')}</Label>
+                        <Input
+                          id="lastName"
+                          placeholder={$_('settings.lastName')}
+                          bind:value={lastName}
+                          class="border-2  dark:border-dark-border"
+                        />
+                      </div>
+                    </div>
+
                     <div class="space-y-2">
-                      <Label for="firstName">First Name</Label>
+                      <Label for="email">{$_('settings.email')}</Label>
                       <Input
-                        id="firstName"
-                        placeholder="First Name"
-                        bind:value={firstName}
+                        disabled
+                        id="email"
+                        type="email"
+                        placeholder={$_('settings.email')}
+                        bind:value={email}
                         class="border-2  dark:border-dark-border"
                       />
                     </div>
+
                     <div class="space-y-2">
-                      <Label for="lastName">Last Name</Label>
+                      <Label for="orcidUrl">
+                        {$_('settings.orcidUrl')}
+                        <span class="text-sm text-muted-foreground font-normal">
+                          ({$_('common.optional')})
+                        </span>
+                      </Label>
                       <Input
-                        id="lastName"
-                        placeholder="Last Name"
-                        bind:value={lastName}
-                        class="border-2  dark:border-dark-border"
+                        id="orcidUrl"
+                        type="url"
+                        placeholder="https://orcid.org/0000-0000-0000-0000"
+                        bind:value={orcidUrl}
+                        class={`border-2 dark:border-dark-border ${orcidError ? "border-destructive" : ""}`}
                       />
-                    </div>
-                  </div>
-
-                  <div class="space-y-2">
-                    <Label for="email">Email</Label>
-                    <Input
-                      disabled
-                      id="email"
-                      type="email"
-                      placeholder="Email"
-                      bind:value={email}
-                      class="border-2  dark:border-dark-border"
-                    />
-                  </div>
-
-                  <div class="space-y-2">
-                    <Label for="orcidUrl">
-                      ORCID Profile URL
-                      <span class="text-sm text-muted-foreground font-normal"
-                        >(optional)</span
-                      >
-                    </Label>
-                    <Input
-                      id="orcidUrl"
-                      type="url"
-                      placeholder="https://orcid.org/0000-0000-0000-0000"
-                      bind:value={orcidUrl}
-                      class={`border-2 dark:border-dark-border ${orcidError ? "border-destructive" : ""}`}
-                    />
-                    {#if orcidError}
-                      <p class="text-sm text-destructive">{orcidError}</p>
-                    {:else}
-                      <p class="text-sm text-muted-foreground">
-                        Your ORCID iD provides a persistent digital identifier
-                        that distinguishes you from other researchers.
-                        <a
-                          href="https://orcid.org/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          class="text-primary hover:underline"
-                        >
-                          Learn more about ORCID
-                        </a>
-                      </p>
-                    {/if}
-                  </div>
-
-                  {#if message}
-                    <div
-                      class={`p-3 rounded-md ${message.type === "success" ? "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200" : "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200"}`}
-                    >
-                      {message.text}
-                    </div>
-                  {/if}
-
-                  <div class="flex justify-end">
-                    <Button
-                      id="profile-save-button"
-                      type="submit"
-                      disabled={isLoading}
-                    >
-                      {#if isLoading}
-                        <div
-                          class="h-4 w-4 mr-2 border-2 border-t-transparent rounded-full animate-spin"
-                        ></div>
-                        Saving...
+                      {#if orcidError}
+                        <p class="text-sm text-destructive">{orcidError}</p>
                       {:else}
-                        Save Changes
+                        <p class="text-sm text-muted-foreground">
+                          {$_('settings.orcidDescription')}
+                          <a
+                            href="https://orcid.org/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="text-primary hover:underline"
+                          >
+                            {$_('settings.learnMoreOrcid')}
+                          </a>
+                        </p>
                       {/if}
-                    </Button>
+                    </div>
+
+                    {#if message}
+                      <div
+                        class={`p-3 rounded-md ${message.type === "success" ? "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200" : "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200"}`}
+                      >
+                        {message.text}
+                      </div>
+                    {/if}
+
+                    <div class="flex justify-end">
+                      <Button
+                        id="profile-save-button"
+                        type="submit"
+                        disabled={isLoading}
+                      >
+                        {#if isLoading}
+                          <div
+                            class="h-4 w-4 mr-2 border-2 border-t-transparent rounded-full animate-spin"
+                          ></div>
+                          {$_('settings.saving')}
+                        {:else}
+                          {$_('settings.saveChanges')}
+                        {/if}
+                      </Button>
+                    </div>
+                  </form>
+
+                  <!-- Language Preferences Section (saves automatically) -->
+                  <div class="space-y-4 p-4 border rounded-lg dark:border-dark-border">
+                    <h3 class="text-lg font-medium">{$_('settings.languagePreferences')}</h3>
+                    <div class="space-y-2">
+                      <Label for="language">
+                        <Globe class="h-4 w-4 inline mr-1" />
+                        {$_('settings.language')}
+                      </Label>
+                      <Select.Root
+                        type="single"
+                        value={selectedLocale}
+                        onValueChange={(value) => value && handleLocaleChange(value as SupportedLocale)}
+                      >
+                        <Select.Trigger class="w-full border-2 dark:border-dark-border">
+                          <span class="truncate">
+                            {#if SUPPORTED_LOCALES.find(l => l.code === selectedLocale)}
+                              <span class="mr-2">{SUPPORTED_LOCALES.find(l => l.code === selectedLocale)?.flag}</span>
+                              {SUPPORTED_LOCALES.find(l => l.code === selectedLocale)?.name}
+                            {:else}
+                              {$_('settings.selectLanguage')}
+                            {/if}
+                          </span>
+                        </Select.Trigger>
+                        <Select.Content>
+                          {#each SUPPORTED_LOCALES as locale}
+                            <Select.Item value={locale.code}>
+                              <span class="mr-2">{locale.flag}</span>
+                              {locale.name}
+                            </Select.Item>
+                          {/each}
+                        </Select.Content>
+                      </Select.Root>
+                      <p class="text-sm text-muted-foreground">
+                        {$_('settings.languageDescription')}
+                      </p>
+                    </div>
                   </div>
-                </form>
+                </div>
               {/if}
 
               <!-- Organization Tab -->
@@ -524,9 +565,9 @@
                     <!-- Team Settings Component -->
                     <Card class="border-2  dark:border-dark-border">
                       <CardHeader>
-                        <CardTitle>Organization Settings</CardTitle>
+                        <CardTitle>{$_('settings.organizationSettings')}</CardTitle>
                         <CardDescription>
-                          Configure settings for {auth.currentOrganization.name}
+                          {$_('settings.configureSettings', { values: { name: auth.currentOrganization.name } })}
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
@@ -534,10 +575,7 @@
                           <TeamSettings resourceType="organization" />
                         {:else}
                           <div class="text-center py-8 text-muted-foreground">
-                            <p>
-                              You don't have permission to manage organization
-                              settings
-                            </p>
+                            <p>{$_('settings.noPermission')}</p>
                           </div>
                         {/if}
                       </CardContent>
@@ -556,11 +594,10 @@
                         <CardHeader>
                           <div class="flex items-center gap-2">
                             <CreditCard class="h-5 w-5" />
-                            <CardTitle>Subscription</CardTitle>
+                            <CardTitle>{$_('settings.subscription')}</CardTitle>
                           </div>
                           <CardDescription>
-                            Current Plan: {auth.currentOrganization.subscription
-                              ?.plan?.name || "No plan"}
+                            {$_('settings.currentPlan', { values: { plan: auth.currentOrganization.subscription?.plan?.name || $_('settings.noPlan') } })}
                           </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -574,10 +611,10 @@
                         <CardHeader>
                           <div class="flex items-center gap-2">
                             <CreditCard class="h-5 w-5" />
-                            <CardTitle>Subscribe to a Plan</CardTitle>
+                            <CardTitle>{$_('settings.subscribeToPlan')}</CardTitle>
                           </div>
                           <CardDescription>
-                            Choose a subscription plan to continue using Quester
+                            {$_('settings.subscribeDescription')}
                           </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -586,7 +623,7 @@
                               (window.location.href = "/onboarding")}
                             class="w-full"
                           >
-                            View Plans
+                            {$_('settings.viewPlans')}
                           </Button>
                         </CardContent>
                       </Card>

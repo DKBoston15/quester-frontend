@@ -18,6 +18,11 @@
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
   import { GraduationCap } from "lucide-svelte";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  // Helper function for imperative translation access
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   // Reactive state
   let isLoading = $state(true);
@@ -49,112 +54,105 @@
     teamManagement.refreshCurrentResource();
   }
 
-  const driverObj = driver({
-    showProgress: true,
-    popoverClass: "quester-driver-theme",
-    steps: [
-      {
-        element: "#org-settings-header",
-        popover: {
-          title: "Organization Settings Hub",
-          description:
-            "This page allows administrators and owners to manage settings specific to the selected organization.",
-          side: "bottom",
-          align: "start",
+  // Create organization settings tour with translated steps
+  function createOrganizationSettingsTour() {
+    return driver({
+      showProgress: true,
+      popoverClass: "quester-driver-theme",
+      steps: [
+        {
+          element: "#org-settings-header",
+          popover: {
+            title: t("organizationSettings.tour.header.title"),
+            description: t("organizationSettings.tour.header.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#org-selector-card",
-        popover: {
-          title: "Select Your Organization",
-          description:
-            "If you belong to multiple organizations, use this selector to switch between them and manage their specific settings.",
-          side: "bottom",
-          align: "start",
+        {
+          element: "#org-selector-card",
+          popover: {
+            title: t("organizationSettings.tour.selector.title"),
+            description: t("organizationSettings.tour.selector.description"),
+            side: "bottom",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#refresh-org-button",
-        popover: {
-          title: "Refresh Data",
-          description:
-            "Click here to reload the latest settings and team information for the selected organization.",
-          side: "bottom",
-          align: "end",
+        {
+          element: "#refresh-org-button",
+          popover: {
+            title: t("organizationSettings.tour.refresh.title"),
+            description: t("organizationSettings.tour.refresh.description"),
+            side: "bottom",
+            align: "end",
+          },
         },
-      },
-      {
-        element: "#team-settings-card",
-        popover: {
-          title: "Team & Permission Settings",
-          description:
-            "This section contains controls for managing how users interact within the organization, including invitations and content creation permissions.",
-          side: "top",
-          align: "start",
+        {
+          element: "#team-settings-card",
+          popover: {
+            title: t("organizationSettings.tour.teamSettings.title"),
+            description: t("organizationSettings.tour.teamSettings.description"),
+            side: "top",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#setting-disable-invitations",
-        popover: {
-          title: "Control Invitations",
-          description:
-            "(Owner Only) Enable or disable the ability for anyone to invite new members to this organization.",
-          side: "top",
-          align: "start",
+        {
+          element: "#setting-disable-invitations",
+          popover: {
+            title: t("organizationSettings.tour.disableInvitations.title"),
+            description: t("organizationSettings.tour.disableInvitations.description"),
+            side: "top",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#setting-allow-member-invites",
-        popover: {
-          title: "Delegate Invitations",
-          description:
-            "(Owner Only) If invitations are enabled, choose whether regular members and admins (not just owners) can invite others.",
-          side: "top",
-          align: "start",
+        {
+          element: "#setting-allow-member-invites",
+          popover: {
+            title: t("organizationSettings.tour.allowMemberInvites.title"),
+            description: t("organizationSettings.tour.allowMemberInvites.description"),
+            side: "top",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#setting-members-create-projects",
-        popover: {
-          title: "Project Creation Permission",
-          description:
-            "(Admin/Owner) Decide if regular members should be allowed to create new projects within this organization.",
-          side: "top",
-          align: "start",
+        {
+          element: "#setting-members-create-projects",
+          popover: {
+            title: t("organizationSettings.tour.membersCreateProjects.title"),
+            description: t("organizationSettings.tour.membersCreateProjects.description"),
+            side: "top",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#setting-members-create-departments",
-        popover: {
-          title: "Department Creation (Members)",
-          description:
-            "(Owner Only) Control whether regular members can create new departments.",
-          side: "top",
-          align: "start",
+        {
+          element: "#setting-members-create-departments",
+          popover: {
+            title: t("organizationSettings.tour.membersCreateDepartments.title"),
+            description: t("organizationSettings.tour.membersCreateDepartments.description"),
+            side: "top",
+            align: "start",
+          },
         },
-      },
-      {
-        element: "#setting-admins-create-departments",
-        popover: {
-          title: "Department Creation (Admins)",
-          description:
-            "(Owner Only) Control whether administrators can create new departments.",
-          side: "top",
-          align: "start",
+        {
+          element: "#setting-admins-create-departments",
+          popover: {
+            title: t("organizationSettings.tour.adminsCreateDepartments.title"),
+            description: t("organizationSettings.tour.adminsCreateDepartments.description"),
+            side: "top",
+            align: "start",
+          },
         },
-      },
-      {
-        element: ".container", // General overview
-        popover: {
-          title: "Manage Your Organization",
-          description:
-            "Use these settings to configure how your team collaborates and manages research within Quester.",
-          side: "top",
-          align: "center",
+        {
+          element: ".container",
+          popover: {
+            title: t("organizationSettings.tour.overview.title"),
+            description: t("organizationSettings.tour.overview.description"),
+            side: "top",
+            align: "center",
+          },
         },
-      },
-    ],
-  });
+      ],
+    });
+  }
 </script>
 
 <Sidebar.Provider>
@@ -166,7 +164,7 @@
           <div
             class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"
           ></div>
-          <p class="ml-4 text-muted-foreground">Loading settings...</p>
+          <p class="ml-4 text-muted-foreground">{t("organizationSettings.loadingSettings")}</p>
         </div>
       {:else}
         <div class="container mx-auto py-6 px-4">
@@ -175,16 +173,14 @@
             <div class="flex justify-between items-center">
               <div class="flex items-center gap-2">
                 <div class="flex items-center gap-2">
-                  <h1 class="text-3xl font-bold">Organization Settings</h1>
+                  <h1 class="text-3xl font-bold">{t("organizationSettings.title")}</h1>
                   <Tooltip.Root>
                     <Tooltip.Trigger>
                       <Info class="h-5 w-5 text-muted-foreground" />
                     </Tooltip.Trigger>
                     <Tooltip.Content>
                       <p class="text-sm max-w-xs">
-                        Configure and manage settings for your organization,
-                        including team permissions, invitation controls, and
-                        project creation policies.
+                        {t("organizationSettings.tooltip")}
                       </p>
                     </Tooltip.Content>
                   </Tooltip.Root>
@@ -201,21 +197,21 @@
                   onclick={refreshData}
                 >
                   <RefreshCw class="h-4 w-4 mr-2" />
-                  Refresh
+                  {t("organizationSettings.refresh")}
                 </Button>
                 <!-- Add Learn Button -->
                 <Button
                   variant="outline"
-                  onclick={() => driverObj.drive()}
-                  aria-label="Learn about Organization Settings"
+                  onclick={() => createOrganizationSettingsTour().drive()}
+                  aria-label={t("organizationSettings.tourAriaLabel")}
                 >
                   <GraduationCap class="h-4 w-4 mr-2" />
-                  Tour
+                  {t("organizationSettings.tourButton")}
                 </Button>
               </div>
             </div>
             <p class="text-muted-foreground">
-              Manage settings and permissions for your organization.
+              {t("organizationSettings.subtitle")}
             </p>
           </div>
 
@@ -226,10 +222,10 @@
                 <CardTitle class="flex items-center gap-2">
                   <Building2 class="h-5 w-5" />
                   {teamManagement.organizationStructure?.name ||
-                    "Select Organization"}
+                    t("organizationSettings.selectOrganization")}
                 </CardTitle>
                 <CardDescription>
-                  Select an organization to manage its settings
+                  {t("organizationSettings.selectOrganizationDescription")}
                 </CardDescription>
               </CardHeader>
               <CardContent>

@@ -3,6 +3,7 @@
   import { fade, scale } from "svelte/transition";
   import { quintOut } from "svelte/easing";
   import { toast } from "svelte-sonner";
+  import { _ } from "svelte-i18n";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import {
     Edit,
@@ -109,7 +110,7 @@
     if (permissions.edit !== false) {
       options.push({
         id: "edit",
-        label: "Edit Event",
+        label: $_('customEventContextMenu.editEvent'),
         icon: "Edit",
         action: (evt: CustomTimelineEvent) => {
           handleEditEvent(evt);
@@ -121,7 +122,7 @@
     // Copy event details
     options.push({
       id: "copy",
-      label: "Copy Details",
+      label: $_('customEventContextMenu.copyDetails'),
       icon: "Copy",
       action: (evt: CustomTimelineEvent) => {
         handleCopyDetails(evt);
@@ -145,7 +146,7 @@
 
       options.push({
         id: "delete",
-        label: "Delete Permanently",
+        label: $_('customEventContextMenu.deletePermanently'),
         icon: "Trash2",
         action: (evt: CustomTimelineEvent) => {
           handleDeleteEvent(evt);
@@ -268,13 +269,13 @@
 
   async function handleCopyDetails(event: CustomTimelineEvent) {
     const details = [
-      `Title: ${event.title}`,
-      event.description ? `Description: ${event.description}` : "",
-      `Type: ${eventTypeConfig?.label || event.eventType}`,
-      `Date: ${new Date(event.eventTimestamp).toLocaleString()}`,
-      event.tags?.length ? `Tags: ${event.tags.join(", ")}` : "",
+      $_('customEventContextMenu.titleLabel', { values: { title: event.title } }),
+      event.description ? $_('customEventContextMenu.descriptionLabel', { values: { description: event.description } }) : "",
+      $_('customEventContextMenu.typeLabel', { values: { type: eventTypeConfig?.label || event.eventType } }),
+      $_('customEventContextMenu.dateLabel', { values: { date: new Date(event.eventTimestamp).toLocaleString() } }),
+      event.tags?.length ? $_('customEventContextMenu.tagsLabel', { values: { tags: event.tags.join(", ") } }) : "",
       event.details?.length
-        ? `Details:\n${event.details.map((d) => `• ${d}`).join("\n")}`
+        ? `${$_('customEventContextMenu.detailsLabel')}:\n${event.details.map((d) => `• ${d}`).join("\n")}`
         : "",
     ]
       .filter(Boolean)
@@ -282,9 +283,9 @@
 
     const success = await copyToClipboard(details);
     if (success) {
-      toast.success("Event details copied to clipboard");
+      toast.success($_('toasts.eventDetailsCopied'));
     } else {
-      toast.error("Failed to copy details to clipboard");
+      toast.error($_('toasts.failedToCopyDetails'));
     }
   }
 
@@ -298,14 +299,14 @@
 
     try {
       await customEventsStore.deleteEvent(eventToDelete.id);
-      toast.success("Event deleted permanently");
+      toast.success($_('toasts.eventDeletedPermanently'));
       dispatch("action", { action: "delete", event: eventToDelete });
       showDeleteDialog = false;
       eventToDelete = null;
       handleClose();
     } catch (error) {
       console.error("Failed to delete event:", error);
-      toast.error("Failed to delete event");
+      toast.error($_('toasts.failedToDeleteEvent'));
       showDeleteDialog = false;
       eventToDelete = null;
     }
@@ -415,10 +416,9 @@
 <AlertDialog.Root bind:open={showDeleteDialog}>
   <AlertDialog.Content>
     <AlertDialog.Header>
-      <AlertDialog.Title>Delete Custom Event</AlertDialog.Title>
+      <AlertDialog.Title>{$_('customEvents.deleteTitle')}</AlertDialog.Title>
       <AlertDialog.Description>
-        Are you sure you want to permanently delete "{eventToDelete?.title}"?
-        This action cannot be undone.
+        {$_('customEventContextMenu.deleteConfirmation', { values: { title: eventToDelete?.title } })}
       </AlertDialog.Description>
     </AlertDialog.Header>
     <AlertDialog.Footer>
@@ -431,14 +431,14 @@
           }}
           class="border-2 dark:border-dark-border"
         >
-          Cancel
+          {$_('common.cancel')}
         </Button>
         <Button
           variant="destructive"
           onclick={confirmDeleteEvent}
           class="border-2 border-destructive dark:border-destructive"
         >
-          Delete Event
+          {$_('customEventContextMenu.deleteEvent')}
         </Button>
       </div>
     </AlertDialog.Footer>

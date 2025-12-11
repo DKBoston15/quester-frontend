@@ -5,6 +5,7 @@
 	import { NodeViewWrapper } from 'svelte-tiptap';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import { _ } from 'svelte-i18n';
 	const { node, editor, selected, deleteNode, updateAttributes }: NodeViewProps = $props();
 </script>
 
@@ -18,19 +19,19 @@
 		>
 			<div contenteditable="false" class="flex w-full items-center justify-start p-4">
 				<ImageIcon class="mr-2" />
-				<span>Add an Image</span>
+				<span>{$_('editor.media.image.addImage')}</span>
 			</div>
 		</Popover.Trigger>
 		<Popover.Content class="bg-popover shadow-lg *:my-2">
 			<div class="flex items-center justify-between">
-				<h1 class="text-xl font-bold">Image</h1>
+				<h1 class="text-xl font-bold">{$_('editor.media.image.title')}</h1>
 				<Popover.Close>
 					<X class="size-4 text-muted-foreground" />
 				</Popover.Close>
 			</div>
-			<p>Insert image url</p>
+			<p>{$_('editor.media.image.description')}</p>
 			<Input
-				placeholder="Enter image url..."
+				placeholder={$_('editor.media.image.urlPlaceholder')}
 				type="url"
 				onchange={(e) => {
 					if (e !== null && e.target !== null) {
@@ -40,8 +41,8 @@
 				}}
 				class="w-full"
 			/>
-			<p class="font-bold">OR</p>
-			<p>Pick an Image</p>
+			<p class="font-bold">{$_('editor.media.image.or')}</p>
+			<p>{$_('editor.media.image.pickImage')}</p>
 			<Input
 				id="picture"
 				type="file"

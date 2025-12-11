@@ -7,6 +7,7 @@
   import type { Snippet } from "svelte";
   import * as Dialog from "./index.js";
   import { cn } from "$lib/utils.js";
+  import { t } from "svelte-i18n";
 
   let {
     ref = $bindable(null),
@@ -35,7 +36,7 @@
       class="ring-offset-background focus:ring-ring absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none"
     >
       <X class="size-4" />
-      <span class="sr-only">Close</span>
+      <span class="sr-only">{$t('common.close')}</span>
     </DialogPrimitive.Close>
   </DialogPrimitive.Content>
 </Dialog.Portal>

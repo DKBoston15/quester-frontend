@@ -1,7 +1,11 @@
 
   import { api } from "../services/api-client";
   import type { Project } from "../types/auth";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
   import { normalizeDesignDetail } from "$lib/utils/design";
+
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   const createEmptyDesigns = () => ({
     research: [] as { name: string }[],
@@ -33,7 +37,7 @@
 
     async loadProject(projectId: string, options: { force?: boolean } = {}) {
       if (!projectId) {
-        error = "No project ID provided";
+        error = t('stores.project.failedToLoad');
         isLoading = false;
         return;
       }
@@ -84,7 +88,7 @@
           }
         } catch (err) {
           console.error("Error loading project:", err);
-          error = err instanceof Error ? err.message : "An error occurred";
+          error = err instanceof Error ? err.message : t("common.anErrorOccurred");
           currentProject = null;
         } finally {
           if (pendingProjectId === projectId) {

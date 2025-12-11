@@ -24,18 +24,19 @@
   import { projectStore } from "$lib/stores/ProjectStore";
   import { flip } from "svelte/animate";
   import { dndzone } from "svelte-dnd-action";
+  import { _ } from "svelte-i18n";
 
   const productTypes: { value: ResearchProductType; label: string }[] = [
-    { value: "professionalism", label: "Professionalism" },
-    { value: "writing", label: "Writing" },
-    { value: "analysis", label: "Analysis" },
+    { value: "professionalism", label: $_("researchProducts.types.professionalism") },
+    { value: "writing", label: $_("researchProducts.types.writing") },
+    { value: "analysis", label: $_("researchProducts.types.analysis") },
   ];
 
   const statusOptions = [
-    { value: "planned", label: "Planned" },
-    { value: "in_progress", label: "In Progress" },
-    { value: "completed", label: "Completed" },
-    { value: "archived", label: "Archived" },
+    { value: "planned", label: $_("researchProducts.status.planned") },
+    { value: "in_progress", label: $_("researchProducts.status.inProgress") },
+    { value: "completed", label: $_("researchProducts.status.completed") },
+    { value: "archived", label: $_("researchProducts.status.archived") },
   ];
 
   let editMode = $state(false);
@@ -194,14 +195,14 @@
   <CardHeader>
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <CardTitle class=" text-xl">Project Products</CardTitle>
+        <CardTitle class=" text-xl">{$_('researchProducts.title')}</CardTitle>
         <Tooltip.Root>
           <Tooltip.Trigger>
             <InfoIcon class="h-5 w-5 text-gray-500 dark:text-gray-400" />
           </Tooltip.Trigger>
           <Tooltip.Content>
             <p class=" text-sm max-w-xs">
-              Manage your research outputs and deliverables.
+              {$_('researchProducts.manageOutputs')}
             </p>
           </Tooltip.Content>
         </Tooltip.Root>
@@ -218,7 +219,7 @@
               description: "",
               dueDate: undefined,
             };
-          }}>Edit</Button
+          }}>{$_('researchDesigns.edit')}</Button
         >
       {/if}
     </div>
@@ -231,10 +232,10 @@
         <h3 class=" font-bold flex items-center gap-2 text-lg">
           {#if editingProduct}
             <Pencil class="h-5 w-5" />
-            Edit Product
+            {$_('researchProducts.editProductTitle')}
           {:else}
             <Plus class="h-5 w-5" />
-            Add New Product
+            {$_('researchProducts.addNewProduct')}
           {/if}
         </h3>
         <div class="grid gap-4">
@@ -242,7 +243,7 @@
             <Input
               value={newProduct.name}
               oninput={(e) => (newProduct.name = e.currentTarget.value)}
-              placeholder="Product name"
+              placeholder={$_("researchProducts.productNamePlaceholder")}
               class=" text-base"
             />
             <div class="relative w-full">
@@ -258,7 +259,7 @@
                     : undefined;
                 }}
                 class="pl-10  text-base"
-                placeholder="Pick a due date"
+                placeholder={$_("researchProducts.dueDatePlaceholder")}
               />
               <CalendarIcon
                 class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 dark:text-gray-400"
@@ -295,7 +296,7 @@
           <Textarea.Textarea
             value={newProduct.description}
             oninput={(e) => (newProduct.description = e.currentTarget.value)}
-            placeholder="Description (optional)"
+            placeholder={$_("researchProducts.descriptionPlaceholder")}
             rows={3}
             class=" text-base"
           />
@@ -314,11 +315,11 @@
                   };
                 }}
               >
-                Cancel Edit
+                {$_('researchProducts.cancelEdit')}
               </Button>
             {/if}
             <Button onclick={addProduct} variant="default"
-              >{editingProduct ? "Update" : "Add"} Product</Button
+              >{editingProduct ? $_('researchProducts.updateProduct') : $_('researchProducts.addProduct')}</Button
             >
           </div>
         </div>
@@ -396,7 +397,7 @@
                         onclick={() => removeProduct(product.id)}
                         class="text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400"
                       >
-                        Remove
+                        {$_('researchProducts.remove')}
                       </Button>
                     </div>
                   </div>
@@ -414,7 +415,7 @@
         </div>
       {:else}
         <p class="text-center text-gray-500 dark:text-gray-400 py-8">
-          No products added yet. Add your first research product above.
+          {$_('researchProducts.noProductsAddedYet')}
         </p>
       {/if}
     {:else if products.length > 0}
@@ -456,8 +457,8 @@
       </div>
     {:else}
       <EmptyState
-        title="No research products found"
-        description="Add your first research product to get started."
+        title={$_("researchProducts.noProductsFound")}
+        description={$_('emptyStateDescriptions.addFirstResearchProduct')}
         variant="data-empty"
         ctaText="Add Product"
         ctaAction={() => {
@@ -485,10 +486,10 @@
         onclick={() => (editMode = false)}
         disabled={isPending}
       >
-        Cancel
+        {$_('common.cancel')}
       </Button>
       <Button size="sm" onclick={saveProducts} disabled={isPending}>
-        {isPending ? "Saving..." : "Save"}
+        {isPending ? $_('common.saving') : $_('common.save')}
       </Button>
     </CardFooter>
   {/if}

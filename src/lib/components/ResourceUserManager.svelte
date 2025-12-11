@@ -13,6 +13,7 @@
   import { Search, UserPlus } from "lucide-svelte";
   import { teamManagement } from "$lib/stores/TeamManagementStore";
   import { api } from "$lib/services/api-client";
+  import { _ } from 'svelte-i18n';
 
   // Props with Svelte 5 runes
   const { resourceType, resourceId, organizationId, onUserAdded } = $props<{
@@ -117,7 +118,7 @@
     } else if (user.lastName) {
       return user.lastName;
     } else {
-      return "Unknown";
+      return $_('common.unknown');
     }
   }
 
@@ -133,7 +134,7 @@
 
   async function addUserToResource(userId: string | number) {
     if (!userId || !selectedRoleId) {
-      toast.error("Please select a user and role");
+      toast.error($_('toastsExtra.pleaseSelectUserAndRole'));
       return;
     }
 
@@ -145,7 +146,7 @@
         roleId: selectedRoleId,
       });
 
-      toast.success(`User added to ${resourceType} successfully`);
+      toast.success($_('resourceUserManagerExtra.userAddedSuccess', { values: { resourceType } }));
       // Refresh the list of available users
       loadAvailableUsers();
       // Notify parent
@@ -154,7 +155,7 @@
       selectedUserId = "";
     } catch (error) {
       console.error(`Error adding user to ${resourceType}:`, error);
-      toast.error(`Error adding user to ${resourceType}`);
+      toast.error($_('resourceUserManagerExtra.errorAddingUser', { values: { resourceType } }));
     } finally {
       isAdding = false;
     }
@@ -169,9 +170,9 @@
 
 <Card class="p-6">
   <h3 class="text-lg font-medium mb-4">
-    Add Existing Users to {resourceType === "department"
-      ? "Department"
-      : "Project"}
+    {resourceType === "department"
+      ? $_('resourceUserManagerExtra.addExistingUsersToDepartment')
+      : $_('resourceUserManagerExtra.addExistingUsersToProject')}
   </h3>
 
   <div class="mb-6">
@@ -182,7 +183,7 @@
         />
         <Input
           type="text"
-          placeholder="Search users by name or email..."
+          placeholder={$_('resourceUserManager.searchPlaceholder')}
           class="pl-9"
           bind:value={searchTerm}
         />
@@ -195,21 +196,21 @@
           <div
             class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"
           ></div>
-          <span class="ml-3">Loading available users...</span>
+          <span class="ml-3">{$_('resourceUserManager.loadingUsers')}</span>
         </div>
       {:else if filteredUsers.length === 0}
         <div class="p-8 text-center text-muted-foreground">
           {searchTerm
-            ? "No users found matching your search"
-            : "No more organization users available to add"}
+            ? $_('resourceUserManager.noUsersFound')
+            : $_('resourceUserManagerExtra.noMoreUsersAvailable')}
         </div>
       {:else}
         <Table.Root>
           <Table.Header>
             <Table.Row>
-              <Table.Head>User</Table.Head>
-              <Table.Head>Role</Table.Head>
-              <Table.Head class="w-[100px]">Actions</Table.Head>
+              <Table.Head>{$_('resourceUserManagerExtra.user')}</Table.Head>
+              <Table.Head>{$_('resourceUserManagerExtra.role')}</Table.Head>
+              <Table.Head class="w-[100px]">{$_('resourceUserManagerExtra.actions')}</Table.Head>
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -239,7 +240,7 @@
                     <SelectTrigger class="w-[180px]">
                       <span>
                         {availableRoles.find((r) => r.id === selectedRoleId)
-                          ?.name || "Select role"}
+                          ?.name || $_('resourceUserManagerExtra.selectRole')}
                       </span>
                     </SelectTrigger>
                     <SelectContent>
@@ -260,10 +261,10 @@
                       <div
                         class="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-current"
                       ></div>
-                      Adding...
+                      {$_('resourceUserManagerExtra.adding')}
                     {:else}
                       <UserPlus class="h-4 w-4 mr-2" />
-                      Add
+                      {$_('resourceUserManagerExtra.add')}
                     {/if}
                   </Button>
                 </Table.Cell>

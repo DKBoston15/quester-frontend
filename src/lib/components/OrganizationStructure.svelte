@@ -28,7 +28,12 @@
   import TreeNode from "./TreeNodeItem.svelte";
   import { api } from "$lib/services/api-client";
   import { teamManagement } from "$lib/stores/TeamManagementStore";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
   import "driver.js/dist/driver.css";
+
+  // Helper for imperative translation access
+  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
   // Props
   const props = $props<{
@@ -193,7 +198,7 @@
     } catch (error) {
       console.error("Failed to load data:", error);
       errorMessage =
-        error instanceof Error ? error.message : "Failed to load data";
+        error instanceof Error ? error.message : t("organizationStructure.failedToLoadData");
     } finally {
       isLoading = false;
     }
@@ -229,7 +234,7 @@
     } catch (error) {
       console.error("Failed to create project:", error);
       errorMessage =
-        error instanceof Error ? error.message : "Failed to create project";
+        error instanceof Error ? error.message : t("organizationStructure.failedToCreateProject");
     } finally {
       isCreatingProject = false;
     }
@@ -276,7 +281,7 @@
     } catch (error) {
       console.error("Failed to create department:", error);
       errorMessage =
-        error instanceof Error ? error.message : "Failed to create department";
+        error instanceof Error ? error.message : t("organizationStructure.failedToCreateDepartment");
     } finally {
       isCreatingDepartment = false;
     }
@@ -305,7 +310,7 @@
     } catch (error) {
       console.error("Failed to move project:", error);
       errorMessage =
-        error instanceof Error ? error.message : "Failed to move project";
+        error instanceof Error ? error.message : t("organizationStructure.failedToMoveProject");
     } finally {
       isMovingProject = false;
     }
@@ -333,7 +338,7 @@
     } catch (error) {
       console.error("Error joining project:", error);
       errorMessage =
-        error instanceof Error ? error.message : "Failed to join project";
+        error instanceof Error ? error.message : t("organizationStructure.failedToJoinProject");
     }
   }
 
@@ -355,7 +360,7 @@
     } catch (error) {
       console.error("Error joining department:", error);
       errorMessage =
-        error instanceof Error ? error.message : "Failed to join department";
+        error instanceof Error ? error.message : t("organizationStructure.failedToJoinDepartment");
     }
   }
 
@@ -500,14 +505,24 @@
     return departmentCreationCapabilities[orgId]?.allowed || false;
   }
 
+  // Helper function to translate role names
+  function translateRole(roleName: string): string {
+    const roleKey = roleName.toLowerCase();
+    const translationKey = `roles.${roleKey}`;
+    const translated = $_(translationKey);
+    // If translation key returns itself, fall back to original name
+    return translated === translationKey ? roleName : translated;
+  }
+
   // Helper function to get user's role for a specific project
   function getUserRoleForProject(project: Project): string {
-    if (!auth.user) return "Unknown";
+    if (!auth.user) return $_('common.unknown');
     const resources = teamManagement.userResources;
-    if (!resources?.projects) return "Unknown";
+    if (!resources?.projects) return $_('common.unknown');
 
     const resource = resources.projects.find((r: any) => r.id === project.id);
-    return resource?.$extras?.roleName || "Unknown";
+    const roleName = resource?.$extras?.roleName;
+    return roleName ? translateRole(roleName) : $_('common.unknown');
   }
 
   // Handle toggle change
@@ -580,42 +595,41 @@
 <Dialog.Root bind:open={showNewProjectDialog}>
   <Dialog.Content class="max-w-md w-full mx-auto">
     <Dialog.Header>
-      <Dialog.Title>Create New Project</Dialog.Title>
+      <Dialog.Title>{$_('organizationDialogs.createProject.title')}</Dialog.Title>
       <Dialog.Description>
-        Create a new project in {selectedOrganization?.name ||
-          "your organization"}.
+        {$_('organizationDialogs.createProject.dialogDescription', { values: { organizationName: selectedOrganization?.name || 'your organization' } })}
       </Dialog.Description>
     </Dialog.Header>
 
     <div class="grid gap-4 py-4">
       <div class="grid grid-cols-4 items-center gap-4">
-        <Label for="projectName" class="text-right">Name</Label>
+        <Label for="projectName" class="text-right">{$_('organizationDialogs.createProject.name')}</Label>
         <Input
           id="projectName"
           class="col-span-3"
           bind:value={newProjectName}
-          placeholder="Enter project name"
+          placeholder={$_('organizationDialogs.createProject.namePlaceholder')}
           required
         />
       </div>
       <div class="grid grid-cols-4 items-center gap-4">
-        <Label for="projectDescription" class="text-right">Description</Label>
+        <Label for="projectDescription" class="text-right">{$_('organizationDialogs.createProject.descriptionLabel')}</Label>
         <Input
           id="projectDescription"
           class="col-span-3"
           bind:value={newProjectDescription}
-          placeholder="Enter project description (optional)"
+          placeholder={$_('organizationDialogs.createProject.descriptionPlaceholder')}
         />
       </div>
       <div class="grid grid-cols-4 items-center gap-4">
-        <Label for="department" class="text-right">Department</Label>
+        <Label for="department" class="text-right">{$_('organizationDialogs.createProject.department')}</Label>
         <div class="col-span-3">
           <select
             id="department"
             class="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             bind:value={selectedDepartmentId}
           >
-            <option value={null}>No Department</option>
+            <option value={null}>{$_('organizationDialogs.createProject.noDepartment')}</option>
             {#each (teamManagement.userResources?.departments || []).filter((d: any) => d.organizationId === selectedOrganization?.id) as dept}
               <option value={dept.id}>{dept.name}</option>
             {/each}
@@ -630,7 +644,7 @@
 
     <Dialog.Footer>
       <Button variant="outline" onclick={() => (showNewProjectDialog = false)}
-        >Cancel</Button
+        >{$_('organizationDialogs.createProject.cancel')}</Button
       >
       <Button
         onclick={createProject}
@@ -640,9 +654,9 @@
           <div
             class="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin mr-2"
           ></div>
-          Creating...
+          {$_('organizationDialogs.createProject.creating')}
         {:else}
-          Create Project
+          {$_('organizationDialogs.createProject.create')}
         {/if}
       </Button>
     </Dialog.Footer>
@@ -653,32 +667,31 @@
 <Dialog.Root bind:open={showNewDepartmentDialog}>
   <Dialog.Content class="max-w-md w-full mx-auto">
     <Dialog.Header>
-      <Dialog.Title>Create New Department</Dialog.Title>
+      <Dialog.Title>{$_('organizationDialogs.createDepartment.title')}</Dialog.Title>
       <Dialog.Description>
-        Create a new department in {selectedOrganization?.name ||
-          "your organization"}.
+        {$_('organizationDialogs.createDepartment.dialogDescription', { values: { organizationName: selectedOrganization?.name || 'your organization' } })}
       </Dialog.Description>
     </Dialog.Header>
 
     <div class="grid gap-4 py-4">
       <div class="grid grid-cols-4 items-center gap-4">
-        <Label for="departmentName" class="text-right">Name</Label>
+        <Label for="departmentName" class="text-right">{$_('organizationDialogs.createDepartment.name')}</Label>
         <Input
           id="departmentName"
           class="col-span-3"
           bind:value={newDepartmentName}
-          placeholder="Enter department name"
+          placeholder={$_('organizationDialogs.createDepartment.namePlaceholder')}
           required
         />
       </div>
       <div class="grid grid-cols-4 items-center gap-4">
-        <Label for="departmentDescription" class="text-right">Description</Label
+        <Label for="departmentDescription" class="text-right">{$_('organizationDialogs.createDepartment.descriptionLabel')}</Label
         >
         <Input
           id="departmentDescription"
           class="col-span-3"
           bind:value={newDepartmentDescription}
-          placeholder="Enter department description (optional)"
+          placeholder={$_('organizationDialogs.createDepartment.descriptionPlaceholder')}
         />
       </div>
 
@@ -690,7 +703,7 @@
     <Dialog.Footer>
       <Button
         variant="outline"
-        onclick={() => (showNewDepartmentDialog = false)}>Cancel</Button
+        onclick={() => (showNewDepartmentDialog = false)}>{$_('organizationDialogs.createDepartment.cancel')}</Button
       >
       <Button
         onclick={createDepartment}
@@ -700,9 +713,9 @@
           <div
             class="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin mr-2"
           ></div>
-          Creating...
+          {$_('organizationDialogs.createDepartment.creating')}
         {:else}
-          Create Department
+          {$_('organizationDialogs.createDepartment.create')}
         {/if}
       </Button>
     </Dialog.Footer>
@@ -713,23 +726,22 @@
 <Dialog.Root bind:open={showMoveProjectDialog}>
   <Dialog.Content class="max-w-md w-full mx-auto">
     <Dialog.Header>
-      <Dialog.Title>Move Project</Dialog.Title>
+      <Dialog.Title>{$_('organizationDialogs.moveProject.title')}</Dialog.Title>
       <Dialog.Description>
-        Select a department to move the project to. Choose "No Department" to
-        remove it from any department.
+        {$_('organizationDialogs.moveProject.description')}
       </Dialog.Description>
     </Dialog.Header>
 
     <div class="grid gap-4 py-4">
       <div class="grid grid-cols-4 items-center gap-4">
-        <Label for="moveDepartment" class="text-right">Department</Label>
+        <Label for="moveDepartment" class="text-right">{$_('organizationDialogs.moveProject.department')}</Label>
         <div class="col-span-3">
           <select
             id="moveDepartment"
             class="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             bind:value={selectedDepartmentId}
           >
-            <option value={null}>No Department</option>
+            <option value={null}>{$_('organizationDialogs.moveProject.noDepartment')}</option>
             {#each (teamManagement.userResources?.departments || []).filter((d: any) => d.organizationId === projectToMove?.organizationId) as dept}
               <option value={dept.id}>{dept.name}</option>
             {/each}
@@ -744,16 +756,16 @@
 
     <Dialog.Footer>
       <Button variant="outline" onclick={() => (showMoveProjectDialog = false)}
-        >Cancel</Button
+        >{$_('organizationDialogs.moveProject.cancel')}</Button
       >
       <Button onclick={moveProject} disabled={isMovingProject}>
         {#if isMovingProject}
           <div
             class="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin mr-2"
           ></div>
-          Moving...
+          {$_('organizationDialogs.moveProject.moving')}
         {:else}
-          Move Project
+          {$_('organizationDialogs.moveProject.move')}
         {/if}
       </Button>
     </Dialog.Footer>
@@ -770,11 +782,11 @@
       <Tabs.List>
         <Tabs.Trigger value="tree" onclick={() => (viewMode = "tree")}>
           <LayoutGrid class="h-4 w-4 mr-2" />
-          Tree View
+          {$_('organizationDialogs.treeView.treeView')}
         </Tabs.Trigger>
         <Tabs.Trigger value="list" onclick={() => (viewMode = "list")}>
           <LayoutList class="h-4 w-4 mr-2" />
-          List View
+          {$_('organizationDialogs.treeView.listView')}
         </Tabs.Trigger>
       </Tabs.List>
     </Tabs.Root>
@@ -831,7 +843,7 @@
             }}
           >
             <FolderTree class="h-4 w-4" />
-            New Department
+            {$_('organizationDialogs.treeView.newDepartment')}
           </Button>
         {:else}
           <div
@@ -845,7 +857,7 @@
               disabled
             >
               <FolderTree class="h-4 w-4" />
-              New Department
+              {$_('organizationDialogs.treeView.newDepartment')}
             </Button>
             <div
               class="absolute right-0 bottom-full mb-2 hidden group-hover:block z-50"
@@ -871,7 +883,7 @@
             }}
           >
             <Plus class="h-4 w-4" />
-            New Project
+            {$_('organizationDialogs.treeView.newProject')}
           </Button>
         {:else}
           <!-- Disabled Button with Tooltip -->
@@ -883,7 +895,7 @@
               disabled
             >
               <Plus class="h-4 w-4" />
-              New Project
+              {$_('organizationDialogs.treeView.newProject')}
             </Button>
             <div
               class="absolute right-0 bottom-full mb-2 w-60 p-2 text-xs text-popover-foreground bg-popover rounded shadow-lg hidden group-hover:block z-50"
@@ -904,7 +916,7 @@
       <Input
         id="org-search-input"
         type="text"
-        placeholder="Search projects..."
+        placeholder={$_('organizationDialogs.treeView.searchProjects')}
         bind:value={searchQuery}
         class="pl-9"
       />
@@ -918,7 +930,7 @@
       class="gap-1 ml-2"
     >
       <ListFilter class="h-4 w-4" />
-      My Projects
+      {$_('organizationDialogs.treeView.myProjects')}
     </Toggle>
   </div>
 
@@ -933,15 +945,15 @@
   {:else if errorMessage}
     <div class="bg-destructive/10 text-destructive rounded-md p-4 mb-4">
       <p>{errorMessage}</p>
-      <Button variant="outline" class="mt-2" onclick={loadData}>Retry</Button>
+      <Button variant="outline" class="mt-2" onclick={loadData}>{$_('organizationDialogs.treeView.retry')}</Button>
     </div>
     <!-- Empty state -->
   {:else if organizations.length === 0}
     <div class="bg-muted/30 rounded-md p-8 text-center border border-muted">
       <Building2 class="h-12 w-12 mx-auto mb-4 text-primary/40" />
-      <h3 class="text-lg font-medium mb-2">No Organizations Found</h3>
+      <h3 class="text-lg font-medium mb-2">{$_('organizationDialogs.treeView.noOrganizationsFound')}</h3>
       <p class="text-muted-foreground mb-4">
-        You don't have access to any organizations yet.
+        {$_('organizationDialogs.treeView.noAccessYet')}
       </p>
     </div>
     <!-- Content -->
@@ -1011,7 +1023,7 @@
                           }}
                         >
                           <UserPlus class="h-3 w-3" />
-                          Join
+                          {$_('organizationDialogs.treeView.join')}
                         </Button>
                       {:else}
                         <!-- Use the specific role name -->
@@ -1032,7 +1044,7 @@
                         }}
                       >
                         <FolderInput class="h-4 w-4" />
-                        Move
+                        {$_('organizationDialogs.treeView.move')}
                       </Button>
                     </div>
                   </div>
@@ -1045,21 +1057,20 @@
                   >
                     {#if searchQuery}
                       <div class="font-medium text-foreground">
-                        No projects match "{searchQuery}"
+                        {$_('organizationFallbacks.noProjectsMatchQuery', { values: { query: searchQuery } })}
                       </div>
                       <p class="mt-1">
-                        Try using different keywords or clearing your search
+                        {$_('organizationFallbacks.tryDifferentKeywords')}
                       </p>
                     {:else if showMyProjectsOnly}
                       <div class="font-medium text-foreground">
-                        You're not a member of any projects
+                        {$_('organizationFallbacks.notMemberOfProjects')}
                       </div>
                       <p class="mt-1">
-                        Try disabling the "My Projects" filter to see all
-                        projects
+                        {$_('organizationFallbacks.tryDisablingFilter')}
                       </p>
                     {:else}
-                      No projects found
+                      {$_('organizationFallbacks.noProjectsFound')}
                     {/if}
                     <Button
                       variant="outline"
@@ -1070,7 +1081,7 @@
                         showMyProjectsOnly = false;
                       }}
                     >
-                      Clear Filters
+                      {$_('organizationDialogs.treeView.clearFilters')}
                     </Button>
                   </div>
                 {/if}
@@ -1120,7 +1131,7 @@
                           }}
                         >
                           <UserPlus class="h-3 w-3" />
-                          Join
+                          {$_('organizationDialogs.treeView.join')}
                         </Button>
                       {:else}
                         <!-- Use the specific role name -->
@@ -1141,7 +1152,7 @@
                         }}
                       >
                         <FolderInput class="h-4 w-4" />
-                        Move
+                        {$_('organizationDialogs.treeView.move')}
                       </Button>
                     </div>
                   </div>
@@ -1168,10 +1179,10 @@
         <div
           class="bg-muted/70 px-4 py-2 grid grid-cols-[auto_1fr_auto_auto] gap-4 items-center font-medium text-sm border-b"
         >
-          <span>Project</span>
-          <span>Department</span>
-          <span>Organization</span>
-          <span>Actions</span>
+          <span>{$_('common.project')}</span>
+          <span>{$_('common.department')}</span>
+          <span>{$_('common.organization')}</span>
+          <span>{$_('common.actions')}</span>
         </div>
 
         <!-- Project items -->
@@ -1189,13 +1200,13 @@
               <span
                 >{project.departmentId
                   ? departmentsMap.get(project.departmentId)?.name
-                  : "No Department"}</span
+                  : $_('organizationFallbacks.noDepartment')}</span
               >
               <span
                 >{project.organizationId
                   ? organizations.find((o) => o.id === project.organizationId)
                       ?.name
-                  : "No Organization"}</span
+                  : $_('organizationFallbacks.noOrganization')}</span
               >
               <div class="ml-auto flex gap-2">
                 {#if !isUserProjectMember(project)}
@@ -1209,7 +1220,7 @@
                     }}
                   >
                     <UserPlus class="h-3 w-3" />
-                    Join
+                    {$_('common.join')}
                   </Button>
                 {:else}
                   <!-- Use the specific role name -->
@@ -1228,14 +1239,14 @@
                   }}
                 >
                   <FolderInput class="h-4 w-4" />
-                  Move
+                  {$_('common.move')}
                 </Button>
               </div>
             </div>
           {/each}
         {:else}
           <div class="text-sm text-muted-foreground py-2 px-4">
-            No projects found
+            {$_('organizationFallbacks.noProjectsFound')}
           </div>
         {/if}
       </div>
