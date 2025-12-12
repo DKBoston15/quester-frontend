@@ -17,6 +17,7 @@
   import Insights from "./project/Insights.svelte";
   import OutcomeView from "./project/OutcomeView.svelte";
   import Chat from "./project/Chat.svelte";
+  import CommandCenter from "./project/CommandCenter.svelte";
   import { trackPageView } from "$lib/services/fullstory";
   import { _ } from "svelte-i18n";
 
@@ -31,7 +32,8 @@
     | "connections"
     | "progress"
     | "project_settings"
-    | "chat";
+    | "chat"
+    | "command_center";
 
   const components: Record<SectionKey, any> = {
     overview: Overview,
@@ -45,6 +47,7 @@
     progress: Progress,
     project_settings: Settings,
     chat: Chat,
+    command_center: CommandCenter,
   };
 
   const props = $props<{

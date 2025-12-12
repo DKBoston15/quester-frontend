@@ -142,6 +142,7 @@
     "overview": "Aperçu",
     "literature": "Littérature",
     "notes": "Notes",
+    "commandCenter": "Centre de Commande",
     "researchAssistant": "Assistant IA",
     "insights": "Analyses",
     "models": "Modèles",
@@ -3752,5 +3753,23 @@
     "navigateToLiterature": "Naviguer vers la littérature",
     "filterConnectedNodes": "Filtrer les nœuds connectés",
     "resetFilter": "Réinitialiser le filtre"
+  },
+  "commandCenterContext": {
+    "sources": "Sources",
+    "allSources": "Toutes les sources",
+    "literature": "Littérature",
+    "notes": "Notes",
+    "outcomes": "Résultats",
+    "models": "Modèles",
+    "artifacts": "Artefacts",
+    "searchSources": "Rechercher des sources...",
+    "categories": "Catégories",
+    "selected": "Sélectionné",
+    "specificSelections": "Sélections spécifiques",
+    "sourcesCount": "{count} sources",
+    "clear": "Effacer",
+    "noMatchingItems": "Aucun élément correspondant",
+    "noItemsAvailable": "Aucun élément disponible",
+    "more": "+{count} autres {category}"
   }
 }

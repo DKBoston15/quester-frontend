@@ -53,6 +53,10 @@ function normalizeLiteratureDesignFields<T extends Partial<Literature>>(
       return error;
     },
 
+    getById(id: string): Literature | undefined {
+      return literatureData.find(item => item.id === id);
+    },
+
     async loadLiterature(projectId: string) {
       if (!projectId) {
         error = t("literatureStore.noProjectId");

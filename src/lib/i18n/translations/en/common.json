@@ -142,6 +142,7 @@
     "overview": "Overview",
     "literature": "Literature",
     "notes": "Notes",
+    "commandCenter": "Command Center",
     "researchAssistant": "Research Assistant",
     "insights": "Insights",
     "models": "Models",
@@ -3752,5 +3753,23 @@
     "navigateToLiterature": "Navigate to Literature",
     "filterConnectedNodes": "Filter Connected Nodes",
     "resetFilter": "Reset Filter"
+  },
+  "commandCenterContext": {
+    "sources": "Sources",
+    "allSources": "All Sources",
+    "literature": "Literature",
+    "notes": "Notes",
+    "outcomes": "Outcomes",
+    "models": "Models",
+    "artifacts": "Artifacts",
+    "searchSources": "Search sources...",
+    "categories": "Categories",
+    "selected": "Selected",
+    "specificSelections": "Specific selections",
+    "sourcesCount": "{count} sources",
+    "clear": "Clear",
+    "noMatchingItems": "No matching items",
+    "noItemsAvailable": "No items available",
+    "more": "+{count} more {category}"
   }
 }

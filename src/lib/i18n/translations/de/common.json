@@ -142,6 +142,7 @@
     "overview": "Übersicht",
     "literature": "Literatur",
     "notes": "Notizen",
+    "commandCenter": "Kommandozentrale",
     "researchAssistant": "Forschungsassistent",
     "insights": "Erkenntnisse",
     "models": "Modelle",
@@ -3752,5 +3753,23 @@
     "navigateToLiterature": "Zur Literatur navigieren",
     "filterConnectedNodes": "Verbundene Knoten filtern",
     "resetFilter": "Filter zurücksetzen"
+  },
+  "commandCenterContext": {
+    "sources": "Quellen",
+    "allSources": "Alle Quellen",
+    "literature": "Literatur",
+    "notes": "Notizen",
+    "outcomes": "Ergebnisse",
+    "models": "Modelle",
+    "artifacts": "Artefakte",
+    "searchSources": "Quellen suchen...",
+    "categories": "Kategorien",
+    "selected": "Ausgewählt",
+    "specificSelections": "Spezifische Auswahl",
+    "sourcesCount": "{count} Quellen",
+    "clear": "Löschen",
+    "noMatchingItems": "Keine passenden Elemente",
+    "noItemsAvailable": "Keine Elemente verfügbar",
+    "more": "+{count} weitere {category}"
   }
 }

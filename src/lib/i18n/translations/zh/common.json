@@ -142,6 +142,7 @@
     "overview": "概览",
     "literature": "文献",
     "notes": "笔记",
+    "commandCenter": "命令中心",
     "researchAssistant": "研究助手",
     "insights": "洞察",
     "models": "模型",
@@ -3752,5 +3753,23 @@
     "navigateToLiterature": "导航至文献",
     "filterConnectedNodes": "筛选相连节点",
     "resetFilter": "重置筛选"
+  },
+  "commandCenterContext": {
+    "sources": "来源",
+    "allSources": "所有来源",
+    "literature": "文献",
+    "notes": "笔记",
+    "outcomes": "成果",
+    "models": "模型",
+    "artifacts": "研究产出",
+    "searchSources": "搜索来源...",
+    "categories": "类别",
+    "selected": "已选择",
+    "specificSelections": "特定选择",
+    "sourcesCount": "{count} 个来源",
+    "clear": "清除",
+    "noMatchingItems": "没有匹配的项目",
+    "noItemsAvailable": "没有可用的项目",
+    "more": "+{count} 更多 {category}"
   }
 }

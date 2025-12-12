@@ -24,6 +24,7 @@
     Search,
     Command as CommandIcon,
     Sparkles,
+    Zap,
   } from "lucide-svelte";
   import { useLocation } from "svelte-routing";
   import { api } from "$lib/services/api-client";
@@ -296,7 +297,7 @@
 
     const t = (key: string) => get(_)(key);
 
-    // Primary routes (no label): Overview, Literature, Notes, Research Assistant
+    // Primary routes (no label): Overview, Literature, Notes, Command Center, Research Assistant
     primaryRoutes = [
       {
         title: t("projectSidebar.overview"),
@@ -312,6 +313,12 @@
         title: t("projectSidebar.notes"),
         icon: Pencil,
         link: `/project/${projectId}/notes`,
+      },
+      {
+        title: t("projectSidebar.commandCenter"),
+        icon: Zap,
+        link: `/project/${projectId}/command_center`,
+        badge: "NEW",
       },
       {
         title: t("projectSidebar.researchAssistant"),
@@ -489,7 +496,7 @@
                             {#if item.icon}
                               <item.icon class="h-4 w-4 flex-shrink-0" />
                             {/if}
-                            <span class="group-data-[collapsible=icon]:hidden"
+                            <span class="group-data-[collapsible=icon]:hidden whitespace-nowrap"
                               >{item.title}</span
                             >
                             {#if item.badge}
