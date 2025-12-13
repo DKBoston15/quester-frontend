@@ -24,6 +24,20 @@
   // Helper for imperative translation access
   const t = (key: string) => get(_)(key);
 
+  // All possible "Untitled Note" translations for auto-select behavior
+  const DEFAULT_NOTE_TITLES = [
+    "Untitled Note",
+    "Untitled note",
+    "Note sans titre",   // French
+    "Nota sin título",   // Spanish
+    "Unbenannte Notiz",  // German
+    "无标题笔记",          // Chinese
+  ];
+
+  function isDefaultNoteTitle(title: string): boolean {
+    return DEFAULT_NOTE_TITLES.includes(title);
+  }
+
   // Props
   const { note, onDelete } = $props<{
     note: Note;
@@ -103,7 +117,7 @@
   onMount(() => {
     enableTitleClickAt = Date.now() + 800;
     // For new notes, switch to edit mode and focus title to encourage renaming
-    if (note.name === "Untitled Note" && title === "Untitled Note") {
+    if (isDefaultNoteTitle(note.name) && isDefaultNoteTitle(title)) {
       isEditingTitle = true;
       setTimeout(() => titleInputRef?.focus(), 0);
     }
@@ -131,7 +145,7 @@
   // Direct function to save title
   async function saveTitle() {
     // If the title is still the default and hasn't been changed, don't save
-    if (title === "Untitled Note" && originalTitle === "Untitled Note") {
+    if (isDefaultNoteTitle(title) && isDefaultNoteTitle(originalTitle)) {
       return;
     }
 
@@ -496,7 +510,7 @@
             onfocus={(e) => {
               isUserEditingTitle = true;
               isTitleFocused = true;
-              if (title === "Untitled Note" || title === "Untitled note") {
+              if (isDefaultNoteTitle(title)) {
                 const target = e.target as HTMLInputElement;
                 setTimeout(() => target.select(), 0);
               }

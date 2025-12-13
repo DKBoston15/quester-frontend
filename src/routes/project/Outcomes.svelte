@@ -29,7 +29,8 @@
   import { get } from "svelte/store";
 
   // Helper function for imperative translation access
-  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
+  const t = (key: string, options?: { values?: Record<string, unknown> }) =>
+    get(_)(key, options);
 
   interface Outcome {
     id: string;
@@ -424,7 +425,9 @@
       <Card.Content class="space-y-6 pt-6">
         {#if outcomeStore.isLoading}
           <div class="flex justify-center items-center h-[400px]">
-            <p class="text-lg text-muted-foreground">{$_("outcomes.loadingOutcomes")}</p>
+            <p class="text-lg text-muted-foreground">
+              {$_("outcomes.loadingOutcomes")}
+            </p>
           </div>
         {:else if outcomeStore.error}
           <div class="flex justify-center items-center h-[400px]">
@@ -489,7 +492,9 @@
                           <Pencil
                             class="h-4 w-4 text-blue-600 dark:text-blue-400"
                           />
-                          <span class="sr-only">{$_("outcomes.renameOutcome")}</span>
+                          <span class="sr-only"
+                            >{$_("outcomes.renameOutcome")}</span
+                          >
                         </Button>
                         <Button
                           variant="outline"
@@ -500,14 +505,18 @@
                           )}
                         >
                           <Trash2 class="h-4 w-4 text-destructive" />
-                          <span class="sr-only">{$_("outcomes.deleteOutcome")}</span>
+                          <span class="sr-only"
+                            >{$_("outcomes.deleteOutcome")}</span
+                          >
                         </Button>
                       </div>
                     </div>
                     <Card.Description class="text-xs">
                       <div class="flex flex-col gap-1 mt-1">
                         <div class="flex justify-between">
-                          <span class="text-muted-foreground">{$_("outcomes.type")}:</span>
+                          <span class="text-muted-foreground"
+                            >{$_("outcomes.type")}:</span
+                          >
                           <span class="capitalize flex items-center gap-1">
                             {#if outcome.type === "LINK"}
                               <LinkIcon class="h-3 w-3" />
@@ -516,7 +525,9 @@
                           </span>
                         </div>
                         <div class="flex justify-between">
-                          <span class="text-muted-foreground">{$_("outcomes.created")}:</span>
+                          <span class="text-muted-foreground"
+                            >{$_("outcomes.created")}:</span
+                          >
                           <span
                             >{new Date(
                               outcome.createdAt
@@ -524,7 +535,9 @@
                           >
                         </div>
                         <div class="flex justify-between">
-                          <span class="text-muted-foreground">{$_("outcomes.updated")}:</span>
+                          <span class="text-muted-foreground"
+                            >{$_("outcomes.updated")}:</span
+                          >
                           <span
                             >{new Date(
                               outcome.updatedAt
@@ -551,7 +564,7 @@
 <Root bind:open={showCreateDialog}>
   <Content
     id="create-outcome-dialog"
-    class="sm:max-w-[425px] border-2  dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
+    class="sm:max-w-[425px] border-2 dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(44,46,51,0.1)]"
   >
     <div class="flex flex-col space-y-1.5 text-center sm:text-left">
       <Title>{$_("outcomes.createNewOutcome")}</Title>
@@ -564,13 +577,19 @@
           <Select.Root bind:value={selectedType} type="single">
             <Select.Trigger>
               <span class="truncate">
-                {selectedType === "LINK" ? $_("outcomes.link") : $_("outcomes.researchOutcome")}
+                {selectedType === "LINK"
+                  ? $_("outcomes.link")
+                  : $_("outcomes.researchOutcome")}
               </span>
             </Select.Trigger>
             <Select.Content>
               <Select.Group>
-                <Select.GroupHeading class="px-2 py-1.5 text-sm font-medium">{$_("outcomes.type")}</Select.GroupHeading>
-                <Select.Item value="QUESTION">{$_("outcomes.researchOutcome")}</Select.Item>
+                <Select.GroupHeading class="px-2 py-1.5 text-sm font-medium"
+                  >{$_("outcomes.type")}</Select.GroupHeading
+                >
+                <Select.Item value="QUESTION"
+                  >{$_("outcomes.researchOutcome")}</Select.Item
+                >
                 <Select.Item value="LINK">{$_("outcomes.link")}</Select.Item>
               </Select.Group>
             </Select.Content>
@@ -598,7 +617,9 @@
         </div>
       {:else}
         <div class="grid grid-cols-4 items-center gap-4">
-          <label for="template" class="text-right"> {$_("outcomes.template")} </label>
+          <label for="template" class="text-right">
+            {$_("outcomes.template")}
+          </label>
           <div class="col-span-3">
             <Select.Root bind:value={selectedTemplate} type="single">
               <Select.Trigger>
@@ -608,10 +629,14 @@
               </Select.Trigger>
               <Select.Content>
                 <Select.Group>
-                  <Select.GroupHeading class="px-2 py-1.5 text-sm font-medium">{$_("outcomes.templatesLabel")}</Select.GroupHeading>
+                  <Select.GroupHeading class="px-2 py-1.5 text-sm font-medium"
+                    >{$_("outcomes.templatesLabel")}</Select.GroupHeading
+                  >
                   {#each outcomeStore.templates.filter((t) => t.type !== "LINK") as template}
                     <Select.Item value={template.name}>
-                      {$_(`outcomes.templateNames.${template.name.replace(/\s+/g, '')}`)}
+                      {$_(
+                        `outcomes.templateNames.${template.name.replace(/\s+/g, "")}`
+                      )}
                     </Select.Item>
                   {/each}
                 </Select.Group>
@@ -648,7 +673,9 @@
     <AlertDialog.Header>
       <AlertDialog.Title>{$_("outcomes.deleteOutcomeTitle")}</AlertDialog.Title>
       <AlertDialog.Description>
-        {$_("outcomes.deleteOutcomeConfirm", { values: { name: outcomeToDelete?.name || "" } })}
+        {$_("outcomes.deleteOutcomeConfirm", {
+          values: { name: outcomeToDelete?.name || "" },
+        })}
       </AlertDialog.Description>
     </AlertDialog.Header>
     <AlertDialog.Footer>
@@ -681,10 +708,15 @@
     <div class="flex flex-col space-y-1.5 text-center sm:text-left">
       <Title>{$_("outcomes.editOutcomeTitle")}</Title>
       <Description>
-        {$_("outcomes.updateNameAndUrl", { values: {
-          type: outcomeToRename?.type === "LINK" ? $_("outcomes.updateNameAndUrlType") : $_("outcomes.updateName"),
-          name: outcomeToRename?.name || ""
-        } })}
+        {$_("outcomes.updateNameAndUrl", {
+          values: {
+            type:
+              outcomeToRename?.type === "LINK"
+                ? $_("outcomes.updateNameAndUrlType")
+                : $_("outcomes.updateName"),
+            name: outcomeToRename?.name || "",
+          },
+        })}
       </Description>
     </div>
     <div class="grid gap-4 py-4">

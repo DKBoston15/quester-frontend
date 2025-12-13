@@ -462,7 +462,7 @@
       }
     },
 
-    async createNote(data: Partial<Note>) {
+    async createNote(data: Partial<Note>, options?: { setActive?: boolean }) {
       isLoading = true;
       error = null;
 
@@ -502,7 +502,10 @@
         const processedNote: Note = processNoteData(noteWithCorrectTypes);
 
         notes = [processedNote, ...notes];
-        activeNoteId = processedNote.id;
+        // Only set active note if setActive is not explicitly false (defaults to true)
+        if (options?.setActive !== false) {
+          activeNoteId = processedNote.id;
+        }
         return processedNote;
       } catch (err) {
         console.error("Error creating note:", err);

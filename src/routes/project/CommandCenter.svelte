@@ -1,10 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { commandCenterStore, type Artifact, type CommandResponse, type CommandCenterInsight, type DailyBriefing, type SourceCategory } from '$lib/stores/CommandCenterStore.svelte';
+  import { commandCenterStore, type Artifact, type CommandResponse, type SourceCategory, type QueryMode, type DiscussionMessage } from '$lib/stores/CommandCenterStore.svelte';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import * as Card from '$lib/components/ui/card';
-  import { Skeleton } from '$lib/components/ui/skeleton';
   import { Badge } from '$lib/components/ui/badge';
   import * as Tooltip from '$lib/components/ui/tooltip';
   import * as Dialog from '$lib/components/ui/dialog';
@@ -14,6 +13,8 @@
   import { navigate } from 'svelte-routing';
   import { _ } from 'svelte-i18n';
   import ContextSelector from '$lib/components/command-center/ContextSelector.svelte';
+  import DiscussionCard from '$lib/components/command-center/DiscussionCard.svelte';
+  import { toast } from 'svelte-sonner';
   import {
     Zap,
     Send,
@@ -23,21 +24,15 @@
     RefreshCw,
     Trash2,
     AlertTriangle,
-    TrendingUp,
     Lightbulb,
-    Link2,
     ChevronRight,
     BarChart2,
     Clock,
     Circle,
-    Moon,
-    Sun,
-    Sunrise,
-    ArrowRight,
     Sparkles,
-    Info,
     ExternalLink,
     BookOpen,
+    MessageSquare,
   } from 'lucide-svelte';
   import { formatDistanceToNow } from 'date-fns';
 
@@ -51,12 +46,18 @@
   let isLoading = $derived(commandCenterStore.commandLoading);
   let currentResponse = $derived(commandCenterStore.currentResponse);
   let artifacts = $derived(project?.id ? commandCenterStore.getArtifacts(project.id) : []);
-  let insights = $derived(project?.id ? commandCenterStore.getInsights(project.id) : []);
-  let dailyBriefing = $derived(project?.id ? commandCenterStore.getDailyBriefing(project.id) : null);
-  let briefingLoading = $derived(project?.id ? commandCenterStore.isBriefingLoading(project.id) : false);
-  let showBriefing = $state(true);
   let selectedArtifact = $state<typeof artifacts[0] | null>(null);
-  let artifactFilter = $state<'all' | 'pinned' | 'summary' | 'theme_cluster' | 'timeline' | 'gap_analysis' | 'comparison'>('all');
+  let artifactFilter = $state<'all' | 'pinned' | 'summary' | 'theme_cluster' | 'timeline' | 'gap_analysis' | 'comparison' | 'discussion'>('all');
+
+  // Discussion mode state
+  let currentMode = $derived(commandCenterStore.currentMode);
+  let discussionSession = $derived(commandCenterStore.discussionSession);
+  let discussionLoading = $derived(commandCenterStore.discussionLoading);
+  let streamingContent = $derived(commandCenterStore.streamingContent);
+  let routingSuggestion = $derived(commandCenterStore.routingSuggestion);
+
+  // Extraction state
+  let extracting = $state(false);
 
   // Filtered artifacts based on selected tab
   let filteredArtifacts = $derived(() => {
@@ -74,17 +75,19 @@
     timeline: artifacts.filter(a => a.type === 'timeline').length,
     gap_analysis: artifacts.filter(a => a.type === 'gap_analysis').length,
     comparison: artifacts.filter(a => a.type === 'comparison').length,
+    discussion: artifacts.filter(a => a.type === 'discussion').length,
   }));
 
   // Context scope state
   let contextScope = $derived(commandCenterStore.contextScope);
 
-  const shortcuts = [
-    { label: 'Compare', prefix: 'Compare ' },
-    { label: 'Find gaps', prefix: 'What gaps exist in ' },
-    { label: 'Themes', prefix: 'What themes emerge from ' },
-    { label: 'Timeline', prefix: 'Show timeline of ' },
-    { label: 'Summarize', prefix: 'Summarize ' },
+  const shortcuts: { label: string; prefix: string; mode: QueryMode; icon?: any }[] = [
+    { label: 'Compare', prefix: 'Compare ', mode: 'artifact' },
+    { label: 'Find gaps', prefix: 'What gaps exist in ', mode: 'artifact' },
+    { label: 'Themes', prefix: 'What themes emerge from ', mode: 'artifact' },
+    { label: 'Timeline', prefix: 'Show timeline of ', mode: 'artifact' },
+    { label: 'Summarize', prefix: 'Summarize ', mode: 'artifact' },
+    { label: 'Discuss', prefix: '', mode: 'discussion', icon: MessageSquare },
   ];
 
   const typeConfig: Record<string, { color: string; label: string }> = {
@@ -93,13 +96,7 @@
     theme_cluster: { color: 'bg-teal-500/10 text-teal-500', label: 'Themes' },
     timeline: { color: 'bg-violet-500/10 text-violet-500', label: 'Timeline' },
     summary: { color: 'bg-blue-500/10 text-blue-500', label: 'Summary' },
-  };
-
-  const insightTypeConfig: Record<string, { icon: any; color: string }> = {
-    attention: { icon: AlertTriangle, color: 'text-rose-500' },
-    growth: { icon: TrendingUp, color: 'text-teal-500' },
-    suggestion: { icon: Lightbulb, color: 'text-violet-500' },
-    connection: { icon: Link2, color: 'text-amber-500' },
+    discussion: { color: 'bg-violet-500/10 text-violet-500', label: 'Discussion' },
   };
 
   function getTimeOfDay(): string {
@@ -107,13 +104,6 @@
     if (hour < 12) return 'morning';
     if (hour < 18) return 'afternoon';
     return 'evening';
-  }
-
-  function getTimeIcon() {
-    const hour = new Date().getHours();
-    if (hour < 12) return Sunrise;
-    if (hour < 18) return Sun;
-    return Moon;
   }
 
   // Parse text with citation markers [1, 2, 3] and make them interactive
@@ -226,9 +216,6 @@
       // Load artifacts
       commandCenterStore.loadArtifacts(project.id);
 
-      // Load insights
-      commandCenterStore.loadInsights(project.id);
-
       // Load context sources
       commandCenterStore.loadContextSources(project.id);
 
@@ -237,21 +224,19 @@
         literatureStore.loadLiterature(project.id);
       }
 
-      // Check for daily briefing
-      const briefingStatus = await commandCenterStore.checkBriefing(project.id);
-      if (briefingStatus.needsBriefing && !briefingStatus.cachedBriefing) {
-        // Generate new briefing
-        commandCenterStore.generateBriefing(project.id);
-      }
-
       // Update session
       commandCenterStore.updateSession(project.id);
     }
   });
 
   async function handleSubmit() {
-    if (!query.trim() || isLoading || !project?.id) return;
-    await commandCenterStore.processCommand(query.trim(), project.id);
+    if (!query.trim() || isLoading || discussionLoading || !project?.id) return;
+
+    if (currentMode === 'discussion') {
+      await commandCenterStore.processDiscussion(query.trim(), project.id);
+    } else {
+      await commandCenterStore.processCommand(query.trim(), project.id);
+    }
     query = '';
   }
 
@@ -262,8 +247,44 @@
     }
   }
 
-  function applyShortcut(prefix: string) {
-    query = prefix;
+  function applyShortcut(shortcut: typeof shortcuts[0]) {
+    if (shortcut.mode === 'discussion') {
+      commandCenterStore.setMode('discussion');
+      query = '';
+    } else {
+      commandCenterStore.setMode('artifact');
+      query = shortcut.prefix;
+    }
+  }
+
+  function switchToDiscussion() {
+    commandCenterStore.setMode('discussion');
+    if (routingSuggestion) {
+      commandCenterStore.dismissRoutingSuggestion();
+    }
+  }
+
+  function dismissSuggestion() {
+    commandCenterStore.dismissRoutingSuggestion();
+  }
+
+  async function handleExtractArtifact() {
+    if (!project?.id || extracting) return;
+
+    extracting = true;
+    try {
+      const result = await commandCenterStore.extractArtifactFromDiscussion(project.id);
+      if (result) {
+        toast.success('Artifact extracted! You can now save it.');
+      } else {
+        toast.error('Failed to extract artifact. Please try again.');
+      }
+    } catch (error) {
+      console.error('Extract artifact error:', error);
+      toast.error('Failed to extract artifact from discussion');
+    } finally {
+      extracting = false;
+    }
   }
 
   async function handleSaveArtifact() {
@@ -287,20 +308,6 @@
     await commandCenterStore.deleteArtifact(artifact.id);
   }
 
-  function handleInsightClick(insight: CommandCenterInsight) {
-    if (!project?.id) return;
-    commandCenterStore.markInsightRead(insight.id, project.id);
-  }
-
-  function dismissBriefing() {
-    if (!project?.id) return;
-    showBriefing = false;
-  }
-
-  function reopenBriefing() {
-    showBriefing = true;
-  }
-
   // Context Selector handlers
   function handleCategoryChange(category: SourceCategory, enabled: boolean) {
     commandCenterStore.setCategoryEnabled(category, enabled);
@@ -320,33 +327,33 @@
   <div class="flex-1 p-6 overflow-y-auto">
     <!-- Header -->
     <div class="mb-6">
-      <h1 class="text-2xl font-semibold">
+      <h1 class="text-2xl font-semibold mb-2">
         Good {getTimeOfDay()}, {auth.user?.firstName || 'Researcher'}
       </h1>
-      {#if commandCenterStore.getUnreadInsightsCount(project?.id || '') > 0}
-        <p class="text-sm text-muted-foreground">
-          {commandCenterStore.getUnreadInsightsCount(project?.id || '')} new insights available
-        </p>
-      {/if}
     </div>
-
     <!-- Command Bar -->
-    <Card.Root class="mb-6 border-2 focus-within:border-primary transition-colors">
+    <Card.Root class="mb-6 border-2 focus-within:border-primary transition-colors {currentMode === 'discussion' ? 'border-violet-500/30' : ''}">
       <Card.Content class="p-4">
         <div class="flex items-center gap-3">
-          <Zap class="h-5 w-5 text-muted-foreground flex-shrink-0" />
+          {#if currentMode === 'discussion'}
+            <MessageSquare class="h-5 w-5 text-violet-500 flex-shrink-0" />
+          {:else}
+            <Zap class="h-5 w-5 text-muted-foreground flex-shrink-0" />
+          {/if}
           <Input
             bind:value={query}
             onkeydown={handleKeydown}
-            placeholder="Ask anything, or try: compare methods, find gaps, extract themes..."
+            placeholder={currentMode === 'discussion'
+              ? "Ask a question or start a conversation about your research..."
+              : "Ask anything, or try: compare methods, find gaps, extract themes..."}
             class="border-0 shadow-none focus-visible:ring-0 text-base"
-            disabled={isLoading}
+            disabled={isLoading || discussionLoading}
           />
           {#if query.trim()}
             <Button
               size="sm"
               onclick={handleSubmit}
-              disabled={isLoading}
+              disabled={isLoading || discussionLoading}
               class="flex-shrink-0"
             >
               <Send class="h-4 w-4" />
@@ -358,12 +365,16 @@
           <div class="flex gap-2">
             {#each shortcuts as shortcut}
               <Button
-                variant="ghost"
+                variant={shortcut.mode === 'discussion' ? (currentMode === 'discussion' ? 'secondary' : 'ghost') : 'ghost'}
                 size="sm"
-                class="text-xs h-7"
-                onclick={() => applyShortcut(shortcut.prefix)}
-                disabled={isLoading}
+                class="text-xs h-7 {shortcut.mode === 'discussion' ? 'gap-1' : ''} {currentMode === shortcut.mode && shortcut.mode === 'discussion' ? 'bg-violet-500/20 text-violet-400' : ''}"
+                onclick={() => applyShortcut(shortcut)}
+                disabled={isLoading || discussionLoading}
               >
+                {#if shortcut.icon}
+                  {@const Icon = shortcut.icon}
+                  <Icon class="h-3.5 w-3.5" />
+                {/if}
                 {shortcut.label}
               </Button>
             {/each}
@@ -394,113 +405,33 @@
       </Card.Content>
     </Card.Root>
 
-    <!-- Daily Briefing (below command bar) -->
-    {#if dailyBriefing && showBriefing && !currentResponse}
-      {@const TimeIcon = getTimeIcon()}
-      <Card.Root class="mb-6 overflow-hidden">
-        <div class="bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-rose-500/10 p-6">
-          <!-- Header -->
-          <div class="flex items-start justify-between mb-4">
-            <div class="flex items-center gap-2">
-              <div class="p-1.5 rounded-full bg-amber-500/20">
-                <TimeIcon class="h-4 w-4 text-amber-500" />
-              </div>
-              <span class="text-sm font-medium text-amber-600 dark:text-amber-400">
-                Good {getTimeOfDay()}, {auth.user?.firstName || 'Researcher'}
-              </span>
-            </div>
-            <Button variant="ghost" size="sm" class="h-6 w-6 p-0 hover:bg-background/50" onclick={dismissBriefing}>
-              <X class="h-4 w-4" />
-            </Button>
-          </div>
+    <!-- Routing Suggestion Banner -->
+    {#if routingSuggestion && routingSuggestion.confidence < 0.7 && currentMode === 'artifact'}
+      <div class="flex items-center gap-2 p-3 mb-6 bg-violet-500/10 rounded-lg text-sm border border-violet-500/20">
+        <Lightbulb class="h-4 w-4 text-violet-500 flex-shrink-0" />
+        <span class="flex-1 text-muted-foreground">This looks like a question. Would you like to discuss it instead?</span>
+        <Button size="sm" variant="ghost" class="text-violet-600 hover:text-violet-700 hover:bg-violet-500/20" onclick={switchToDiscussion}>
+          Try Discussion
+        </Button>
+        <Button size="sm" variant="ghost" class="text-muted-foreground" onclick={dismissSuggestion}>
+          <X class="h-4 w-4" />
+        </Button>
+      </div>
+    {/if}
 
-          <!-- Summary -->
-          <p class="text-sm text-muted-foreground mb-5">
-            {dailyBriefing.changesSummary}
-          </p>
-
-          <!-- Detected Patterns -->
-          {#if dailyBriefing.detectedPatterns?.length}
-            <div class="mb-5">
-              <h4 class="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                Patterns Detected
-              </h4>
-              <div class="space-y-2">
-                {#each dailyBriefing.detectedPatterns.slice(0, 2) as pattern}
-                  <div class="flex items-start gap-2 text-sm">
-                    <TrendingUp class="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" />
-                    <span class="text-muted-foreground">{pattern}</span>
-                  </div>
-                {/each}
-              </div>
-            </div>
-          {/if}
-
-          <!-- Suggested Actions -->
-          {#if dailyBriefing.suggestedActions?.length}
-            <div>
-              <h4 class="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                <Sparkles class="h-3.5 w-3.5 text-amber-500" />
-                Suggested for Today
-              </h4>
-              <div class="space-y-2">
-                {#each dailyBriefing.suggestedActions.slice(0, 3) as action}
-                  <button
-                    class="w-full flex items-center justify-between p-3 rounded-lg bg-background/60 hover:bg-background transition-colors text-left group"
-                    onclick={() => {
-                      query = action.action;
-                    }}
-                  >
-                    <span class="text-sm text-foreground/80 group-hover:text-foreground">{action.action}</span>
-                    <ArrowRight class="h-4 w-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-transform" />
-                  </button>
-                {/each}
-              </div>
-            </div>
-          {/if}
-
-          <!-- Footer Actions -->
-          <div class="flex items-center justify-between mt-5 pt-4 border-t border-border/50">
-            <Button variant="ghost" size="sm" class="text-muted-foreground hover:text-foreground" onclick={dismissBriefing}>
-              Dismiss for now
-            </Button>
-            <Button size="sm" class="bg-amber-500 hover:bg-amber-600 text-white" onclick={() => {
-              if (dailyBriefing.suggestedActions?.[0]) {
-                query = dailyBriefing.suggestedActions[0].action;
-                handleSubmit();
-              }
-              dismissBriefing();
-            }}>
-              Start exploring
-              <ChevronRight class="h-4 w-4 ml-1" />
-            </Button>
-          </div>
-        </div>
-      </Card.Root>
-    {:else if briefingLoading && !currentResponse}
-      <Card.Root class="mb-6">
-        <Card.Content class="p-6">
-          <div class="flex items-center gap-3">
-            <Skeleton class="h-8 w-8 rounded-full" />
-            <div class="space-y-2 flex-1">
-              <Skeleton class="h-4 w-32" />
-              <Skeleton class="h-3 w-full" />
-              <Skeleton class="h-3 w-3/4" />
-            </div>
-          </div>
-        </Card.Content>
-      </Card.Root>
-    {:else if dailyBriefing && !showBriefing && !currentResponse}
-      {@const TimeIcon = getTimeIcon()}
-      <!-- Collapsed briefing indicator -->
-      <button
-        class="mb-6 w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg border border-dashed border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 transition-colors text-sm text-amber-600 dark:text-amber-400"
-        onclick={reopenBriefing}
-      >
-        <TimeIcon class="h-4 w-4" />
-        <span>View your daily briefing</span>
-        <ChevronRight class="h-4 w-4" />
-      </button>
+    <!-- Discussion Card -->
+    {#if currentMode === 'discussion' && discussionSession}
+      <DiscussionCard
+        messages={discussionSession.messages}
+        isStreaming={discussionLoading}
+        isExtracting={extracting}
+        {streamingContent}
+        sourcesUsed={discussionSession.messages.at(-1)?.sourcesUsed || []}
+        projectId={project?.id || ''}
+        onSendFollowup={(q) => commandCenterStore.processDiscussion(q, project?.id || '')}
+        onExtractArtifact={handleExtractArtifact}
+        onClose={() => commandCenterStore.clearDiscussionSession()}
+      />
     {/if}
 
     <!-- Current Response -->
@@ -776,6 +707,14 @@
               Comparisons <span class="ml-1 opacity-70">{artifactCounts().comparison}</span>
             </button>
           {/if}
+          {#if artifactCounts().discussion > 0}
+            <button
+              class="px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap {artifactFilter === 'discussion' ? 'bg-violet-500/20 text-violet-600 dark:text-violet-400' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}"
+              onclick={() => artifactFilter = 'discussion'}
+            >
+              Discussions <span class="ml-1 opacity-70">{artifactCounts().discussion}</span>
+            </button>
+          {/if}
         </div>
       {/if}
 
@@ -806,6 +745,8 @@
                         <BarChart2 class="h-4 w-4" />
                       {:else if artifact.type === 'timeline'}
                         <Clock class="h-4 w-4" />
+                      {:else if artifact.type === 'discussion'}
+                        <MessageSquare class="h-4 w-4" />
                       {:else}
                         <Circle class="h-4 w-4" />
                       {/if}
@@ -890,52 +831,22 @@
       {/if}
     </div>
   </div>
-
-  <!-- Right Sidebar - Insights -->
-  <aside class="w-80 border-l bg-card p-4 overflow-y-auto hidden lg:block">
-    <h3 class="font-semibold mb-4">AI Insights</h3>
-
-    <!-- Insights List -->
-    <div class="space-y-2">
-      {#each insights as insight (insight.id)}
-        {@const config = insightTypeConfig[insight.type] || insightTypeConfig.suggestion}
-        {@const Icon = config.icon}
-        <button
-          class="w-full p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-left flex gap-3 {insight.isRead ? 'opacity-60' : ''}"
-          onclick={() => handleInsightClick(insight)}
-        >
-          {#if !insight.isRead}
-            <div class="absolute top-2 right-2 w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
-          {/if}
-          <div class="p-1.5 rounded bg-background {config.color}">
-            <Icon class="h-4 w-4" />
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium truncate">{insight.title}</p>
-            <p class="text-xs text-muted-foreground truncate">{insight.detail}</p>
-          </div>
-        </button>
-      {:else}
-        <p class="text-sm text-muted-foreground text-center py-6">
-          Insights will appear as you build your research
-        </p>
-      {/each}
-    </div>
-  </aside>
 </div>
 
 <!-- Artifact Detail Dialog -->
 <Dialog.Root open={selectedArtifact !== null} onOpenChange={(open) => { if (!open) closeArtifactDetail(); }}>
-  <Dialog.Content class="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col p-0">
+  <Dialog.Content class="max-w-2xl p-0">
     {#if selectedArtifact}
       {@const config = typeConfig[selectedArtifact.type] || typeConfig.summary}
-      <Dialog.Header class="px-6 pt-6 pb-4 border-b flex-shrink-0">
+      <Dialog.Header class="px-6 pt-6 pb-4 border-b">
         <div class="flex items-center gap-3">
           <div class="p-2 rounded-lg {config.color}">
             {#if selectedArtifact.type === 'comparison'}
               <BarChart2 class="h-5 w-5" />
             {:else if selectedArtifact.type === 'timeline'}
               <Clock class="h-5 w-5" />
+            {:else if selectedArtifact.type === 'discussion'}
+              <MessageSquare class="h-5 w-5" />
             {:else}
               <Circle class="h-5 w-5" />
             {/if}
@@ -952,11 +863,53 @@
         </div>
       </Dialog.Header>
 
-      <div class="flex-1 overflow-y-auto px-6 py-4">
+      <div class="overflow-y-auto px-6 py-4 max-h-[60vh]">
         <div class="space-y-4">
           <!-- Summary -->
           {#if selectedArtifact.content?.summary}
             <p class="text-muted-foreground">{selectedArtifact.content.summary}</p>
+          {/if}
+
+          <!-- Discussion Thread (for discussion artifacts) -->
+          {#if selectedArtifact.type === 'discussion' && selectedArtifact.content?.discussionMessages?.length}
+            <div class="pt-2">
+              <h4 class="font-medium mb-3 flex items-center gap-2">
+                <MessageSquare class="h-4 w-4 text-violet-500" />
+                Conversation
+              </h4>
+              <div class="space-y-3 max-h-80 overflow-y-auto pr-2">
+                {#each selectedArtifact.content.discussionMessages as message}
+                  <div class={message.role === 'user' ? 'flex justify-end' : 'flex justify-start'}>
+                    <div
+                      class={`max-w-[85%] p-3 rounded-lg ${
+                        message.role === 'user'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted'
+                      }`}
+                    >
+                      <p class="text-sm whitespace-pre-wrap">{message.content}</p>
+                      {#if message.role === 'assistant' && message.sources?.length}
+                        <div class="mt-2 pt-2 border-t border-border/50">
+                          <p class="text-xs text-muted-foreground mb-1">Sources:</p>
+                          <div class="flex flex-wrap gap-1">
+                            {#each message.sources.slice(0, 3) as source}
+                              <Badge variant="outline" class="text-[10px]">
+                                {source.title.substring(0, 20)}{source.title.length > 20 ? '...' : ''}
+                              </Badge>
+                            {/each}
+                            {#if message.sources.length > 3}
+                              <Badge variant="outline" class="text-[10px]">
+                                +{message.sources.length - 3} more
+                              </Badge>
+                            {/if}
+                          </div>
+                        </div>
+                      {/if}
+                    </div>
+                  </div>
+                {/each}
+              </div>
+            </div>
           {/if}
 
           <!-- Key Findings with citation parsing -->
@@ -1096,7 +1049,7 @@
         </div>
       </div>
 
-      <Dialog.Footer class="flex-shrink-0 border-t px-6 py-4">
+      <Dialog.Footer class="border-t px-6 py-4">
         <div class="flex items-center justify-between w-full">
           <div class="flex gap-2">
             <Button

@@ -253,7 +253,7 @@
   async function createNote() {
     if (!projectStore.currentProject?.id) return;
 
-    const newNote = await notesStore.createNote({
+    const noteData = {
       name: t("noteList.untitledNote"),
       content: "",
       user_id: auth.user?.id,
@@ -261,15 +261,17 @@
       literatureId: selectedTab === "literature" ? literatureId : undefined,
       type: selectedTab === "literature" ? "LITERATURE" : "RESEARCH",
       section_type: { value: "Other", label: t("notes.sections.other") },
-    });
-    if (newNote) {
-      notesStore.setActiveNote(newNote.id);
+    };
 
-      // If in split view and right panel is empty, load the new note there
-      if (selectedView === "split" && rightPanelNote === null) {
-        // Create a deep copy to ensure reactivity
-        rightPanelNote = JSON.parse(JSON.stringify(newNote));
-      }
+    // In split view, create note without auto-activating it (goes to right panel only)
+    // In single view, let the store auto-activate the new note
+    const newNote = await notesStore.createNote(
+      noteData,
+      selectedView === "split" ? { setActive: false } : undefined
+    );
+
+    if (newNote && selectedView === "split") {
+      rightPanelNote = JSON.parse(JSON.stringify(newNote));
     }
   }
 

@@ -4,6 +4,9 @@
   import ProjectOverview from "$lib/components/project/ProjectOverview.svelte";
   import ResearchDesigns from "$lib/components/project/ResearchDesigns.svelte";
   import ProjectKeywords from "$lib/components/project/ProjectKeywords.svelte";
+  import { ResearchQuestions } from "$lib/components/custom-ui/research-questions";
+  import DailyBriefing from "$lib/components/custom-ui/daily-briefing/DailyBriefing.svelte";
+  import BriefingHistory from "$lib/components/custom-ui/daily-briefing/BriefingHistory.svelte";
   import * as Card from "$lib/components/ui/card";
   import { projectStore } from "$lib/stores/ProjectStore";
   import NextBestActions from "$lib/components/custom-ui/project/NextBestActions.svelte";
@@ -17,6 +20,9 @@
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { _ } from "svelte-i18n";
   import { get } from "svelte/store";
+
+  // Briefing history drawer state
+  let showBriefingHistory = $state(false);
 
   // Helper function for imperative translation access
   const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
@@ -138,12 +144,31 @@
       {$_("overview.description")}
     </p>
 
+    <!-- Daily Briefing -->
+    {#if projectStore.currentProject?.id}
+      <DailyBriefing
+        projectId={projectStore.currentProject.id}
+        onViewHistory={() => showBriefingHistory = true}
+      />
+    {/if}
+
     <div class="grid grid-cols-2 gap-6 w-full">
       <!-- Left Column -->
       <div class="space-y-6">
         <div id="project-overview-card">
           <ProjectOverview />
         </div>
+
+        <!-- Research Questions -->
+        {#if projectStore.currentProject?.id}
+          <div id="research-questions-card">
+            <ResearchQuestions
+              projectId={projectStore.currentProject.id}
+              variant="card"
+              maxVisible={3}
+            />
+          </div>
+        {/if}
 
         <!-- Keywords -->
         {#if projectStore.currentProject}
@@ -184,3 +209,12 @@
 
 <!-- Event Form Modal -->
 <CustomEventForm />
+
+<!-- Briefing History Drawer -->
+{#if projectStore.currentProject?.id}
+  <BriefingHistory
+    bind:open={showBriefingHistory}
+    projectId={projectStore.currentProject.id}
+    onClose={() => showBriefingHistory = false}
+  />
+{/if}

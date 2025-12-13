@@ -606,6 +606,77 @@
         console.error("Error fetching outcome events:", error);
       }
 
+      // Fetch and group all artifact events (created and extracted) by date
+      try {
+        const [createdArtifacts, extractedArtifacts] = await Promise.all([
+          api.get(`/events?type=artifact.created&subjectId=${currentProject.id}`),
+          api.get(`/events?type=artifact.extracted&subjectId=${currentProject.id}`),
+        ]);
+
+        const allArtifactEvents = [
+          ...createdArtifacts.map((event: any) => ({
+            ...event,
+            eventType: "created",
+          })),
+          ...extractedArtifacts.map((event: any) => ({
+            ...event,
+            eventType: "extracted",
+          })),
+        ];
+
+        // Group artifact events by date and artifact ID
+        const artifactsByDateAndId = new Map<string, any[]>();
+        allArtifactEvents.forEach((event: any) => {
+          const date = new Date(event.createdAt);
+          const artifactId = event.data.artifactId;
+          const dateKey = date.toDateString();
+          const groupKey = `${dateKey}_${artifactId}`;
+
+          if (!artifactsByDateAndId.has(groupKey)) {
+            artifactsByDateAndId.set(groupKey, []);
+          }
+          artifactsByDateAndId
+            .get(groupKey)
+            ?.push({ ...event, exactDate: date });
+        });
+
+        // Add grouped artifact events
+        artifactsByDateAndId.forEach((artifactEvents, groupKey) => {
+          const sortedEvents = artifactEvents.sort(
+            (a, b) => a.exactDate.getTime() - b.exactDate.getTime()
+          );
+          const firstEvent = sortedEvents[0];
+
+          const isExtracted = sortedEvents.some((e) => e.eventType === "extracted");
+          const artifactType = firstEvent.data.artifactType || "artifact";
+
+          const title = isExtracted
+            ? t("progress.eventTitles.artifactExtracted")
+            : t("progress.eventTitles.artifactCreated");
+          const description = isExtracted
+            ? t("progress.eventDescriptions.extractedArtifact", { values: { name: firstEvent.data.artifactTitle } })
+            : t("progress.eventDescriptions.createdArtifact", { values: { name: firstEvent.data.artifactTitle } });
+
+          events.push({
+            id: `artifact_${groupKey}`,
+            title,
+            description,
+            timestamp: firstEvent.exactDate,
+            type: "insights",
+            data: {
+              ...firstEvent.data,
+              events: sortedEvents,
+            },
+            details: [
+              t("progress.eventDetails.artifactTitle", { values: { title: firstEvent.data.artifactTitle } }),
+              t("progress.eventDetails.artifactType", { values: { type: artifactType } }),
+            ],
+          });
+        });
+      } catch (error) {
+        console.error("Error fetching artifact events:", error);
+      }
+
       // Fetch and group keyword analyses by date
       try {
         const keywordAnalyses = await api.get(
@@ -1940,16 +2011,6 @@
   /* @svelte-ignore css-unused-selector */
   :global(.tab-button[data-state="active"]) {
     @apply text-foreground font-semibold;
-  }
-
-  :global([role="dialog"]) {
-    max-height: 90vh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  :global([role="dialog"] > div) {
-    margin: 0 !important;
   }
 
   :global(.achievement-progress) {
