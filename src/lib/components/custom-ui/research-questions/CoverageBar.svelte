@@ -68,26 +68,26 @@
       </p>
       {#if breakdown}
         <div class="space-y-1.5">
-          <div class="flex items-center justify-between text-xs">
+          <div class="flex items-center justify-between gap-4 text-xs">
             <div class="flex items-center gap-2">
               <div class="w-2 h-2 rounded-full {barColor}"></div>
               <span class="text-zinc-300">{$_('researchQuestions.directEvidence')}</span>
             </div>
-            <span class="text-zinc-100 font-medium">{breakdown.direct}%</span>
+            <span class="text-zinc-100 font-medium flex-shrink-0">{breakdown.direct}%</span>
           </div>
-          <div class="flex items-center justify-between text-xs">
+          <div class="flex items-center justify-between gap-4 text-xs">
             <div class="flex items-center gap-2">
               <div class="w-2 h-2 rounded-full {barColor} opacity-60"></div>
               <span class="text-zinc-300">{$_('researchQuestions.relatedDiscussion')}</span>
             </div>
-            <span class="text-zinc-100 font-medium">{breakdown.related}%</span>
+            <span class="text-zinc-100 font-medium flex-shrink-0">{breakdown.related}%</span>
           </div>
-          <div class="flex items-center justify-between text-xs">
+          <div class="flex items-center justify-between gap-4 text-xs">
             <div class="flex items-center gap-2">
               <div class="w-2 h-2 rounded-full bg-zinc-600"></div>
               <span class="text-zinc-300">{$_('researchQuestions.gap')}</span>
             </div>
-            <span class="text-zinc-100 font-medium">{breakdown.gap}%</span>
+            <span class="text-zinc-100 font-medium flex-shrink-0">{breakdown.gap}%</span>
           </div>
         </div>
       {:else}

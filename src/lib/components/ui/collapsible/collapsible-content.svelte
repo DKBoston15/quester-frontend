@@ -1,19 +1,13 @@
 <script lang="ts">
-  import { Collapsible as CollapsiblePrimitive } from "bits-ui";
+  import { Collapsible as CollapsiblePrimitive, type WithoutChild } from "bits-ui";
   import { cn } from "$lib/utils.js";
-  import type { HTMLDivAttributes } from "svelte/elements";
 
   let {
-    ref = $bindable(),
+    ref = $bindable(null),
     class: className,
     children,
     ...restProps
-  } = $props<
-    HTMLDivAttributes & {
-      ref?: HTMLDivElement;
-      children: import("svelte").Snippet;
-    }
-  >();
+  }: WithoutChild<CollapsiblePrimitive.ContentProps> = $props();
 </script>
 
 <CollapsiblePrimitive.Content
@@ -24,5 +18,5 @@
   )}
   {...restProps}
 >
-  {@render children()}
+  {@render children?.()}
 </CollapsiblePrimitive.Content>

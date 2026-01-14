@@ -1,26 +1,14 @@
 <script lang="ts">
-  import { Collapsible as CollapsiblePrimitive } from "bits-ui";
-  import type { HTMLButtonAttributes } from "svelte/elements";
+  import { Collapsible as CollapsiblePrimitive, type WithoutChild } from "bits-ui";
 
   let {
-    ref = $bindable(),
+    ref = $bindable(null),
     child,
     children,
     ...restProps
-  } = $props<
-    HTMLButtonAttributes & {
-      ref?: HTMLButtonElement;
-      child?: import("svelte").Snippet<[{ builder: any }]>;
-      children?: import("svelte").Snippet;
-      asChild?: boolean;
-    }
-  >();
+  }: WithoutChild<CollapsiblePrimitive.TriggerProps> = $props();
 </script>
 
-<CollapsiblePrimitive.Trigger bind:ref {...restProps} let:builder>
-  {#if child}
-    {@render child({ builder })}
-  {:else if children}
-    {@render children()}
-  {/if}
+<CollapsiblePrimitive.Trigger bind:ref {child} {...restProps}>
+  {@render children?.()}
 </CollapsiblePrimitive.Trigger>

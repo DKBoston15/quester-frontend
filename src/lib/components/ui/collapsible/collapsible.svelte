@@ -1,17 +1,13 @@
 <script lang="ts">
-  import { Collapsible as CollapsiblePrimitive } from "bits-ui";
+  import { Collapsible as CollapsiblePrimitive, type WithoutChild } from "bits-ui";
 
   let {
     disabled = false,
     open = $bindable(false),
     onOpenChange,
+    children,
     ...restProps
-  } = $props<{
-    disabled?: boolean;
-    open?: boolean;
-    onOpenChange?: (open: boolean) => void;
-    children: import("svelte").Snippet;
-  }>();
+  }: WithoutChild<CollapsiblePrimitive.RootProps> = $props();
 </script>
 
 <CollapsiblePrimitive.Root
@@ -20,5 +16,5 @@
   {disabled}
   {...restProps}
 >
-  {@render children()}
+  {@render children?.()}
 </CollapsiblePrimitive.Root>
