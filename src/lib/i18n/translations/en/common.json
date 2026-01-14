@@ -1881,6 +1881,9 @@
     "loadFailed": "Failed to load invitations",
     "revokedSuccess": "Invitation revoked successfully",
     "revokeFailed": "Failed to revoke invitation",
+    "revokeConfirmTitle": "Revoke Invitation?",
+    "revokeConfirmMessage": "Are you sure you want to revoke the invitation for {email}? This action cannot be undone.",
+    "revokeConfirmButton": "Revoke Invitation",
     "sendNewInvitation": "Send New Invitation",
     "emailAddress": "Email Address",
     "emailPlaceholder": "colleague@example.com",
@@ -2261,6 +2264,7 @@
     "viewInvites": "View Invites",
     "noInvites": "No pending invites",
     "accept": "Accept",
+    "acceptAll": "Accept All",
     "decline": "Decline",
     "accepting": "Accepting...",
     "declining": "Declining...",
@@ -2273,7 +2277,8 @@
     "declineFailed": "Failed to decline invitation",
     "loadingInvites": "Loading invitations...",
     "failedToLoad": "Failed to load invitations",
-    "failedToAccept": "Failed to accept invitation"
+    "failedToAccept": "Failed to accept invitation",
+    "failedToDecline": "Failed to decline invitation"
   },
   "customEvents": {
     "validation": {

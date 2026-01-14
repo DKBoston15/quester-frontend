@@ -4,6 +4,7 @@
   import { Label } from "$lib/components/ui/label";
   import { Badge } from "$lib/components/ui/badge";
   import * as Table from "$lib/components/ui/table";
+  import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { Mail, Send, X, Info } from "lucide-svelte";
   import { teamManagement } from "$lib/stores/TeamManagementStore";
   import { api } from "$lib/services/api-client";
@@ -36,6 +37,11 @@
   let isLoading = $state(false);
   let error = $state<string | null>(null);
   let success = $state<string | null>(null);
+
+  // Revoke confirmation dialog state
+  let revokeDialogOpen = $state(false);
+  let invitationToRevoke = $state<string | null>(null);
+  let revokeEmail = $state<string | null>(null);
 
   // Use derived for validation instead of effects to prevent loops
   const emailError = $derived(() => {
@@ -308,14 +314,28 @@
     }
   }
 
-  async function revokeInvitation(invitationId: string) {
+  function openRevokeDialog(invitationId: string, invitationEmail: string) {
+    invitationToRevoke = invitationId;
+    revokeEmail = invitationEmail;
+    revokeDialogOpen = true;
+  }
+
+  function closeRevokeDialog() {
+    revokeDialogOpen = false;
+    invitationToRevoke = null;
+    revokeEmail = null;
+  }
+
+  async function confirmRevoke() {
+    if (!invitationToRevoke) return;
+
     try {
       // Use centralized API client for revoke
-      await api.post(`/invitations/${invitationId}/revoke`);
+      await api.post(`/invitations/${invitationToRevoke}/revoke`);
 
       // Filter out the revoked invitation from local state
       pendingInvitations = pendingInvitations.filter(
-        (inv) => inv.id !== invitationId
+        (inv) => inv.id !== invitationToRevoke
       );
 
       // Show success message
@@ -324,6 +344,8 @@
       const message =
         err instanceof Error ? err.message : t("invitations.revokeFailed");
       toast.error(message);
+    } finally {
+      closeRevokeDialog();
     }
   }
 
@@ -524,7 +546,7 @@
                 <Button
                   variant="ghost"
                   size="sm"
-                  onclick={() => revokeInvitation(invitation.id)}
+                  onclick={() => openRevokeDialog(invitation.id, invitation.email)}
                   class="h-8 px-2 text-destructive hover:text-destructive-foreground hover:bg-destructive"
                 >
                   <X class="h-4 w-4" />
@@ -538,3 +560,23 @@
     {/if}
   </div>
 </div>
+
+<!-- Revoke Confirmation Dialog -->
+<AlertDialog.Root bind:open={revokeDialogOpen}>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>{$_('invitations.revokeConfirmTitle')}</AlertDialog.Title>
+      <AlertDialog.Description>
+        {$_('invitations.revokeConfirmMessage', { values: { email: revokeEmail || '' } })}
+      </AlertDialog.Description>
+    </AlertDialog.Header>
+    <AlertDialog.Footer>
+      <AlertDialog.Cancel onclick={closeRevokeDialog}>
+        {$_('common.cancel')}
+      </AlertDialog.Cancel>
+      <AlertDialog.Action onclick={confirmRevoke} class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+        {$_('invitations.revokeConfirmButton')}
+      </AlertDialog.Action>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>

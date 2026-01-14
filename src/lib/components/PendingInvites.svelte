@@ -10,6 +10,7 @@
   import { Button } from "$lib/components/ui/button";
   import { auth } from "$lib/stores/AuthStore";
   import { Separator } from "$lib/components/ui/separator";
+  import { Loader2 } from "lucide-svelte";
   import { EmptyState } from "$lib/components/ui/empty-state";
   import { api } from "$lib/services/api-client";
   import { _ } from "svelte-i18n";
@@ -38,6 +39,7 @@
   let invitations = $state<Invitation[]>([]);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
+  let processingIds = $state<Set<string>>(new Set());
 
   onMount(() => {
     if (!auth.user?.email) return;
@@ -45,6 +47,8 @@
   });
 
   async function loadInvitations() {
+    isLoading = true;
+    error = null;
     try {
       invitations = await api.get(
         `/invitations/pending?email=${encodeURIComponent(auth.user?.email || "")}`
@@ -56,7 +60,51 @@
     }
   }
 
-  async function acceptInvitations() {
+  async function acceptSingle(invitationId: string) {
+    processingIds = new Set([...processingIds, invitationId]);
+    error = null;
+
+    try {
+      await api.post(`/invitations/accept-multiple`, {
+        invitationIds: [invitationId],
+      });
+
+      // Remove from local list
+      invitations = invitations.filter((inv) => inv.id !== invitationId);
+
+      // Navigate to dashboard if no more invitations
+      if (invitations.length === 0) {
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      error = err instanceof Error ? err.message : t("pendingInvites.failedToAccept");
+    } finally {
+      processingIds = new Set([...processingIds].filter((id) => id !== invitationId));
+    }
+  }
+
+  async function declineInvitation(invitationId: string) {
+    processingIds = new Set([...processingIds, invitationId]);
+    error = null;
+
+    try {
+      await api.post(`/invitations/${invitationId}/decline`);
+
+      // Remove from local list
+      invitations = invitations.filter((inv) => inv.id !== invitationId);
+
+      // Navigate to dashboard if no more invitations
+      if (invitations.length === 0) {
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      error = err instanceof Error ? err.message : t("pendingInvites.failedToDecline");
+    } finally {
+      processingIds = new Set([...processingIds].filter((id) => id !== invitationId));
+    }
+  }
+
+  async function acceptAllInvitations() {
     isLoading = true;
     error = null;
 
@@ -65,13 +113,12 @@
         invitationIds: invitations.map((inv) => inv.id),
       });
 
-      isLoading = false;
-
       // Navigate to dashboard after successful acceptance
       navigate("/dashboard");
     } catch (err) {
       error =
         err instanceof Error ? err.message : t("pendingInvites.failedToAccept");
+    } finally {
       isLoading = false;
     }
   }
@@ -87,10 +134,17 @@
       >
     </CardHeader>
     <CardContent>
-      {#if isLoading}
-        <div class="text-center py-4 text-muted-foreground">{$_('pendingInvites.loadingInvites')}</div>
+      {#if isLoading && invitations.length === 0}
+        <div class="flex items-center justify-center py-8">
+          <Loader2 class="h-8 w-8 animate-spin text-primary" />
+        </div>
       {:else if error}
-        <div class="text-destructive py-4">{error}</div>
+        <div class="text-center py-4">
+          <p class="text-destructive mb-4">{error}</p>
+          <Button variant="outline" onclick={loadInvitations}>
+            {$_('common.retry')}
+          </Button>
+        </div>
       {:else if invitations.length === 0}
         <EmptyState
           title={$_('pendingInvites.noInvites')}
@@ -145,16 +199,43 @@
                   </div>
                 {/if}
               </div>
+
+              <!-- Individual accept/decline buttons -->
+              <div class="flex gap-2 mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-600">
+                <Button
+                  onclick={() => acceptSingle(invitation.id)}
+                  disabled={processingIds.has(invitation.id)}
+                  size="sm"
+                >
+                  {#if processingIds.has(invitation.id)}
+                    <Loader2 class="mr-2 h-4 w-4 animate-spin" />
+                  {/if}
+                  {$_('pendingInvites.accept')}
+                </Button>
+                <Button
+                  variant="outline"
+                  onclick={() => declineInvitation(invitation.id)}
+                  disabled={processingIds.has(invitation.id)}
+                  size="sm"
+                >
+                  {$_('pendingInvites.decline')}
+                </Button>
+              </div>
             </div>
           {/each}
 
-          <Separator class="my-6" />
+          {#if invitations.length > 1}
+            <Separator class="my-6" />
 
-          <div class="flex justify-end">
-            <Button onclick={acceptInvitations} disabled={isLoading}>
-              {isLoading ? $_('pendingInvites.accepting') : $_('pendingInvites.accept')}
-            </Button>
-          </div>
+            <div class="flex justify-end">
+              <Button onclick={acceptAllInvitations} disabled={isLoading || processingIds.size > 0}>
+                {#if isLoading}
+                  <Loader2 class="mr-2 h-4 w-4 animate-spin" />
+                {/if}
+                {$_('pendingInvites.acceptAll')}
+              </Button>
+            </div>
+          {/if}
         </div>
       {/if}
     </CardContent>
