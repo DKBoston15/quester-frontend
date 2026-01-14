@@ -1881,6 +1881,9 @@
     "loadFailed": "Error al cargar las invitaciones",
     "revokedSuccess": "Invitación revocada exitosamente",
     "revokeFailed": "Error al revocar la invitación",
+    "revokeConfirmTitle": "¿Revocar invitación?",
+    "revokeConfirmMessage": "¿Está seguro de que desea revocar la invitación para {email}? Esta acción no se puede deshacer.",
+    "revokeConfirmButton": "Revocar invitación",
     "sendNewInvitation": "Enviar nueva invitación",
     "emailAddress": "Dirección de correo electrónico",
     "emailPlaceholder": "colega@ejemplo.com",
@@ -2261,6 +2264,7 @@
     "viewInvites": "Ver invitaciones",
     "noInvites": "Sin invitaciones pendientes",
     "accept": "Aceptar",
+    "acceptAll": "Aceptar todas",
     "decline": "Rechazar",
     "accepting": "Aceptando...",
     "declining": "Rechazando...",
@@ -2273,7 +2277,8 @@
     "declineFailed": "Error al rechazar la invitación",
     "loadingInvites": "Cargando invitaciones...",
     "failedToLoad": "Error al cargar las invitaciones",
-    "failedToAccept": "Error al aceptar la invitación"
+    "failedToAccept": "Error al aceptar la invitación",
+    "failedToDecline": "Error al rechazar la invitación"
   },
   "customEvents": {
     "validation": {

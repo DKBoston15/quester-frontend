@@ -1117,6 +1117,9 @@
     "loadFailed": "加载邀请失败",
     "revokedSuccess": "邀请已成功撤销",
     "revokeFailed": "撤销邀请失败",
+    "revokeConfirmTitle": "撤销邀请？",
+    "revokeConfirmMessage": "您确定要撤销发给 {email} 的邀请吗？此操作无法撤消。",
+    "revokeConfirmButton": "撤销邀请",
     "sendNewInvitation": "发送新邀请",
     "emailAddress": "电子邮件地址",
     "emailPlaceholder": "colleague@example.com",
@@ -1685,6 +1688,7 @@
     "viewInvites": "查看邀请",
     "noInvites": "没有待处理的邀请",
     "accept": "接受",
+    "acceptAll": "全部接受",
     "decline": "拒绝",
     "accepting": "接受中...",
     "declining": "拒绝中...",
@@ -1697,7 +1701,8 @@
     "declineFailed": "拒绝邀请失败",
     "loadingInvites": "正在加载邀请...",
     "failedToLoad": "加载邀请失败",
-    "failedToAccept": "接受邀请失败"
+    "failedToAccept": "接受邀请失败",
+    "failedToDecline": "拒绝邀请失败"
   },
   "customEvents": {
     "validation": {

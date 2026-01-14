@@ -1881,6 +1881,9 @@
     "loadFailed": "Einladungen konnten nicht geladen werden",
     "revokedSuccess": "Einladung erfolgreich widerrufen",
     "revokeFailed": "Einladung konnte nicht widerrufen werden",
+    "revokeConfirmTitle": "Einladung widerrufen?",
+    "revokeConfirmMessage": "Sind Sie sicher, dass Sie die Einladung für {email} widerrufen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "revokeConfirmButton": "Einladung widerrufen",
     "sendNewInvitation": "Neue Einladung senden",
     "emailAddress": "E-Mail-Adresse",
     "emailPlaceholder": "kollege@beispiel.de",
@@ -2261,6 +2264,7 @@
     "viewInvites": "Einladungen anzeigen",
     "noInvites": "Keine ausstehenden Einladungen",
     "accept": "Annehmen",
+    "acceptAll": "Alle annehmen",
     "decline": "Ablehnen",
     "accepting": "Wird angenommen...",
     "declining": "Wird abgelehnt...",
@@ -2273,7 +2277,8 @@
     "declineFailed": "Einladung konnte nicht abgelehnt werden",
     "loadingInvites": "Einladungen werden geladen...",
     "failedToLoad": "Einladungen konnten nicht geladen werden",
-    "failedToAccept": "Einladung konnte nicht angenommen werden"
+    "failedToAccept": "Einladung konnte nicht angenommen werden",
+    "failedToDecline": "Einladung konnte nicht abgelehnt werden"
   },
   "customEvents": {
     "validation": {

@@ -1881,6 +1881,9 @@
     "loadFailed": "Échec du chargement des invitations",
     "revokedSuccess": "Invitation révoquée avec succès",
     "revokeFailed": "Échec de la révocation de l'invitation",
+    "revokeConfirmTitle": "Révoquer l'invitation ?",
+    "revokeConfirmMessage": "Êtes-vous sûr de vouloir révoquer l'invitation pour {email} ? Cette action est irréversible.",
+    "revokeConfirmButton": "Révoquer l'invitation",
     "sendNewInvitation": "Envoyer une nouvelle invitation",
     "emailAddress": "Adresse e-mail",
     "emailPlaceholder": "collegue@exemple.com",
@@ -2261,6 +2264,7 @@
     "viewInvites": "Voir les invitations",
     "noInvites": "Aucune invitation en attente",
     "accept": "Accepter",
+    "acceptAll": "Tout accepter",
     "decline": "Refuser",
     "accepting": "Acceptation...",
     "declining": "Refus...",
@@ -2273,7 +2277,8 @@
     "declineFailed": "Échec du refus de l'invitation",
     "loadingInvites": "Chargement des invitations...",
     "failedToLoad": "Échec du chargement des invitations",
-    "failedToAccept": "Échec de l'acceptation de l'invitation"
+    "failedToAccept": "Échec de l'acceptation de l'invitation",
+    "failedToDecline": "Échec du refus de l'invitation"
   },
   "customEvents": {
     "validation": {
