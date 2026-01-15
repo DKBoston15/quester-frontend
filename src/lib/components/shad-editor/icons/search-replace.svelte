@@ -4,12 +4,8 @@
   import * as Popover from "$lib/components/ui/popover/index.js";
   import * as Tooltip from "$lib/components/ui/tooltip/index.js";
   import {
-    ArrowLeft,
-    ArrowRight,
     TextSearch,
     X,
-    Replace,
-    ReplaceAll,
     ChevronDown,
   } from "lucide-svelte";
   import type { ToolBarIconProps } from "./types.js";

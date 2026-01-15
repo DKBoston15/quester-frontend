@@ -37,7 +37,6 @@
   import TrendingUp from "lucide-svelte/icons/trending-up";
   import ArrowLeft from "lucide-svelte/icons/arrow-left";
   import Trash2 from "lucide-svelte/icons/trash-2";
-  import History from "lucide-svelte/icons/history";
   import PanelLeft from "lucide-svelte/icons/panel-left";
   import PanelLeftClose from "lucide-svelte/icons/panel-left-close";
   import Save from "lucide-svelte/icons/save";

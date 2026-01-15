@@ -1,7 +1,7 @@
 
   import type { Note } from "$lib/types";
   import { auth } from "$lib/stores/AuthStore";
-  import { api, isAuthError } from "../services/api-client";
+  import { api } from "../services/api-client";
   import { _ } from "svelte-i18n";
   import { get } from "svelte/store";
 

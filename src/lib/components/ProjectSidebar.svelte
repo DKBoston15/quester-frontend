@@ -28,7 +28,7 @@
   import { useLocation } from "svelte-routing";
   import { api } from "$lib/services/api-client";
   import { DateTime } from "luxon"; // Import DateTime
-  import { _, locale } from "svelte-i18n";
+  import { _ } from "svelte-i18n";
   import { get } from "svelte/store";
 
   type Route = {

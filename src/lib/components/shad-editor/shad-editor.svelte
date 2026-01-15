@@ -322,13 +322,13 @@
             editor.commands.setTextSelection({ from, to });
           }
         } catch (restoreErr) {
-          // eslint-disable-next-line no-console
+           
           console.warn("ShadEditor: failed to restore selection after sync", restoreErr);
         }
       }
     } catch (e) {
       // Swallow errors to avoid breaking typing if malformed content arrives
-      // eslint-disable-next-line no-console
+       
       console.warn("ShadEditor: failed to sync external content", e);
     }
   });

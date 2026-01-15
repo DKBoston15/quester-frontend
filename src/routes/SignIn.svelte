@@ -3,9 +3,8 @@
   import logo from "../assets/logo.png";
   import { ModeToggle } from "$lib/components/ui/darkmode-toggle";
   import * as Tooltip from "$lib/components/ui/tooltip";
-  import { _ } from "svelte-i18n";
-
-  function handleGoogleSignIn() {
+  
+function handleGoogleSignIn() {
     onLogin();
   }
 

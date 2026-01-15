@@ -13,7 +13,7 @@
   import { Badge } from "$lib/components/ui/badge";
   import * as Tabs from "$lib/components/ui/tabs";
   import * as Tooltip from "$lib/components/ui/tooltip";
-  import { InfoIcon, Check } from "lucide-svelte";
+  import { InfoIcon } from "lucide-svelte";
   import { projectStore } from "$lib/stores/ProjectStore";
   import { auth } from "$lib/stores/AuthStore.svelte";
   import { localeStore } from "$lib/stores/LocaleStore.svelte";

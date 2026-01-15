@@ -9,7 +9,7 @@
   import PlusCircle from "lucide-svelte/icons/plus-circle";
   import XCircle from "lucide-svelte/icons/x-circle";
   import AlertCircle from "lucide-svelte/icons/alert-circle";
-  import { _, locale } from "svelte-i18n";
+  import { _ } from "svelte-i18n";
   import { get } from "svelte/store";
   import type {
     ContextSelectionItem,

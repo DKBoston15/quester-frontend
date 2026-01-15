@@ -18,8 +18,6 @@
     Network,
     Star,
     Expand,
-    Plus,
-    Minus,
     Info,
     GraduationCap,
     Clock,
@@ -1073,7 +1071,7 @@
   }
 
   // Function to create driver.js guided tour with translated content
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   function createDriver() {
     return driver({
       showProgress: true,

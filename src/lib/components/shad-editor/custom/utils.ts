@@ -1,7 +1,7 @@
 import type { Editor } from '@tiptap/core';
 import { Node, Slice } from '@tiptap/pm/model';
 import { Decoration, DecorationSet, EditorView } from '@tiptap/pm/view';
-import { _, locale } from 'svelte-i18n';
+import { _ } from 'svelte-i18n';
 import { get } from 'svelte/store';
 
 export default function (doc: Node): DecorationSet {

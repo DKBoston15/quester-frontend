@@ -1,6 +1,5 @@
 <script lang="ts">
   import {
-    ArrowDown,
     ChevronDown,
     Code,
     DiamondMinus,

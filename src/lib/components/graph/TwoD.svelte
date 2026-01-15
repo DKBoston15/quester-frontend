@@ -15,9 +15,8 @@
   import { projectStore } from "$lib/stores/ProjectStore";
   import { _ } from "svelte-i18n";
   import GraphContextMenu from "./GraphContextMenu.svelte";
-  import { navigate } from "svelte-routing";
-
-  // Types for graph data
+  
+// Types for graph data
   interface GraphNode {
     id: string;
     val: number;

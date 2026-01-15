@@ -9,7 +9,7 @@
   import InsightsHistoryModal from "./InsightsHistoryModal.svelte";
   import { insightsStore } from "$lib/stores/InsightsStore";
   import { Lightbulb, RefreshCw, Sparkles, AlertCircle, History } from "lucide-svelte";
-  import { _, locale } from 'svelte-i18n';
+  import { _ } from 'svelte-i18n';
   import { get } from 'svelte/store';
 
   interface Props {

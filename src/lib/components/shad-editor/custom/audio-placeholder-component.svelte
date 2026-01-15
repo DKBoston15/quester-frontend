@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 	import type { NodeViewProps } from '@tiptap/core';
-	import { AudioLines, Video, X } from 'lucide-svelte';
+	import { AudioLines, X } from 'lucide-svelte';
 	import { NodeViewWrapper } from 'svelte-tiptap';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';

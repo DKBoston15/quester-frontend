@@ -19,9 +19,8 @@
   import { _ } from "svelte-i18n";
   import type { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
   import GraphContextMenu from "./GraphContextMenu.svelte";
-  import { navigate } from "svelte-routing";
-
-  // Types for graph data
+  
+// Types for graph data
   interface GraphNode {
     id: string;
     val: number;

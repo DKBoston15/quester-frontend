@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
+	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import type { NodeViewProps } from '@tiptap/core';
 	import { ImageIcon, X } from 'lucide-svelte';
 	import { NodeViewWrapper } from 'svelte-tiptap';

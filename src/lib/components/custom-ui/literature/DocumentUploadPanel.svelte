@@ -1,7 +1,5 @@
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
-  import { Progress } from "$lib/components/ui/progress";
-  import { Badge } from "$lib/components/ui/badge";
   import {
     Upload,
     FileText,
@@ -12,7 +10,6 @@
   } from "lucide-svelte";
   import { createEventDispatcher } from "svelte";
   import { API_BASE_URL } from "$lib/config";
-  import { auth } from "$lib/stores/AuthStore";
   import { processingJobsStore } from "$lib/stores/ProcessingJobsStore.svelte";
   import { _ } from "svelte-i18n";
   import { get } from "svelte/store";
