@@ -32,6 +32,11 @@
   // Check if the user is authenticated
   let isCheckingAuth = $state(true);
   let i18nReady = $state(false);
+  let authRetryCount = $state(0);
+  let isSlowConnection = $state(false);
+
+  const AUTH_TIMEOUT_MS = 15000; // 15 seconds per attempt
+  const MAX_AUTH_RETRIES = 2;
 
   onMount(() => {
     let destroyed = false;
@@ -48,24 +53,23 @@
     // Initialize FullStory
     initializeFullStory();
 
-    // Safety timeout - force loading to false after 10 seconds
+    // Safety timeout - force loading to false after all retries exhausted
+    const totalTimeout = AUTH_TIMEOUT_MS * (MAX_AUTH_RETRIES + 1) + 5000;
     const safetyTimeout = setTimeout(() => {
       if (destroyed) {
         return;
       }
 
       isCheckingAuth = false;
-      // Force a re-render
       document.dispatchEvent(new Event("forceRerender"));
-    }, 10000);
+    }, totalTimeout);
 
-    const { promise: timeoutPromise, cancel: cancelTimeout } = createTimeoutPromise(
-      10000,
-      "Auth verification timed out after 10 seconds"
-    );
+    const runAuthCheck = async (attempt: number = 0): Promise<void> => {
+      const { promise: timeoutPromise, cancel: cancelTimeout } = createTimeoutPromise(
+        AUTH_TIMEOUT_MS,
+        `Auth verification timed out (attempt ${attempt + 1})`
+      );
 
-    // Create a promise that rejects after a timeout
-    const runAuthCheck = async () => {
       try {
         // Race the auth verification against the timeout
         await Promise.race([auth.verifySession(), timeoutPromise]);
@@ -74,10 +78,10 @@
           return;
         }
 
+        // Reset slow connection indicator on success
+        isSlowConnection = false;
+
         if (!auth.isAuthenticated && window.location.pathname !== "/") {
-          console.error(
-            'App.svelte onMount: <<< REDIRECTING TO / >>> Condition met: !auth.isAuthenticated && window.location.pathname !== "/"'
-          );
           navigate("/", { replace: true });
         } else if (auth.isAuthenticated && window.location.pathname === "/") {
           navigate("/dashboard", { replace: true });
@@ -87,23 +91,35 @@
           localeStore.initializeFromUser(auth.user.metadata.locale);
         }
       } catch (err) {
+        cancelTimeout();
+
         if (destroyed) {
           return;
         }
 
-        console.error("Error during auth verification:", err);
-        // If we timeout or have another error, force isCheckingAuth to false
-        // and clear user to reset auth state
+        console.warn(`Auth verification attempt ${attempt + 1} failed:`, err);
+
+        // If we have retries left, try again
+        if (attempt < MAX_AUTH_RETRIES) {
+          authRetryCount = attempt + 1;
+          isSlowConnection = true;
+          // Small delay before retry
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          if (!destroyed) {
+            return runAuthCheck(attempt + 1);
+          }
+        }
+
+        // All retries exhausted
+        console.error("Auth verification failed after all retries");
         isCheckingAuth = false;
-        auth.clearUser(); // This internally sets isLoading to false
+        auth.clearUser();
         navigate("/", { replace: true });
       } finally {
         cancelTimeout();
 
-        if (!destroyed) {
-          // Ensure the safety timeout is cleared
+        if (!destroyed && !isSlowConnection) {
           clearTimeout(safetyTimeout);
-          // Double-check the isCheckingAuth state
           isCheckingAuth = false;
         }
       }
@@ -114,7 +130,6 @@
     return () => {
       destroyed = true;
       clearTimeout(safetyTimeout);
-      cancelTimeout();
     };
   });
 
@@ -204,7 +219,13 @@
     <div
       class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-4"
     ></div>
-    <p class="text-muted-foreground mb-2">{$_('auth.checkingAuth')}</p>
+    <p class="text-muted-foreground mb-2">
+      {#if isSlowConnection}
+        {$_('auth.slowConnection', { default: 'Connection is slow, retrying...' })} ({authRetryCount + 1}/{MAX_AUTH_RETRIES + 1})
+      {:else}
+        {$_('auth.checkingAuth')}
+      {/if}
+    </p>
     <div class="text-xs text-center text-muted-foreground/70 max-w-md px-4">
       <p>{$_('auth.authPersist')}</p>
       <ul class="mt-2 text-left list-disc pl-6">

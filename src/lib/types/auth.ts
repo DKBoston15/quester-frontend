@@ -6,7 +6,7 @@ export type UserMetadata = {
 };
 
 export type User = {
-  id: number;
+  id: string;
   email: string;
   firstName: string;
   lastName: string;
