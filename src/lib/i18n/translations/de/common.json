@@ -1681,7 +1681,9 @@
       "addedLiteratureItem": "1 Literaturelement zum Projekt hinzugefügt",
       "addedLiteratureItems": "{count} Literaturelemente zum Projekt hinzugefügt",
       "createdNote": "1 Notiz erstellt",
-      "createdNotes": "{count} Notizen erstellt"
+      "createdNotes": "{count} Notizen erstellt",
+      "productDefined": "1 Forschungsprodukt definiert",
+      "productsDefined": "{count} Forschungsprodukte definiert"
     },
     "eventDetails": {
       "modelName": "Modellname: {name}",
@@ -1759,6 +1761,8 @@
       "addedLiteratureItems": "{count} Literaturelemente hinzugefügt",
       "createdNote": "Notiz erstellt",
       "createdNotes": "{count} Notizen erstellt",
+      "productDefined": "Forschungsprodukt definiert",
+      "productsDefined": "{count} Forschungsprodukte definiert",
       "nEvents": "{count} Ereignisse",
       "oneEvent": "1 Ereignis"
     },
@@ -1780,6 +1784,7 @@
       "status": "Statusänderungen",
       "design": "Designänderungen",
       "insights": "Erkenntnisse",
+      "products": "Produkte",
       "custom": "Benutzerdefinierte Ereignisse"
     },
     "achievementNames": {
@@ -1958,7 +1963,8 @@
     "tips": "Tipps:",
     "tipPressEnter": "Drücken Sie Enter oder Komma, um ein Schlüsselwort hinzuzufügen",
     "tipMaxKeywords": "Fügen Sie bis zu 7 Schlüsselwörter für beste Ergebnisse hinzu",
-    "tipSpecificTerms": "Verwenden Sie spezifische, forschungsbezogene Begriffe"
+    "tipSpecificTerms": "Verwenden Sie spezifische, forschungsbezogene Begriffe",
+    "useProjectKeywords": "Projekt-Schlüsselwörter verwenden"
   },
   "addLiterature": {
     "title": "Literatur hinzufügen",
@@ -2321,6 +2327,16 @@
         "label": "Ethikprüfung",
         "description": "Dokumentieren Sie IRB-Einreichungen und Ethikgenehmigungen",
         "example": "z.B. IRB-Einreichung, Ethikgenehmigung erhalten"
+      },
+      "insight": {
+        "label": "Erkenntnis",
+        "description": "Halten Sie wichtige Erkenntnisse und Entdeckungen aus Ihrer Forschung fest",
+        "example": "z.B. Wichtige Erkenntnis entdeckt, Neue Hypothese formuliert"
+      },
+      "decision": {
+        "label": "Entscheidung",
+        "description": "Dokumentieren Sie wichtige Forschungsentscheidungen und deren Begründung",
+        "example": "z.B. Methodik gewählt, Umfang angepasst"
       },
       "other": {
         "label": "Sonstiges",

@@ -239,7 +239,7 @@
       typeCounts.set(event.type, (typeCounts.get(event.type) || 0) + 1);
     });
 
-    const eventTypeIds = ["project", "literature", "notes", "models", "outcomes", "status", "design", "insights", "custom"] as const;
+    const eventTypeIds = ["project", "literature", "notes", "models", "outcomes", "status", "design", "insights", "products", "custom"] as const;
     return eventTypeIds.map((id) => ({
       id,
       label: t(`progress.eventTypes.${id}`),
@@ -729,6 +729,41 @@
           }),
         });
       });
+
+      // Generate product events from project data
+      if (currentProject.product) {
+        try {
+          const products = JSON.parse(currentProject.product) as Array<{
+            id: string;
+            name: string;
+            type: string;
+            status: string;
+            description?: string;
+            dueDate?: string;
+          }>;
+
+          if (Array.isArray(products) && products.length > 0) {
+            events.push({
+              id: `products_summary`,
+              title: products.length === 1
+                ? t("progress.eventTitles.productDefined")
+                : t("progress.eventTitles.productsDefined", { values: { count: products.length } }),
+              description: products.length === 1
+                ? t("progress.eventDescriptions.productDefined")
+                : t("progress.eventDescriptions.productsDefined", { values: { count: products.length } }),
+              timestamp: new Date(currentProject.updatedAt || currentProject.createdAt || Date.now()),
+              type: "products",
+              data: products,
+              details: products.map((p) => {
+                const statusLabel = p.status.replace("_", " ");
+                return `${p.name} (${statusLabel})`;
+              }),
+            });
+          }
+        } catch (err) {
+          console.error("Error parsing products:", err);
+        }
+      }
 
       // Fetch and convert custom events
       try {

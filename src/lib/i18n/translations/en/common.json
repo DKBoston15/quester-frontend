@@ -1681,7 +1681,9 @@
       "addedLiteratureItem": "1 literature item added to the project",
       "addedLiteratureItems": "{count} literature items added to the project",
       "createdNote": "1 note created",
-      "createdNotes": "{count} notes created"
+      "createdNotes": "{count} notes created",
+      "productDefined": "1 research product defined",
+      "productsDefined": "{count} research products defined"
     },
     "eventDetails": {
       "modelName": "Model Name: {name}",
@@ -1759,6 +1761,8 @@
       "addedLiteratureItems": "Added {count} Literature Items",
       "createdNote": "Created Note",
       "createdNotes": "Created {count} Notes",
+      "productDefined": "Research Product Defined",
+      "productsDefined": "{count} Research Products Defined",
       "nEvents": "{count} events",
       "oneEvent": "1 event"
     },
@@ -1780,6 +1784,7 @@
       "status": "Status Changes",
       "design": "Design Changes",
       "insights": "Insights",
+      "products": "Products",
       "custom": "Custom Events"
     },
     "achievementNames": {
@@ -1958,7 +1963,8 @@
     "tips": "Tips:",
     "tipPressEnter": "Press Enter or comma to add a keyword",
     "tipMaxKeywords": "Add up to 7 keywords for best results",
-    "tipSpecificTerms": "Use specific, research-focused terms"
+    "tipSpecificTerms": "Use specific, research-focused terms",
+    "useProjectKeywords": "Use Project Keywords"
   },
   "addLiterature": {
     "title": "Add Literature",
@@ -2321,6 +2327,16 @@
         "label": "Ethics Review",
         "description": "Record IRB submissions and ethics approvals",
         "example": "e.g., IRB submission, Ethics approval received"
+      },
+      "insight": {
+        "label": "Insight",
+        "description": "Record key insights and discoveries from your research",
+        "example": "e.g., Key finding discovered, New hypothesis formed"
+      },
+      "decision": {
+        "label": "Decision",
+        "description": "Document important research decisions and their rationale",
+        "example": "e.g., Methodology chosen, Scope adjusted"
       },
       "other": {
         "label": "Other",

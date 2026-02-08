@@ -25,6 +25,14 @@
   let currentAnalysis = $state<KeywordAnalysis | null>(null);
   let analyses = $state<KeywordAnalysis[]>([]);
   let showNewAnalysis = $state(false);
+  let prefillKeywords = $state<string[]>([]);
+
+  // Reset prefill when the new analysis form is closed
+  $effect(() => {
+    if (!showNewAnalysis) {
+      prefillKeywords = [];
+    }
+  });
   // Track in-flight create request to allow cancellation and avoid timeouts
   let createAnalysisAbort: AbortController | null = null;
 
@@ -386,7 +394,25 @@
     </div>
   {:else if showNewAnalysis}
     <div transition:slide>
-      <KeywordInput on:submit={({ detail }) => handleNewAnalysis(detail)} />
+      {#if projectStore.currentProject?.keywords && (Array.isArray(projectStore.currentProject.keywords) ? projectStore.currentProject.keywords.length > 0 : projectStore.currentProject.keywords !== "[]") && prefillKeywords.length === 0}
+        <div class="mb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onclick={() => {
+              const raw = projectStore.currentProject?.keywords;
+              const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+              prefillKeywords = [...(parsed ?? [])].slice(0, 7);
+            }}
+          >
+            {$_("keywordAnalysis.useProjectKeywords")}
+          </Button>
+        </div>
+      {/if}
+      <KeywordInput
+        initialKeywords={prefillKeywords}
+        on:submit={({ detail }) => handleNewAnalysis(detail)}
+      />
     </div>
   {:else if currentAnalysis}
     <div class="space-y-6" transition:fade id="analysis-results-card">

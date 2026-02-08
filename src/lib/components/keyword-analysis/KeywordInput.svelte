@@ -13,8 +13,17 @@
 
   const dispatch = createEventDispatcher<{ submit: string[] }>();
 
+  let { initialKeywords = [] }: { initialKeywords?: string[] } = $props();
+
   let keywords = $state<string[]>([]);
   let currentInput = $state("");
+
+  // Sync initialKeywords into local state when they change
+  $effect(() => {
+    if (initialKeywords.length > 0 && keywords.length === 0) {
+      keywords = [...initialKeywords].slice(0, 7);
+    }
+  });
   let error = $state("");
 
   function handleKeydown(event: KeyboardEvent) {

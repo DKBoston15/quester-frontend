@@ -17,6 +17,7 @@ export type TimelineEvent = {
     | "status"
     | "design"
     | "insights"
+    | "products"
     | "custom";
   data?: any;
   details?: string[];

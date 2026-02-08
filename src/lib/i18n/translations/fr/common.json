@@ -1681,7 +1681,9 @@
       "addedLiteratureItem": "1 élément de littérature ajouté au projet",
       "addedLiteratureItems": "{count} éléments de littérature ajoutés au projet",
       "createdNote": "1 note créée",
-      "createdNotes": "{count} notes créées"
+      "createdNotes": "{count} notes créées",
+      "productDefined": "1 produit de recherche défini",
+      "productsDefined": "{count} produits de recherche définis"
     },
     "eventDetails": {
       "modelName": "Nom du modèle : {name}",
@@ -1759,6 +1761,8 @@
       "addedLiteratureItems": "{count} éléments de littérature ajoutés",
       "createdNote": "Note créée",
       "createdNotes": "{count} notes créées",
+      "productDefined": "Produit de recherche défini",
+      "productsDefined": "{count} produits de recherche définis",
       "nEvents": "{count} événements",
       "oneEvent": "1 événement"
     },
@@ -1780,6 +1784,7 @@
       "status": "Changements de statut",
       "design": "Changements de conception",
       "insights": "Perspectives",
+      "products": "Produits",
       "custom": "Événements personnalisés"
     },
     "achievementNames": {
@@ -1958,7 +1963,8 @@
     "tips": "Conseils :",
     "tipPressEnter": "Appuyez sur Entrée ou virgule pour ajouter un mot-clé",
     "tipMaxKeywords": "Ajoutez jusqu'à 7 mots-clés pour de meilleurs résultats",
-    "tipSpecificTerms": "Utilisez des termes spécifiques axés sur la recherche"
+    "tipSpecificTerms": "Utilisez des termes spécifiques axés sur la recherche",
+    "useProjectKeywords": "Utiliser les mots-clés du projet"
   },
   "addLiterature": {
     "title": "Ajouter de la littérature",
@@ -2321,6 +2327,16 @@
         "label": "Révision éthique",
         "description": "Enregistrez les soumissions au comité d'éthique et les approbations",
         "example": "ex. : Soumission au comité d'éthique, Approbation éthique reçue"
+      },
+      "insight": {
+        "label": "Découverte",
+        "description": "Enregistrez les découvertes et observations clés de votre recherche",
+        "example": "ex. : Découverte clé, Nouvelle hypothèse formée"
+      },
+      "decision": {
+        "label": "Décision",
+        "description": "Documentez les décisions importantes de recherche et leur justification",
+        "example": "ex. : Méthodologie choisie, Portée ajustée"
       },
       "other": {
         "label": "Autre",

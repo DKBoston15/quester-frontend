@@ -1681,7 +1681,9 @@
       "addedLiteratureItem": "1 elemento de literatura agregado al proyecto",
       "addedLiteratureItems": "{count} elementos de literatura agregados al proyecto",
       "createdNote": "1 nota creada",
-      "createdNotes": "{count} notas creadas"
+      "createdNotes": "{count} notas creadas",
+      "productDefined": "1 producto de investigación definido",
+      "productsDefined": "{count} productos de investigación definidos"
     },
     "eventDetails": {
       "modelName": "Nombre del modelo: {name}",
@@ -1759,6 +1761,8 @@
       "addedLiteratureItems": "{count} elementos de literatura agregados",
       "createdNote": "Nota creada",
       "createdNotes": "{count} notas creadas",
+      "productDefined": "Producto de investigación definido",
+      "productsDefined": "{count} productos de investigación definidos",
       "nEvents": "{count} eventos",
       "oneEvent": "1 evento"
     },
@@ -1780,6 +1784,7 @@
       "status": "Cambios de estado",
       "design": "Cambios de diseño",
       "insights": "Perspectivas",
+      "products": "Productos",
       "custom": "Eventos personalizados"
     },
     "achievementNames": {
@@ -1958,7 +1963,8 @@
     "tips": "Consejos:",
     "tipPressEnter": "Presione Enter o coma para agregar una palabra clave",
     "tipMaxKeywords": "Agregue hasta 7 palabras clave para mejores resultados",
-    "tipSpecificTerms": "Use términos específicos enfocados en investigación"
+    "tipSpecificTerms": "Use términos específicos enfocados en investigación",
+    "useProjectKeywords": "Usar palabras clave del proyecto"
   },
   "addLiterature": {
     "title": "Agregar literatura",
@@ -2321,6 +2327,16 @@
         "label": "Revisión ética",
         "description": "Registre envíos al IRB y aprobaciones éticas",
         "example": "Ej., Envío al IRB, Aprobación ética recibida"
+      },
+      "insight": {
+        "label": "Hallazgo",
+        "description": "Registre hallazgos clave y descubrimientos de su investigación",
+        "example": "Ej., Hallazgo clave descubierto, Nueva hipótesis formada"
+      },
+      "decision": {
+        "label": "Decisión",
+        "description": "Documente decisiones importantes de investigación y su justificación",
+        "example": "Ej., Metodología elegida, Alcance ajustado"
       },
       "other": {
         "label": "Otro",
