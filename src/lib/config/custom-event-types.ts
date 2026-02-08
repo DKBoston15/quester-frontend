@@ -72,8 +72,8 @@ export function getEventTypeConfigs(): Record<CustomEventType, EventTypeConfig> 
 
     [CustomEventType.INSIGHT]: {
       type: CustomEventType.INSIGHT,
-      label: t("customEvents.types.research_milestone.label"),
-      description: t("customEvents.types.research_milestone.description"),
+      label: t("customEvents.types.insight.label"),
+      description: t("customEvents.types.insight.description"),
       icon: "Lightbulb",
       color: {
         bg: "bg-gradient-to-br from-purple-50 to-violet-100 dark:from-purple-950/30 dark:to-violet-900/20",
@@ -82,13 +82,13 @@ export function getEventTypeConfigs(): Record<CustomEventType, EventTypeConfig> 
         text: "text-purple-900 dark:text-purple-100",
         tag: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-200",
       },
-      examples: [t("customEvents.types.research_milestone.example")],
+      examples: [t("customEvents.types.insight.example")],
     },
 
     [CustomEventType.DECISION]: {
       type: CustomEventType.DECISION,
-      label: t("customEvents.types.training.label"),
-      description: t("customEvents.types.training.description"),
+      label: t("customEvents.types.decision.label"),
+      description: t("customEvents.types.decision.description"),
       icon: "Gavel",
       color: {
         bg: "bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950/30 dark:to-emerald-900/20",
@@ -97,7 +97,7 @@ export function getEventTypeConfigs(): Record<CustomEventType, EventTypeConfig> 
         text: "text-green-900 dark:text-green-100",
         tag: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200",
       },
-      examples: [t("customEvents.types.training.example")],
+      examples: [t("customEvents.types.decision.example")],
     },
 
     [CustomEventType.ADMINISTRATION]: {

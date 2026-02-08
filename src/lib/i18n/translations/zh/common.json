@@ -1182,7 +1182,9 @@
       "addedLiteratureItem": "向项目添加了 1 条文献",
       "addedLiteratureItems": "向项目添加了 {count} 条文献",
       "createdNote": "创建了 1 条笔记",
-      "createdNotes": "创建了 {count} 条笔记"
+      "createdNotes": "创建了 {count} 条笔记",
+      "productDefined": "定义了 1 个研究产品",
+      "productsDefined": "定义了 {count} 个研究产品"
     },
     "eventDetails": {
       "modelName": "模型名称：{name}",
@@ -1260,6 +1262,8 @@
       "addedLiteratureItems": "添加了 {count} 条文献",
       "createdNote": "笔记已创建",
       "createdNotes": "创建了 {count} 条笔记",
+      "productDefined": "研究产品已定义",
+      "productsDefined": "{count} 个研究产品已定义",
       "nEvents": "{count} 个事件",
       "oneEvent": "1 个事件"
     },
@@ -1281,6 +1285,7 @@
       "status": "状态变更",
       "design": "设计变更",
       "insights": "洞察",
+      "products": "产品",
       "custom": "自定义事件"
     },
     "achievementNames": {
@@ -1382,7 +1387,8 @@
     "tips": "提示：",
     "tipPressEnter": "按 Enter 或逗号添加关键词",
     "tipMaxKeywords": "添加最多 7 个关键词以获得最佳结果",
-    "tipSpecificTerms": "使用具体的、以研究为中心的术语"
+    "tipSpecificTerms": "使用具体的、以研究为中心的术语",
+    "useProjectKeywords": "使用项目关键词"
   },
   "addLiterature": {
     "title": "添加文献",
@@ -1745,6 +1751,16 @@
         "label": "伦理审查",
         "description": "记录 IRB 提交和伦理批准",
         "example": "例如：IRB 提交、伦理批准已收到"
+      },
+      "insight": {
+        "label": "洞察",
+        "description": "记录研究中的关键洞察和发现",
+        "example": "例如：发现关键发现、形成新假设"
+      },
+      "decision": {
+        "label": "决策",
+        "description": "记录重要的研究决策及其理由",
+        "example": "例如：选择方法论、调整范围"
       },
       "other": {
         "label": "其他",

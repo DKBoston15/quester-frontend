@@ -62,9 +62,7 @@
 
   // Local state
   let searchInput = $state("");
-  let filteredNotes = $state<Note[]>([]);
-  let groupedNotes = $state<[string, Note[]][]>([]);
-  let isSearchActive = $state(false);
+  let isSearchActive = $derived(searchInput.trim().length > 0);
   let localSearchResults = $state<Note[]>([]);
   let activeLiteratureFilter = $state<string | undefined>(undefined);
   let filterSearchValue = $state("");
@@ -151,12 +149,7 @@
     return details;
   }
 
-  // Update search state
-  $effect(() => {
-    isSearchActive = searchInput.trim().length > 0;
-  });
-
-  // Update search results - MUST run BEFORE filtering effect
+  // Sync search query to store (side-effect only)
   $effect(() => {
     if (searchInput.trim()) {
       localSearchResults = performLocalSearch(
@@ -170,8 +163,8 @@
     }
   });
 
-  // Update filtered notes
-  $effect(() => {
+  // Derive filtered notes synchronously from store state
+  let filteredNotes = $derived.by(() => {
     // Get base filtered notes
     let filtered = [...notesStore.notes];
 
@@ -202,7 +195,7 @@
             })
           : localSearchResults;
 
-      filteredNotes = searchResults;
+      return searchResults;
     } else {
       // Apply literature filter if specified
       if (activeLiteratureFilter) {
@@ -212,7 +205,7 @@
       }
 
       // Sort by date
-      filteredNotes = filtered.sort(
+      return [...filtered].sort(
         (a, b) =>
           new Date(b.updated_at || 0).getTime() -
           new Date(a.updated_at || 0).getTime()
@@ -220,10 +213,8 @@
     }
   });
 
-  // Update grouped notes
-  $effect(() => {
-    groupedNotes = groupNotesByDate(filteredNotes);
-  });
+  // Derive grouped notes synchronously from filtered notes
+  let groupedNotes = $derived(groupNotesByDate(filteredNotes));
 
   // Ensure the active note is visible in the list (scroll into view)
   $effect(() => {

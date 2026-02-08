@@ -25,6 +25,21 @@
   let currentAnalysis = $state<KeywordAnalysis | null>(null);
   let analyses = $state<KeywordAnalysis[]>([]);
   let showNewAnalysis = $state(false);
+  let prefillKeywords = $state<string[]>([]);
+
+  let hasProjectKeywords = $derived.by(() => {
+    const kw = projectStore.currentProject?.keywords;
+    if (!kw) return false;
+    if (Array.isArray(kw)) return kw.length > 0;
+    return typeof kw === "string" && kw !== "[]";
+  });
+
+  // Reset prefill when the new analysis form is closed
+  $effect(() => {
+    if (!showNewAnalysis) {
+      prefillKeywords = [];
+    }
+  });
   // Track in-flight create request to allow cancellation and avoid timeouts
   let createAnalysisAbort: AbortController | null = null;
 
@@ -386,7 +401,29 @@
     </div>
   {:else if showNewAnalysis}
     <div transition:slide>
-      <KeywordInput on:submit={({ detail }) => handleNewAnalysis(detail)} />
+      {#if hasProjectKeywords && prefillKeywords.length === 0}
+        <div class="mb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onclick={() => {
+              try {
+                const raw = projectStore.currentProject?.keywords;
+                const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+                prefillKeywords = [...(parsed ?? [])].slice(0, 7);
+              } catch {
+                console.error("Failed to parse project keywords");
+              }
+            }}
+          >
+            {$_("keywordAnalysis.useProjectKeywords")}
+          </Button>
+        </div>
+      {/if}
+      <KeywordInput
+        initialKeywords={prefillKeywords}
+        onsubmit={(keywords) => handleNewAnalysis(keywords)}
+      />
     </div>
   {:else if currentAnalysis}
     <div class="space-y-6" transition:fade id="analysis-results-card">

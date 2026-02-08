@@ -19,6 +19,7 @@
     Gavel,
     Briefcase,
     Star,
+    FileText,
     MoreHorizontal,
   } from "lucide-svelte";
   import { fade, slide, scale } from "svelte/transition";
@@ -50,6 +51,7 @@
       | "status"
       | "design"
       | "insights"
+      | "products"
       | "custom"; // Added custom type
     data?: any;
     details?: string[];
@@ -264,6 +266,7 @@
     status: Activity,
     design: Palette,
     insights: Search,
+    products: FileText,
     custom: Star, // Default icon for custom events
     // Custom event type specific icons
     milestone: Trophy,
@@ -324,6 +327,12 @@
       border: "border-l-violet-500 border-violet-200 dark:border-violet-800",
       icon: "bg-gradient-to-br from-violet-500 to-violet-600",
       text: "text-violet-900 dark:text-violet-100",
+    },
+    products: {
+      bg: "bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-950/30 dark:to-teal-900/20",
+      border: "border-l-teal-500 border-teal-200 dark:border-teal-800",
+      icon: "bg-gradient-to-br from-teal-500 to-teal-600",
+      text: "text-teal-900 dark:text-teal-100",
     },
     // Custom event default styling
     custom: {
