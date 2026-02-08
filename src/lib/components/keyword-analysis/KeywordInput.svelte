@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Badge } from "$lib/components/ui/badge";
@@ -11,9 +10,7 @@
   // Helper function for imperative translation access
   const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
 
-  const dispatch = createEventDispatcher<{ submit: string[] }>();
-
-  let { initialKeywords = [] }: { initialKeywords?: string[] } = $props();
+  let { initialKeywords = [], onsubmit }: { initialKeywords?: string[]; onsubmit: (keywords: string[]) => void } = $props();
 
   let keywords = $state<string[]>([]);
   let currentInput = $state("");
@@ -64,7 +61,7 @@
       error = t("keywordAnalysis.minKeywords");
       return;
     }
-    dispatch("submit", keywords);
+    onsubmit(keywords);
   }
 </script>
 

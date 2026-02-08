@@ -755,7 +755,7 @@
               type: "products",
               data: products,
               details: products.map((p) => {
-                const statusLabel = (p.status ?? "unknown").replace("_", " ");
+                const statusLabel = (p.status ?? "unknown").replaceAll("_", " ");
                 return `${p.name} (${statusLabel})`;
               }),
             });
@@ -1215,6 +1215,7 @@
     status: Activity,
     design: Palette,
     insights: Search,
+    products: FileText,
     custom: Star,
     // Custom event type specific icons
     milestone: Trophy,
@@ -1249,6 +1250,9 @@
     },
     insights: {
       icon: "bg-gradient-to-br from-violet-500 to-violet-600",
+    },
+    products: {
+      icon: "bg-gradient-to-br from-teal-500 to-teal-600",
     },
     custom: {
       icon: "bg-gradient-to-br from-gray-500 to-gray-600",

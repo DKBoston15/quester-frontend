@@ -27,6 +27,13 @@
   let showNewAnalysis = $state(false);
   let prefillKeywords = $state<string[]>([]);
 
+  let hasProjectKeywords = $derived.by(() => {
+    const kw = projectStore.currentProject?.keywords;
+    if (!kw) return false;
+    if (Array.isArray(kw)) return kw.length > 0;
+    return typeof kw === "string" && kw !== "[]";
+  });
+
   // Reset prefill when the new analysis form is closed
   $effect(() => {
     if (!showNewAnalysis) {
@@ -394,7 +401,7 @@
     </div>
   {:else if showNewAnalysis}
     <div transition:slide>
-      {#if projectStore.currentProject?.keywords && (Array.isArray(projectStore.currentProject.keywords) ? projectStore.currentProject.keywords.length > 0 : projectStore.currentProject.keywords !== "[]") && prefillKeywords.length === 0}
+      {#if hasProjectKeywords && prefillKeywords.length === 0}
         <div class="mb-4">
           <Button
             variant="outline"
@@ -415,7 +422,7 @@
       {/if}
       <KeywordInput
         initialKeywords={prefillKeywords}
-        on:submit={({ detail }) => handleNewAnalysis(detail)}
+        onsubmit={(keywords) => handleNewAnalysis(keywords)}
       />
     </div>
   {:else if currentAnalysis}
