@@ -755,7 +755,7 @@
               type: "products",
               data: products,
               details: products.map((p) => {
-                const statusLabel = p.status.replace("_", " ");
+                const statusLabel = (p.status ?? "unknown").replace("_", " ");
                 return `${p.name} (${statusLabel})`;
               }),
             });

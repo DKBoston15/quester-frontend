@@ -17,11 +17,13 @@
 
   let keywords = $state<string[]>([]);
   let currentInput = $state("");
+  let initialSyncDone = $state(false);
 
-  // Sync initialKeywords into local state when they change
+  // Sync initialKeywords into local state when they change (once)
   $effect(() => {
-    if (initialKeywords.length > 0 && keywords.length === 0) {
+    if (initialKeywords.length > 0 && !initialSyncDone) {
       keywords = [...initialKeywords].slice(0, 7);
+      initialSyncDone = true;
     }
   });
   let error = $state("");

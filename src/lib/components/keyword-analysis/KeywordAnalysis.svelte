@@ -400,9 +400,13 @@
             variant="outline"
             size="sm"
             onclick={() => {
-              const raw = projectStore.currentProject?.keywords;
-              const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
-              prefillKeywords = [...(parsed ?? [])].slice(0, 7);
+              try {
+                const raw = projectStore.currentProject?.keywords;
+                const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+                prefillKeywords = [...(parsed ?? [])].slice(0, 7);
+              } catch {
+                console.error("Failed to parse project keywords");
+              }
             }}
           >
             {$_("keywordAnalysis.useProjectKeywords")}
