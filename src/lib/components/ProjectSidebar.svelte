@@ -319,6 +319,12 @@
         link: `/project/${projectId}/chat`,
         badge: "AI",
       },
+      {
+        title: "Research Analyst",
+        icon: Microscope,
+        link: `/project/${projectId}/analyst`,
+        badge: "New",
+      },
     ];
 
     // Analysis routes (label: "Analysis"): Insights, Models, Outcomes

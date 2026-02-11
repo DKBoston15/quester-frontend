@@ -3,9 +3,12 @@ import type { User } from '../types/auth';
 
 // Initialize FullStory when the module loads
 const FULLSTORY_ORG_ID = 'o-23MSRK-na1';
+let fullStoryInitialized = false;
 
 export function initializeFullStory() {
+  if (fullStoryInitialized) return;
   init({ orgId: FULLSTORY_ORG_ID });
+  fullStoryInitialized = true;
 }
 
 export function identifyUser(user: User) {

@@ -17,6 +17,7 @@
   import Insights from "./project/Insights.svelte";
   import OutcomeView from "./project/OutcomeView.svelte";
   import Chat from "./project/Chat.svelte";
+  import Analyst from "./project/Analyst.svelte";
   import { trackPageView } from "$lib/services/fullstory";
   import { _ } from "svelte-i18n";
 
@@ -31,7 +32,8 @@
     | "connections"
     | "progress"
     | "project_settings"
-    | "chat";
+    | "chat"
+    | "analyst";
 
   const components: Record<SectionKey, any> = {
     overview: Overview,
@@ -45,6 +47,7 @@
     progress: Progress,
     project_settings: Settings,
     chat: Chat,
+    analyst: Analyst,
   };
 
   const props = $props<{
@@ -91,7 +94,7 @@
   <div class="flex h-screen bg-background w-full">
     <ProjectSidebar project={projectStore.currentProject} />
     <main
-      class="flex-1 {getCurrentSection() === 'connections'
+      class="flex-1 {getCurrentSection() === 'connections' || getCurrentSection() === 'analyst'
         ? 'overflow-hidden'
         : 'overflow-y-auto'} min-w-0"
     >
