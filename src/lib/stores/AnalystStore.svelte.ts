@@ -6,6 +6,7 @@ import type {
   LiveStepInfo,
   SessionSummary,
   SuggestionItem,
+  LiteratureScopeItem,
 } from '$lib/types/analysis';
 
 function deduplicateNarrative(text: string): string {
@@ -102,6 +103,8 @@ interface AnalystState {
   suggestions: SuggestionItem[];
   artifactSaveCount: number;
   error: string | null;
+  selectedLiteratureIds: string[];
+  selectedLiteratureItems: LiteratureScopeItem[];
 }
 
 class AnalystStore {
@@ -120,6 +123,8 @@ class AnalystStore {
     suggestions: [],
     artifactSaveCount: 0,
     error: null,
+    selectedLiteratureIds: [],
+    selectedLiteratureItems: [],
   });
 
   private abortController: AbortController | null = null;
@@ -138,6 +143,8 @@ class AnalystStore {
   get suggestions() { return this.state.suggestions; }
   get artifactSaveCount() { return this.state.artifactSaveCount; }
   get error() { return this.state.error; }
+  get selectedLiteratureIds() { return this.state.selectedLiteratureIds; }
+  get selectedLiteratureItems() { return this.state.selectedLiteratureItems; }
 
   /**
    * Send a query and stream the response.
@@ -152,6 +159,10 @@ class AnalystStore {
     this.state.streamingBlocks = [];
     this.state.suggestions = [];
 
+    // Snapshot scope at send time
+    const scopeIds = [...this.state.selectedLiteratureIds];
+    const scopeItems = [...this.state.selectedLiteratureItems];
+
     // Add optimistic user message
     const userMsg: AnalystMessage = {
       id: `temp-${Date.now()}`,
@@ -159,7 +170,7 @@ class AnalystStore {
       content: message,
       blocks: [],
       toolCalls: [],
-      metadata: {},
+      metadata: scopeItems.length > 0 ? { literatureScope: scopeItems } : {},
       provider: 'gemini',
       toolCallCount: 0,
       createdAt: new Date().toISOString(),
@@ -174,6 +185,7 @@ class AnalystStore {
           projectId,
           message,
           sessionId: this.state.currentSessionId ?? undefined,
+          ...(scopeIds.length > 0 ? { literatureIds: scopeIds } : {}),
           signal: this.abortController.signal,
         },
         {
@@ -415,6 +427,29 @@ class AnalystStore {
     this.state.currentSteps = [];
     this.state.suggestions = [];
     this.state.error = null;
+    this.state.selectedLiteratureIds = [];
+    this.state.selectedLiteratureItems = [];
+  }
+
+  setLiteratureScope(items: LiteratureScopeItem[]) {
+    this.state.selectedLiteratureItems = items;
+    this.state.selectedLiteratureIds = items.map((i) => i.id);
+  }
+
+  clearLiteratureScope() {
+    this.state.selectedLiteratureItems = [];
+    this.state.selectedLiteratureIds = [];
+  }
+
+  toggleLiteratureItem(item: LiteratureScopeItem) {
+    const idx = this.state.selectedLiteratureIds.indexOf(item.id);
+    if (idx >= 0) {
+      this.state.selectedLiteratureItems = this.state.selectedLiteratureItems.filter((i) => i.id !== item.id);
+      this.state.selectedLiteratureIds = this.state.selectedLiteratureIds.filter((id) => id !== item.id);
+    } else {
+      this.state.selectedLiteratureItems = [...this.state.selectedLiteratureItems, item];
+      this.state.selectedLiteratureIds = [...this.state.selectedLiteratureIds, item.id];
+    }
   }
 
   notifyArtifactSaved() {

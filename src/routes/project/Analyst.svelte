@@ -6,6 +6,7 @@
   import InputArea from "$lib/components/analyst/InputArea.svelte";
   import SessionSidebar from "$lib/components/analyst/SessionSidebar.svelte";
   import ArtifactPanel from "$lib/components/analyst/ArtifactPanel.svelte";
+  import LiteratureScopeBar from "$lib/components/analyst/LiteratureScopeBar.svelte";
   import { Button } from "$lib/components/ui/button";
   import * as Card from "$lib/components/ui/card";
   import Microscope from "lucide-svelte/icons/microscope";
@@ -117,7 +118,8 @@
           onSuggestionClick={handleSuggestionClick}
         />
 
-        <div class="border-t bg-background p-4">
+        <div class="border-t bg-background px-4 pt-2 pb-4 space-y-2">
+          <LiteratureScopeBar {projectId} disabled={isStreaming} />
           <InputArea
             onSend={handleSend}
             onAbort={handleAbort}

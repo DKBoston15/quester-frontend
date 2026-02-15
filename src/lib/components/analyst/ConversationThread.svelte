@@ -14,6 +14,7 @@
   import Lightbulb from "lucide-svelte/icons/lightbulb";
   import Target from "lucide-svelte/icons/target";
   import AlertCircle from "lucide-svelte/icons/alert-circle";
+  import FilterIcon from "lucide-svelte/icons/filter";
   import { Button } from "$lib/components/ui/button";
 
   interface Props {
@@ -157,6 +158,14 @@
                 >
                   <p class="text-sm whitespace-pre-wrap">{message.content}</p>
                 </div>
+                {#if message.metadata?.literatureScope && message.metadata.literatureScope.length > 0}
+                  <div class="flex justify-end mt-1">
+                    <span class="text-[10px] text-muted-foreground flex items-center gap-1">
+                      <FilterIcon class="h-2.5 w-2.5" />
+                      Focused on {message.metadata.literatureScope.length} article{message.metadata.literatureScope.length === 1 ? "" : "s"}
+                    </span>
+                  </div>
+                {/if}
               </div>
               <div class="flex-shrink-0">
                 <div

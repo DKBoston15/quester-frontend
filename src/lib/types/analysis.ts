@@ -203,6 +203,14 @@ export interface SuggestionItem {
 // Message Metadata (SHARED)
 // ---------------------------------------------------------------------------
 
+export interface LiteratureScopeItem {
+  id: string
+  name?: string
+  publishYear?: string
+  type?: string
+  authors?: string[]
+}
+
 export interface MessageMetadata {
   usage?: {
     promptTokens: number
@@ -217,6 +225,7 @@ export interface MessageMetadata {
   model?: string
   steps?: PersistedStepInfo[]
   suggestions?: SuggestionItem[]
+  literatureScope?: LiteratureScopeItem[]
 }
 
 // ---------------------------------------------------------------------------
