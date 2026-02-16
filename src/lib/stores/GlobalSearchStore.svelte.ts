@@ -514,10 +514,10 @@ async function performSearch(searchQuery: string = query): Promise<void> {
     return;
   }
 
-  // Get current project ID - only required for current project scope
-  const projectId = getCurrentProjectId();
+  // Get project ID from command palette context - only required for current project scope
+  const projectId = projectContext?.projectId;
   if (scope === "current" && !projectId) {
-    error = "Please navigate to a project to search within current project";
+    error = "Please set a project context in the command palette to search within current project";
     results = [];
     return;
   }
