@@ -33,6 +33,7 @@
   import Send from "lucide-svelte/icons/send";
   import Zap from "lucide-svelte/icons/zap";
   import Compass from "lucide-svelte/icons/compass";
+  import HelpCircle from "lucide-svelte/icons/help-circle";
 
   // Reactive bindings to store state
   let isOpen = $derived(globalSearchStore.isOpen);
@@ -125,6 +126,8 @@
         return Network;
       case "keyword_analysis":
         return BarChart;
+      case "research_question":
+        return HelpCircle;
       default:
         return FileText;
     }
@@ -145,6 +148,8 @@
         return "text-cyan-500";
       case "keyword_analysis":
         return "text-rose-500";
+      case "research_question":
+        return "text-orange-500";
       default:
         return "text-muted-foreground";
     }
@@ -181,6 +186,7 @@
       outcome: "Outcomes",
       model: "Models",
       keyword_analysis: "Keyword Analyses",
+      research_question: "Research Questions",
     };
     return labels[type] || type;
   }
@@ -200,6 +206,7 @@
       { id: "overview", label: "Overview", icon: Home, path: `/project/${pid}/overview` },
       { id: "literature", label: "Literature", icon: Library, path: `/project/${pid}/literature` },
       { id: "notes", label: "Notes", icon: Pencil, path: `/project/${pid}/notes` },
+      { id: "research-questions", label: "Research Questions", icon: HelpCircle, path: `/project/${pid}/research_questions` },
       { id: "analyst", label: "Research Analyst", icon: Microscope, path: `/project/${pid}/analyst` },
       { id: "insights", label: "Insights", icon: TextSearch, path: `/project/${pid}/insights` },
       { id: "models", label: "Models", icon: ChartNetwork, path: `/project/${pid}/models` },
@@ -298,6 +305,9 @@
       case "keyword_analysis":
         path = `/project/${projectId}/insights`;
         break;
+      case "research_question":
+        path = `/project/${projectId}/research_questions`;
+        break;
       default:
         console.warn("Unknown result type:", result.type);
         return;
@@ -332,6 +342,9 @@
         break;
       case "keyword_analysis":
         path = `/project/${pid}/insights`;
+        break;
+      case "research_question":
+        path = `/project/${pid}/research_questions`;
         break;
       default:
         path = `/project/${pid}`;
