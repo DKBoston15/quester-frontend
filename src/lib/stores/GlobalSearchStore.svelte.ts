@@ -690,10 +690,10 @@ function clearContextSelection(): void {
 async function sendChatMessage(message: string): Promise<void> {
   if (!message.trim() || isStreaming) return;
 
-  // Get current project ID - only required for current project scope
-  const projectId = getCurrentProjectId();
+  // Get current project ID from command palette context
+  const projectId = projectContext?.projectId;
   if (!projectId) {
-    error = "Please navigate to a project to use AI chat";
+    error = "Please select a project context to use AI chat";
     return;
   }
 
