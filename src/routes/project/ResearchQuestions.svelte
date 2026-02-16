@@ -20,6 +20,7 @@
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { EmptyState } from "$lib/components/ui/empty-state";
   import QuestionCard from "$lib/components/research-questions/QuestionCard.svelte";
+  import DesignAlignmentPanel from "$lib/components/research-questions/DesignAlignmentPanel.svelte";
   import {
     Plus,
     Search,
@@ -575,86 +576,8 @@
 
               <!-- Design Alignment Tab -->
               {:else if activeTab === "alignment"}
-                <div class="max-w-2xl space-y-4">
-                  <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-semibold">Design Alignment</h3>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onclick={handleAnalyzeAlignment}
-                      disabled={isLoading}
-                    >
-                      <RefreshCw
-                        class="h-3.5 w-3.5 mr-1.5 {isLoading ? 'animate-spin' : ''}"
-                      />
-                      {isLoading ? "Analyzing..." : "Analyze"}
-                    </Button>
-                  </div>
-
-                  {#if selectedQuestion.designAlignmentScore}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {#each designTypes as dt}
-                        {@const score =
-                          selectedQuestion.designAlignmentScore[dt.key]}
-                        <Card.Root
-                          class="border-2 dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]"
-                        >
-                          <Card.Header class="pb-2">
-                            <Card.Title class="text-sm flex items-center gap-2">
-                              <dt.icon class="h-4 w-4" />
-                              {dt.label}
-                            </Card.Title>
-                          </Card.Header>
-                          <Card.Content class="space-y-2">
-                            <div class="flex items-center justify-between text-sm">
-                              <span class="text-muted-foreground">
-                                {getAlignmentLabel(score)}
-                              </span>
-                              <span class="font-semibold">{score}%</span>
-                            </div>
-                            <Progress value={score} max={100} class="h-2" />
-                          </Card.Content>
-                        </Card.Root>
-                      {/each}
-                    </div>
-
-                    <div class="text-sm text-muted-foreground">
-                      Average alignment: {getAverageAlignment(
-                        selectedQuestion.designAlignmentScore,
-                      )}%
-                    </div>
-                  {:else}
-                    <EmptyState
-                      title="No alignment data"
-                      description="Run an AI analysis to check how this question aligns with your project's design types."
-                      variant="data-empty"
-                      ctaText="Analyze Alignment"
-                      ctaAction={handleAnalyzeAlignment}
-                      height="h-[200px]"
-                    />
-                  {/if}
-
-                  <!-- Streaming Analysis Result -->
-                  {#if streamingAnalysis}
-                    <Card.Root
-                      class="border-2 dark:border-dark-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]"
-                    >
-                      <Card.Header class="pb-2">
-                        <Card.Title class="text-sm flex items-center gap-2">
-                          <Sparkles class="h-4 w-4 text-primary" />
-                          AI Alignment Analysis
-                          {#if !streamingAnalysis.isComplete}
-                            <RefreshCw class="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-                          {/if}
-                        </Card.Title>
-                      </Card.Header>
-                      <Card.Content>
-                        <p class="text-sm whitespace-pre-wrap">
-                          {streamingAnalysis.content}
-                        </p>
-                      </Card.Content>
-                    </Card.Root>
-                  {/if}
+                <div class="max-w-2xl">
+                  <DesignAlignmentPanel question={selectedQuestion} />
                 </div>
 
               <!-- Connected Literature Tab -->
