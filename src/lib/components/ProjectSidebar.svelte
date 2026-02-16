@@ -268,6 +268,13 @@
     }
   }
 
+  // Seed the command palette with project context whenever the project changes
+  $effect(() => {
+    if (props.project?.id) {
+      globalSearchStore.setProjectContext(props.project.id, props.project.name || 'Project');
+    }
+  });
+
   // Effect to record project view when user or project changes
   $effect(() => {
     if (auth.user?.id && props.project?.id) {
@@ -446,7 +453,10 @@
                 variant="outline"
                 size="sm"
                 class="w-full justify-start gap-2 group-data-[collapsible=icon]:justify-center"
-                onclick={() => globalSearchStore.open()}
+                onclick={() => {
+                  globalSearchStore.setProjectContext(props.project?.id, props.project?.name || 'Project');
+                  globalSearchStore.open();
+                }}
               >
                 <Search class="h-4 w-4 flex-shrink-0" />
                 <span class="group-data-[collapsible=icon]:hidden">{$_('common.search')}</span>
