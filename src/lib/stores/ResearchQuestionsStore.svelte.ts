@@ -1,0 +1,374 @@
+
+  import { api, streamRequest } from "../services/api-client";
+
+  export interface DesignAlignmentScore {
+    researchDesign: number;
+    samplingDesign: number;
+    measurementDesign: number;
+    analyticDesign: number;
+  }
+
+  export interface LanguageConsistencyMetrics {
+    synonymGroups: { terms: string[]; suggestion: string }[];
+    inconsistencies: string[];
+    overallScore: number;
+  }
+
+  export type ResearchQuestionStatus = "draft" | "active" | "archived";
+
+  export interface ResearchQuestion {
+    id: string;
+    projectId: string;
+    userId: string;
+    question: string;
+    description: string;
+    designAlignmentScore: DesignAlignmentScore | null;
+    connectedLiteratureIds: string[];
+    languageConsistencyMetrics: LanguageConsistencyMetrics | null;
+    status: ResearchQuestionStatus;
+    metadata: Record<string, any>;
+    version: number;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
+  }
+
+  export interface ResearchQuestionVersion {
+    id: string;
+    researchQuestionId: string;
+    question: string;
+    description: string;
+    designAlignmentScore: DesignAlignmentScore | null;
+    connectedLiteratureIds: string[];
+    languageConsistencyMetrics: LanguageConsistencyMetrics | null;
+    metadata: Record<string, any>;
+    version: number;
+    createdAt: string;
+  }
+
+  export interface CreateResearchQuestionData {
+    question: string;
+    description?: string;
+    status?: ResearchQuestionStatus;
+  }
+
+  export interface UpdateResearchQuestionData {
+    question?: string;
+    description?: string;
+    status?: ResearchQuestionStatus;
+  }
+
+  export interface StreamingAnalysisResult {
+    content: string;
+    isComplete: boolean;
+  }
+
+  let questions = $state<ResearchQuestion[]>([]);
+  let selectedQuestion = $state<ResearchQuestion | null>(null);
+  let versions = $state<ResearchQuestionVersion[]>([]);
+  let isLoading = $state(false);
+  let error = $state<string | null>(null);
+  let streamingAnalysis = $state<StreamingAnalysisResult | null>(null);
+
+  let abortController: AbortController | null = null;
+
+  function cancelStreaming() {
+    if (abortController) {
+      abortController.abort();
+      abortController = null;
+    }
+  }
+
+  async function processStream(response: Response): Promise<string> {
+    if (!response.body) {
+      throw new Error("Response body is null");
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let accumulated = "";
+
+    streamingAnalysis = { content: "", isComplete: false };
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) {
+          streamingAnalysis = { content: accumulated, isComplete: true };
+          break;
+        }
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+
+          const content = line.slice(6);
+          if (content === "[DONE]") {
+            streamingAnalysis = { content: accumulated, isComplete: true };
+            return accumulated;
+          }
+
+          try {
+            const parsed = JSON.parse(content);
+            if (parsed.text) {
+              accumulated += parsed.text;
+              streamingAnalysis = { content: accumulated, isComplete: false };
+            } else if (parsed.content) {
+              accumulated += parsed.content;
+              streamingAnalysis = { content: accumulated, isComplete: false };
+            } else if (typeof parsed === "string") {
+              accumulated += parsed;
+              streamingAnalysis = { content: accumulated, isComplete: false };
+            }
+          } catch {
+            // Non-JSON data, treat as raw text
+            if (content) {
+              accumulated += content;
+              streamingAnalysis = { content: accumulated, isComplete: false };
+            }
+          }
+        }
+      }
+    } finally {
+      reader.releaseLock();
+    }
+
+    return accumulated;
+  }
+
+  export const researchQuestionsStore = {
+    get questions() {
+      return questions;
+    },
+    get selectedQuestion() {
+      return selectedQuestion;
+    },
+    get versions() {
+      return versions;
+    },
+    get isLoading() {
+      return isLoading;
+    },
+    get error() {
+      return error;
+    },
+    get streamingAnalysis() {
+      return streamingAnalysis;
+    },
+
+    setSelectedQuestion(question: ResearchQuestion | null) {
+      selectedQuestion = question;
+    },
+
+    async loadQuestions(projectId: string) {
+      if (!projectId) {
+        error = "No project ID provided";
+        return;
+      }
+
+      isLoading = true;
+      error = null;
+
+      try {
+        const data = await api.get<ResearchQuestion[]>(
+          `/projects/${projectId}/research-questions`,
+        );
+        questions = data;
+      } catch (err) {
+        console.error("Error loading research questions:", err);
+        error = err instanceof Error ? err.message : "Failed to load research questions";
+        questions = [];
+      } finally {
+        isLoading = false;
+      }
+    },
+
+    async createQuestion(projectId: string, data: CreateResearchQuestionData) {
+      if (!projectId) {
+        error = "No project ID provided";
+        return;
+      }
+
+      isLoading = true;
+      error = null;
+
+      try {
+        const newQuestion = await api.post<ResearchQuestion>(
+          `/projects/${projectId}/research-questions`,
+          data,
+        );
+        questions = [newQuestion, ...questions];
+        selectedQuestion = newQuestion;
+        return newQuestion;
+      } catch (err) {
+        console.error("Error creating research question:", err);
+        error = err instanceof Error ? err.message : "Failed to create research question";
+        throw err;
+      } finally {
+        isLoading = false;
+      }
+    },
+
+    async updateQuestion(id: string, data: UpdateResearchQuestionData) {
+      isLoading = true;
+      error = null;
+
+      try {
+        const updated = await api.put<ResearchQuestion>(
+          `/research-questions/${id}`,
+          data,
+        );
+        questions = questions.map((q) => (q.id === id ? updated : q));
+        if (selectedQuestion?.id === id) {
+          selectedQuestion = updated;
+        }
+        return updated;
+      } catch (err) {
+        console.error("Error updating research question:", err);
+        error = err instanceof Error ? err.message : "Failed to update research question";
+        throw err;
+      } finally {
+        isLoading = false;
+      }
+    },
+
+    async deleteQuestion(id: string) {
+      isLoading = true;
+      error = null;
+
+      try {
+        await api.delete(`/research-questions/${id}`);
+        questions = questions.filter((q) => q.id !== id);
+        if (selectedQuestion?.id === id) {
+          selectedQuestion = null;
+        }
+      } catch (err) {
+        console.error("Error deleting research question:", err);
+        error = err instanceof Error ? err.message : "Failed to delete research question";
+        throw err;
+      } finally {
+        isLoading = false;
+      }
+    },
+
+    async loadVersionHistory(questionId: string) {
+      isLoading = true;
+      error = null;
+
+      try {
+        const data = await api.get<ResearchQuestionVersion[]>(
+          `/research-questions/${questionId}/versions`,
+        );
+        versions = data;
+      } catch (err) {
+        console.error("Error loading version history:", err);
+        error = err instanceof Error ? err.message : "Failed to load version history";
+        versions = [];
+      } finally {
+        isLoading = false;
+      }
+    },
+
+    async analyzeAlignment(questionId: string) {
+      cancelStreaming();
+      isLoading = true;
+      error = null;
+      streamingAnalysis = null;
+      abortController = new AbortController();
+
+      try {
+        const response = await streamRequest(
+          `/research-questions/${questionId}/analyze-alignment`,
+          {
+            method: "POST",
+            signal: abortController.signal,
+            timeout: 120_000,
+          },
+        );
+
+        const result = await processStream(response);
+
+        // Try to parse the accumulated result as JSON for structured alignment data
+        try {
+          const alignmentData = JSON.parse(result) as DesignAlignmentScore;
+          if (selectedQuestion?.id === questionId) {
+            selectedQuestion = { ...selectedQuestion, designAlignmentScore: alignmentData };
+          }
+          questions = questions.map((q) =>
+            q.id === questionId ? { ...q, designAlignmentScore: alignmentData } : q,
+          );
+        } catch {
+          // Result is narrative text, not structured JSON — that's fine
+        }
+
+        return result;
+      } catch (err) {
+        if (err instanceof Error && err.name === "AbortError") {
+          return;
+        }
+        console.error("Error analyzing alignment:", err);
+        error = err instanceof Error ? err.message : "Failed to analyze alignment";
+        throw err;
+      } finally {
+        isLoading = false;
+        abortController = null;
+      }
+    },
+
+    async analyzeConsistency(projectId: string) {
+      if (!projectId) {
+        error = "No project ID provided";
+        return;
+      }
+
+      cancelStreaming();
+      isLoading = true;
+      error = null;
+      streamingAnalysis = null;
+      abortController = new AbortController();
+
+      try {
+        const response = await streamRequest(
+          `/projects/${projectId}/research-questions/analyze-consistency`,
+          {
+            method: "POST",
+            signal: abortController.signal,
+            timeout: 120_000,
+          },
+        );
+
+        const result = await processStream(response);
+        return result;
+      } catch (err) {
+        if (err instanceof Error && err.name === "AbortError") {
+          return;
+        }
+        console.error("Error analyzing consistency:", err);
+        error = err instanceof Error ? err.message : "Failed to analyze consistency";
+        throw err;
+      } finally {
+        isLoading = false;
+        abortController = null;
+      }
+    },
+
+    cancelAnalysis() {
+      cancelStreaming();
+      streamingAnalysis = null;
+    },
+
+    reset() {
+      cancelStreaming();
+      questions = [];
+      selectedQuestion = null;
+      versions = [];
+      isLoading = false;
+      error = null;
+      streamingAnalysis = null;
+    },
+  };
