@@ -910,11 +910,7 @@ async function performAutocomplete(q: string): Promise<void> {
     return;
   }
 
-  const projectId = getCurrentProjectId();
-  if (scope === "current" && !projectId) {
-    autocompleteResults = [];
-    return;
-  }
+  const projectId = projectContext?.projectId;
 
   isAutocompleting = true;
 
