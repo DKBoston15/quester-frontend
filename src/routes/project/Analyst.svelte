@@ -127,11 +127,11 @@
           />
         </div>
       </div>
+
+      <!-- Artifact Panel Sidebar -->
+      {#if showArtifactPanel && projectId}
+        <ArtifactPanel {projectId} open={showArtifactPanel} onOpenChange={(v) => (showArtifactPanel = v)} />
+      {/if}
     </div>
   </div>
 </Card.Root>
-
-<!-- Artifact Panel (Sheet sidebar) -->
-{#if projectId}
-  <ArtifactPanel {projectId} open={showArtifactPanel} onOpenChange={(v) => (showArtifactPanel = v)} />
-{/if}

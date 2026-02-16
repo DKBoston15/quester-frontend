@@ -1,6 +1,6 @@
 <script lang="ts">
   import { tick } from "svelte";
-  import * as Sheet from "$lib/components/ui/sheet";
+  import { slide } from "svelte/transition";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import {
@@ -21,6 +21,7 @@
   import BookOpen from "lucide-svelte/icons/book-open";
   import ArrowLeftRight from "lucide-svelte/icons/arrow-left-right";
   import Loader2 from "lucide-svelte/icons/loader-2";
+  import X from "lucide-svelte/icons/x";
 
   interface Props {
     projectId: string;
@@ -95,10 +96,6 @@
     } catch (err) {
       console.error("Failed to delete artifact:", err);
     }
-  }
-
-  function handleOpenChange(isOpen: boolean) {
-    onOpenChange(isOpen);
   }
 
   async function openArtifact(artifact: AnalysisArtifact) {
@@ -192,230 +189,238 @@
   };
 </script>
 
-<Sheet.Root {open} onOpenChange={handleOpenChange}>
-  <Sheet.Content
-    side="right"
-    class="top-0 bottom-0 h-svh max-h-svh w-[400px] sm:w-[448px] p-0 flex flex-col"
-  >
-    <Sheet.Header class="px-6 pt-6 pb-2 shrink-0">
-      <Sheet.Title class="flex items-center gap-2">
-        <BookmarkCheck class="size-5" />
+<div
+  class="w-96 border-l bg-background flex-shrink-0 flex flex-col overflow-hidden"
+  transition:slide={{ axis: "x", duration: 200 }}
+>
+  <!-- Header -->
+  <div class="p-4 border-b space-y-3">
+    <div class="flex items-center justify-between">
+      <h3 class="font-semibold text-sm flex items-center gap-2">
+        <BookmarkCheck class="size-4" />
         Saved Artifacts
-      </Sheet.Title>
-      <Sheet.Description>
-        Your saved analysis blocks for quick reference.
-      </Sheet.Description>
-    </Sheet.Header>
+      </h3>
+      <Button
+        variant="ghost"
+        size="sm"
+        class="h-7 w-7 p-0"
+        onclick={() => onOpenChange(false)}
+        title="Close"
+      >
+        <X class="size-4" />
+      </Button>
+    </div>
+    <p class="text-xs text-muted-foreground">
+      Your saved analysis blocks for quick reference.
+    </p>
 
-    <div class="flex flex-col flex-1 min-h-0 gap-4 px-6 pb-6 overflow-hidden">
-      <!-- Search -->
-      <div class="relative px-1">
-        <Search
-          class="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
-        />
-        <Input
-          class="pl-9"
-          placeholder="Search artifacts..."
-          bind:value={searchQuery}
-        />
-      </div>
+    <!-- Search -->
+    <div class="relative">
+      <Search
+        class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground"
+      />
+      <Input
+        class="h-8 text-xs pl-8"
+        placeholder="Search artifacts..."
+        bind:value={searchQuery}
+      />
+    </div>
 
-      <!-- Type filters -->
-      <div class="flex gap-1.5 flex-wrap px-1">
+    <!-- Type filters -->
+    <div class="flex gap-1.5 flex-wrap">
+      <Button
+        variant={filterType === null ? "secondary" : "ghost"}
+        size="sm"
+        class="h-7 text-xs"
+        onclick={() => (filterType = null)}
+      >
+        All
+      </Button>
+      {#each Object.entries(blockTypeLabels) as [type, label]}
         <Button
-          variant={filterType === null ? "secondary" : "ghost"}
+          variant={filterType === type ? "secondary" : "ghost"}
           size="sm"
           class="h-7 text-xs"
-          onclick={() => (filterType = null)}
+          onclick={() => (filterType = filterType === type ? null : type)}
         >
-          All
+          {label}
         </Button>
-        {#each Object.entries(blockTypeLabels) as [type, label]}
-          <Button
-            variant={filterType === type ? "secondary" : "ghost"}
-            size="sm"
-            class="h-7 text-xs"
-            onclick={() => (filterType = filterType === type ? null : type)}
-          >
-            {label}
-          </Button>
-        {/each}
-      </div>
-
-      <!-- Artifact list -->
-      <div class="flex-1 min-h-0 overflow-y-auto space-y-4 px-1">
-        {#if loading}
-          <div class="flex items-center justify-center py-8">
-            <Loader2 class="size-5 animate-spin text-muted-foreground" />
-          </div>
-        {:else if filteredArtifacts.length === 0}
-          <p class="text-sm text-muted-foreground text-center py-8">
-            {searchQuery || filterType
-              ? "No artifacts match your filters."
-              : "No saved artifacts yet. Use the bookmark button on analysis blocks to save them."}
-          </p>
-        {:else}
-          <!-- Pinned -->
-          {#if groupedArtifacts.pinned.length > 0}
-            <div>
-              <h4
-                class="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2"
-              >
-                Pinned
-              </h4>
-              <div class="space-y-2">
-                {#each groupedArtifacts.pinned as artifact (artifact.id)}
-                  {@const Icon = typeIcons[artifact.blockType] || Hash}
-                  <div
-                    class="rounded-lg border p-3 hover:bg-muted/30 transition-colors group cursor-pointer"
-                    role="button"
-                    tabindex="0"
-                    onclick={() => openArtifact(artifact)}
-                    onkeydown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        openArtifact(artifact);
-                      }
-                    }}
-                  >
-                    <div class="flex items-start gap-2">
-                      <Icon class="size-4 text-muted-foreground mt-0.5" />
-                      <div class="flex-1 min-w-0">
-                        <div class="text-sm font-medium truncate">
-                          {artifact.title}
-                        </div>
-                        <div
-                          class="text-xs text-muted-foreground mt-0.5 flex items-center gap-2"
-                        >
-                          <span>{artifact.blockType}</span>
-                          <span>·</span>
-                          <span>{formatDate(artifact.createdAt)}</span>
-                        </div>
-                        {#if artifact.tags.length > 0}
-                          <div class="flex gap-1 mt-1.5 flex-wrap">
-                            {#each artifact.tags as tag}
-                              <span
-                                class="text-xs px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground"
-                              >
-                                {tag}
-                              </span>
-                            {/each}
-                          </div>
-                        {/if}
-                      </div>
-                      <div
-                        class="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <button
-                          class="p-1 rounded hover:bg-muted text-amber-500"
-                          title="Unpin"
-                          onclick={(e) => {
-                            e.stopPropagation();
-                            togglePin(artifact);
-                          }}
-                        >
-                          <PinOff class="size-3.5" />
-                        </button>
-                        <button
-                          class="p-1 rounded hover:bg-muted text-muted-foreground hover:text-destructive"
-                          title="Delete"
-                          onclick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(artifact.id);
-                          }}
-                        >
-                          <Trash2 class="size-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                {/each}
-              </div>
-            </div>
-          {/if}
-
-          <!-- Rest -->
-          {#if groupedArtifacts.rest.length > 0}
-            <div>
-              {#if groupedArtifacts.pinned.length > 0}
-                <h4
-                  class="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2"
-                >
-                  All Artifacts
-                </h4>
-              {/if}
-              <div class="space-y-2">
-                {#each groupedArtifacts.rest as artifact (artifact.id)}
-                  {@const Icon = typeIcons[artifact.blockType] || Hash}
-                  <div
-                    class="rounded-lg border p-3 hover:bg-muted/30 transition-colors group cursor-pointer"
-                    role="button"
-                    tabindex="0"
-                    onclick={() => openArtifact(artifact)}
-                    onkeydown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        openArtifact(artifact);
-                      }
-                    }}
-                  >
-                    <div class="flex items-start gap-2">
-                      <Icon class="size-4 text-muted-foreground mt-0.5" />
-                      <div class="flex-1 min-w-0">
-                        <div class="text-sm font-medium truncate">
-                          {artifact.title}
-                        </div>
-                        <div
-                          class="text-xs text-muted-foreground mt-0.5 flex items-center gap-2"
-                        >
-                          <span>{artifact.blockType}</span>
-                          <span>·</span>
-                          <span>{formatDate(artifact.createdAt)}</span>
-                        </div>
-                        {#if artifact.tags.length > 0}
-                          <div class="flex gap-1 mt-1.5 flex-wrap">
-                            {#each artifact.tags as tag}
-                              <span
-                                class="text-xs px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground"
-                              >
-                                {tag}
-                              </span>
-                            {/each}
-                          </div>
-                        {/if}
-                      </div>
-                      <div
-                        class="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <button
-                          class="p-1 rounded hover:bg-muted text-muted-foreground"
-                          title="Pin"
-                          onclick={(e) => {
-                            e.stopPropagation();
-                            togglePin(artifact);
-                          }}
-                        >
-                          <Pin class="size-3.5" />
-                        </button>
-                        <button
-                          class="p-1 rounded hover:bg-muted text-muted-foreground hover:text-destructive"
-                          title="Delete"
-                          onclick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(artifact.id);
-                          }}
-                        >
-                          <Trash2 class="size-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                {/each}
-              </div>
-            </div>
-          {/if}
-        {/if}
-      </div>
+      {/each}
     </div>
-  </Sheet.Content>
-</Sheet.Root>
+  </div>
+
+  <!-- Artifact list -->
+  <div class="flex-1 overflow-y-auto p-2 space-y-2">
+    {#if loading}
+      <div class="flex items-center justify-center py-8">
+        <Loader2 class="size-5 animate-spin text-muted-foreground" />
+      </div>
+    {:else if filteredArtifacts.length === 0}
+      <p class="text-sm text-muted-foreground text-center py-8">
+        {searchQuery || filterType
+          ? "No artifacts match your filters."
+          : "No saved artifacts yet. Use the bookmark button on analysis blocks to save them."}
+      </p>
+    {:else}
+      <!-- Pinned -->
+      {#if groupedArtifacts.pinned.length > 0}
+        <div>
+          <h4
+            class="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 px-1"
+          >
+            Pinned
+          </h4>
+          <div class="space-y-1.5">
+            {#each groupedArtifacts.pinned as artifact (artifact.id)}
+              {@const Icon = typeIcons[artifact.blockType] || Hash}
+              <div
+                class="rounded-lg border p-3 hover:bg-muted/30 transition-colors group cursor-pointer"
+                role="button"
+                tabindex="0"
+                onclick={() => openArtifact(artifact)}
+                onkeydown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    openArtifact(artifact);
+                  }
+                }}
+              >
+                <div class="flex items-start gap-2">
+                  <Icon class="size-4 text-muted-foreground mt-0.5" />
+                  <div class="flex-1 min-w-0">
+                    <div class="text-sm font-medium truncate">
+                      {artifact.title}
+                    </div>
+                    <div
+                      class="text-xs text-muted-foreground mt-0.5 flex items-center gap-2"
+                    >
+                      <span>{artifact.blockType}</span>
+                      <span>·</span>
+                      <span>{formatDate(artifact.createdAt)}</span>
+                    </div>
+                    {#if artifact.tags.length > 0}
+                      <div class="flex gap-1 mt-1.5 flex-wrap">
+                        {#each artifact.tags as tag}
+                          <span
+                            class="text-xs px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground"
+                          >
+                            {tag}
+                          </span>
+                        {/each}
+                      </div>
+                    {/if}
+                  </div>
+                  <div
+                    class="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <button
+                      class="p-1 rounded hover:bg-muted text-amber-500"
+                      title="Unpin"
+                      onclick={(e) => {
+                        e.stopPropagation();
+                        togglePin(artifact);
+                      }}
+                    >
+                      <PinOff class="size-3.5" />
+                    </button>
+                    <button
+                      class="p-1 rounded hover:bg-muted text-muted-foreground hover:text-destructive"
+                      title="Delete"
+                      onclick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(artifact.id);
+                      }}
+                    >
+                      <Trash2 class="size-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            {/each}
+          </div>
+        </div>
+      {/if}
+
+      <!-- Rest -->
+      {#if groupedArtifacts.rest.length > 0}
+        <div>
+          {#if groupedArtifacts.pinned.length > 0}
+            <h4
+              class="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 px-1"
+            >
+              All Artifacts
+            </h4>
+          {/if}
+          <div class="space-y-1.5">
+            {#each groupedArtifacts.rest as artifact (artifact.id)}
+              {@const Icon = typeIcons[artifact.blockType] || Hash}
+              <div
+                class="rounded-lg border p-3 hover:bg-muted/30 transition-colors group cursor-pointer"
+                role="button"
+                tabindex="0"
+                onclick={() => openArtifact(artifact)}
+                onkeydown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    openArtifact(artifact);
+                  }
+                }}
+              >
+                <div class="flex items-start gap-2">
+                  <Icon class="size-4 text-muted-foreground mt-0.5" />
+                  <div class="flex-1 min-w-0">
+                    <div class="text-sm font-medium truncate">
+                      {artifact.title}
+                    </div>
+                    <div
+                      class="text-xs text-muted-foreground mt-0.5 flex items-center gap-2"
+                    >
+                      <span>{artifact.blockType}</span>
+                      <span>·</span>
+                      <span>{formatDate(artifact.createdAt)}</span>
+                    </div>
+                    {#if artifact.tags.length > 0}
+                      <div class="flex gap-1 mt-1.5 flex-wrap">
+                        {#each artifact.tags as tag}
+                          <span
+                            class="text-xs px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground"
+                          >
+                            {tag}
+                          </span>
+                        {/each}
+                      </div>
+                    {/if}
+                  </div>
+                  <div
+                    class="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <button
+                      class="p-1 rounded hover:bg-muted text-muted-foreground"
+                      title="Pin"
+                      onclick={(e) => {
+                        e.stopPropagation();
+                        togglePin(artifact);
+                      }}
+                    >
+                      <Pin class="size-3.5" />
+                    </button>
+                    <button
+                      class="p-1 rounded hover:bg-muted text-muted-foreground hover:text-destructive"
+                      title="Delete"
+                      onclick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(artifact.id);
+                      }}
+                    >
+                      <Trash2 class="size-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            {/each}
+          </div>
+        </div>
+      {/if}
+    {/if}
+  </div>
+</div>
