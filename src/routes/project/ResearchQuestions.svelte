@@ -19,6 +19,7 @@
   import * as Select from "$lib/components/ui/select";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { EmptyState } from "$lib/components/ui/empty-state";
+  import QuestionCard from "$lib/components/research-questions/QuestionCard.svelte";
   import {
     Plus,
     Search,
@@ -347,51 +348,11 @@
             </div>
           {:else}
             {#each filteredQuestions as question (question.id)}
-              <button
-                class="w-full text-left p-3 border-b hover:bg-accent/50 transition-colors {selectedQuestion?.id ===
-                question.id
-                  ? 'bg-accent'
-                  : ''}"
+              <QuestionCard
+                {question}
+                selected={selectedQuestion?.id === question.id}
                 onclick={() => selectQuestion(question)}
-              >
-                <div class="flex items-start justify-between gap-2 mb-1">
-                  <p class="text-sm font-medium line-clamp-2 flex-1">
-                    {question.question}
-                  </p>
-                  <Badge variant={getStatusBadgeVariant(question.status)} class="text-[10px] px-1.5 py-0 flex-shrink-0">
-                    {question.status}
-                  </Badge>
-                </div>
-
-                <div class="flex items-center gap-2 mt-1.5">
-                  <!-- Design Alignment Indicators -->
-                  {#if question.designAlignmentScore}
-                    <div class="flex gap-0.5" title="Design alignment">
-                      {#each designTypes as dt}
-                        {@const score = question.designAlignmentScore[dt.key]}
-                        <div
-                          class="w-2 h-2 rounded-full {getAlignmentColor(score)}"
-                          title="{dt.label}: {score}%"
-                        ></div>
-                      {/each}
-                    </div>
-                  {/if}
-
-                  <!-- Connected Literature Count -->
-                  {#if question.connectedLiteratureIds.length > 0}
-                    <span
-                      class="flex items-center gap-0.5 text-[10px] text-muted-foreground"
-                    >
-                      <BookOpen class="h-3 w-3" />
-                      {question.connectedLiteratureIds.length}
-                    </span>
-                  {/if}
-
-                  <span class="text-[10px] text-muted-foreground ml-auto">
-                    {formatDate(question.updatedAt)}
-                  </span>
-                </div>
-              </button>
+              />
             {/each}
           {/if}
         </div>
