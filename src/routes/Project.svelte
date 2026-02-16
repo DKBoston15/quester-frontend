@@ -17,6 +17,7 @@
   import Insights from "./project/Insights.svelte";
   import OutcomeView from "./project/OutcomeView.svelte";
   import Analyst from "./project/Analyst.svelte";
+  import ResearchQuestions from "./project/ResearchQuestions.svelte";
   import { trackPageView } from "$lib/services/fullstory";
   import { _ } from "svelte-i18n";
 
@@ -31,7 +32,8 @@
     | "connections"
     | "progress"
     | "project_settings"
-    | "analyst";
+    | "analyst"
+    | "research_questions";
 
   const components: Record<SectionKey, any> = {
     overview: Overview,
@@ -45,6 +47,7 @@
     progress: Progress,
     project_settings: Settings,
     analyst: Analyst,
+    research_questions: ResearchQuestions,
   };
 
   const props = $props<{

@@ -153,7 +153,8 @@
     "activeProject": "Projet actif",
     "analysis": "Analyse",
     "tracking": "Suivi",
-    "researcher": "Chercheur"
+    "researcher": "Chercheur",
+    "researchQuestions": "Questions de Recherche"
   },
   "dashboard": {
     "title": "Tableau de bord",
