@@ -4,7 +4,6 @@
   import type { SearchResult } from "$lib/stores/GlobalSearchStore";
   import * as Command from "$lib/components/ui/command";
   import { Badge } from "$lib/components/ui/badge";
-  import { Switch } from "$lib/components/ui/switch";
   import { navigate } from "svelte-routing";
   import { _ } from "svelte-i18n";
 
@@ -32,6 +31,8 @@
   import ArrowRight from "lucide-svelte/icons/arrow-right";
   import MessageCircle from "lucide-svelte/icons/message-circle";
   import Send from "lucide-svelte/icons/send";
+  import Zap from "lucide-svelte/icons/zap";
+  import Compass from "lucide-svelte/icons/compass";
 
   // Reactive bindings to store state
   let isOpen = $derived(globalSearchStore.isOpen);
@@ -126,6 +127,26 @@
         return BarChart;
       default:
         return FileText;
+    }
+  }
+
+  // Get accent color class for result type icons
+  function getTypeIconColor(type: string): string {
+    switch (type) {
+      case "literature":
+        return "text-blue-500";
+      case "note":
+        return "text-amber-500";
+      case "project":
+        return "text-violet-500";
+      case "outcome":
+        return "text-emerald-500";
+      case "model":
+        return "text-cyan-500";
+      case "keyword_analysis":
+        return "text-rose-500";
+      default:
+        return "text-muted-foreground";
     }
   }
 
@@ -226,12 +247,6 @@
     globalSearchStore.setQuery(q);
     globalSearchStore.performSearch();
     hasSubmittedSearch = true;
-  }
-
-  // Handle scope toggle
-  function handleScopeToggle() {
-    const newScope = searchScope === "current" ? "all" : "current";
-    globalSearchStore.setScope(newScope);
   }
 
   // Handle result click navigation
@@ -345,33 +360,49 @@
     if (!open) globalSearchStore.close();
   }}
 >
-  <Command.Input
-    placeholder={effectiveMode === "actions"
-      ? "Type a command..."
-      : effectiveMode === "chat"
-        ? "Ask AI a question..."
-        : "Search or type > for commands, ? for AI..."}
-    bind:value={inputValue}
-    onkeydown={(e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        handleSearchSubmit();
-      }
-    }}
-  />
+  <!-- Header with input and context badge -->
+  <div class="flex items-center gap-2 border-b px-3">
+    <Search class="size-4 text-muted-foreground shrink-0" />
+    <Command.Input
+      class="flex-1 border-0 focus:ring-0"
+      placeholder={effectiveMode === "actions"
+        ? "Type a command..."
+        : effectiveMode === "chat"
+          ? "Ask AI a question..."
+          : "Search or type > for commands, ? for AI..."}
+      bind:value={inputValue}
+      onkeydown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          handleSearchSubmit();
+        }
+      }}
+    />
+    {#if projectContext}
+      <Badge variant="secondary" class="shrink-0 text-[10px] px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-400 border-blue-500/20">
+        <Folder class="size-3 mr-1" />
+        {projectContext.projectName}
+      </Badge>
+    {:else}
+      <Badge variant="outline" class="shrink-0 text-[10px] px-2 py-0.5 rounded-md text-muted-foreground">
+        <Globe class="size-3 mr-1" />
+        All Projects
+      </Badge>
+    {/if}
+  </div>
 
-  <Command.List class="max-h-[400px]">
+  <Command.List class="max-h-[500px]">
     {#if effectiveMode === "chat"}
       <!-- AI Chat Mode -->
       <Command.Group heading="AI Chat">
         {#if chatMessages.length > 0}
           {#each chatMessages.slice(-4) as msg}
-            <div class="px-3 py-2">
-              <div class="flex items-start gap-2">
-                <span class="text-xs font-medium text-muted-foreground min-w-[3rem]">
+            <div class="px-4 py-2.5">
+              <div class="flex items-start gap-2.5">
+                <span class="text-xs font-semibold min-w-[3rem] {msg.role === 'user' ? 'text-blue-400' : 'text-emerald-400'}">
                   {msg.role === "user" ? "You" : "AI"}
                 </span>
-                <p class="text-sm flex-1 {msg.role === 'assistant' ? 'text-muted-foreground' : ''}">
+                <p class="text-sm flex-1 leading-relaxed {msg.role === 'assistant' ? 'text-muted-foreground' : ''}">
                   {#if msg.streaming && !msg.content}
                     <span class="italic text-muted-foreground">Thinking...</span>
                   {:else}
@@ -382,13 +413,13 @@
             </div>
           {/each}
         {:else}
-          <div class="px-3 py-4 text-center text-sm text-muted-foreground">
-            <MessageCircle class="size-8 mx-auto mb-2 opacity-50" />
+          <div class="px-4 py-6 text-center text-sm text-muted-foreground">
+            <MessageCircle class="size-8 mx-auto mb-2 opacity-40" />
             <p>Ask a question about your research</p>
           </div>
         {/if}
         {#if isStreaming}
-          <div class="px-3 py-2 flex items-center gap-2 text-sm text-muted-foreground">
+          <div class="px-4 py-2.5 flex items-center gap-2 text-sm text-muted-foreground">
             <Loader class="size-3 animate-spin" />
             <span>AI is responding...</span>
           </div>
@@ -397,47 +428,51 @@
 
     {:else if effectiveMode === "actions"}
       <!-- Actions Mode -->
-      <Command.Group heading="Quick Actions">
-        {#each filteredActions as action}
-          <Command.Item
-            value={action.label}
-            onSelect={() => {
-              action.action();
-              globalSearchStore.close();
-            }}
-          >
-            <action.icon class="size-4 mr-2 text-muted-foreground" />
-            <span>{action.label}</span>
-          </Command.Item>
-        {/each}
-      </Command.Group>
+      {#if !projectContext}
+        <Command.Group heading="Quick Actions">
+          {#each filteredActions as action}
+            <Command.Item
+              class="rounded-md mx-1 px-3 py-2.5"
+              value={action.label}
+              onSelect={() => {
+                action.action();
+                globalSearchStore.close();
+              }}
+            >
+              <action.icon class="size-4 mr-2.5 text-amber-500" />
+              <span>{action.label}</span>
+            </Command.Item>
+          {/each}
+        </Command.Group>
+      {/if}
 
-      {#if projectSections.length > 0}
-        <Command.Separator />
-        <Command.Group heading="Go to Section ({projectContext?.projectName})">
+      {#if projectContext && projectSections.length > 0}
+        <Command.Group heading="Go to Section">
           {#each projectSections as section}
             <Command.Item
+              class="rounded-md mx-1 px-3 py-2.5"
               value={section.label}
               onSelect={() => {
                 navigate(section.path);
                 globalSearchStore.close();
               }}
             >
-              <section.icon class="size-4 mr-2 text-muted-foreground" />
+              <section.icon class="size-4 mr-2.5 text-violet-500" />
               <span>{section.label}</span>
+              <ArrowRight class="size-3 ml-auto text-muted-foreground opacity-50" />
             </Command.Item>
           {/each}
         </Command.Group>
       {/if}
 
-      {#if filteredActions.length === 0 && projectSections.length === 0}
+      {#if (!projectContext && filteredActions.length === 0) || (projectContext && projectSections.length === 0)}
         <Command.Empty>No commands found.</Command.Empty>
       {/if}
 
     {:else if effectiveMode === "search" && hasSubmittedSearch}
       <!-- Full Search Results -->
       {#if isLoading}
-        <div class="py-6 text-center">
+        <div class="py-8 text-center">
           <Loader class="size-6 mx-auto animate-spin text-muted-foreground mb-2" />
           <p class="text-sm text-muted-foreground">Searching...</p>
         </div>
@@ -449,22 +484,23 @@
             {#each results as result}
               {@const Icon = getResultIcon(result.type)}
               <Command.Item
+                class="rounded-md mx-1 px-3 py-2.5"
                 value={result.title}
                 onSelect={() => handleResultClick(result)}
               >
-                <Icon class="size-4 mr-2 text-muted-foreground flex-shrink-0" />
+                <Icon class="size-4 mr-2.5 {getTypeIconColor(result.type)} flex-shrink-0" />
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2">
                     <span class="truncate text-sm">{result.title}</span>
                     {#if result.similarity}
-                      <Badge variant="outline" class="text-[10px] px-1 py-0 flex-shrink-0">
+                      <Badge variant="outline" class="text-[10px] px-1.5 py-0 flex-shrink-0 rounded">
                         {Math.round(result.similarity * 100)}%
                       </Badge>
                     {/if}
                     {#if searchScope === "all" && result.projectInfo}
                       <Badge
                         variant="secondary"
-                        class="text-[10px] px-1 py-0 flex-shrink-0 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300"
+                        class="text-[10px] px-1.5 py-0 flex-shrink-0 rounded bg-blue-500/10 text-blue-400 border-blue-500/20"
                       >
                         {result.projectInfo.name}
                       </Badge>
@@ -483,7 +519,7 @@
     {:else if effectiveMode === "search" && !hasSubmittedSearch}
       <!-- Autocomplete Results -->
       {#if isAutocompleting}
-        <div class="py-4 text-center">
+        <div class="py-6 text-center">
           <Loader class="size-4 mx-auto animate-spin text-muted-foreground" />
         </div>
       {:else if autocompleteResults.length > 0}
@@ -492,10 +528,11 @@
             {#each results as result}
               {@const Icon = getResultIcon(result.type)}
               <Command.Item
+                class="rounded-md mx-1 px-3 py-2.5"
                 value={result.title}
                 onSelect={() => handleAutocompleteClick(result)}
               >
-                <Icon class="size-4 mr-2 text-muted-foreground flex-shrink-0" />
+                <Icon class="size-4 mr-2.5 {getTypeIconColor(result.type)} flex-shrink-0" />
                 <div class="flex-1 min-w-0">
                   <span class="truncate text-sm">{result.title}</span>
                   {#if result.subtitle}
@@ -511,36 +548,39 @@
       {/if}
 
     {:else}
-      <!-- Default State: Quick Actions, Sections, Recent Searches -->
-      <Command.Group heading="Quick Actions">
-        {#each quickActions as action}
-          <Command.Item
-            value={action.label}
-            onSelect={() => {
-              action.action();
-              globalSearchStore.close();
-            }}
-          >
-            <action.icon class="size-4 mr-2 text-muted-foreground" />
-            <span>{action.label}</span>
-          </Command.Item>
-        {/each}
-      </Command.Group>
+      <!-- Default State -->
+      {#if !projectContext}
+        <Command.Group heading="Quick Actions">
+          {#each quickActions as action}
+            <Command.Item
+              class="rounded-md mx-1 px-3 py-2.5"
+              value={action.label}
+              onSelect={() => {
+                action.action();
+                globalSearchStore.close();
+              }}
+            >
+              <action.icon class="size-4 mr-2.5 text-amber-500" />
+              <span>{action.label}</span>
+            </Command.Item>
+          {/each}
+        </Command.Group>
+      {/if}
 
-      {#if projectSections.length > 0}
-        <Command.Separator />
+      {#if projectContext && projectSections.length > 0}
         <Command.Group heading="Go to Section">
           {#each projectSections as section}
             <Command.Item
+              class="rounded-md mx-1 px-3 py-2.5"
               value={section.label}
               onSelect={() => {
                 navigate(section.path);
                 globalSearchStore.close();
               }}
             >
-              <section.icon class="size-4 mr-2 text-muted-foreground" />
+              <section.icon class="size-4 mr-2.5 text-violet-500" />
               <span>{section.label}</span>
-              <ArrowRight class="size-3 ml-auto text-muted-foreground" />
+              <ArrowRight class="size-3 ml-auto text-muted-foreground opacity-50" />
             </Command.Item>
           {/each}
         </Command.Group>
@@ -551,10 +591,11 @@
         <Command.Group heading="Recent Searches">
           {#each recentSearches.slice(0, 5) as recent}
             <Command.Item
+              class="rounded-md mx-1 px-3 py-2.5"
               value={recent}
               onSelect={() => selectRecentSearch(recent)}
             >
-              <Clock class="size-4 mr-2 text-muted-foreground" />
+              <Clock class="size-4 mr-2.5 text-muted-foreground" />
               <span>{recent}</span>
             </Command.Item>
           {/each}
@@ -564,14 +605,15 @@
   </Command.List>
 
   <!-- Footer -->
-  <div class="border-t px-3 py-2 flex items-center justify-between text-xs text-muted-foreground">
-    <div class="flex items-center gap-2">
-      <span class="text-xs">{searchScope === "current" ? "Current project" : "All projects"}</span>
-      <Switch
-        pressed={searchScope === "all"}
-        onPressedChange={handleScopeToggle}
-        class="scale-75"
-      />
+  <div class="border-t px-4 py-2.5 flex items-center justify-between text-xs text-muted-foreground">
+    <div class="flex items-center gap-1.5">
+      {#if projectContext}
+        <Folder class="size-3 text-blue-400" />
+        <span class="text-xs">{projectContext.projectName}</span>
+      {:else}
+        <Globe class="size-3" />
+        <span class="text-xs">All Projects</span>
+      {/if}
     </div>
     <div class="flex items-center gap-3">
       <span class="flex items-center gap-1">

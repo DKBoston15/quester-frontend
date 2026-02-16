@@ -151,30 +151,9 @@ function saveRecentSearches(searches: string[]) {
   }
 }
 
-// Helper functions for search scope localStorage
-function getSearchScope(): SearchScope {
-  if (typeof window === "undefined") return "current";
-  try {
-    const stored = localStorage.getItem("searchScope");
-    return stored === "all" ? "all" : "current";
-  } catch {
-    return "current";
-  }
-}
-
-function saveSearchScope(scope: SearchScope) {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem("searchScope", scope);
-  } catch (error) {
-    console.error("Failed to save search scope:", error);
-  }
-}
-
 // Create the store state
 let query = $state("");
 let mode = $state<SearchMode>("search");
-let scope = $state<SearchScope>("current");
 let isOpen = $state(false);
 let results = $state<SearchResult[]>([]);
 let chatMessages = $state<ChatMessage[]>([]);
@@ -215,6 +194,7 @@ let registeredActions = $state<QuickAction[]>([]);
 let projectContext = $state<{ projectId: string; projectName: string } | null>(null);
 
 // Derived states
+const scope: SearchScope = $derived(projectContext !== null ? "current" : "all");
 const hasResults = $derived(results.length > 0);
 const hasActiveFilters = $derived(
   activeFilters.content_types.length < 6 ||
@@ -236,10 +216,9 @@ const sessionTitle = $derived(
   currentSession?.title || generateSessionTitle(chatMessages)
 );
 
-// Initialize recent searches and scope
+// Initialize recent searches
 function initializeRecentSearches() {
   recentSearches = getRecentSearches();
-  scope = getSearchScope();
 }
 
 // Get current project ID from URL or store
@@ -1120,18 +1099,6 @@ export const globalSearchStore = {
   setMode(newMode: SearchMode) {
     mode = newMode;
     error = null;
-  },
-
-  setScope(newScope: SearchScope) {
-    scope = newScope;
-    saveSearchScope(newScope);
-    error = null;
-    // Clear cache when scope changes
-    searchCache.clear();
-    // Re-run search if there's a query
-    if (query.trim()) {
-      debouncedSearch();
-    }
   },
 
   setQuery(newQuery: string) {
