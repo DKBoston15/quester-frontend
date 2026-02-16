@@ -16,7 +16,6 @@
   import Settings from "./project/Settings.svelte";
   import Insights from "./project/Insights.svelte";
   import OutcomeView from "./project/OutcomeView.svelte";
-  import Chat from "./project/Chat.svelte";
   import Analyst from "./project/Analyst.svelte";
   import { trackPageView } from "$lib/services/fullstory";
   import { _ } from "svelte-i18n";
@@ -32,7 +31,6 @@
     | "connections"
     | "progress"
     | "project_settings"
-    | "chat"
     | "analyst";
 
   const components: Record<SectionKey, any> = {
@@ -46,7 +44,6 @@
     connections: Connections,
     progress: Progress,
     project_settings: Settings,
-    chat: Chat,
     analyst: Analyst,
   };
 

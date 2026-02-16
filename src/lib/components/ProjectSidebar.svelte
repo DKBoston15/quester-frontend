@@ -23,7 +23,6 @@
     Lock,
     Search,
     Command as CommandIcon,
-    Sparkles,
   } from "lucide-svelte";
   import { useLocation } from "svelte-routing";
   import { api } from "$lib/services/api-client";
@@ -312,12 +311,6 @@
         title: t("projectSidebar.notes"),
         icon: Pencil,
         link: `/project/${projectId}/notes`,
-      },
-      {
-        title: t("projectSidebar.researchAssistant"),
-        icon: Sparkles,
-        link: `/project/${projectId}/chat`,
-        badge: "AI",
       },
       {
         title: "Research Analyst",
