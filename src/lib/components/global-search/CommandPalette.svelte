@@ -355,6 +355,7 @@
 </script>
 
 <Command.Dialog
+  shouldFilter={false}
   open={isOpen}
   onOpenChange={(open) => {
     if (!open) globalSearchStore.close();
