@@ -17,7 +17,7 @@
   import TeamManagement from "./routes/TeamManagement.svelte";
   import Settings from "./routes/Settings.svelte";
   import { api } from "$lib/services/api-client";
-  import { GlobalSearchDialog } from "$lib/components/global-search";
+  import { CommandPalette } from "$lib/components/global-search";
   import AnnouncementModal from "$lib/components/announcements/AnnouncementModal.svelte";
   import { announcementStore } from "$lib/stores/AnnouncementStore";
   import { initializeFullStory } from "$lib/services/fullstory";
@@ -232,8 +232,8 @@
       {#if !auth.isAuthenticated && !auth.isLoading}
         <SignIn onLogin={login} />
       {:else}
-        <!-- Global Search Dialog - Available across all authenticated routes -->
-        <GlobalSearchDialog />
+        <!-- Command Palette - Available across all authenticated routes -->
+        <CommandPalette />
 
         <!-- Announcement Modal - Available across all authenticated routes -->
         <AnnouncementModal />

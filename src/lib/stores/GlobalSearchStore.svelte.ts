@@ -75,6 +75,23 @@ export interface CachedSearchResult {
 
 export type SearchMode = "search" | "chat";
 export type SearchScope = "current" | "all";
+export type PaletteMode = "default" | "search" | "actions" | "chat";
+
+export interface AutocompleteResult {
+  type: string;
+  id: string;
+  title: string;
+  subtitle?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface QuickAction {
+  id: string;
+  label: string;
+  icon?: string;
+  action: () => void;
+  keywords?: string[];
+}
 
 // Search cache with 5-minute TTL
 class SearchCache {
@@ -189,6 +206,13 @@ let showChatHistory = $state(false);
 let chatHistoryError = $state<string | null>(null);
 let autoSaveEnabled = $state(true);
 let lastSaveTime = $state<Date | null>(null);
+
+// Command palette state
+let paletteMode = $state<PaletteMode>("default");
+let autocompleteResults = $state<AutocompleteResult[]>([]);
+let isAutocompleting = $state(false);
+let registeredActions = $state<QuickAction[]>([]);
+let projectContext = $state<{ projectId: string; projectName: string } | null>(null);
 
 // Derived states
 const hasResults = $derived(results.length > 0);
@@ -900,6 +924,79 @@ async function sendChatMessage(message: string): Promise<void> {
   }
 }
 
+// Autocomplete function
+async function performAutocomplete(q: string): Promise<void> {
+  if (!q.trim() || q.trim().length < 2) {
+    autocompleteResults = [];
+    return;
+  }
+
+  const projectId = getCurrentProjectId();
+  if (scope === "current" && !projectId) {
+    autocompleteResults = [];
+    return;
+  }
+
+  isAutocompleting = true;
+
+  try {
+    const requestBody: Record<string, unknown> = {
+      query: q,
+      scope,
+    };
+    if (projectId) {
+      requestBody.projectId = projectId;
+    }
+
+    const response = await api.stream(`/search/autocomplete`, {
+      method: "POST",
+      body: requestBody,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Autocomplete failed: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    autocompleteResults = data.results || [];
+  } catch (err) {
+    console.error("Autocomplete error:", err);
+    autocompleteResults = [];
+  } finally {
+    isAutocompleting = false;
+  }
+}
+
+// Debounced autocomplete (150ms)
+const debouncedAutocomplete = debounce(performAutocomplete, 150);
+
+// Action registry
+function registerActions(actions: QuickAction[]): void {
+  registeredActions = actions;
+}
+
+function getFilteredActions(q: string): QuickAction[] {
+  if (!q.trim()) return registeredActions;
+  const lower = q.toLowerCase();
+  return registeredActions.filter(
+    (a) =>
+      a.label.toLowerCase().includes(lower) ||
+      a.keywords?.some((k) => k.toLowerCase().includes(lower))
+  );
+}
+
+function setPaletteMode(newMode: PaletteMode): void {
+  paletteMode = newMode;
+}
+
+function setProjectContext(projectId: string, projectName: string): void {
+  projectContext = { projectId, projectName };
+}
+
+function clearProjectContext(): void {
+  projectContext = null;
+}
+
 // Store interface
 export const globalSearchStore = {
   // Getters
@@ -985,6 +1082,23 @@ export const globalSearchStore = {
   },
   get sessionTitle() {
     return sessionTitle;
+  },
+
+  // Command palette getters
+  get paletteMode() {
+    return paletteMode;
+  },
+  get autocompleteResults() {
+    return autocompleteResults;
+  },
+  get isAutocompleting() {
+    return isAutocompleting;
+  },
+  get registeredActions() {
+    return registeredActions;
+  },
+  get projectContext() {
+    return projectContext;
   },
 
   // Actions
@@ -1138,4 +1252,12 @@ export const globalSearchStore = {
   clearChatHistoryError() {
     chatHistoryError = null;
   },
+
+  // Command palette methods
+  performAutocomplete: debouncedAutocomplete,
+  setPaletteMode,
+  registerActions,
+  getFilteredActions,
+  setProjectContext,
+  clearProjectContext,
 };
