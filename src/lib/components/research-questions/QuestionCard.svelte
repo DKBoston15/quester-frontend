@@ -68,7 +68,7 @@
       variant={getStatusBadgeVariant(question.status)}
       class="text-[10px] px-1.5 py-0 flex-shrink-0"
     >
-      {question.status}
+      {question.status.charAt(0).toUpperCase() + question.status.slice(1)}
     </Badge>
   </div>
 

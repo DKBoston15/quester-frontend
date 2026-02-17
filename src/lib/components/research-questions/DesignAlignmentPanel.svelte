@@ -177,7 +177,7 @@
   {:else}
     <EmptyState
       title="No alignment data"
-      description="Run an AI analysis to check how this question aligns with your project's design types."
+      description="Run an analysis to check how this question aligns with your project's design types."
       variant="data-empty"
       ctaText="Analyze Alignment"
       ctaAction={handleAnalyze}

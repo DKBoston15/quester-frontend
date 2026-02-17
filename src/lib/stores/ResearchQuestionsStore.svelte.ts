@@ -275,48 +275,77 @@
     },
 
     async analyzeAlignment(questionId: string) {
-      cancelStreaming();
       isLoading = true;
       error = null;
-      streamingAnalysis = null;
-      abortController = new AbortController();
 
       try {
-        const response = await streamRequest(
-          `/research-questions/${questionId}/analyze-alignment`,
-          {
-            method: "POST",
-            signal: abortController.signal,
-            timeout: 120_000,
-          },
+        const data = await api.post<{ alignmentScores: DesignAlignmentScore; question: ResearchQuestion }>(`/research-questions/${questionId}/analyze-alignment`);
+        const updatedQuestion = data.question;
+
+        if (selectedQuestion?.id === questionId) {
+          selectedQuestion = { ...selectedQuestion, ...updatedQuestion };
+        }
+        questions = questions.map((q) =>
+          q.id === questionId ? { ...q, ...updatedQuestion } : q,
         );
-
-        const result = await processStream(response);
-
-        // Try to parse the accumulated result as JSON for structured alignment data
-        try {
-          const alignmentData = JSON.parse(result) as DesignAlignmentScore;
-          if (selectedQuestion?.id === questionId) {
-            selectedQuestion = { ...selectedQuestion, designAlignmentScore: alignmentData };
-          }
-          questions = questions.map((q) =>
-            q.id === questionId ? { ...q, designAlignmentScore: alignmentData } : q,
-          );
-        } catch {
-          // Result is narrative text, not structured JSON — that's fine
-        }
-
-        return result;
       } catch (err) {
-        if (err instanceof Error && err.name === "AbortError") {
-          return;
-        }
         console.error("Error analyzing alignment:", err);
         error = err instanceof Error ? err.message : "Failed to analyze alignment";
         throw err;
       } finally {
         isLoading = false;
-        abortController = null;
+      }
+    },
+
+    async analyzePurposeAlignment(questionId: string) {
+      isLoading = true;
+      error = null;
+
+      try {
+        const data = await api.post<{ purposeAlignment: any; question: ResearchQuestion }>(
+          `/research-questions/${questionId}/analyze-purpose-alignment`,
+        );
+        const updatedQuestion = data.question;
+
+        if (selectedQuestion?.id === questionId) {
+          selectedQuestion = { ...selectedQuestion, ...updatedQuestion };
+        }
+        questions = questions.map((q) =>
+          q.id === questionId ? { ...q, ...updatedQuestion } : q,
+        );
+        return data.purposeAlignment;
+      } catch (err) {
+        console.error("Error analyzing purpose alignment:", err);
+        error = err instanceof Error ? err.message : "Failed to analyze purpose alignment";
+        throw err;
+      } finally {
+        isLoading = false;
+      }
+    },
+
+    async analyzeCoherence(questionId: string) {
+      isLoading = true;
+      error = null;
+
+      try {
+        const data = await api.post<{ coherence: any; question: ResearchQuestion }>(
+          `/research-questions/${questionId}/analyze-coherence`,
+        );
+        const updatedQuestion = data.question;
+
+        if (selectedQuestion?.id === questionId) {
+          selectedQuestion = { ...selectedQuestion, ...updatedQuestion };
+        }
+        questions = questions.map((q) =>
+          q.id === questionId ? { ...q, ...updatedQuestion } : q,
+        );
+        return data.coherence;
+      } catch (err) {
+        console.error("Error analyzing coherence:", err);
+        error = err instanceof Error ? err.message : "Failed to analyze coherence";
+        throw err;
+      } finally {
+        isLoading = false;
       }
     },
 
@@ -355,6 +384,13 @@
         isLoading = false;
         abortController = null;
       }
+    },
+
+    async suggestQuestions(projectId: string): Promise<Array<{ question: string; rationale: string }>> {
+      const data = await api.post<{ suggestions: Array<{ question: string; rationale: string }> }>(
+        `/projects/${projectId}/research-questions/suggest`,
+      );
+      return data.suggestions;
     },
 
     cancelAnalysis() {

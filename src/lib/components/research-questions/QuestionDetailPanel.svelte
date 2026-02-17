@@ -267,7 +267,7 @@
           disabled={isLoading}
         >
           <Sparkles class="h-3.5 w-3.5 mr-1.5" />
-          {isLoading ? "Analyzing..." : "Analyze with AI"}
+          {isLoading ? "Analyzing..." : "Analyze with Quester"}
         </Button>
         {#if ondelete}
           <Button

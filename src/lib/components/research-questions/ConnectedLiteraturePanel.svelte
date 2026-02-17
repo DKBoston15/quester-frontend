@@ -7,7 +7,6 @@
   import { projectStore } from "$lib/stores/ProjectStore";
   import { navigate } from "svelte-routing";
   import { Button } from "$lib/components/ui/button";
-  import { Badge } from "$lib/components/ui/badge";
   import * as Card from "$lib/components/ui/card";
   import { EmptyState } from "$lib/components/ui/empty-state";
   import {
@@ -28,6 +27,8 @@
   interface LiteratureMatch {
     literature: Literature;
     relevanceScore: number;
+    explanation: string;
+    relevanceLevel: string;
   }
 
   let matches = $state<LiteratureMatch[]>([]);
@@ -35,7 +36,9 @@
   let highRelevanceOnly = $state(false);
 
   let filteredMatches = $derived(
-    highRelevanceOnly ? matches.filter((m) => m.relevanceScore > 70) : matches,
+    highRelevanceOnly
+      ? matches.filter((m) => m.relevanceLevel === "high" || m.relevanceLevel === "moderate")
+      : matches,
   );
 
   let sortedMatches = $derived(
@@ -50,14 +53,22 @@
     }
 
     const allLiterature = literatureStore.data;
+    const scores = (question.metadata?.literatureRelevanceScores as Record<string, number>) ?? {};
+    const explanations =
+      (question.metadata?.literatureRelevanceExplanations as Record<string, string>) ?? {};
+    const levels =
+      (question.metadata?.literatureRelevanceLevels as Record<string, string>) ?? {};
     const resolved: LiteratureMatch[] = [];
 
     for (const id of literatureIds) {
       const lit = allLiterature.find((l) => l.id === id);
       if (lit) {
-        const score =
-          (question.metadata?.literatureRelevanceScores as Record<string, number>)?.[id] ?? 50;
-        resolved.push({ literature: lit, relevanceScore: score });
+        resolved.push({
+          literature: lit,
+          relevanceScore: scores[id] ?? 50,
+          explanation: explanations[id] ?? "",
+          relevanceLevel: levels[id] ?? "low",
+        });
       }
     }
 
@@ -87,6 +98,8 @@
       const result = await api.post<{
         connectedLiteratureIds: string[];
         literatureRelevanceScores: Record<string, number>;
+        literatureRelevanceExplanations: Record<string, string>;
+        literatureRelevanceLevels: Record<string, string>;
       }>(`/research-questions/${question.id}/find-literature`, {});
 
       if (result.connectedLiteratureIds) {
@@ -111,10 +124,25 @@
     navigate(`/project/${projectId}/literature/${literatureId}`);
   }
 
-  function getRelevanceBadgeVariant(score: number): "success" | "warning" | "destructive" {
-    if (score > 70) return "success";
-    if (score >= 40) return "warning";
-    return "destructive";
+  function getRelevanceDotColor(level: string): string {
+    if (level === "high") return "bg-green-500";
+    if (level === "moderate") return "bg-yellow-500";
+    if (level === "low") return "bg-orange-500";
+    return "bg-red-500";
+  }
+
+  function getRelevanceTextColor(level: string): string {
+    if (level === "high") return "text-green-600 dark:text-green-400";
+    if (level === "moderate") return "text-yellow-600 dark:text-yellow-400";
+    if (level === "low") return "text-orange-600 dark:text-orange-400";
+    return "text-red-600 dark:text-red-400";
+  }
+
+  function getRelevanceLabel(level: string): string {
+    if (level === "high") return "Highly relevant";
+    if (level === "moderate") return "Moderately relevant";
+    if (level === "low") return "Tangentially relevant";
+    return "Weak match";
   }
 
   function formatAuthors(authors: any[] | string): string {
@@ -148,7 +176,7 @@
       >
         <span class="inline-flex items-center gap-1">
           <Filter class="h-3 w-3" />
-          High relevance
+          Most relevant
         </span>
       </button>
       <Button
@@ -187,13 +215,21 @@
                         {match.literature.publishYear}
                       {/if}
                     </p>
+                    {#if match.explanation}
+                      <p class="text-xs text-muted-foreground italic mt-1.5 leading-relaxed">
+                        {match.explanation}
+                      </p>
+                    {/if}
                   </div>
                 </div>
               </div>
               <div class="flex items-center gap-2 shrink-0">
-                <Badge variant={getRelevanceBadgeVariant(match.relevanceScore)}>
-                  {match.relevanceScore}%
-                </Badge>
+                <div class="flex items-center gap-1.5">
+                  <span class="inline-block w-2.5 h-2.5 rounded-full {getRelevanceDotColor(match.relevanceLevel)}"></span>
+                  <span class="text-xs font-medium {getRelevanceTextColor(match.relevanceLevel)}">
+                    {getRelevanceLabel(match.relevanceLevel)}
+                  </span>
+                </div>
                 <Button
                   variant="outline"
                   size="sm"
@@ -212,13 +248,13 @@
 
     {#if highRelevanceOnly && matches.length > filteredMatches.length}
       <p class="text-xs text-muted-foreground text-center">
-        Showing {filteredMatches.length} of {matches.length} matches (filtered to &gt;70% relevance)
+        Showing {filteredMatches.length} of {matches.length} matches (high and moderate relevance)
       </p>
     {/if}
   {:else if highRelevanceOnly && matches.length > 0}
     <EmptyState
-      title="No high-relevance matches"
-      description="No literature items matched above 70% relevance. Try disabling the filter to see all matches."
+      title="No highly relevant matches"
+      description="No literature items were rated as highly or moderately relevant. Try disabling the filter to see all matches."
       variant="data-empty"
       ctaText="Show All"
       ctaAction={() => (highRelevanceOnly = false)}

@@ -3263,7 +3263,7 @@
   },
   "keyInsights": {
     "title": "Key Insights",
-    "description": "AI-powered analysis of your research patterns and trends",
+    "description": "Quester-powered analysis of your research patterns and trends",
     "checkingLimit": "Checking daily limit...",
     "generateNew": "Generate new insights for this project"
   },
@@ -3407,7 +3407,7 @@
   },
   "emptyStateDescriptions": {
     "addLiteratureForAnalytics": "Add literature and notes to see your analytics.",
-    "addLiteratureForInsights": "Add literature and notes to your project to generate AI-powered insights about your research patterns.",
+    "addLiteratureForInsights": "Add literature and notes to your project to generate Quester-powered insights about your research patterns.",
     "addFirstResearchProduct": "Add your first research product to get started.",
     "addLiteratureForGraph": "Add literature to see your graph start to populate.",
     "projectWellConfigured": "Your project is well-configured and ready for research.",
@@ -3443,7 +3443,7 @@
         "title": "Global Search & AI Chat",
         "description": "Powerful search across all your projects with integrated AI assistance for research questions.",
         "bullet1": "Cross-project search",
-        "bullet2": "AI-powered research chat",
+        "bullet2": "Quester-powered research chat",
         "bullet3": "Smart content discovery"
       },
       "keyInsights": {
@@ -3606,7 +3606,7 @@
     "tryAgain": "Try Again",
     "generateInsights": "Generate Insights",
     "insightsAutoUpdated": "Insights are automatically updated when your project data changes significantly.",
-    "aiPoweredAnalysis": "AI-Powered Analysis",
+    "aiPoweredAnalysis": "Quester-Powered Analysis",
     "justNow": "Just now",
     "minutesAgo": "{minutes}m ago",
     "hoursAgo": "{hours}h ago",

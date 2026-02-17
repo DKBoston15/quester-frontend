@@ -20,7 +20,11 @@
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { EmptyState } from "$lib/components/ui/empty-state";
   import QuestionCard from "$lib/components/research-questions/QuestionCard.svelte";
+  import QuestionCreationGuide from "$lib/components/research-questions/QuestionCreationGuide.svelte";
   import DesignAlignmentPanel from "$lib/components/research-questions/DesignAlignmentPanel.svelte";
+  import PurposeAlignmentPanel from "$lib/components/research-questions/PurposeAlignmentPanel.svelte";
+  import CoherencePanel from "$lib/components/research-questions/CoherencePanel.svelte";
+  import ConnectedLiteraturePanel from "$lib/components/research-questions/ConnectedLiteraturePanel.svelte";
   import {
     Plus,
     Search,
@@ -34,8 +38,8 @@
     X,
     Sparkles,
     RefreshCw,
-    ChevronRight,
     Circle,
+    ChartBar,
   } from "lucide-svelte";
   import { _ } from "svelte-i18n";
   import { get } from "svelte/store";
@@ -173,10 +177,24 @@
     questionToDelete = null;
   }
 
+  let isAnalyzingAll = $state(false);
+
   async function handleAnalyzeAlignment() {
     if (!selectedQuestion) return;
-    activeTab = "alignment";
+    activeTab = "analysis";
     await researchQuestionsStore.analyzeAlignment(selectedQuestion.id);
+  }
+
+  async function handleAnalyzeAll() {
+    if (!selectedQuestion) return;
+    isAnalyzingAll = true;
+    try {
+      await researchQuestionsStore.analyzePurposeAlignment(selectedQuestion.id);
+      await researchQuestionsStore.analyzeAlignment(selectedQuestion.id);
+      await researchQuestionsStore.analyzeCoherence(selectedQuestion.id);
+    } finally {
+      isAnalyzingAll = false;
+    }
   }
 
   async function loadVersions() {
@@ -272,7 +290,7 @@
               </Tooltip.Trigger>
               <Tooltip.Content>
                 <p class="text-sm max-w-xs">
-                  Create, track, and refine your research questions with AI-powered design alignment and literature matching.
+                  Create, track, and refine your research questions with Quester-powered design alignment and literature matching.
                 </p>
               </Tooltip.Content>
             </Tooltip.Root>
@@ -408,6 +426,12 @@
                 Cancel
               </Button>
             </div>
+
+            <QuestionCreationGuide
+              projectPurpose={projectStore.currentProject?.purpose ?? null}
+              existingQuestions={researchQuestionsStore.questions}
+              onUseSuggestion={(q) => { newQuestion = q; }}
+            />
           </div>
         {:else if selectedQuestion}
           <!-- Question Detail with Tabs -->
@@ -419,9 +443,9 @@
                     <FileText class="h-3.5 w-3.5 mr-1.5" />
                     Detail
                   </TabsTrigger>
-                  <TabsTrigger value="alignment">
-                    <Target class="h-3.5 w-3.5 mr-1.5" />
-                    Design Alignment
+                  <TabsTrigger value="analysis">
+                    <ChartBar class="h-3.5 w-3.5 mr-1.5" />
+                    Analysis
                   </TabsTrigger>
                   <TabsTrigger value="literature">
                     <BookOpen class="h-3.5 w-3.5 mr-1.5" />
@@ -510,7 +534,7 @@
                         <Badge
                           variant={getStatusBadgeVariant(selectedQuestion.status)}
                         >
-                          {selectedQuestion.status}
+                          {selectedQuestion.status.charAt(0).toUpperCase() + selectedQuestion.status.slice(1)}
                         </Badge>
                       </div>
 
@@ -536,7 +560,7 @@
                           onclick={handleAnalyzeAlignment}
                         >
                           <Sparkles class="h-3.5 w-3.5 mr-1.5" />
-                          Analyze with AI
+                          Analyze with Quester
                         </Button>
                         <Button
                           variant="outline"
@@ -557,7 +581,7 @@
                           <Card.Header class="pb-2">
                             <Card.Title class="text-sm flex items-center gap-2">
                               <Sparkles class="h-4 w-4 text-primary" />
-                              AI Analysis
+                              Quester Analysis
                               {#if !streamingAnalysis.isComplete}
                                 <RefreshCw class="h-3.5 w-3.5 animate-spin text-muted-foreground" />
                               {/if}
@@ -574,46 +598,37 @@
                   {/if}
                 </div>
 
-              <!-- Design Alignment Tab -->
-              {:else if activeTab === "alignment"}
-                <div class="max-w-2xl">
+              <!-- Analysis Tab -->
+              {:else if activeTab === "analysis"}
+                <div class="max-w-2xl space-y-8">
+                  <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-semibold">Analysis</h2>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onclick={handleAnalyzeAll}
+                      disabled={isAnalyzingAll}
+                    >
+                      <Sparkles class="h-3.5 w-3.5 mr-1.5" />
+                      {isAnalyzingAll ? "Analyzing..." : "Analyze All"}
+                    </Button>
+                  </div>
+
+                  <PurposeAlignmentPanel question={selectedQuestion} />
+
+                  <hr class="border-border" />
+
                   <DesignAlignmentPanel question={selectedQuestion} />
+
+                  <hr class="border-border" />
+
+                  <CoherencePanel question={selectedQuestion} />
                 </div>
 
               <!-- Connected Literature Tab -->
               {:else if activeTab === "literature"}
-                <div class="max-w-2xl space-y-4">
-                  <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-semibold">Connected Literature</h3>
-                  </div>
-
-                  {#if selectedQuestion.connectedLiteratureIds.length > 0}
-                    <div class="space-y-2">
-                      {#each selectedQuestion.connectedLiteratureIds as litId, i}
-                        <div
-                          class="flex items-center gap-3 p-3 rounded-lg border hover:bg-accent/50 transition-colors"
-                        >
-                          <BookOpen class="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                          <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium truncate">
-                              Literature #{i + 1}
-                            </p>
-                            <p class="text-xs text-muted-foreground">
-                              ID: {litId}
-                            </p>
-                          </div>
-                          <ChevronRight class="h-4 w-4 text-muted-foreground" />
-                        </div>
-                      {/each}
-                    </div>
-                  {:else}
-                    <EmptyState
-                      title="No connected literature"
-                      description="Literature will be matched to this question when you run an AI analysis."
-                      variant="data-empty"
-                      height="h-[200px]"
-                    />
-                  {/if}
+                <div class="max-w-2xl">
+                  <ConnectedLiteraturePanel question={selectedQuestion} />
                 </div>
 
               <!-- Version History Tab -->
