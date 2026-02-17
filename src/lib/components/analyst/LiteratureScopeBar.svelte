@@ -5,8 +5,10 @@
   import { Badge } from "$lib/components/ui/badge";
   import { Portal } from "bits-ui";
   import { analystStore } from "$lib/stores/AnalystStore.svelte";
+  import type { ResearchQuestionScopeItem } from "$lib/stores/AnalystStore.svelte";
   import { literatureStore } from "$lib/stores/LiteratureStore";
   import Filter from "lucide-svelte/icons/filter";
+  import HelpCircle from "lucide-svelte/icons/help-circle";
   import X from "lucide-svelte/icons/x";
   import Check from "lucide-svelte/icons/check";
   import type { LiteratureScopeItem } from "$lib/types/analysis";
@@ -19,7 +21,9 @@
   const { projectId, disabled = false }: Props = $props();
 
   let open = $state(false);
+  let questionsOpen = $state(false);
   let searchValue = $state("");
+  let questionsSearchValue = $state("");
 
   // Ensure literature data is loaded for this project
   $effect(() => {
@@ -137,6 +141,54 @@
     }
     if (Array.isArray(authors)) return authors.slice(0, 2).join(", ");
     return "";
+  }
+
+  // Research Questions scope
+  let selectedQuestionIds = $derived(analystStore.selectedResearchQuestionIds);
+  let selectedQuestionItems = $derived(analystStore.selectedResearchQuestionItems);
+  let selectedQuestionSet = $derived(new Set(selectedQuestionIds));
+  let allQuestions = $derived(analystStore.availableResearchQuestions);
+
+  let filteredQuestions = $derived(
+    questionsSearchValue
+      ? allQuestions.filter((q) => {
+          const query = questionsSearchValue.toLowerCase();
+          return q.question.toLowerCase().includes(query);
+        })
+      : allQuestions,
+  );
+
+  const MAX_VISIBLE_QUESTION_BADGES = 2;
+  let showAllQuestionBadges = $state(false);
+  let visibleQuestionItems = $derived(
+    showAllQuestionBadges
+      ? selectedQuestionItems
+      : selectedQuestionItems.slice(0, MAX_VISIBLE_QUESTION_BADGES),
+  );
+  let hiddenQuestionCount = $derived(
+    Math.max(0, selectedQuestionItems.length - MAX_VISIBLE_QUESTION_BADGES),
+  );
+
+  function toggleQuestion(item: ResearchQuestionScopeItem) {
+    analystStore.toggleResearchQuestionItem(item);
+  }
+
+  function removeQuestion(id: string) {
+    const item = selectedQuestionItems.find((i) => i.id === id);
+    if (item) analystStore.toggleResearchQuestionItem(item);
+  }
+
+  function clearAllQuestions() {
+    analystStore.clearResearchQuestionScope();
+    showAllQuestionBadges = false;
+  }
+
+  function selectAllFilteredQuestions() {
+    const existingIds = new Set(selectedQuestionIds);
+    const newItems = filteredQuestions.filter((i) => !existingIds.has(i.id));
+    if (newItems.length > 0) {
+      analystStore.setResearchQuestionScope([...selectedQuestionItems, ...newItems]);
+    }
   }
 </script>
 
@@ -285,5 +337,140 @@
     >
       Clear all
     </button>
+  {/if}
+
+  <!-- Research Questions Scope Filter -->
+  {#if allQuestions.length > 0}
+    <span class="text-muted-foreground/40 select-none">|</span>
+    <Popover.Root bind:open={questionsOpen}>
+      <Popover.Trigger disabled={disabled}>
+        <Button
+          variant="ghost"
+          size="sm"
+          class="h-7 gap-1.5 text-xs {selectedQuestionItems.length > 0
+            ? 'text-foreground'
+            : 'text-muted-foreground'}"
+          {disabled}
+        >
+          <HelpCircle class="h-3 w-3" />
+          {#if selectedQuestionItems.length === 0}
+            Research Questions
+          {:else}
+            {selectedQuestionItems.length} question{selectedQuestionItems.length === 1 ? "" : "s"}
+          {/if}
+        </Button>
+      </Popover.Trigger>
+      <Portal>
+        <Popover.Content
+          class="w-[340px] p-0 z-[9999]"
+          side="top"
+          align="start"
+        >
+          <Command.Root shouldFilter={false}>
+            <Command.Input
+              placeholder="Search questions..."
+              bind:value={questionsSearchValue}
+            />
+            <Command.List class="max-h-[240px]">
+              <Command.Empty>No research questions found.</Command.Empty>
+              <Command.Group>
+                {#each filteredQuestions as question (question.id)}
+                  <Command.Item
+                    value={`${question.question}___${question.id}`}
+                    onSelect={() => toggleQuestion(question)}
+                    class="cursor-pointer"
+                  >
+                    <div class="flex items-center gap-2 w-full">
+                      <div
+                        class="flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border {selectedQuestionSet.has(
+                          question.id,
+                        )
+                          ? 'bg-primary border-primary'
+                          : 'border-muted-foreground/40'}"
+                      >
+                        {#if selectedQuestionSet.has(question.id)}
+                          <Check class="h-3 w-3 text-primary-foreground" />
+                        {/if}
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="text-sm truncate">{question.question}</div>
+                      </div>
+                      <Badge variant="outline" class="text-[9px] h-4 px-1 capitalize">
+                        {question.status}
+                      </Badge>
+                    </div>
+                  </Command.Item>
+                {/each}
+              </Command.Group>
+            </Command.List>
+            <div
+              class="flex items-center justify-between border-t px-3 py-2 text-xs text-muted-foreground"
+            >
+              <span>
+                {selectedQuestionItems.length} of {allQuestions.length} selected
+              </span>
+              <div class="flex gap-2">
+                <button
+                  class="hover:text-foreground transition-colors"
+                  onclick={selectAllFilteredQuestions}
+                >
+                  Select all
+                </button>
+                {#if selectedQuestionItems.length > 0}
+                  <button
+                    class="hover:text-foreground transition-colors"
+                    onclick={clearAllQuestions}
+                  >
+                    Clear
+                  </button>
+                {/if}
+              </div>
+            </div>
+          </Command.Root>
+        </Popover.Content>
+      </Portal>
+    </Popover.Root>
+
+    {#if selectedQuestionItems.length > 0}
+      {#each visibleQuestionItems as item (item.id)}
+        <Badge
+          variant="secondary"
+          class="h-6 gap-1 pl-2 pr-1 text-xs max-w-[200px] bg-violet-100 dark:bg-violet-900/30"
+        >
+          <HelpCircle class="h-2.5 w-2.5 shrink-0" />
+          <span class="truncate">{item.question}</span>
+          <button
+            class="ml-0.5 rounded-full hover:bg-muted-foreground/20 p-0.5"
+            onclick={() => removeQuestion(item.id)}
+            {disabled}
+          >
+            <X class="h-3 w-3" />
+          </button>
+        </Badge>
+      {/each}
+      {#if hiddenQuestionCount > 0 && !showAllQuestionBadges}
+        <button
+          class="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          onclick={() => (showAllQuestionBadges = true)}
+        >
+          +{hiddenQuestionCount} more
+        </button>
+      {/if}
+      {#if showAllQuestionBadges && selectedQuestionItems.length > MAX_VISIBLE_QUESTION_BADGES}
+        <button
+          class="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          onclick={() => (showAllQuestionBadges = false)}
+        >
+          Show less
+        </button>
+      {/if}
+      <button
+        class="text-xs text-muted-foreground hover:text-foreground transition-colors"
+        onclick={clearAllQuestions}
+        {disabled}
+      >
+        Clear
+      </button>
+    {/if}
   {/if}
 </div>

@@ -2,6 +2,7 @@
   import { onMount, onDestroy } from "svelte";
   import { projectStore } from "$lib/stores/ProjectStore";
   import { analystStore } from "$lib/stores/AnalystStore.svelte";
+  import { researchQuestionsStore } from "$lib/stores/ResearchQuestionsStore.svelte";
   import ConversationThread from "$lib/components/analyst/ConversationThread.svelte";
   import InputArea from "$lib/components/analyst/InputArea.svelte";
   import SessionSidebar from "$lib/components/analyst/SessionSidebar.svelte";
@@ -24,11 +25,24 @@
   onMount(() => {
     if (projectId) {
       analystStore.loadSessions(projectId);
+      loadResearchQuestions(projectId);
     }
   });
 
   onDestroy(() => {
     analystStore.abort();
+  });
+
+  async function loadResearchQuestions(pid: string) {
+    await researchQuestionsStore.loadQuestions(pid);
+    analystStore.setAvailableResearchQuestions(researchQuestionsStore.questions);
+  }
+
+  // Reload research questions when project changes
+  $effect(() => {
+    if (projectId) {
+      loadResearchQuestions(projectId);
+    }
   });
 
   async function handleSend(message: string) {
