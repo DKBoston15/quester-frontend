@@ -5,7 +5,6 @@
   import * as Command from "$lib/components/ui/command";
   import { Badge } from "$lib/components/ui/badge";
   import { navigate } from "svelte-routing";
-  import { _ } from "svelte-i18n";
 
   // Icons
   import Search from "lucide-svelte/icons/search";
@@ -29,42 +28,28 @@
   import ChartNetwork from "lucide-svelte/icons/chart-network";
   import TextSearch from "lucide-svelte/icons/text-search";
   import ArrowRight from "lucide-svelte/icons/arrow-right";
-  import MessageCircle from "lucide-svelte/icons/message-circle";
-  import Send from "lucide-svelte/icons/send";
-  import Zap from "lucide-svelte/icons/zap";
-  import Compass from "lucide-svelte/icons/compass";
 
   // Reactive bindings to store state
   let isOpen = $derived(globalSearchStore.isOpen);
   let searchScope = $derived(globalSearchStore.scope);
-  let searchQuery = $derived(globalSearchStore.query);
   let isLoading = $derived(globalSearchStore.isLoading);
-  let isAutocompleting = $derived(globalSearchStore.isAutocompleting);
-  let error = $derived(globalSearchStore.error);
   let searchResults = $derived(globalSearchStore.results);
-  let autocompleteResults = $derived(globalSearchStore.autocompleteResults);
   let recentSearches = $derived(globalSearchStore.recentSearches);
-  let paletteMode = $derived(globalSearchStore.paletteMode);
   let projectContext = $derived(globalSearchStore.projectContext);
-  let isStreaming = $derived(globalSearchStore.isStreaming);
-  let chatMessages = $derived(globalSearchStore.chatMessages);
 
   // Local state
   let inputValue = $state("");
-  let chatInput = $state("");
-  let hasSubmittedSearch = $state(false);
 
   // Detect palette mode from input prefix
   let effectiveMode = $derived.by(() => {
     if (inputValue.startsWith(">")) return "actions" as const;
-    if (inputValue.startsWith("@") || inputValue.startsWith("?")) return "chat" as const;
     if (inputValue.trim().length > 0) return "search" as const;
     return "default" as const;
   });
 
   // Stripped query (without prefix)
   let strippedQuery = $derived.by(() => {
-    if (inputValue.startsWith(">") || inputValue.startsWith("@") || inputValue.startsWith("?")) {
+    if (inputValue.startsWith(">")) {
       return inputValue.slice(1).trim();
     }
     return inputValue.trim();
@@ -98,16 +83,20 @@
   $effect(() => {
     if (isOpen) {
       inputValue = "";
-      hasSubmittedSearch = false;
       globalSearchStore.setPaletteMode("default");
     }
   });
 
-  // Trigger autocomplete as user types (for search mode)
+  // Trigger full search as user types (for search mode)
   $effect(() => {
-    if (effectiveMode === "search" && strippedQuery.length >= 2) {
-      globalSearchStore.performAutocomplete(strippedQuery);
+    if (!isOpen) return;
+
+    if (effectiveMode === "search") {
+      globalSearchStore.setQuery(strippedQuery);
+      return;
     }
+
+    globalSearchStore.clearQuery();
   });
 
   // Get icon component for result type
@@ -149,17 +138,6 @@
         return "text-muted-foreground";
     }
   }
-
-  // Group autocomplete results by type
-  let groupedAutocomplete = $derived.by(() => {
-    const groups: Record<string, typeof autocompleteResults> = {};
-    for (const result of autocompleteResults) {
-      const key = result.type || "other";
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(result);
-    }
-    return groups;
-  });
 
   // Group search results by type
   let groupedSearchResults = $derived.by(() => {
@@ -217,27 +195,9 @@
 
   // Handle search submission (Enter key)
   function handleSearchSubmit() {
-    if (effectiveMode === "chat") {
-      handleChatSubmit();
-      return;
-    }
     if (strippedQuery.trim()) {
       globalSearchStore.setQuery(strippedQuery);
       globalSearchStore.performSearch();
-      hasSubmittedSearch = true;
-    }
-  }
-
-  // Handle chat submission
-  function handleChatSubmit() {
-    const msg = effectiveMode === "chat" ? strippedQuery : chatInput;
-    if (msg.trim()) {
-      globalSearchStore.sendChatMessage(msg);
-      if (effectiveMode === "chat") {
-        inputValue = inputValue.charAt(0); // keep prefix
-      } else {
-        chatInput = "";
-      }
     }
   }
 
@@ -246,7 +206,6 @@
     inputValue = q;
     globalSearchStore.setQuery(q);
     globalSearchStore.performSearch();
-    hasSubmittedSearch = true;
   }
 
   // Handle result click navigation
@@ -307,51 +266,6 @@
     navigate(path);
   }
 
-  // Handle autocomplete result click
-  function handleAutocompleteClick(result: { type: string; id: string; title: string; metadata?: Record<string, unknown> }) {
-    // Use the result to navigate, treating it similarly to a search result
-    const pid = (result.metadata?.project_id as string) || (result.metadata?.projectId as string) || projectContext?.projectId;
-    if (!pid) return;
-
-    let path = "";
-    switch (result.type) {
-      case "literature":
-        path = `/project/${pid}/literature/${result.id}`;
-        break;
-      case "note":
-        path = `/project/${pid}/notes`;
-        break;
-      case "project":
-        path = `/project/${result.id}`;
-        break;
-      case "outcome":
-        path = `/project/${pid}/outcomes/${result.id}`;
-        break;
-      case "model":
-        path = `/project/${pid}/models/${result.id}`;
-        break;
-      case "keyword_analysis":
-        path = `/project/${pid}/insights`;
-        break;
-      default:
-        path = `/project/${pid}`;
-    }
-
-    globalSearchStore.close();
-    navigate(path);
-  }
-
-  // Format date helper
-  function formatDate(dateString: string | undefined) {
-    if (!dateString) return "";
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return "";
-      return date.toLocaleDateString();
-    } catch {
-      return "";
-    }
-  }
 </script>
 
 <Command.Dialog
@@ -368,9 +282,7 @@
       class="flex-1 border-0 focus:ring-0"
       placeholder={effectiveMode === "actions"
         ? "Type a command..."
-        : effectiveMode === "chat"
-          ? "Ask AI a question..."
-          : "Search or type > for commands, ? for AI..."}
+        : "Search or type > for commands..."}
       bind:value={inputValue}
       onkeydown={(e) => {
         if (e.key === "Enter") {
@@ -393,41 +305,7 @@
   </div>
 
   <Command.List class="max-h-[500px]">
-    {#if effectiveMode === "chat"}
-      <!-- AI Chat Mode -->
-      <Command.Group heading="AI Chat">
-        {#if chatMessages.length > 0}
-          {#each chatMessages.slice(-4) as msg}
-            <div class="px-4 py-2.5">
-              <div class="flex items-start gap-2.5">
-                <span class="text-xs font-semibold min-w-[3rem] {msg.role === 'user' ? 'text-blue-400' : 'text-emerald-400'}">
-                  {msg.role === "user" ? "You" : "AI"}
-                </span>
-                <p class="text-sm flex-1 leading-relaxed {msg.role === 'assistant' ? 'text-muted-foreground' : ''}">
-                  {#if msg.streaming && !msg.content}
-                    <span class="italic text-muted-foreground">Thinking...</span>
-                  {:else}
-                    {msg.content}
-                  {/if}
-                </p>
-              </div>
-            </div>
-          {/each}
-        {:else}
-          <div class="px-4 py-6 text-center text-sm text-muted-foreground">
-            <MessageCircle class="size-8 mx-auto mb-2 opacity-40" />
-            <p>Ask a question about your research</p>
-          </div>
-        {/if}
-        {#if isStreaming}
-          <div class="px-4 py-2.5 flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader class="size-3 animate-spin" />
-            <span>AI is responding...</span>
-          </div>
-        {/if}
-      </Command.Group>
-
-    {:else if effectiveMode === "actions"}
+    {#if effectiveMode === "actions"}
       <!-- Actions Mode -->
       {#if !projectContext}
         <Command.Group heading="Quick Actions">
@@ -470,7 +348,7 @@
         <Command.Empty>No commands found.</Command.Empty>
       {/if}
 
-    {:else if effectiveMode === "search" && hasSubmittedSearch}
+    {:else if effectiveMode === "search" && strippedQuery.length >= 2}
       <!-- Full Search Results -->
       {#if isLoading}
         <div class="py-8 text-center">
@@ -517,36 +395,8 @@
         {/each}
       {/if}
 
-    {:else if effectiveMode === "search" && !hasSubmittedSearch}
-      <!-- Autocomplete Results -->
-      {#if isAutocompleting}
-        <div class="py-6 text-center">
-          <Loader class="size-4 mx-auto animate-spin text-muted-foreground" />
-        </div>
-      {:else if autocompleteResults.length > 0}
-        {#each Object.entries(groupedAutocomplete) as [type, results]}
-          <Command.Group heading={getTypeLabel(type)}>
-            {#each results as result}
-              {@const Icon = getResultIcon(result.type)}
-              <Command.Item
-                class="rounded-md mx-1 px-3 py-2.5"
-                value={result.title}
-                onSelect={() => handleAutocompleteClick(result)}
-              >
-                <Icon class="size-4 mr-2.5 {getTypeIconColor(result.type)} flex-shrink-0" />
-                <div class="flex-1 min-w-0">
-                  <span class="truncate text-sm">{result.title}</span>
-                  {#if result.subtitle}
-                    <span class="text-xs text-muted-foreground ml-2">{result.subtitle}</span>
-                  {/if}
-                </div>
-              </Command.Item>
-            {/each}
-          </Command.Group>
-        {/each}
-      {:else if strippedQuery.length >= 2}
-        <Command.Empty>No suggestions. Press Enter to search.</Command.Empty>
-      {/if}
+    {:else if effectiveMode === "search" && strippedQuery.length > 0}
+      <Command.Empty>Type at least 2 characters to search.</Command.Empty>
 
     {:else}
       <!-- Default State -->
@@ -634,12 +484,6 @@
           &gt;
         </kbd>
         commands
-      </span>
-      <span class="flex items-center gap-1">
-        <kbd class="inline-flex items-center rounded border bg-muted px-1 py-0.5 font-mono text-[10px]">
-          ?
-        </kbd>
-        AI
       </span>
     </div>
   </div>

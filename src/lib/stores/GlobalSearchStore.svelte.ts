@@ -151,6 +151,43 @@ function saveRecentSearches(searches: string[]) {
   }
 }
 
+function getSearchLimit(searchQuery: string): number {
+  const normalized = searchQuery.trim();
+  const words = normalized.split(/\s+/).filter(Boolean);
+
+  // Single-term queries need a wider candidate pool to avoid missing obvious title matches.
+  if (words.length <= 1) {
+    return 50;
+  }
+
+  return Math.min(Math.max(words.length * 4, 12), 30);
+}
+
+function getResultRelevanceScore(result: SearchResult, normalizedQuery: string): number {
+  const similarity = Number.isFinite(result.similarity) ? result.similarity : 0;
+
+  if (!normalizedQuery) {
+    return similarity;
+  }
+
+  const title = result.title?.toLowerCase().trim() || "";
+  const snippet = result.snippet?.toLowerCase() || "";
+
+  let lexicalBoost = 0;
+
+  if (title === normalizedQuery) {
+    lexicalBoost = 1.4;
+  } else if (title.startsWith(normalizedQuery)) {
+    lexicalBoost = 1.2;
+  } else if (title.includes(normalizedQuery)) {
+    lexicalBoost = 1.0;
+  } else if (snippet.includes(normalizedQuery)) {
+    lexicalBoost = 0.6;
+  }
+
+  return similarity + lexicalBoost;
+}
+
 // Create the store state
 let query = $state("");
 let mode = $state<SearchMode>("search");
@@ -522,9 +559,8 @@ async function performSearch(searchQuery: string = query): Promise<void> {
     return;
   }
 
-  // Dynamic limit based on query complexity
-  const queryWords = searchQuery.trim().split(/\s+/).length;
-  const dynamicLimit = Math.min(Math.max(queryWords * 2, 5), 15);
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const dynamicLimit = getSearchLimit(searchQuery);
 
   // Check cache first
   const cacheKey = `${searchQuery}:${projectId}:${dynamicLimit}:${scope}:${JSON.stringify(
@@ -568,12 +604,23 @@ async function performSearch(searchQuery: string = query): Promise<void> {
     }
 
     const data = await response.json();
-    // Filter results by similarity threshold (only show results with >30% similarity)
-    const allResults = data.results || [];
-    const filteredResults = allResults.filter(
-      (result: SearchResult) => result.similarity > 0.3
-    );
-    results = filteredResults;
+    const allResults: SearchResult[] = Array.isArray(data.results) ? data.results : [];
+
+    // Deduplicate and keep the strongest candidate per resource.
+    const uniqueResults = new Map<string, SearchResult>();
+    for (const result of allResults) {
+      const key = `${result.type}:${result.id}`;
+      const existing = uniqueResults.get(key);
+      if (!existing || (result.similarity ?? 0) > (existing.similarity ?? 0)) {
+        uniqueResults.set(key, result);
+      }
+    }
+
+    const rankedResults = Array.from(uniqueResults.values()).sort((a, b) => {
+      return getResultRelevanceScore(b, normalizedQuery) - getResultRelevanceScore(a, normalizedQuery);
+    });
+
+    results = rankedResults;
 
     // Cache the results
     searchCache.set(cacheKey, {
