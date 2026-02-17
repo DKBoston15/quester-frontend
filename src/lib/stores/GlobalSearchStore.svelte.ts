@@ -20,7 +20,8 @@ export interface SearchResult {
     | "project"
     | "outcome"
     | "model"
-    | "keyword_analysis";
+    | "keyword_analysis"
+    | "research_question";
   title: string;
   snippet?: string;
   content?: any; // The actual content object from backend
@@ -33,6 +34,8 @@ export interface SearchResult {
     section_type?: string;
     created_at?: string;
     updated_at?: string;
+    status?: string;
+    alignmentScore?: number;
   };
   citation?: string;
   projectInfo?: {
@@ -208,6 +211,7 @@ let activeFilters = $state<SearchFilters>({
     "outcome",
     "model",
     "keyword_analysis",
+    "research_question",
   ],
   projects: [],
   section_types: [],
@@ -234,7 +238,7 @@ let projectContext = $state<{ projectId: string; projectName: string } | null>(n
 const scope: SearchScope = $derived(projectContext !== null ? "current" : "all");
 const hasResults = $derived(results.length > 0);
 const hasActiveFilters = $derived(
-  activeFilters.content_types.length < 6 ||
+  activeFilters.content_types.length < 7 ||
     activeFilters.projects.length > 0 ||
     activeFilters.section_types.length > 0 ||
     activeFilters.date_range?.start ||

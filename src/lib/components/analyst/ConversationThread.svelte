@@ -13,6 +13,8 @@
   import TrendingUp from "lucide-svelte/icons/trending-up";
   import Lightbulb from "lucide-svelte/icons/lightbulb";
   import Target from "lucide-svelte/icons/target";
+  import HelpCircle from "lucide-svelte/icons/help-circle";
+  import Compass from "lucide-svelte/icons/compass";
   import AlertCircle from "lucide-svelte/icons/alert-circle";
   import FilterIcon from "lucide-svelte/icons/filter";
   import { Button } from "$lib/components/ui/button";
@@ -58,7 +60,9 @@
     analystStore.loadMoreMessages();
   }
 
-  const starterSuggestions = [
+  let hasResearchQuestions = $derived(analystStore.availableResearchQuestions.length > 0);
+
+  const baseSuggestions = [
     {
       icon: Search,
       title: "Summarize my research collection",
@@ -80,6 +84,25 @@
       description: "Analyze the research designs used across studies",
     },
   ];
+
+  const questionSuggestions = [
+    {
+      icon: HelpCircle,
+      title: "Help me refine my research question",
+      description: "Get AI feedback on clarity, scope, and testability",
+    },
+    {
+      icon: Compass,
+      title: "Which design type best fits my question?",
+      description: "Evaluate alignment with research, sampling, measurement, and analytic designs",
+    },
+  ];
+
+  let starterSuggestions = $derived(
+    hasResearchQuestions
+      ? [...questionSuggestions, ...baseSuggestions.slice(0, 2)]
+      : baseSuggestions,
+  );
 </script>
 
 <div class="flex-1 overflow-y-auto" bind:this={chatContainer}>
@@ -158,12 +181,20 @@
                 >
                   <p class="text-sm whitespace-pre-wrap">{message.content}</p>
                 </div>
-                {#if message.metadata?.literatureScope && message.metadata.literatureScope.length > 0}
-                  <div class="flex justify-end mt-1">
-                    <span class="text-[10px] text-muted-foreground flex items-center gap-1">
-                      <FilterIcon class="h-2.5 w-2.5" />
-                      Focused on {message.metadata.literatureScope.length} article{message.metadata.literatureScope.length === 1 ? "" : "s"}
-                    </span>
+                {#if (message.metadata?.literatureScope && message.metadata.literatureScope.length > 0) || (message.metadata?.researchQuestionScope && message.metadata.researchQuestionScope.length > 0)}
+                  <div class="flex justify-end mt-1 gap-2">
+                    {#if message.metadata?.literatureScope && message.metadata.literatureScope.length > 0}
+                      <span class="text-[10px] text-muted-foreground flex items-center gap-1">
+                        <FilterIcon class="h-2.5 w-2.5" />
+                        Focused on {message.metadata.literatureScope.length} article{message.metadata.literatureScope.length === 1 ? "" : "s"}
+                      </span>
+                    {/if}
+                    {#if message.metadata?.researchQuestionScope && message.metadata.researchQuestionScope.length > 0}
+                      <span class="text-[10px] text-muted-foreground flex items-center gap-1">
+                        <HelpCircle class="h-2.5 w-2.5" />
+                        {message.metadata.researchQuestionScope.length} question{message.metadata.researchQuestionScope.length === 1 ? "" : "s"}
+                      </span>
+                    {/if}
                   </div>
                 {/if}
               </div>

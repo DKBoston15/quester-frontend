@@ -211,6 +211,12 @@ export interface LiteratureScopeItem {
   authors?: string[]
 }
 
+export interface ResearchQuestionScopeItem {
+  id: string
+  question: string
+  status: string
+}
+
 export interface MessageMetadata {
   usage?: {
     promptTokens: number
@@ -226,6 +232,7 @@ export interface MessageMetadata {
   steps?: PersistedStepInfo[]
   suggestions?: SuggestionItem[]
   literatureScope?: LiteratureScopeItem[]
+  researchQuestionScope?: ResearchQuestionScopeItem[]
 }
 
 // ---------------------------------------------------------------------------

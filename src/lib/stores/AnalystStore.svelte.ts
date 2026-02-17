@@ -8,6 +8,7 @@ import type {
   SuggestionItem,
   LiteratureScopeItem,
 } from '$lib/types/analysis';
+import type { ResearchQuestion } from '$lib/stores/ResearchQuestionsStore.svelte';
 
 function deduplicateNarrative(text: string): string {
   const trimmed = text.trim();
@@ -88,6 +89,12 @@ function inferSuggestionsFromNarrative(text: string): SuggestionItem[] {
   return unique.map((text) => ({ text }));
 }
 
+export interface ResearchQuestionScopeItem {
+  id: string;
+  question: string;
+  status: string;
+}
+
 interface AnalystState {
   sessions: SessionSummary[];
   currentSessionId: string | null;
@@ -105,6 +112,9 @@ interface AnalystState {
   error: string | null;
   selectedLiteratureIds: string[];
   selectedLiteratureItems: LiteratureScopeItem[];
+  selectedResearchQuestionIds: string[];
+  selectedResearchQuestionItems: ResearchQuestionScopeItem[];
+  availableResearchQuestions: ResearchQuestionScopeItem[];
 }
 
 class AnalystStore {
@@ -125,6 +135,9 @@ class AnalystStore {
     error: null,
     selectedLiteratureIds: [],
     selectedLiteratureItems: [],
+    selectedResearchQuestionIds: [],
+    selectedResearchQuestionItems: [],
+    availableResearchQuestions: [],
   });
 
   private abortController: AbortController | null = null;
@@ -145,6 +158,9 @@ class AnalystStore {
   get error() { return this.state.error; }
   get selectedLiteratureIds() { return this.state.selectedLiteratureIds; }
   get selectedLiteratureItems() { return this.state.selectedLiteratureItems; }
+  get selectedResearchQuestionIds() { return this.state.selectedResearchQuestionIds; }
+  get selectedResearchQuestionItems() { return this.state.selectedResearchQuestionItems; }
+  get availableResearchQuestions() { return this.state.availableResearchQuestions; }
 
   /**
    * Send a query and stream the response.
@@ -162,15 +178,21 @@ class AnalystStore {
     // Snapshot scope at send time
     const scopeIds = [...this.state.selectedLiteratureIds];
     const scopeItems = [...this.state.selectedLiteratureItems];
+    const questionIds = [...this.state.selectedResearchQuestionIds];
+    const questionItems = [...this.state.selectedResearchQuestionItems];
 
     // Add optimistic user message
+    const metadata: any = {};
+    if (scopeItems.length > 0) metadata.literatureScope = scopeItems;
+    if (questionItems.length > 0) metadata.researchQuestionScope = questionItems;
+
     const userMsg: AnalystMessage = {
       id: `temp-${Date.now()}`,
       role: 'user',
       content: message,
       blocks: [],
       toolCalls: [],
-      metadata: scopeItems.length > 0 ? { literatureScope: scopeItems } : {},
+      metadata,
       provider: 'gemini',
       toolCallCount: 0,
       createdAt: new Date().toISOString(),
@@ -186,6 +208,7 @@ class AnalystStore {
           message,
           sessionId: this.state.currentSessionId ?? undefined,
           ...(scopeIds.length > 0 ? { literatureIds: scopeIds } : {}),
+          ...(questionIds.length > 0 ? { researchQuestionIds: questionIds } : {}),
           signal: this.abortController.signal,
         },
         {
@@ -429,6 +452,8 @@ class AnalystStore {
     this.state.error = null;
     this.state.selectedLiteratureIds = [];
     this.state.selectedLiteratureItems = [];
+    this.state.selectedResearchQuestionIds = [];
+    this.state.selectedResearchQuestionItems = [];
   }
 
   setLiteratureScope(items: LiteratureScopeItem[]) {
@@ -449,6 +474,40 @@ class AnalystStore {
     } else {
       this.state.selectedLiteratureItems = [...this.state.selectedLiteratureItems, item];
       this.state.selectedLiteratureIds = [...this.state.selectedLiteratureIds, item.id];
+    }
+  }
+
+  /**
+   * Load available research questions for use in scope filtering.
+   */
+  setAvailableResearchQuestions(questions: ResearchQuestion[]) {
+    this.state.availableResearchQuestions = questions
+      .filter((q) => q.status !== 'archived')
+      .map((q) => ({
+        id: q.id,
+        question: q.question,
+        status: q.status,
+      }));
+  }
+
+  setResearchQuestionScope(items: ResearchQuestionScopeItem[]) {
+    this.state.selectedResearchQuestionItems = items;
+    this.state.selectedResearchQuestionIds = items.map((i) => i.id);
+  }
+
+  clearResearchQuestionScope() {
+    this.state.selectedResearchQuestionItems = [];
+    this.state.selectedResearchQuestionIds = [];
+  }
+
+  toggleResearchQuestionItem(item: ResearchQuestionScopeItem) {
+    const idx = this.state.selectedResearchQuestionIds.indexOf(item.id);
+    if (idx >= 0) {
+      this.state.selectedResearchQuestionItems = this.state.selectedResearchQuestionItems.filter((i) => i.id !== item.id);
+      this.state.selectedResearchQuestionIds = this.state.selectedResearchQuestionIds.filter((id) => id !== item.id);
+    } else {
+      this.state.selectedResearchQuestionItems = [...this.state.selectedResearchQuestionItems, item];
+      this.state.selectedResearchQuestionIds = [...this.state.selectedResearchQuestionIds, item.id];
     }
   }
 
