@@ -1437,6 +1437,36 @@
         "description": "Deje que Quester analice qué tan bien se alinea su pregunta de investigación con la metodología de diseño de su proyecto. Obtenga sugerencias prácticas para refinar su pregunta."
       }
     },
+    "analyst": {
+      "header": {
+        "title": "Analista de investigación",
+        "description": "Su asistente de investigación impulsado por IA. Haga preguntas sobre su literatura, obtenga resúmenes, identifique temas y explore sus datos de investigación a través de la conversación."
+      },
+      "scopeBar": {
+        "title": "Alcance de la literatura",
+        "description": "Controle qué elementos de literatura puede referenciar el analista al responder sus preguntas. Seleccione artículos específicos o use toda la literatura disponible."
+      },
+      "rqFilter": {
+        "title": "Filtro de preguntas de investigación",
+        "description": "Enfoque el análisis seleccionando preguntas de investigación específicas. Esto ayuda a la IA a proporcionar un análisis más dirigido y relevante."
+      },
+      "inputArea": {
+        "title": "Haga su pregunta",
+        "description": "Escriba su pregunta de investigación o solicitud de análisis aquí. El analista buscará en su literatura y proporcionará respuestas basadas en evidencia."
+      },
+      "conversation": {
+        "title": "Hilo de conversación",
+        "description": "Su historial de conversación con el analista aparece aquí. Cada respuesta incluye citas y referencias a su literatura."
+      },
+      "sessions": {
+        "title": "Historial de sesiones",
+        "description": "Abra la barra lateral de sesiones para ver, cambiar entre o crear nuevas sesiones de conversación. Cada sesión mantiene su propio contexto."
+      },
+      "artifacts": {
+        "title": "Artefactos guardados",
+        "description": "Vea y gestione artefactos guardados de las respuestas del analista. Los artefactos son piezas de análisis reutilizables que puede consultar más adelante."
+      }
+    },
     "progress": {
       "header": {
         "title": "Rastree su viaje de investigación",

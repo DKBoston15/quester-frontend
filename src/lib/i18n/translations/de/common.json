@@ -1437,6 +1437,36 @@
         "description": "Lassen Sie Quester analysieren, wie gut Ihre Forschungsfrage mit der Designmethodik Ihres Projekts übereinstimmt. Erhalten Sie umsetzbare Vorschläge zur Verfeinerung Ihrer Frage."
       }
     },
+    "analyst": {
+      "header": {
+        "title": "Forschungsanalyst",
+        "description": "Ihr KI-gestützter Forschungsassistent. Stellen Sie Fragen zu Ihrer Literatur, erhalten Sie Zusammenfassungen, identifizieren Sie Themen und erkunden Sie Ihre Forschungsdaten im Gespräch."
+      },
+      "scopeBar": {
+        "title": "Literaturumfang",
+        "description": "Steuern Sie, welche Literaturelemente der Analyst bei der Beantwortung Ihrer Fragen referenzieren kann. Wählen Sie bestimmte Arbeiten aus oder verwenden Sie alle verfügbare Literatur."
+      },
+      "rqFilter": {
+        "title": "Forschungsfragen-Filter",
+        "description": "Fokussieren Sie die Analyse, indem Sie bestimmte Forschungsfragen auswählen. Dies hilft der KI, gezieltere und relevantere Analysen zu liefern."
+      },
+      "inputArea": {
+        "title": "Stellen Sie Ihre Frage",
+        "description": "Geben Sie hier Ihre Forschungsfrage oder Analyseanfrage ein. Der Analyst durchsucht Ihre Literatur und liefert evidenzbasierte Antworten."
+      },
+      "conversation": {
+        "title": "Gesprächsverlauf",
+        "description": "Ihr Gesprächsverlauf mit dem Analysten erscheint hier. Jede Antwort enthält Zitate und Verweise auf Ihre Literatur."
+      },
+      "sessions": {
+        "title": "Sitzungsverlauf",
+        "description": "Öffnen Sie die Sitzungs-Seitenleiste, um zwischen Gesprächssitzungen zu wechseln oder neue zu erstellen. Jede Sitzung behält ihren eigenen Kontext."
+      },
+      "artifacts": {
+        "title": "Gespeicherte Artefakte",
+        "description": "Anzeigen und verwalten Sie Artefakte, die aus Analystenantworten gespeichert wurden. Artefakte sind wiederverwendbare Analysestücke, auf die Sie später zurückgreifen können."
+      }
+    },
     "progress": {
       "header": {
         "title": "Ihre Forschungsreise verfolgen",

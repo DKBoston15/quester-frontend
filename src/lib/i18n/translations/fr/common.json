@@ -1437,6 +1437,36 @@
         "description": "Laissez Quester analyser dans quelle mesure votre question de recherche s'aligne avec la méthodologie de conception de votre projet. Obtenez des suggestions concrètes pour affiner votre question."
       }
     },
+    "analyst": {
+      "header": {
+        "title": "Analyste de recherche",
+        "description": "Votre assistant de recherche alimenté par l'IA. Posez des questions sur votre littérature, obtenez des résumés, identifiez des thèmes et explorez vos données de recherche par la conversation."
+      },
+      "scopeBar": {
+        "title": "Portée de la littérature",
+        "description": "Contrôlez quels éléments de littérature l'analyste peut référencer pour répondre à vos questions. Sélectionnez des articles spécifiques ou utilisez toute la littérature disponible."
+      },
+      "rqFilter": {
+        "title": "Filtre des questions de recherche",
+        "description": "Focalisez l'analyse en sélectionnant des questions de recherche spécifiques. Cela aide l'IA à fournir une analyse plus ciblée et pertinente."
+      },
+      "inputArea": {
+        "title": "Posez votre question",
+        "description": "Tapez votre question de recherche ou demande d'analyse ici. L'analyste recherchera dans votre littérature et fournira des réponses basées sur les preuves."
+      },
+      "conversation": {
+        "title": "Fil de conversation",
+        "description": "Votre historique de conversation avec l'analyste apparaît ici. Chaque réponse inclut des citations et références à votre littérature."
+      },
+      "sessions": {
+        "title": "Historique des sessions",
+        "description": "Ouvrez la barre latérale des sessions pour consulter, basculer entre ou créer de nouvelles sessions de conversation. Chaque session conserve son propre contexte."
+      },
+      "artifacts": {
+        "title": "Artefacts sauvegardés",
+        "description": "Consultez et gérez les artefacts sauvegardés à partir des réponses de l'analyste. Les artefacts sont des éléments d'analyse réutilisables que vous pouvez référencer ultérieurement."
+      }
+    },
     "progress": {
       "header": {
         "title": "Suivez votre parcours de recherche",

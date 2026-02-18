@@ -1437,6 +1437,36 @@
         "description": "Let Quester analyze how well your research question aligns with your project's design methodology. Get actionable suggestions to refine your question."
       }
     },
+    "analyst": {
+      "header": {
+        "title": "Research Analyst",
+        "description": "Your AI-powered research assistant. Ask questions about your literature, get summaries, identify themes, and explore your research data through conversation."
+      },
+      "scopeBar": {
+        "title": "Literature Scope",
+        "description": "Control which literature items the analyst can reference when answering your questions. Select specific papers or use all available literature."
+      },
+      "rqFilter": {
+        "title": "Research Questions Filter",
+        "description": "Filter the analyst's focus by selecting specific research questions. This helps the AI provide more targeted and relevant analysis."
+      },
+      "inputArea": {
+        "title": "Ask Your Question",
+        "description": "Type your research question or analysis request here. The analyst will search your literature and provide evidence-based responses."
+      },
+      "conversation": {
+        "title": "Conversation Thread",
+        "description": "Your conversation history with the analyst appears here. Each response includes citations and references to your literature."
+      },
+      "sessions": {
+        "title": "Session History",
+        "description": "Toggle the sessions sidebar to view, switch between, or create new conversation sessions. Each session maintains its own context."
+      },
+      "artifacts": {
+        "title": "Saved Artifacts",
+        "description": "View and manage artifacts saved from analyst responses. Artifacts are reusable pieces of analysis you can reference later."
+      }
+    },
     "progress": {
       "header": {
         "title": "Track Your Research Journey",

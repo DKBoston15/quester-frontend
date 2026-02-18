@@ -10,10 +10,19 @@
   import LiteratureScopeBar from "$lib/components/analyst/LiteratureScopeBar.svelte";
   import { Button } from "$lib/components/ui/button";
   import * as Card from "$lib/components/ui/card";
+  import * as Tooltip from "$lib/components/ui/tooltip";
   import Microscope from "lucide-svelte/icons/microscope";
   import History from "lucide-svelte/icons/history";
   import Plus from "lucide-svelte/icons/plus";
   import BookmarkCheck from "lucide-svelte/icons/bookmark-check";
+  import GraduationCap from "lucide-svelte/icons/graduation-cap";
+  import { driver } from "driver.js";
+  import "driver.js/dist/driver.css";
+  import { _ } from "svelte-i18n";
+  import { get } from "svelte/store";
+
+  const t = (key: string, options?: { values?: Record<string, unknown> }) =>
+    get(_)(key, options);
 
   let showSidebar = $state(false);
   let showArtifactPanel = $state(false);
@@ -67,11 +76,85 @@
     await analystStore.loadSession(sessionId);
     showSidebar = false;
   }
+
+  // Factory function for driver.js tour with i18n
+  function createDriverObj() {
+    return driver({
+      showProgress: true,
+      popoverClass: "quester-driver-theme",
+      steps: [
+        {
+          element: "#analyst-header",
+          popover: {
+            title: t("tours.analyst.header.title"),
+            description: t("tours.analyst.header.description"),
+            side: "bottom",
+            align: "start",
+          },
+        },
+        {
+          element: "#analyst-scope-bar",
+          popover: {
+            title: t("tours.analyst.scopeBar.title"),
+            description: t("tours.analyst.scopeBar.description"),
+            side: "top",
+            align: "start",
+          },
+        },
+        {
+          element: "#analyst-scope-bar",
+          popover: {
+            title: t("tours.analyst.rqFilter.title"),
+            description: t("tours.analyst.rqFilter.description"),
+            side: "top",
+            align: "start",
+          },
+        },
+        {
+          element: "#analyst-input-area",
+          popover: {
+            title: t("tours.analyst.inputArea.title"),
+            description: t("tours.analyst.inputArea.description"),
+            side: "top",
+            align: "center",
+          },
+        },
+        {
+          element: "#analyst-conversation",
+          popover: {
+            title: t("tours.analyst.conversation.title"),
+            description: t("tours.analyst.conversation.description"),
+            side: "bottom",
+            align: "center",
+          },
+        },
+        {
+          element: "#analyst-sessions-toggle",
+          popover: {
+            title: t("tours.analyst.sessions.title"),
+            description: t("tours.analyst.sessions.description"),
+            side: "bottom",
+            align: "end",
+          },
+        },
+        {
+          element: "#analyst-artifacts-button",
+          popover: {
+            title: t("tours.analyst.artifacts.title"),
+            description: t("tours.analyst.artifacts.description"),
+            side: "bottom",
+            align: "end",
+          },
+        },
+      ],
+    });
+  }
 </script>
 
 <Card.Root class="flex flex-col h-full border-0 rounded-none">
   <!-- Header -->
   <Card.Header
+    id="analyst-header"
     class="px-6 py-4 flex w-full justify-between border-b bg-background"
   >
     <div class="flex justify-between items-center gap-3">
@@ -90,6 +173,7 @@
       </div>
       <div class="flex items-center gap-2">
         <Button
+          id="analyst-artifacts-button"
           variant="outline"
           size="sm"
           onclick={() => (showArtifactPanel = true)}
@@ -99,6 +183,7 @@
           <span class="hidden sm:inline">Artifacts</span>
         </Button>
         <Button
+          id="analyst-sessions-toggle"
           variant="outline"
           size="sm"
           onclick={() => (showSidebar = !showSidebar)}
@@ -111,6 +196,19 @@
           <Plus class="h-4 w-4 mr-2" />
           <span class="hidden sm:inline">New</span>
         </Button>
+        <Tooltip.Provider>
+          <Tooltip.Root>
+            <Tooltip.Trigger>
+              <Button variant="outline" size="sm" onclick={() => createDriverObj().drive()}>
+                <GraduationCap class="h-4 w-4 mr-2" />
+                <span class="hidden sm:inline">{$_("dashboard.tour")}</span>
+              </Button>
+            </Tooltip.Trigger>
+            <Tooltip.Content>
+              <p>{$_("common.tutorial")}</p>
+            </Tooltip.Content>
+          </Tooltip.Root>
+        </Tooltip.Provider>
       </div>
     </div>
   </Card.Header>
@@ -127,18 +225,24 @@
 
       <!-- Main Conversation Area -->
       <div class="flex-1 flex flex-col min-w-0">
-        <ConversationThread
-          {projectId}
-          onSuggestionClick={handleSuggestionClick}
-        />
+        <div id="analyst-conversation" class="flex-1 overflow-hidden">
+          <ConversationThread
+            {projectId}
+            onSuggestionClick={handleSuggestionClick}
+          />
+        </div>
 
         <div class="border-t bg-background px-4 pt-2 pb-4 space-y-2">
-          <LiteratureScopeBar {projectId} disabled={isStreaming} />
-          <InputArea
-            onSend={handleSend}
-            onAbort={handleAbort}
-            {isStreaming}
-          />
+          <div id="analyst-scope-bar">
+            <LiteratureScopeBar {projectId} disabled={isStreaming} />
+          </div>
+          <div id="analyst-input-area">
+            <InputArea
+              onSend={handleSend}
+              onAbort={handleAbort}
+              {isStreaming}
+            />
+          </div>
         </div>
       </div>
 
