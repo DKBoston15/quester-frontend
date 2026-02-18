@@ -6,6 +6,7 @@
   import { Badge } from "$lib/components/ui/badge";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { BookOpen, Plus, ChevronRight, ChevronDown } from "lucide-svelte";
+  import { highlightText } from "$lib/utils/highlightText";
 
   let {
     question,
@@ -13,6 +14,7 @@
     isParent = false,
     isSubQuestion = false,
     expanded = false,
+    searchQuery = "",
     onToggleExpand,
     onAddSubQuestion,
     onclick,
@@ -22,6 +24,7 @@
     isParent?: boolean;
     isSubQuestion?: boolean;
     expanded?: boolean;
+    searchQuery?: string;
     onToggleExpand?: () => void;
     onAddSubQuestion?: () => void;
     onclick?: () => void;
@@ -99,7 +102,11 @@
         </span>
       {/if}
       <p class="text-sm line-clamp-2 flex-1 {isParent ? 'font-semibold' : 'font-medium'}">
-        {question.question}
+        {#if searchQuery}
+          {@html highlightText(question.question, searchQuery)}
+        {:else}
+          {question.question}
+        {/if}
       </p>
     </div>
     <div class="flex items-center gap-1 flex-shrink-0">

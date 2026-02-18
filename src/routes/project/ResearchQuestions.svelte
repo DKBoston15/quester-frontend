@@ -434,6 +434,7 @@
                 selected={selectedQuestion?.id === question.id}
                 isParent={hasSubQuestions}
                 expanded={isExpanded}
+                {searchQuery}
                 onToggleExpand={() => toggleParentExpand(question.id)}
                 onAddSubQuestion={() => startCreating(question.id)}
                 onclick={() => selectQuestion(question)}
@@ -444,6 +445,7 @@
                     question={subQuestion}
                     selected={selectedQuestion?.id === subQuestion.id}
                     isSubQuestion={true}
+                    {searchQuery}
                     onclick={() => selectQuestion(subQuestion)}
                   />
                 {/each}
