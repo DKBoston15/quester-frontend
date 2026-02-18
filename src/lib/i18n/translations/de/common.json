@@ -1415,6 +1415,28 @@
         "description": "Verwenden Sie diese Übersichtsseite regelmäßig, um Ihre Forschung von der Konzeption bis zur Veröffentlichung organisiert, fokussiert und auf Kurs zu halten. Erkunden Sie jeden Bereich, um das Beste aus Quester herauszuholen!"
       }
     },
+    "researchQuestions": {
+      "questionsList": {
+        "title": "Ihre Fragenliste",
+        "description": "Durchsuchen Sie hier alle Ihre Forschungsfragen. Übergeordnete Fragen können erweitert werden, um Unterfragen anzuzeigen, und Sie können nach Status filtern oder nach Stichwörtern suchen."
+      },
+      "searchFilter": {
+        "title": "Suchen & Filtern",
+        "description": "Verwenden Sie die Suchleiste, um bestimmte Fragen zu finden, und die Statusfilter, um Ihre Ansicht auf Entwurf, Aktiv oder Archiviert einzugrenzen."
+      },
+      "newQuestion": {
+        "title": "Neue Fragen erstellen",
+        "description": "Klicken Sie hier, um eine neue Forschungsfrage oder Unterfrage zu Ihrem Projekt hinzuzufügen. Gut formulierte Fragen leiten Ihren gesamten Forschungsprozess."
+      },
+      "detailTabs": {
+        "title": "Fragendetail-Tabs",
+        "description": "Erkunden Sie verschiedene Aspekte Ihrer ausgewählten Frage: Details anzeigen und bearbeiten, Design-Ausrichtung analysieren, verbundene Literatur überprüfen oder Versionshistorie verfolgen."
+      },
+      "analyzeButton": {
+        "title": "KI-gestützte Analyse",
+        "description": "Lassen Sie Quester analysieren, wie gut Ihre Forschungsfrage mit der Designmethodik Ihres Projekts übereinstimmt. Erhalten Sie umsetzbare Vorschläge zur Verfeinerung Ihrer Frage."
+      }
+    },
     "progress": {
       "header": {
         "title": "Ihre Forschungsreise verfolgen",

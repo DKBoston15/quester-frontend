@@ -40,7 +40,10 @@
     RefreshCw,
     Circle,
     ChartBar,
+    GraduationCap,
   } from "lucide-svelte";
+  import { driver } from "driver.js";
+  import "driver.js/dist/driver.css";
   import { _ } from "svelte-i18n";
   import { get } from "svelte/store";
 
@@ -332,6 +335,61 @@
     { key: "measurementDesign" as const, label: "Measurement Design", icon: FileText },
     { key: "analyticDesign" as const, label: "Analytic Design", icon: Sparkles },
   ];
+
+  // Factory function for driver.js tour with i18n
+  function createDriverObj() {
+    return driver({
+      showProgress: true,
+      popoverClass: "quester-driver-theme",
+      steps: [
+        {
+          element: "#rq-list-sidebar",
+          popover: {
+            title: t("tours.researchQuestions.questionsList.title"),
+            description: t("tours.researchQuestions.questionsList.description"),
+            side: "right",
+            align: "start",
+          },
+        },
+        {
+          element: "#rq-search-filter",
+          popover: {
+            title: t("tours.researchQuestions.searchFilter.title"),
+            description: t("tours.researchQuestions.searchFilter.description"),
+            side: "right",
+            align: "start",
+          },
+        },
+        {
+          element: "#new-question-button",
+          popover: {
+            title: t("tours.researchQuestions.newQuestion.title"),
+            description: t("tours.researchQuestions.newQuestion.description"),
+            side: "bottom",
+            align: "end",
+          },
+        },
+        {
+          element: "#rq-detail-tabs",
+          popover: {
+            title: t("tours.researchQuestions.detailTabs.title"),
+            description: t("tours.researchQuestions.detailTabs.description"),
+            side: "bottom",
+            align: "start",
+          },
+        },
+        {
+          element: "#rq-analyze-button",
+          popover: {
+            title: t("tours.researchQuestions.analyzeButton.title"),
+            description: t("tours.researchQuestions.analyzeButton.description"),
+            side: "bottom",
+            align: "start",
+          },
+        },
+      ],
+    });
+  }
 </script>
 
 <div class="flex flex-col h-screen">
@@ -369,6 +427,19 @@
             <Plus class="h-4 w-4 mr-2" />
             New Question
           </Button>
+          <Tooltip.Provider>
+            <Tooltip.Root>
+              <Tooltip.Trigger>
+                <Button variant="outline" onclick={() => createDriverObj().drive()}>
+                  <GraduationCap class="h-4 w-4 mr-2" />
+                  {$_("dashboard.tour")}
+                </Button>
+              </Tooltip.Trigger>
+              <Tooltip.Content>
+                <p>{$_("common.tutorial")}</p>
+              </Tooltip.Content>
+            </Tooltip.Root>
+          </Tooltip.Provider>
         </div>
       </div>
     </div>
@@ -387,7 +458,7 @@
         class="w-80 border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex flex-col"
       >
         <!-- Search & Filter -->
-        <div class="p-3 border-b space-y-2">
+        <div id="rq-search-filter" class="p-3 border-b space-y-2">
           <div class="relative">
             <Search class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -531,7 +602,7 @@
         {:else if selectedQuestion}
           <!-- Question Detail with Tabs -->
           <div class="flex flex-col h-full">
-            <div class="border-b px-4 pt-3">
+            <div id="rq-detail-tabs" class="border-b px-4 pt-3">
               <Tabs value={activeTab} onValueChange={handleTabChange}>
                 <TabsList>
                   <TabsTrigger value="detail">
@@ -658,6 +729,7 @@
                         </Button>
                         {#if !isParentQuestion(selectedQuestion)}
                           <Button
+                            id="rq-analyze-button"
                             variant="outline"
                             size="sm"
                             onclick={handleAnalyzeAlignment}

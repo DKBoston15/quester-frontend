@@ -1415,6 +1415,28 @@
         "description": "Utilisez régulièrement cette page d'aperçu pour garder votre recherche organisée, concentrée et sur la bonne voie, de la conception à la publication. Explorez chaque section pour tirer le meilleur parti de Quester !"
       }
     },
+    "researchQuestions": {
+      "questionsList": {
+        "title": "Votre liste de questions",
+        "description": "Parcourez toutes vos questions de recherche ici. Les questions principales peuvent être développées pour révéler les sous-questions, et vous pouvez filtrer par statut ou rechercher par mot-clé."
+      },
+      "searchFilter": {
+        "title": "Rechercher et filtrer",
+        "description": "Utilisez la barre de recherche pour trouver des questions spécifiques et les filtres de statut pour affiner votre vue entre Brouillon, Actif ou Archivé."
+      },
+      "newQuestion": {
+        "title": "Créer de nouvelles questions",
+        "description": "Cliquez ici pour ajouter une nouvelle question de recherche ou sous-question à votre projet. Des questions bien formulées guident l'ensemble de votre processus de recherche."
+      },
+      "detailTabs": {
+        "title": "Onglets de détail des questions",
+        "description": "Explorez différents aspects de votre question sélectionnée : afficher et modifier les détails, analyser l'alignement du design, examiner la littérature connectée ou suivre l'historique des versions."
+      },
+      "analyzeButton": {
+        "title": "Analyse alimentée par l'IA",
+        "description": "Laissez Quester analyser dans quelle mesure votre question de recherche s'aligne avec la méthodologie de conception de votre projet. Obtenez des suggestions concrètes pour affiner votre question."
+      }
+    },
     "progress": {
       "header": {
         "title": "Suivez votre parcours de recherche",

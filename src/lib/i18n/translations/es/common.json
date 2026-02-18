@@ -1415,6 +1415,28 @@
         "description": "Use esta página de Resumen regularmente para mantener su investigación organizada, enfocada y en camino desde la concepción hasta la publicación. ¡Explore cada sección para aprovechar al máximo Quester!"
       }
     },
+    "researchQuestions": {
+      "questionsList": {
+        "title": "Su lista de preguntas",
+        "description": "Explore todas sus preguntas de investigación aquí. Las preguntas principales se pueden expandir para revelar sub-preguntas, y puede filtrar por estado o buscar por palabra clave."
+      },
+      "searchFilter": {
+        "title": "Buscar y filtrar",
+        "description": "Use la barra de búsqueda para encontrar preguntas específicas y los filtros de estado para reducir su vista a Borrador, Activo o Archivado."
+      },
+      "newQuestion": {
+        "title": "Crear nuevas preguntas",
+        "description": "Haga clic aquí para agregar una nueva pregunta de investigación o sub-pregunta a su proyecto. Las preguntas bien elaboradas guían todo su proceso de investigación."
+      },
+      "detailTabs": {
+        "title": "Pestañas de detalle de preguntas",
+        "description": "Explore diferentes aspectos de su pregunta seleccionada: ver y editar detalles, analizar la alineación del diseño, revisar la literatura conectada o rastrear el historial de versiones."
+      },
+      "analyzeButton": {
+        "title": "Análisis impulsado por IA",
+        "description": "Deje que Quester analice qué tan bien se alinea su pregunta de investigación con la metodología de diseño de su proyecto. Obtenga sugerencias prácticas para refinar su pregunta."
+      }
+    },
     "progress": {
       "header": {
         "title": "Rastree su viaje de investigación",

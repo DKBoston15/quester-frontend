@@ -1415,6 +1415,28 @@
         "description": "Use this Overview page regularly to keep your research organized, focused, and on track from conception to publication. Explore each section to make the most of Quester!"
       }
     },
+    "researchQuestions": {
+      "questionsList": {
+        "title": "Your Questions List",
+        "description": "Browse all your research questions here. Parent questions can be expanded to reveal sub-questions, and you can filter by status or search by keyword."
+      },
+      "searchFilter": {
+        "title": "Search & Filter",
+        "description": "Use the search bar to find specific questions and the status filters to narrow your view to Draft, Active, or Archived questions."
+      },
+      "newQuestion": {
+        "title": "Create New Questions",
+        "description": "Click here to add a new research question or sub-question to your project. Well-crafted questions guide your entire research process."
+      },
+      "detailTabs": {
+        "title": "Question Detail Tabs",
+        "description": "Explore different aspects of your selected question: view and edit details, analyze design alignment, review connected literature, or track version history."
+      },
+      "analyzeButton": {
+        "title": "AI-Powered Analysis",
+        "description": "Let Quester analyze how well your research question aligns with your project's design methodology. Get actionable suggestions to refine your question."
+      }
+    },
     "progress": {
       "header": {
         "title": "Track Your Research Journey",

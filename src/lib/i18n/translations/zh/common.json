@@ -3596,6 +3596,28 @@
         "description": "定期使用此概览页面保持您的研究有序、专注和正轨。"
       }
     },
+    "researchQuestions": {
+      "questionsList": {
+        "title": "您的问题列表",
+        "description": "在此浏览所有研究问题。父问题可以展开以显示子问题，您可以按状态筛选或按关键词搜索。"
+      },
+      "searchFilter": {
+        "title": "搜索和筛选",
+        "description": "使用搜索栏查找特定问题，使用状态筛选器将视图缩小到草稿、活跃或已归档的问题。"
+      },
+      "newQuestion": {
+        "title": "创建新问题",
+        "description": "点击此处为您的项目添加新的研究问题或子问题。精心设计的问题将指导您的整个研究过程。"
+      },
+      "detailTabs": {
+        "title": "问题详情标签页",
+        "description": "探索所选问题的不同方面：查看和编辑详情、分析设计对齐、查看关联文献或跟踪版本历史。"
+      },
+      "analyzeButton": {
+        "title": "AI驱动分析",
+        "description": "让Quester分析您的研究问题与项目设计方法论的对齐程度。获取可操作的建议来完善您的问题。"
+      }
+    },
     "progress": {
       "header": {
         "title": "跟踪您的研究旅程",
