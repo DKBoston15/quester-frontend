@@ -1186,6 +1186,7 @@ export const globalSearchStore = {
         "outcome",
         "model",
         "keyword_analysis",
+        "research_question",
       ],
       projects: [],
       section_types: [],

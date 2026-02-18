@@ -17,7 +17,7 @@
   import Clock from "lucide-svelte/icons/clock";
   import Globe from "lucide-svelte/icons/globe";
   import Network from "lucide-svelte/icons/network";
-  import BarChart from "lucide-svelte/icons/bar-chart";
+  import BarChartHorizontal from "lucide-svelte/icons/bar-chart-horizontal";
   import LayoutDashboard from "lucide-svelte/icons/layout-dashboard";
   import Settings from "lucide-svelte/icons/settings";
   import Users from "lucide-svelte/icons/users";
@@ -33,6 +33,8 @@
   import Zap from "lucide-svelte/icons/zap";
   import Compass from "lucide-svelte/icons/compass";
   import HelpCircle from "lucide-svelte/icons/help-circle";
+  import Workflow from "lucide-svelte/icons/workflow";
+  import Trophy from "lucide-svelte/icons/trophy";
 
   // Reactive bindings to store state
   let isOpen = $derived(globalSearchStore.isOpen);
@@ -118,7 +120,7 @@
       case "model":
         return Network;
       case "keyword_analysis":
-        return BarChart;
+        return BarChartHorizontal;
       case "research_question":
         return HelpCircle;
       default:
@@ -192,8 +194,11 @@
       { id: "analyst", label: "Research Analyst", icon: Microscope, path: `/project/${pid}/analyst` },
       { id: "insights", label: "Insights", icon: TextSearch, path: `/project/${pid}/insights` },
       { id: "models", label: "Models", icon: ChartNetwork, path: `/project/${pid}/models` },
-      { id: "outcomes", label: "Outcomes", icon: Target, path: `/project/${pid}/outcomes` },
-      { id: "analytics", label: "Analytics", icon: BarChart, path: `/project/${pid}/analytics` },
+      { id: "outcomes", label: "Outcomes", icon: Microscope, path: `/project/${pid}/outcomes` },
+      { id: "analytics", label: "Analytics", icon: BarChartHorizontal, path: `/project/${pid}/analytics` },
+      { id: "connections", label: "Connections", icon: Workflow, path: `/project/${pid}/connections` },
+      { id: "progress", label: "Progress", icon: Trophy, path: `/project/${pid}/progress` },
+      { id: "settings", label: "Settings", icon: Settings, path: `/project/${pid}/project_settings` },
     ];
   });
 
