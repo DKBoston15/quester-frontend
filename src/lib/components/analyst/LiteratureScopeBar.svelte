@@ -149,13 +149,15 @@
   let selectedQuestionSet = $derived(new Set(selectedQuestionIds));
   let allQuestions = $derived(analystStore.availableResearchQuestions);
 
+  let nonParentQuestions = $derived(allQuestions.filter((q) => !q.isParent));
+
   let filteredQuestions = $derived(
     questionsSearchValue
-      ? allQuestions.filter((q) => {
+      ? nonParentQuestions.filter((q) => {
           const query = questionsSearchValue.toLowerCase();
           return q.question.toLowerCase().includes(query);
         })
-      : allQuestions,
+      : nonParentQuestions,
   );
 
   const MAX_VISIBLE_QUESTION_BADGES = 2;
@@ -407,7 +409,7 @@
               class="flex items-center justify-between border-t px-3 py-2 text-xs text-muted-foreground"
             >
               <span>
-                {selectedQuestionItems.length} of {allQuestions.length} selected
+                {selectedQuestionItems.length} of {nonParentQuestions.length} selected
               </span>
               <div class="flex gap-2">
                 <button

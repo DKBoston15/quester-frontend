@@ -93,6 +93,7 @@ export interface ResearchQuestionScopeItem {
   id: string;
   question: string;
   status: string;
+  isParent: boolean;
 }
 
 interface AnalystState {
@@ -487,6 +488,7 @@ class AnalystStore {
         id: q.id,
         question: q.question,
         status: q.status,
+        isParent: !q.parentQuestionId && (q.subQuestions?.length ?? 0) > 0,
       }));
   }
 

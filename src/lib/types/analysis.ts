@@ -215,6 +215,7 @@ export interface ResearchQuestionScopeItem {
   id: string
   question: string
   status: string
+  isParent?: boolean
 }
 
 export interface MessageMetadata {
