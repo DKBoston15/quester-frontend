@@ -55,6 +55,8 @@
   let isEditing = $state(false);
   let showDeleteDialog = $state(false);
   let questionToDelete = $state<string | null>(null);
+  let expandedParents = $state<Set<string>>(new Set());
+  let parentQuestionId = $state<string | null>(null);
 
   // Edit form state
   let editQuestion = $state("");
@@ -65,30 +67,61 @@
   let newQuestion = $state("");
   let newDescription = $state("");
 
-  // Derived state
-  let filteredQuestions = $derived.by(() => {
-    let result = researchQuestionsStore.questions;
+  // Derived state - filter top-level questions and match sub-questions
+  let filteredTopLevelQuestions = $derived.by(() => {
+    let topLevel = researchQuestionsStore.topLevelQuestions;
 
     if (statusFilter !== "all") {
-      result = result.filter((q) => q.status === statusFilter);
+      topLevel = topLevel.filter((q) => q.status === statusFilter);
     }
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      result = result.filter(
+      topLevel = topLevel.filter((q) => {
+        const matchesSelf =
+          q.question.toLowerCase().includes(query) ||
+          q.description.toLowerCase().includes(query);
+        const matchesSub = q.subQuestions?.some(
+          (sq) =>
+            sq.question.toLowerCase().includes(query) ||
+            sq.description.toLowerCase().includes(query),
+        );
+        return matchesSelf || matchesSub;
+      });
+    }
+
+    return topLevel;
+  });
+
+  function getFilteredSubQuestions(parent: ResearchQuestion): ResearchQuestion[] {
+    let subs = parent.subQuestions ?? [];
+
+    if (statusFilter !== "all") {
+      subs = subs.filter((q) => q.status === statusFilter);
+    }
+
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      subs = subs.filter(
         (q) =>
           q.question.toLowerCase().includes(query) ||
           q.description.toLowerCase().includes(query),
       );
     }
 
-    return result;
-  });
+    return subs;
+  }
 
   let selectedQuestion = $derived(researchQuestionsStore.selectedQuestion);
   let versions = $derived(researchQuestionsStore.versions);
   let isLoading = $derived(researchQuestionsStore.isLoading);
   let streamingAnalysis = $derived(researchQuestionsStore.streamingAnalysis);
+
+  let parentQuestionLabel = $derived.by(() => {
+    if (!parentQuestionId) return null;
+    const parent = researchQuestionsStore.allQuestions.find((q) => q.id === parentQuestionId);
+    return parent ? parent.question : null;
+  });
 
   // Load questions on mount
   onMount(() => {
@@ -142,8 +175,9 @@
     isEditing = false;
   }
 
-  function startCreating() {
+  function startCreating(forParentId?: string) {
     isCreating = true;
+    parentQuestionId = forParentId ?? null;
     newQuestion = "";
     newDescription = "";
     researchQuestionsStore.setSelectedQuestion(null);
@@ -151,18 +185,31 @@
 
   function cancelCreating() {
     isCreating = false;
+    parentQuestionId = null;
   }
 
   async function createQuestion() {
     const projectId = projectStore.currentProject?.id;
     if (!projectId || !newQuestion.trim()) return;
 
-    await researchQuestionsStore.createQuestion(projectId, {
-      question: newQuestion.trim(),
-      description: newDescription.trim(),
-      status: "draft",
-    });
+    if (parentQuestionId) {
+      await researchQuestionsStore.createSubQuestion(parentQuestionId, {
+        question: newQuestion.trim(),
+        description: newDescription.trim(),
+        status: "draft",
+      });
+      // Expand parent to show the new sub-question
+      expandedParents.add(parentQuestionId);
+      expandedParents = new Set(expandedParents);
+    } else {
+      await researchQuestionsStore.createQuestion(projectId, {
+        question: newQuestion.trim(),
+        description: newDescription.trim(),
+        status: "draft",
+      });
+    }
     isCreating = false;
+    parentQuestionId = null;
   }
 
   function confirmDelete(id: string) {
@@ -175,6 +222,19 @@
     await researchQuestionsStore.deleteQuestion(questionToDelete);
     showDeleteDialog = false;
     questionToDelete = null;
+  }
+
+  function toggleParentExpand(parentId: string) {
+    if (expandedParents.has(parentId)) {
+      expandedParents.delete(parentId);
+    } else {
+      expandedParents.add(parentId);
+    }
+    expandedParents = new Set(expandedParents);
+  }
+
+  function isParentQuestion(question: ResearchQuestion): boolean {
+    return !question.parentQuestionId && (question.subQuestions?.length ?? 0) > 0;
   }
 
   let isAnalyzingAll = $state(false);
@@ -303,7 +363,7 @@
         <div class="flex items-center gap-4 flex-shrink-0">
           <Button
             id="new-question-button"
-            onclick={startCreating}
+            onclick={() => startCreating()}
             disabled={!projectStore.currentProject}
           >
             <Plus class="h-4 w-4 mr-2" />
@@ -359,19 +419,35 @@
 
         <!-- Questions List -->
         <div class="flex-1 overflow-y-auto">
-          {#if filteredQuestions.length === 0}
+          {#if filteredTopLevelQuestions.length === 0}
             <div class="p-4 text-center text-sm text-muted-foreground">
               {searchQuery || statusFilter !== "all"
                 ? "No matching questions found."
                 : "No research questions yet."}
             </div>
           {:else}
-            {#each filteredQuestions as question (question.id)}
+            {#each filteredTopLevelQuestions as question (question.id)}
+              {@const hasSubQuestions = (question.subQuestions?.length ?? 0) > 0}
+              {@const isExpanded = expandedParents.has(question.id)}
               <QuestionCard
                 {question}
                 selected={selectedQuestion?.id === question.id}
+                isParent={hasSubQuestions}
+                expanded={isExpanded}
+                onToggleExpand={() => toggleParentExpand(question.id)}
+                onAddSubQuestion={() => startCreating(question.id)}
                 onclick={() => selectQuestion(question)}
               />
+              {#if hasSubQuestions && isExpanded}
+                {#each getFilteredSubQuestions(question) as subQuestion (subQuestion.id)}
+                  <QuestionCard
+                    question={subQuestion}
+                    selected={selectedQuestion?.id === subQuestion.id}
+                    isSubQuestion={true}
+                    onclick={() => selectQuestion(subQuestion)}
+                  />
+                {/each}
+              {/if}
             {/each}
           {/if}
         </div>
@@ -382,7 +458,22 @@
         {#if isCreating}
           <!-- Create New Question Form -->
           <div class="max-w-2xl mx-auto p-6 space-y-4">
-            <h2 class="text-xl font-semibold">Create Research Question</h2>
+            <h2 class="text-xl font-semibold">
+              {parentQuestionId ? "Create Sub-Question" : "Create Research Question"}
+            </h2>
+
+            {#if parentQuestionLabel}
+              <div class="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
+                <span class="font-medium">Parent:</span>
+                <span class="line-clamp-1">{parentQuestionLabel}</span>
+                <button
+                  class="ml-auto flex-shrink-0 text-muted-foreground hover:text-foreground"
+                  onclick={() => { parentQuestionId = null; }}
+                >
+                  <X class="h-3.5 w-3.5" />
+                </button>
+              </div>
+            {/if}
 
             <div class="space-y-3">
               <div>
@@ -394,7 +485,7 @@
                 </label>
                 <Textarea
                   id="new-question-text"
-                  placeholder="Enter your research question..."
+                  placeholder={parentQuestionId ? "Enter your sub-question..." : "Enter your research question..."}
                   bind:value={newQuestion}
                   class="min-h-[80px]"
                 />
@@ -419,7 +510,7 @@
             <div class="flex gap-2">
               <Button onclick={createQuestion} disabled={!newQuestion.trim()}>
                 <Plus class="h-4 w-4 mr-2" />
-                Create Question
+                {parentQuestionId ? "Create Sub-Question" : "Create Question"}
               </Button>
               <Button variant="outline" onclick={cancelCreating}>
                 <X class="h-4 w-4 mr-2" />
@@ -427,11 +518,13 @@
               </Button>
             </div>
 
-            <QuestionCreationGuide
-              projectPurpose={projectStore.currentProject?.purpose ?? null}
-              existingQuestions={researchQuestionsStore.questions}
-              onUseSuggestion={(q) => { newQuestion = q; }}
-            />
+            {#if !parentQuestionId}
+              <QuestionCreationGuide
+                projectPurpose={projectStore.currentProject?.purpose ?? null}
+                existingQuestions={researchQuestionsStore.questions}
+                onUseSuggestion={(q) => { newQuestion = q; }}
+              />
+            {/if}
           </div>
         {:else if selectedQuestion}
           <!-- Question Detail with Tabs -->
@@ -528,9 +621,16 @@
                     <!-- View Mode -->
                     <div class="space-y-4">
                       <div class="flex items-start justify-between gap-3">
-                        <h2 class="text-xl font-semibold leading-tight">
-                          {selectedQuestion.question}
-                        </h2>
+                        <div>
+                          {#if selectedQuestion.parentQuestionId}
+                            <span class="text-xs text-muted-foreground">Sub-Question</span>
+                          {:else if isParentQuestion(selectedQuestion)}
+                            <span class="text-xs text-muted-foreground">Parent Question</span>
+                          {/if}
+                          <h2 class="text-xl leading-tight {isParentQuestion(selectedQuestion) ? 'font-bold' : 'font-semibold'}">
+                            {selectedQuestion.question}
+                          </h2>
+                        </div>
                         <Badge
                           variant={getStatusBadgeVariant(selectedQuestion.status)}
                         >
@@ -550,17 +650,27 @@
                         )}
                       </div>
 
-                      <div class="flex gap-2">
+                      <div class="flex gap-2 flex-wrap">
                         <Button variant="outline" size="sm" onclick={startEditing}>
                           Edit
                         </Button>
+                        {#if !isParentQuestion(selectedQuestion)}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onclick={handleAnalyzeAlignment}
+                          >
+                            <Sparkles class="h-3.5 w-3.5 mr-1.5" />
+                            Analyze with Quester
+                          </Button>
+                        {/if}
                         <Button
                           variant="outline"
                           size="sm"
-                          onclick={handleAnalyzeAlignment}
+                          onclick={() => startCreating(selectedQuestion.id)}
                         >
-                          <Sparkles class="h-3.5 w-3.5 mr-1.5" />
-                          Analyze with Quester
+                          <Plus class="h-3.5 w-3.5 mr-1.5" />
+                          Add Sub-Question
                         </Button>
                         <Button
                           variant="outline"
@@ -715,7 +825,7 @@
               description="Select a research question from the list or create a new one."
               variant="data-empty"
               ctaText="New Question"
-              ctaAction={startCreating}
+              ctaAction={() => startCreating()}
               ctaDisabled={!projectStore.currentProject}
             />
           </div>
