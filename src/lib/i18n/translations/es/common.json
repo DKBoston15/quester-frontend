@@ -430,7 +430,12 @@
     "title": "Resumen del proyecto",
     "description": "Obtenga una vista de alto nivel del estado de su proyecto y sus componentes clave.",
     "addEvent": "Agregar evento",
-    "projectKeywords": "Palabras clave del proyecto"
+    "projectKeywords": "Palabras clave del proyecto",
+    "researchQuestions": {
+      "title": "Preguntas de investigación",
+      "viewAll": "Ver todas",
+      "empty": "Aún no hay preguntas de investigación activas. Agregue preguntas para guiar su investigación."
+    }
   },
   "literatureView": {
     "backToLiterature": "Volver a literatura",

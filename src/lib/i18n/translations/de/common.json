@@ -430,7 +430,12 @@
     "title": "Projektübersicht",
     "description": "Erhalten Sie einen Überblick über den Status Ihres Projekts und die wichtigsten Komponenten.",
     "addEvent": "Ereignis hinzufügen",
-    "projectKeywords": "Projekt-Schlüsselwörter"
+    "projectKeywords": "Projekt-Schlüsselwörter",
+    "researchQuestions": {
+      "title": "Forschungsfragen",
+      "viewAll": "Alle anzeigen",
+      "empty": "Noch keine aktiven Forschungsfragen. Fügen Sie Fragen hinzu, um Ihre Forschung zu leiten."
+    }
   },
   "literatureView": {
     "backToLiterature": "Zurück zur Literatur",

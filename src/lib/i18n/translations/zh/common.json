@@ -430,7 +430,12 @@
     "title": "项目概览",
     "description": "获取项目状态和关键组成部分的高级视图。",
     "addEvent": "添加事件",
-    "projectKeywords": "项目关键词"
+    "projectKeywords": "项目关键词",
+    "researchQuestions": {
+      "title": "研究问题",
+      "viewAll": "查看全部",
+      "empty": "尚无活跃的研究问题。添加问题以指导您的研究。"
+    }
   },
   "literatureView": {
     "backToLiterature": "返回文献",

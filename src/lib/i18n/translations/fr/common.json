@@ -430,7 +430,12 @@
     "title": "Aperçu du projet",
     "description": "Obtenez une vue d'ensemble du statut de votre projet et de ses composants clés.",
     "addEvent": "Ajouter un événement",
-    "projectKeywords": "Mots-clés du projet"
+    "projectKeywords": "Mots-clés du projet",
+    "researchQuestions": {
+      "title": "Questions de recherche",
+      "viewAll": "Voir tout",
+      "empty": "Aucune question de recherche active. Ajoutez des questions pour guider votre recherche."
+    }
   },
   "literatureView": {
     "backToLiterature": "Retour à la littérature",

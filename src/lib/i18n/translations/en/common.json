@@ -430,7 +430,12 @@
     "title": "Project Overview",
     "description": "Get a high-level view of your project's status and key components.",
     "addEvent": "Add Event",
-    "projectKeywords": "Project Keywords"
+    "projectKeywords": "Project Keywords",
+    "researchQuestions": {
+      "title": "Research Questions",
+      "viewAll": "View All",
+      "empty": "No active research questions yet. Add questions to guide your research."
+    }
   },
   "literatureView": {
     "backToLiterature": "Back to Literature",
