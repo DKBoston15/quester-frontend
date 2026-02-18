@@ -22,6 +22,8 @@
     userId: string;
     question: string;
     description: string;
+    parentQuestionId: string | null;
+    subQuestions?: ResearchQuestion[];
     designAlignmentScore: DesignAlignmentScore | null;
     connectedLiteratureIds: string[];
     languageConsistencyMetrics: LanguageConsistencyMetrics | null;
@@ -31,6 +33,11 @@
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
+  }
+
+  export interface GroupedQuestionsResponse {
+    topLevel: ResearchQuestion[];
+    all: ResearchQuestion[];
   }
 
   export interface ResearchQuestionVersion {
@@ -50,6 +57,7 @@
     question: string;
     description?: string;
     status?: ResearchQuestionStatus;
+    parentQuestionId?: string;
   }
 
   export interface UpdateResearchQuestionData {
@@ -64,6 +72,8 @@
   }
 
   let questions = $state<ResearchQuestion[]>([]);
+  let topLevelQuestions = $state<ResearchQuestion[]>([]);
+  let allQuestions = $state<ResearchQuestion[]>([]);
   let selectedQuestion = $state<ResearchQuestion | null>(null);
   let versions = $state<ResearchQuestionVersion[]>([]);
   let isLoading = $state(false);
@@ -141,9 +151,27 @@
     return accumulated;
   }
 
+  function updateQuestionInLists(id: string, updater: (q: ResearchQuestion) => ResearchQuestion) {
+    questions = questions.map((q) => (q.id === id ? updater(q) : q));
+    allQuestions = allQuestions.map((q) => (q.id === id ? updater(q) : q));
+    topLevelQuestions = topLevelQuestions.map((q) => {
+      if (q.id === id) return updater(q);
+      if (q.subQuestions?.some((sq) => sq.id === id)) {
+        return { ...q, subQuestions: q.subQuestions.map((sq) => (sq.id === id ? updater(sq) : sq)) };
+      }
+      return q;
+    });
+  }
+
   export const researchQuestionsStore = {
     get questions() {
       return questions;
+    },
+    get topLevelQuestions() {
+      return topLevelQuestions;
+    },
+    get allQuestions() {
+      return allQuestions;
     },
     get selectedQuestion() {
       return selectedQuestion;
@@ -175,14 +203,27 @@
       error = null;
 
       try {
-        const data = await api.get<ResearchQuestion[]>(
+        const data = await api.get<GroupedQuestionsResponse | ResearchQuestion[]>(
           `/projects/${projectId}/research-questions`,
         );
-        questions = data;
+
+        if (Array.isArray(data)) {
+          // Flat array response (legacy)
+          allQuestions = data;
+          topLevelQuestions = data.filter((q) => !q.parentQuestionId);
+          questions = data;
+        } else {
+          // Grouped response with hierarchy
+          topLevelQuestions = data.topLevel;
+          allQuestions = data.all;
+          questions = data.all;
+        }
       } catch (err) {
         console.error("Error loading research questions:", err);
         error = err instanceof Error ? err.message : "Failed to load research questions";
         questions = [];
+        topLevelQuestions = [];
+        allQuestions = [];
       } finally {
         isLoading = false;
       }
@@ -203,6 +244,17 @@
           data,
         );
         questions = [newQuestion, ...questions];
+        allQuestions = [newQuestion, ...allQuestions];
+        if (!newQuestion.parentQuestionId) {
+          topLevelQuestions = [newQuestion, ...topLevelQuestions];
+        } else {
+          // Add sub-question to parent's subQuestions array
+          topLevelQuestions = topLevelQuestions.map((q) =>
+            q.id === newQuestion.parentQuestionId
+              ? { ...q, subQuestions: [...(q.subQuestions ?? []), newQuestion] }
+              : q,
+          );
+        }
         selectedQuestion = newQuestion;
         return newQuestion;
       } catch (err) {
@@ -214,6 +266,19 @@
       }
     },
 
+    async createSubQuestion(parentId: string, data: Omit<CreateResearchQuestionData, "parentQuestionId">) {
+      const parentQuestion = allQuestions.find((q) => q.id === parentId);
+      if (!parentQuestion) {
+        error = "Parent question not found";
+        return;
+      }
+
+      return this.createQuestion(parentQuestion.projectId, {
+        ...data,
+        parentQuestionId: parentId,
+      });
+    },
+
     async updateQuestion(id: string, data: UpdateResearchQuestionData) {
       isLoading = true;
       error = null;
@@ -223,7 +288,7 @@
           `/research-questions/${id}`,
           data,
         );
-        questions = questions.map((q) => (q.id === id ? updated : q));
+        updateQuestionInLists(id, () => updated);
         if (selectedQuestion?.id === id) {
           selectedQuestion = updated;
         }
@@ -244,6 +309,15 @@
       try {
         await api.delete(`/research-questions/${id}`);
         questions = questions.filter((q) => q.id !== id);
+        allQuestions = allQuestions.filter((q) => q.id !== id);
+        topLevelQuestions = topLevelQuestions
+          .filter((q) => q.id !== id)
+          .map((q) => {
+            if (q.subQuestions?.some((sq) => sq.id === id)) {
+              return { ...q, subQuestions: q.subQuestions.filter((sq) => sq.id !== id) };
+            }
+            return q;
+          });
         if (selectedQuestion?.id === id) {
           selectedQuestion = null;
         }
@@ -285,9 +359,7 @@
         if (selectedQuestion?.id === questionId) {
           selectedQuestion = { ...selectedQuestion, ...updatedQuestion };
         }
-        questions = questions.map((q) =>
-          q.id === questionId ? { ...q, ...updatedQuestion } : q,
-        );
+        updateQuestionInLists(questionId, (q) => ({ ...q, ...updatedQuestion }));
       } catch (err) {
         console.error("Error analyzing alignment:", err);
         error = err instanceof Error ? err.message : "Failed to analyze alignment";
@@ -310,9 +382,7 @@
         if (selectedQuestion?.id === questionId) {
           selectedQuestion = { ...selectedQuestion, ...updatedQuestion };
         }
-        questions = questions.map((q) =>
-          q.id === questionId ? { ...q, ...updatedQuestion } : q,
-        );
+        updateQuestionInLists(questionId, (q) => ({ ...q, ...updatedQuestion }));
         return data.purposeAlignment;
       } catch (err) {
         console.error("Error analyzing purpose alignment:", err);
@@ -336,9 +406,7 @@
         if (selectedQuestion?.id === questionId) {
           selectedQuestion = { ...selectedQuestion, ...updatedQuestion };
         }
-        questions = questions.map((q) =>
-          q.id === questionId ? { ...q, ...updatedQuestion } : q,
-        );
+        updateQuestionInLists(questionId, (q) => ({ ...q, ...updatedQuestion }));
         return data.coherence;
       } catch (err) {
         console.error("Error analyzing coherence:", err);
@@ -401,6 +469,8 @@
     reset() {
       cancelStreaming();
       questions = [];
+      topLevelQuestions = [];
+      allQuestions = [];
       selectedQuestion = null;
       versions = [];
       isLoading = false;
