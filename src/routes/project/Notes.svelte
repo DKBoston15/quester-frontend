@@ -263,12 +263,12 @@
       section_type: { value: "Other", label: t("notes.sections.other") },
     });
     if (newNote) {
-      notesStore.setActiveNote(newNote.id);
-
-      // If in split view and right panel is empty, load the new note there
-      if (selectedView === "split" && rightPanelNote === null) {
-        // Create a deep copy to ensure reactivity
+      if (selectedView === "split" && notesStore.activeNoteId) {
+        // In split view with a note already on the left, open new note in the right panel
         rightPanelNote = JSON.parse(JSON.stringify(newNote));
+      } else {
+        // Single view or no note on the left — set as active (left panel)
+        notesStore.setActiveNote(newNote.id);
       }
     }
   }

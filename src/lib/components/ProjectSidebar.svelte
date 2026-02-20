@@ -311,6 +311,11 @@
         link: `/project/${projectId}/overview`,
       },
       {
+        title: t("projectSidebar.researchQuestions"),
+        icon: HelpCircle,
+        link: `/project/${projectId}/research_questions`,
+      },
+      {
         title: t("projectSidebar.literature"),
         icon: Library,
         link: `/project/${projectId}/literature`,
@@ -319,11 +324,6 @@
         title: t("projectSidebar.notes"),
         icon: Pencil,
         link: `/project/${projectId}/notes`,
-      },
-      {
-        title: t("projectSidebar.researchQuestions"),
-        icon: HelpCircle,
-        link: `/project/${projectId}/research_questions`,
       },
       {
         title: "Research Analyst",

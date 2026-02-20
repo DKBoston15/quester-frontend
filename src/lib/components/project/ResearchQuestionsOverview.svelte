@@ -2,6 +2,7 @@
   import * as Card from "$lib/components/ui/card";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { Badge } from "$lib/components/ui/badge";
+  import { EmptyState } from "$lib/components/ui/empty-state";
   import {
     researchQuestionsStore,
     type ResearchQuestion,
@@ -75,12 +76,15 @@
     {#if researchQuestionsStore.isLoading}
       <p class="text-sm text-muted-foreground">{$_("common.loading")}</p>
     {:else if topQuestions.length === 0}
-      <div class="flex flex-col items-center gap-2 py-4 text-center">
-        <HelpCircle class="h-8 w-8 text-muted-foreground/50" />
-        <p class="text-sm text-muted-foreground">
-          {$_("overview.researchQuestions.empty")}
-        </p>
-      </div>
+      <EmptyState
+        title={$_("overview.researchQuestions.empty")}
+        description={$_("overview.researchQuestions.addFirst")}
+        variant="data-empty"
+        ctaText={$_("overview.researchQuestions.addQuestion")}
+        ctaAction={viewAll}
+        icon={HelpCircle}
+        height="h-auto"
+      />
     {:else}
       <div class="space-y-3">
         {#each topQuestions as question (question.id)}
