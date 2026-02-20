@@ -432,9 +432,11 @@
     "addEvent": "Add Event",
     "projectKeywords": "Project Keywords",
     "researchQuestions": {
-      "title": "Research Questions",
+      "title": "Project Research Questions",
       "viewAll": "View All",
-      "empty": "No active research questions yet. Add questions to guide your research."
+      "empty": "No active research questions yet",
+      "addFirst": "Add questions to guide your research and track alignment with your project design.",
+      "addQuestion": "Add Research Question"
     }
   },
   "literatureView": {
@@ -1435,6 +1437,14 @@
       "detailTabs": {
         "title": "Question Detail Tabs",
         "description": "Explore different aspects of your selected question: view and edit details, analyze design alignment, review connected literature, or track version history."
+      },
+      "editButton": {
+        "title": "Edit Question",
+        "description": "Click Edit to modify the question text, description, or change its status. Your changes are versioned so you can always review the history."
+      },
+      "statusBadge": {
+        "title": "Question Status",
+        "description": "Each question has a status: Draft (work in progress), Active (currently guiding your research), or Archived (no longer in focus). Click Edit to change the status."
       },
       "analyzeButton": {
         "title": "Quester-Powered Analysis",

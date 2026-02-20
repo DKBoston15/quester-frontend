@@ -463,7 +463,6 @@
     },
 
     async createNote(data: Partial<Note>) {
-      isLoading = true;
       error = null;
 
       try {
@@ -502,14 +501,11 @@
         const processedNote: Note = processNoteData(noteWithCorrectTypes);
 
         notes = [processedNote, ...notes];
-        activeNoteId = processedNote.id;
         return processedNote;
       } catch (err) {
         console.error("Error creating note:", err);
         error = err instanceof Error ? err.message : t("common.anErrorOccurred");
         throw err;
-      } finally {
-        isLoading = false;
       }
     },
 

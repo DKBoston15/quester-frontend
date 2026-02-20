@@ -432,9 +432,11 @@
     "addEvent": "Ereignis hinzufügen",
     "projectKeywords": "Projekt-Schlüsselwörter",
     "researchQuestions": {
-      "title": "Forschungsfragen",
+      "title": "Projekt-Forschungsfragen",
       "viewAll": "Alle anzeigen",
-      "empty": "Noch keine aktiven Forschungsfragen. Fügen Sie Fragen hinzu, um Ihre Forschung zu leiten."
+      "empty": "Noch keine aktiven Forschungsfragen",
+      "addFirst": "Fügen Sie Fragen hinzu, um Ihre Forschung zu leiten und die Ausrichtung mit Ihrem Projektdesign zu verfolgen.",
+      "addQuestion": "Forschungsfrage hinzufügen"
     }
   },
   "literatureView": {
@@ -1435,6 +1437,14 @@
       "detailTabs": {
         "title": "Fragendetail-Tabs",
         "description": "Erkunden Sie verschiedene Aspekte Ihrer ausgewählten Frage: Details anzeigen und bearbeiten, Design-Ausrichtung analysieren, verbundene Literatur überprüfen oder Versionshistorie verfolgen."
+      },
+      "editButton": {
+        "title": "Frage bearbeiten",
+        "description": "Klicken Sie auf Bearbeiten, um den Fragetext, die Beschreibung oder den Status zu ändern. Ihre Änderungen werden versioniert, sodass Sie die Historie jederzeit überprüfen können."
+      },
+      "statusBadge": {
+        "title": "Fragenstatus",
+        "description": "Jede Frage hat einen Status: Entwurf (in Bearbeitung), Aktiv (leitet derzeit Ihre Forschung) oder Archiviert (nicht mehr im Fokus). Klicken Sie auf Bearbeiten, um den Status zu ändern."
       },
       "analyzeButton": {
         "title": "KI-gestützte Analyse",

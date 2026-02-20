@@ -385,6 +385,24 @@
           },
         },
         {
+          element: "#rq-edit-button",
+          popover: {
+            title: t("tours.researchQuestions.editButton.title"),
+            description: t("tours.researchQuestions.editButton.description"),
+            side: "bottom",
+            align: "start",
+          },
+        },
+        {
+          element: "#rq-status-badge",
+          popover: {
+            title: t("tours.researchQuestions.statusBadge.title"),
+            description: t("tours.researchQuestions.statusBadge.description"),
+            side: "bottom",
+            align: "end",
+          },
+        },
+        {
           element: "#rq-analyze-button",
           popover: {
             title: t("tours.researchQuestions.analyzeButton.title"),
@@ -711,6 +729,7 @@
                           </h2>
                         </div>
                         <Badge
+                          id="rq-status-badge"
                           variant={getStatusBadgeVariant(selectedQuestion.status)}
                         >
                           {selectedQuestion.status.charAt(0).toUpperCase() + selectedQuestion.status.slice(1)}
@@ -730,7 +749,7 @@
                       </div>
 
                       <div class="flex gap-2 flex-wrap">
-                        <Button variant="outline" size="sm" onclick={startEditing}>
+                        <Button id="rq-edit-button" variant="outline" size="sm" onclick={startEditing}>
                           Edit
                         </Button>
                         {#if !isParentQuestion(selectedQuestion)}
