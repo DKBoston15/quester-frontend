@@ -1422,7 +1422,7 @@
       },
       "subQuestions": {
         "title": "Unterfragen",
-        "description": "Unterteilen Sie breite Fragen in fokussierte Unterfragen. Bewegen Sie den Mauszeiger über eine Frage in der Liste und klicken Sie auf „Unterfrage", um eine neue Frage darunter zu verschachteln. Übergeordnete Fragen zeigen einen Pfeil zum Auf- oder Zuklappen ihrer Unterfragen."
+        "description": "Unterteilen Sie breite Fragen in fokussierte Unterfragen. Bewegen Sie den Mauszeiger über eine Frage in der Liste und klicken Sie auf ‚Unterfrage', um eine neue Frage darunter zu verschachteln. Übergeordnete Fragen zeigen einen Pfeil zum Auf- oder Zuklappen ihrer Unterfragen."
       },
       "searchFilter": {
         "title": "Suchen & Filtern",
