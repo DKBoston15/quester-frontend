@@ -1420,6 +1420,10 @@
         "title": "Your Questions List",
         "description": "Browse all your research questions here. Parent questions can be expanded to reveal sub-questions, and you can filter by status or search by keyword."
       },
+      "subQuestions": {
+        "title": "Sub-Questions",
+        "description": "Break down broad questions into focused sub-questions. Hover over any question in the list and click \"Sub-Question\" to nest a new question beneath it. Parent questions show a chevron to expand or collapse their sub-questions."
+      },
       "searchFilter": {
         "title": "Search & Filter",
         "description": "Use the search bar to find specific questions and the status filters to narrow your view to Draft, Active, or Archived questions."
@@ -1433,14 +1437,14 @@
         "description": "Explore different aspects of your selected question: view and edit details, analyze design alignment, review connected literature, or track version history."
       },
       "analyzeButton": {
-        "title": "AI-Powered Analysis",
+        "title": "Quester-Powered Analysis",
         "description": "Let Quester analyze how well your research question aligns with your project's design methodology. Get actionable suggestions to refine your question."
       }
     },
     "analyst": {
       "header": {
         "title": "Research Analyst",
-        "description": "Your AI-powered research assistant. Ask questions about your literature, get summaries, identify themes, and explore your research data through conversation."
+        "description": "Your Quester-powered research assistant. Ask questions about your literature, get summaries, identify themes, and explore your research data through conversation."
       },
       "scopeBar": {
         "title": "Literature Scope",

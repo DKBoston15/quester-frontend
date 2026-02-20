@@ -1420,6 +1420,10 @@
         "title": "Ihre Fragenliste",
         "description": "Durchsuchen Sie hier alle Ihre Forschungsfragen. Übergeordnete Fragen können erweitert werden, um Unterfragen anzuzeigen, und Sie können nach Status filtern oder nach Stichwörtern suchen."
       },
+      "subQuestions": {
+        "title": "Unterfragen",
+        "description": "Unterteilen Sie breite Fragen in fokussierte Unterfragen. Bewegen Sie den Mauszeiger über eine Frage in der Liste und klicken Sie auf „Unterfrage", um eine neue Frage darunter zu verschachteln. Übergeordnete Fragen zeigen einen Pfeil zum Auf- oder Zuklappen ihrer Unterfragen."
+      },
       "searchFilter": {
         "title": "Suchen & Filtern",
         "description": "Verwenden Sie die Suchleiste, um bestimmte Fragen zu finden, und die Statusfilter, um Ihre Ansicht auf Entwurf, Aktiv oder Archiviert einzugrenzen."

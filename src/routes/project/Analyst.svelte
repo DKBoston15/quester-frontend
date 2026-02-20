@@ -225,7 +225,7 @@
 
       <!-- Main Conversation Area -->
       <div class="flex-1 flex flex-col min-w-0">
-        <div id="analyst-conversation" class="flex-1 overflow-hidden">
+        <div id="analyst-conversation" class="flex-1 flex flex-col overflow-hidden">
           <ConversationThread
             {projectId}
             onSuggestionClick={handleSuggestionClick}

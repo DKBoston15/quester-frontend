@@ -105,7 +105,7 @@
   );
 </script>
 
-<div class="flex-1 overflow-y-auto" bind:this={chatContainer}>
+<div class="flex-1 min-h-0 overflow-y-auto" bind:this={chatContainer}>
   <div class="max-w-3xl mx-auto px-4 py-6 space-y-6">
     {#if messages.length === 0 && !isStreaming}
       <!-- Empty State -->

@@ -1420,6 +1420,10 @@
         "title": "Su lista de preguntas",
         "description": "Explore todas sus preguntas de investigación aquí. Las preguntas principales se pueden expandir para revelar sub-preguntas, y puede filtrar por estado o buscar por palabra clave."
       },
+      "subQuestions": {
+        "title": "Sub-preguntas",
+        "description": "Desglose preguntas amplias en sub-preguntas enfocadas. Pase el cursor sobre cualquier pregunta en la lista y haga clic en \"Sub-pregunta\" para anidar una nueva pregunta debajo. Las preguntas principales muestran un chevron para expandir o contraer sus sub-preguntas."
+      },
       "searchFilter": {
         "title": "Buscar y filtrar",
         "description": "Use la barra de búsqueda para encontrar preguntas específicas y los filtros de estado para reducir su vista a Borrador, Activo o Archivado."

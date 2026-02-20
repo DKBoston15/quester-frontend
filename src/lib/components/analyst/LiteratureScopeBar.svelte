@@ -149,15 +149,15 @@
   let selectedQuestionSet = $derived(new Set(selectedQuestionIds));
   let allQuestions = $derived(analystStore.availableResearchQuestions);
 
-  let nonParentQuestions = $derived(allQuestions.filter((q) => !q.isParent));
+  let selectableQuestions = $derived(allQuestions);
 
   let filteredQuestions = $derived(
     questionsSearchValue
-      ? nonParentQuestions.filter((q) => {
+      ? selectableQuestions.filter((q) => {
           const query = questionsSearchValue.toLowerCase();
           return q.question.toLowerCase().includes(query);
         })
-      : nonParentQuestions,
+      : selectableQuestions,
   );
 
   const MAX_VISIBLE_QUESTION_BADGES = 2;
@@ -364,7 +364,7 @@
       </Popover.Trigger>
       <Portal>
         <Popover.Content
-          class="w-[340px] p-0 z-[9999]"
+          class="w-[480px] p-0 z-[9999]"
           side="top"
           align="start"
         >
@@ -382,7 +382,7 @@
                     onSelect={() => toggleQuestion(question)}
                     class="cursor-pointer"
                   >
-                    <div class="flex items-center gap-2 w-full">
+                    <div class="flex items-center gap-2 w-full {question.parentQuestionId ? 'pl-3' : ''}">
                       <div
                         class="flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border {selectedQuestionSet.has(
                           question.id,
@@ -395,7 +395,7 @@
                         {/if}
                       </div>
                       <div class="flex-1 min-w-0">
-                        <div class="text-sm truncate">{question.question}</div>
+                        <div class="text-sm truncate {question.isParent ? 'font-semibold' : ''}">{question.question}</div>
                       </div>
                       <Badge variant="outline" class="text-[9px] h-4 px-1 capitalize">
                         {question.status}
@@ -409,7 +409,7 @@
               class="flex items-center justify-between border-t px-3 py-2 text-xs text-muted-foreground"
             >
               <span>
-                {selectedQuestionItems.length} of {nonParentQuestions.length} selected
+                {selectedQuestionItems.length} of {selectableQuestions.length} selected
               </span>
               <div class="flex gap-2">
                 <button

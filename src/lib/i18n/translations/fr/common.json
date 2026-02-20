@@ -1420,6 +1420,10 @@
         "title": "Votre liste de questions",
         "description": "Parcourez toutes vos questions de recherche ici. Les questions principales peuvent être développées pour révéler les sous-questions, et vous pouvez filtrer par statut ou rechercher par mot-clé."
       },
+      "subQuestions": {
+        "title": "Sous-questions",
+        "description": "Décomposez les questions larges en sous-questions ciblées. Survolez une question dans la liste et cliquez sur « Sous-question » pour imbriquer une nouvelle question en dessous. Les questions parentes affichent un chevron pour développer ou réduire leurs sous-questions."
+      },
       "searchFilter": {
         "title": "Rechercher et filtrer",
         "description": "Utilisez la barre de recherche pour trouver des questions spécifiques et les filtres de statut pour affiner votre vue entre Brouillon, Actif ou Archivé."

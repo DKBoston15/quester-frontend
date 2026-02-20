@@ -78,7 +78,7 @@
 </script>
 
 <button
-  class="w-full text-left p-3 border-b hover:bg-accent/50 transition-colors {selected
+  class="group w-full text-left p-3 border-b hover:bg-accent/50 transition-colors {selected
     ? 'bg-accent'
     : ''} {isSubQuestion ? 'pl-8' : ''}"
   {onclick}
@@ -109,26 +109,7 @@
         {/if}
       </p>
     </div>
-    <div class="flex items-center gap-1 flex-shrink-0">
-      {#if onAddSubQuestion}
-        <Tooltip.Root delayDuration={200}>
-          <Tooltip.Trigger>
-            <!-- svelte-ignore a11y_no_static_element_interactions -->
-            <span
-              role="button"
-              tabindex="-1"
-              class="p-0.5 rounded hover:bg-accent text-muted-foreground hover:text-foreground cursor-pointer"
-              onclick={handleAddSubQuestion}
-              onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleAddSubQuestion(e as unknown as MouseEvent); }}
-            >
-              <Plus class="h-3.5 w-3.5" />
-            </span>
-          </Tooltip.Trigger>
-          <Tooltip.Content>
-            <p class="text-xs">Add Sub-Question</p>
-          </Tooltip.Content>
-        </Tooltip.Root>
-      {/if}
+    <div class="flex items-center gap-1.5 flex-shrink-0">
       <Badge
         variant={getStatusBadgeVariant(question.status)}
         class="text-[10px] px-1.5 py-0"
@@ -172,6 +153,19 @@
       </span>
     {/if}
 
+    {#if onAddSubQuestion}
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <span
+        role="button"
+        tabindex="-1"
+        class="flex items-center gap-0.5 text-[10px] text-muted-foreground hover:text-foreground cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
+        onclick={handleAddSubQuestion}
+        onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleAddSubQuestion(e as unknown as MouseEvent); }}
+      >
+        <Plus class="h-3 w-3" />
+        Sub-Question
+      </span>
+    {/if}
     <span class="text-[10px] text-muted-foreground ml-auto">
       {formatDate(question.updatedAt)}
     </span>

@@ -352,6 +352,15 @@
           },
         },
         {
+          element: "#rq-questions-list",
+          popover: {
+            title: t("tours.researchQuestions.subQuestions.title"),
+            description: t("tours.researchQuestions.subQuestions.description"),
+            side: "right",
+            align: "start",
+          },
+        },
+        {
           element: "#rq-search-filter",
           popover: {
             title: t("tours.researchQuestions.searchFilter.title"),
@@ -489,7 +498,7 @@
         </div>
 
         <!-- Questions List -->
-        <div class="flex-1 overflow-y-auto">
+        <div id="rq-questions-list" class="flex-1 overflow-y-auto">
           {#if filteredTopLevelQuestions.length === 0}
             <div class="p-4 text-center text-sm text-muted-foreground">
               {searchQuery || statusFilter !== "all"
