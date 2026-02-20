@@ -247,9 +247,11 @@
     if (!selectedQuestion) return;
     isAnalyzingAll = true;
     try {
-      await researchQuestionsStore.analyzePurposeAlignment(selectedQuestion.id);
-      await researchQuestionsStore.analyzeAlignment(selectedQuestion.id);
-      await researchQuestionsStore.analyzeCoherence(selectedQuestion.id);
+      await Promise.allSettled([
+        researchQuestionsStore.analyzePurposeAlignment(selectedQuestion.id),
+        researchQuestionsStore.analyzeAlignment(selectedQuestion.id),
+        researchQuestionsStore.analyzeCoherence(selectedQuestion.id),
+      ]);
     } finally {
       isAnalyzingAll = false;
     }
