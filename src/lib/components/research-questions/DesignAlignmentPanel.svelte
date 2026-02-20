@@ -91,7 +91,6 @@
     const projectId = projectStore.currentProject?.id;
     if (!projectId) return;
 
-    sessionStorage.setItem("overview_active_tab", "design");
     navigate(`/project/${projectId}/overview`);
   }
 </script>

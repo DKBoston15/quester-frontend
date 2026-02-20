@@ -79,6 +79,7 @@
   let isLoading = $state(false);
   let error = $state<string | null>(null);
   let streamingAnalysis = $state<StreamingAnalysisResult | null>(null);
+  let loadedProjectId = $state<string | null>(null);
 
   let abortController: AbortController | null = null;
 
@@ -188,14 +189,21 @@
     get streamingAnalysis() {
       return streamingAnalysis;
     },
+    get loadedProjectId() {
+      return loadedProjectId;
+    },
 
     setSelectedQuestion(question: ResearchQuestion | null) {
       selectedQuestion = question;
     },
 
-    async loadQuestions(projectId: string) {
+    async loadQuestions(projectId: string, force = false) {
       if (!projectId) {
         error = "No project ID provided";
+        return;
+      }
+
+      if (!force && loadedProjectId === projectId && !error) {
         return;
       }
 
@@ -218,12 +226,15 @@
           allQuestions = data.all;
           questions = data.all;
         }
+
+        loadedProjectId = projectId;
       } catch (err) {
         console.error("Error loading research questions:", err);
         error = err instanceof Error ? err.message : "Failed to load research questions";
         questions = [];
         topLevelQuestions = [];
         allQuestions = [];
+        loadedProjectId = null;
       } finally {
         isLoading = false;
       }
@@ -476,5 +487,6 @@
       isLoading = false;
       error = null;
       streamingAnalysis = null;
+      loadedProjectId = null;
     },
   };

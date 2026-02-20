@@ -7,12 +7,13 @@
     onSend: (message: string) => void;
     onAbort: () => void;
     isStreaming: boolean;
+    initialValue?: string;
   }
 
-  const { onSend, onAbort, isStreaming }: Props = $props();
+  const { onSend, onAbort, isStreaming, initialValue = "" }: Props = $props();
   const MAX_MESSAGE_LENGTH = 4000;
 
-  let input = $state("");
+  let input = $state(initialValue);
   let textareaRef: HTMLTextAreaElement | null = null;
   let isTooLong = $derived(input.length > MAX_MESSAGE_LENGTH);
 

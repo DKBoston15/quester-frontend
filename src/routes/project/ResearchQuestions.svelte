@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, onDestroy } from "svelte";
+  import { onDestroy } from "svelte";
   import { projectStore } from "$lib/stores/ProjectStore";
   import {
     researchQuestionsStore,
@@ -126,16 +126,11 @@
     return parent ? parent.question : null;
   });
 
-  // Load questions on mount
-  onMount(() => {
-    loadQuestions();
-  });
-
   onDestroy(() => {
     researchQuestionsStore.reset();
   });
 
-  // Reload when project changes
+  // Load questions when project is available or changes
   $effect(() => {
     const pid = projectStore.currentProject?.id;
     if (pid) {

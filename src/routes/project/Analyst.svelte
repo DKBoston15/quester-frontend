@@ -26,6 +26,7 @@
 
   let showSidebar = $state(false);
   let showArtifactPanel = $state(false);
+  let prefillText = $state("");
 
   let isStreaming = $derived(analystStore.isStreaming);
 
@@ -35,6 +36,13 @@
     if (projectId) {
       analystStore.loadSessions(projectId);
       loadResearchQuestions(projectId);
+    }
+
+    // Check for prefill from Research Questions deep-link
+    const prefill = sessionStorage.getItem("analyst_prefill");
+    if (prefill) {
+      prefillText = prefill;
+      sessionStorage.removeItem("analyst_prefill");
     }
   });
 
@@ -241,6 +249,7 @@
               onSend={handleSend}
               onAbort={handleAbort}
               {isStreaming}
+              initialValue={prefillText}
             />
           </div>
         </div>

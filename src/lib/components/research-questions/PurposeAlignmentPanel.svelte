@@ -63,7 +63,6 @@
   function handleSetPurpose() {
     const projectId = projectStore.currentProject?.id;
     if (!projectId) return;
-    sessionStorage.setItem("overview_active_tab", "details");
     navigate(`/project/${projectId}/overview`);
   }
 </script>

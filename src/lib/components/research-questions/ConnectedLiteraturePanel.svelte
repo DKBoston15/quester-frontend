@@ -3,7 +3,7 @@
     researchQuestionsStore,
     type ResearchQuestion,
   } from "$lib/stores/ResearchQuestionsStore.svelte";
-  import { literatureStore } from "$lib/stores/LiteratureStore.svelte";
+  import { literatureStore } from "$lib/stores/LiteratureStore";
   import { projectStore } from "$lib/stores/ProjectStore";
   import { navigate } from "svelte-routing";
   import { Button } from "$lib/components/ui/button";
