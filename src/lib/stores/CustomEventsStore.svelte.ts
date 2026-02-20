@@ -222,6 +222,82 @@
       }
     },
 
+    async loadAllEvents(projectId: string, filters?: CustomEventFilters) {
+      if (!projectId) return;
+
+      if (
+        customEventsState.error &&
+        customEventsState.error.includes("Validation failed")
+      ) {
+        return;
+      }
+
+      const requestKey = "loadAllEvents";
+      this.cancelRequest(requestKey);
+
+      const controller = new AbortController();
+      activeRequests.set(requestKey, controller);
+
+      this.dispatch({ type: "SET_LOADING", payload: true });
+      this.dispatch({ type: "SET_ERROR", payload: null });
+
+      try {
+        const appliedFilters = { ...customEventsState.filters, ...filters };
+
+        const cleanedFilters: CustomEventFilters = {};
+        Object.entries(appliedFilters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            cleanedFilters[key as keyof CustomEventFilters] = value as any;
+          }
+        });
+
+        const pageSize = 100;
+        cleanedFilters.limit = pageSize;
+        cleanedFilters.page = 1;
+        let page = 1;
+        let totalPages = 1;
+        let allEvents: CustomTimelineEvent[] = [];
+
+        do {
+          const response = await customEventsAPI.getCustomEvents(
+            projectId,
+            { ...cleanedFilters, page, limit: pageSize },
+            { signal: controller.signal }
+          );
+
+          allEvents = [...allEvents, ...response.data];
+          totalPages = response.meta.lastPage;
+          page += 1;
+        } while (page <= totalPages);
+
+        this.dispatch({ type: "SET_EVENTS", payload: allEvents });
+        this.dispatch({
+          type: "SET_PAGINATION",
+          payload: {
+            currentPage: 1,
+            totalPages,
+            totalEvents: allEvents.length,
+            perPage: pageSize,
+          },
+        });
+
+        this.dispatch({
+          type: "SET_FILTERS",
+          payload: { ...cleanedFilters, page: 1, limit: pageSize },
+        });
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          console.error("Error loading all custom events:", error);
+          this.dispatch({ type: "SET_ERROR", payload: getErrorMessage(error) });
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          this.dispatch({ type: "SET_LOADING", payload: false });
+        }
+        activeRequests.delete(requestKey);
+      }
+    },
+
     async createEvent(projectId: string, eventData: CreateCustomEventForm) {
       if (!projectId) throw new Error(t("customEventsStore.projectIdRequired"));
 

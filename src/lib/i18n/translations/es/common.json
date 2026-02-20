@@ -142,7 +142,6 @@
     "overview": "Resumen",
     "literature": "Literatura",
     "notes": "Notas",
-    "researchAssistant": "Asistente IA",
     "insights": "Perspectivas",
     "models": "Modelos",
     "outcomes": "Resultados",
@@ -154,7 +153,8 @@
     "activeProject": "Proyecto activo",
     "analysis": "Análisis",
     "tracking": "Seguimiento",
-    "researcher": "Investigador"
+    "researcher": "Investigador",
+    "researchQuestions": "Preguntas de Investigación"
   },
   "dashboard": {
     "title": "Panel de control",
@@ -430,7 +430,12 @@
     "title": "Resumen del proyecto",
     "description": "Obtenga una vista de alto nivel del estado de su proyecto y sus componentes clave.",
     "addEvent": "Agregar evento",
-    "projectKeywords": "Palabras clave del proyecto"
+    "projectKeywords": "Palabras clave del proyecto",
+    "researchQuestions": {
+      "title": "Preguntas de investigación",
+      "viewAll": "Ver todas",
+      "empty": "Aún no hay preguntas de investigación activas. Agregue preguntas para guiar su investigación."
+    }
   },
   "literatureView": {
     "backToLiterature": "Volver a literatura",
@@ -777,68 +782,6 @@
       "ABSTRACT": "Resumen",
       "GRANT": "Subvención",
       "LINK": "Enlace"
-    }
-  },
-  "chat": {
-    "title": "Chat",
-    "newChat": "Nuevo chat",
-    "sendMessage": "Enviar mensaje",
-    "typeMessage": "Escriba un mensaje...",
-    "thinking": "Pensando...",
-    "regenerate": "Regenerar",
-    "copyMessage": "Copiar mensaje",
-    "deleteMessage": "Eliminar mensaje",
-    "clearChat": "Limpiar chat",
-    "exportChat": "Exportar chat",
-    "aiAssistant": "Asistente de investigación con IA",
-    "noMessages": "Aún no hay mensajes",
-    "startConversation": "Inicie una conversación con su asistente de investigación con IA",
-    "chatWithResearchData": "Chatee con sus datos de investigación",
-    "history": "Historial",
-    "chatHistory": "Historial de chat",
-    "searchConversations": "Buscar conversaciones...",
-    "noMatchingConversations": "No hay conversaciones que coincidan",
-    "tryAdjustingSearch": "Intente ajustar sus términos de búsqueda",
-    "noPreviousConversations": "No hay conversaciones anteriores",
-    "startNewConversation": "Inicie una nueva conversación para comenzar",
-    "chatSession": "Sesión de chat",
-    "deleteChatSession": "Eliminar sesión de chat",
-    "deleteChatSessionConfirm": "¿Está seguro de que desea eliminar esta sesión de chat? Esta acción no se puede deshacer.",
-    "deleteSession": "Eliminar sesión",
-    "aiIsThinking": "La IA está pensando...",
-    "aiToolsUsed": "Herramientas de análisis de IA utilizadas:",
-    "referencedSources": "Fuentes referenciadas:",
-    "usedSources": "Se usaron {count} fuentes de su investigación",
-    "usingProjectContext": "Usando el contexto actual del proyecto",
-    "youAreTyping": "Está escribiendo...",
-    "askAboutResearch": "Haga preguntas sobre su investigación, obtenga perspectivas o explore sus datos...",
-    "enterToSend": "para enviar",
-    "shiftEnterNewLine": "para nueva línea",
-    "enter": "Enter",
-    "shiftEnter": "Shift+Enter",
-    "summarizeResearch": "Resumir mis hallazgos de investigación recientes",
-    "summarizeDescription": "Obtenga un resumen de su progreso de investigación más reciente",
-    "keyThemes": "¿Cuáles son los temas clave en mi literatura?",
-    "keyThemesDescription": "Identificar patrones y tendencias en sus fuentes",
-    "findGaps": "Ayúdeme a encontrar brechas de investigación",
-    "findGapsDescription": "Descubrir áreas inexploradas en su campo",
-    "nextSteps": "¿Cuáles son mis próximos pasos de investigación?",
-    "nextStepsDescription": "Obtener recomendaciones para continuar su trabajo",
-    "relevance": "{percent}% de relevancia",
-    "literaturePage": "Página de literatura",
-    "failedToDeleteSession": "Error al eliminar la sesión",
-    "justNow": "Ahora mismo",
-    "createAsNote": "Crear como nota",
-    "previewDocument": "Vista previa del documento",
-    "welcomeDescription": "Haz preguntas sobre tu investigación, obtén información de tu literatura o explora patrones en tus datos. Estoy aquí para acelerar tu proceso de investigación.",
-    "toolNames": {
-      "get_literature_count": "Contador de literatura",
-      "get_relevant_content": "Búsqueda de contenido",
-      "semantic_search": "Búsqueda semántica",
-      "analyze_literature_gaps": "Análisis de brechas",
-      "suggest_research_directions": "Sugerencias de investigación",
-      "summarize_search_results": "Resumen de búsqueda",
-      "compare_methodologies": "Comparación de metodologías"
     }
   },
   "onboarding": {
@@ -1472,6 +1415,62 @@
         "description": "Use esta página de Resumen regularmente para mantener su investigación organizada, enfocada y en camino desde la concepción hasta la publicación. ¡Explore cada sección para aprovechar al máximo Quester!"
       }
     },
+    "researchQuestions": {
+      "questionsList": {
+        "title": "Su lista de preguntas",
+        "description": "Explore todas sus preguntas de investigación aquí. Las preguntas principales se pueden expandir para revelar sub-preguntas, y puede filtrar por estado o buscar por palabra clave."
+      },
+      "subQuestions": {
+        "title": "Sub-preguntas",
+        "description": "Desglose preguntas amplias en sub-preguntas enfocadas. Pase el cursor sobre cualquier pregunta en la lista y haga clic en \"Sub-pregunta\" para anidar una nueva pregunta debajo. Las preguntas principales muestran un chevron para expandir o contraer sus sub-preguntas."
+      },
+      "searchFilter": {
+        "title": "Buscar y filtrar",
+        "description": "Use la barra de búsqueda para encontrar preguntas específicas y los filtros de estado para reducir su vista a Borrador, Activo o Archivado."
+      },
+      "newQuestion": {
+        "title": "Crear nuevas preguntas",
+        "description": "Haga clic aquí para agregar una nueva pregunta de investigación o sub-pregunta a su proyecto. Las preguntas bien elaboradas guían todo su proceso de investigación."
+      },
+      "detailTabs": {
+        "title": "Pestañas de detalle de preguntas",
+        "description": "Explore diferentes aspectos de su pregunta seleccionada: ver y editar detalles, analizar la alineación del diseño, revisar la literatura conectada o rastrear el historial de versiones."
+      },
+      "analyzeButton": {
+        "title": "Análisis impulsado por IA",
+        "description": "Deje que Quester analice qué tan bien se alinea su pregunta de investigación con la metodología de diseño de su proyecto. Obtenga sugerencias prácticas para refinar su pregunta."
+      }
+    },
+    "analyst": {
+      "header": {
+        "title": "Analista de investigación",
+        "description": "Su asistente de investigación impulsado por IA. Haga preguntas sobre su literatura, obtenga resúmenes, identifique temas y explore sus datos de investigación a través de la conversación."
+      },
+      "scopeBar": {
+        "title": "Alcance de la literatura",
+        "description": "Controle qué elementos de literatura puede referenciar el analista al responder sus preguntas. Seleccione artículos específicos o use toda la literatura disponible."
+      },
+      "rqFilter": {
+        "title": "Filtro de preguntas de investigación",
+        "description": "Enfoque el análisis seleccionando preguntas de investigación específicas. Esto ayuda a la IA a proporcionar un análisis más dirigido y relevante."
+      },
+      "inputArea": {
+        "title": "Haga su pregunta",
+        "description": "Escriba su pregunta de investigación o solicitud de análisis aquí. El analista buscará en su literatura y proporcionará respuestas basadas en evidencia."
+      },
+      "conversation": {
+        "title": "Hilo de conversación",
+        "description": "Su historial de conversación con el analista aparece aquí. Cada respuesta incluye citas y referencias a su literatura."
+      },
+      "sessions": {
+        "title": "Historial de sesiones",
+        "description": "Abra la barra lateral de sesiones para ver, cambiar entre o crear nuevas sesiones de conversación. Cada sesión mantiene su propio contexto."
+      },
+      "artifacts": {
+        "title": "Artefactos guardados",
+        "description": "Vea y gestione artefactos guardados de las respuestas del analista. Los artefactos son piezas de análisis reutilizables que puede consultar más adelante."
+      }
+    },
     "progress": {
       "header": {
         "title": "Rastree su viaje de investigación",
@@ -1647,6 +1646,86 @@
     "pinnacleOfMastery": "Ha alcanzado la cima de la maestría en investigación",
     "projectTimeline": "Línea de tiempo del proyecto",
     "achievements": "Logros",
+    "summary": {
+      "title": "Progress Overview",
+      "subtitle": "Where you are in the project and what to focus on next.",
+      "scoreLabel": "Overall progress",
+      "progressContext": "Calculated from design completeness, outputs, metadata, and momentum.",
+      "highlightsTitle": "Key signals",
+      "nextActionsTitle": "Next focus",
+      "recentActivityTitle": "Recent activity",
+      "recentActivitySubtitle": "A focused view of your latest momentum.",
+      "timelineSubtitle": "Detailed activity and milestones across your project.",
+      "showFullTimeline": "Open full timeline",
+      "hideTimeline": "Hide full timeline",
+      "emptyActions": "You're on a steady track. Keep building on what you've started.",
+      "loadFailed": "Unable to load progress summary",
+      "adjustStage": "Adjust stage",
+      "stageSourceSystem": "System-derived",
+      "stageSourceOverride": "Adjusted",
+      "detailsTitle": "How we calculate progress",
+      "detailsSubtitle": "Stage influences your recommendations.",
+      "signalsTitle": "Key signals",
+      "signalsDesignLabel": "Design completeness",
+      "signalsDesignCaption": "Core research design fields filled in",
+      "signalsContentLabel": "Research outputs",
+      "signalsContentCaption": "Notes, literature, and outcomes combined",
+      "signalsMetadataLabel": "Metadata coverage",
+      "signalsMetadataCaption": "Tags and metadata coverage across items",
+      "signalsMomentumLabel": "Momentum (7d)",
+      "signalsMomentumCaption": "Active days: {days} | Last activity: {date}",
+      "overrideTitle": "Adjust research stage",
+      "overrideDescription": "Fine-tune the stage if you feel your project is slightly ahead or behind.",
+      "overrideStageLabel": "Stage",
+      "overrideStagePlaceholder": "Select a stage",
+      "overrideReasonLabel": "Reason (optional)",
+      "overrideReasonPlaceholder": "Add a short note explaining the adjustment.",
+      "overrideCancel": "Cancel",
+      "overrideSave": "Save adjustment",
+      "overrideSaving": "Saving...",
+      "overrideSaveFailed": "Unable to save stage adjustment",
+      "overrideSystemLabel": "System stage: {stage}"
+    },
+    "stages": {
+      "foundation": {
+        "label": "Foundation",
+        "description": "You’re establishing the core structure and research intent."
+      },
+      "exploration": {
+        "label": "Exploration",
+        "description": "You’re actively gathering sources and shaping early insights."
+      },
+      "synthesis": {
+        "label": "Synthesis",
+        "description": "You’re connecting evidence into structured findings and models."
+      },
+      "delivery": {
+        "label": "Delivery",
+        "description": "You’re refining outputs and preparing research outcomes."
+      }
+    },
+    "summaryHighlights": {
+      "designCompletion": "Design completeness: {rate}%",
+      "contentCounts": "Research outputs documented: {count}",
+      "metadataCoverage": "Metadata coverage: {coverage}%"
+    },
+    "momentum": {
+      "title": "Momentum & Milestones",
+      "subtitle": "Track recent momentum and celebrate key firsts.",
+      "activityLast7": "Events in last 7 days",
+      "activityLast30": "Events in last 30 days",
+      "activeDays": "Active days (last 14)",
+      "lastActivity": "Last activity",
+      "noActivity": "No recent activity",
+      "milestonesTitle": "Milestones",
+      "noMilestones": "No milestones yet",
+      "milestones": {
+        "literature": "First literature added",
+        "insights": "First keyword analysis",
+        "models": "First model created",
+        "outcomes": "First outcome defined"
+      }
+    },
     "complete": "Completo",
     "researchLevels": "Niveles de investigación",
     "yourJourney": "Su viaje a través de la maestría en investigación",

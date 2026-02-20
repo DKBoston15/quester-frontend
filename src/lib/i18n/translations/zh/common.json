@@ -142,7 +142,6 @@
     "overview": "概览",
     "literature": "文献",
     "notes": "笔记",
-    "researchAssistant": "研究助手",
     "insights": "洞察",
     "models": "模型",
     "outcomes": "成果",
@@ -154,7 +153,8 @@
     "activeProject": "当前项目",
     "analysis": "分析",
     "tracking": "追踪",
-    "researcher": "研究员"
+    "researcher": "研究员",
+    "researchQuestions": "研究问题"
   },
   "dashboard": {
     "title": "仪表板",
@@ -430,7 +430,12 @@
     "title": "项目概览",
     "description": "获取项目状态和关键组成部分的高级视图。",
     "addEvent": "添加事件",
-    "projectKeywords": "项目关键词"
+    "projectKeywords": "项目关键词",
+    "researchQuestions": {
+      "title": "研究问题",
+      "viewAll": "查看全部",
+      "empty": "尚无活跃的研究问题。添加问题以指导您的研究。"
+    }
   },
   "literatureView": {
     "backToLiterature": "返回文献",
@@ -779,68 +784,6 @@
       "LINK": "链接"
     }
   },
-  "chat": {
-    "title": "聊天",
-    "newChat": "新建聊天",
-    "sendMessage": "发送消息",
-    "typeMessage": "输入消息...",
-    "thinking": "思考中...",
-    "regenerate": "重新生成",
-    "copyMessage": "复制消息",
-    "deleteMessage": "删除消息",
-    "clearChat": "清空聊天",
-    "exportChat": "导出聊天",
-    "aiAssistant": "AI 研究助手",
-    "noMessages": "暂无消息",
-    "startConversation": "与您的 AI 研究助手开始对话",
-    "chatWithResearchData": "与您的研究数据聊天",
-    "history": "历史",
-    "chatHistory": "聊天历史",
-    "searchConversations": "搜索对话...",
-    "noMatchingConversations": "没有匹配的对话",
-    "tryAdjustingSearch": "尝试调整您的搜索词",
-    "noPreviousConversations": "没有之前的对话",
-    "startNewConversation": "开始新对话以开始",
-    "chatSession": "聊天会话",
-    "deleteChatSession": "删除聊天会话",
-    "deleteChatSessionConfirm": "您确定要删除此聊天会话吗？此操作无法撤销。",
-    "deleteSession": "删除会话",
-    "aiIsThinking": "AI 正在思考...",
-    "aiToolsUsed": "使用的 AI 分析工具：",
-    "referencedSources": "引用的来源：",
-    "usedSources": "使用了您研究中的 {count} 个来源",
-    "usingProjectContext": "使用当前项目上下文",
-    "youAreTyping": "您正在输入...",
-    "askAboutResearch": "询问关于您研究的问题、获取洞察或探索您的数据...",
-    "enterToSend": "发送",
-    "shiftEnterNewLine": "换行",
-    "enter": "Enter",
-    "shiftEnter": "Shift+Enter",
-    "summarizeResearch": "总结我最近的研究发现",
-    "summarizeDescription": "获取您最新研究进展的概览",
-    "keyThemes": "我的文献中有哪些关键主题？",
-    "keyThemesDescription": "识别您来源中的模式和趋势",
-    "findGaps": "帮我找到研究空白",
-    "findGapsDescription": "发现您领域中未探索的领域",
-    "nextSteps": "我的下一步研究步骤是什么？",
-    "nextStepsDescription": "获取继续您工作的建议",
-    "relevance": "{percent}% 相关性",
-    "literaturePage": "文献页面",
-    "failedToDeleteSession": "删除会话失败",
-    "justNow": "刚刚",
-    "createAsNote": "创建为笔记",
-    "previewDocument": "预览文档",
-    "welcomeDescription": "询问有关您的研究的问题，从您的文献中获取见解，或探索数据中的模式。我在这里帮助加速您的研究过程。",
-    "toolNames": {
-      "get_literature_count": "文献计数器",
-      "get_relevant_content": "内容搜索",
-      "semantic_search": "语义搜索",
-      "analyze_literature_gaps": "空白分析",
-      "suggest_research_directions": "研究建议",
-      "summarize_search_results": "搜索摘要",
-      "compare_methodologies": "方法比较"
-    }
-  },
   "onboarding": {
     "welcome": "欢迎使用 Quester",
     "welcomeSubtitle": "让我们为您设置",
@@ -1148,6 +1091,86 @@
     "pinnacleOfMastery": "您已达到研究精通的巅峰",
     "projectTimeline": "项目时间线",
     "achievements": "成就",
+    "summary": {
+      "title": "Progress Overview",
+      "subtitle": "Where you are in the project and what to focus on next.",
+      "scoreLabel": "Overall progress",
+      "progressContext": "Calculated from design completeness, outputs, metadata, and momentum.",
+      "highlightsTitle": "Key signals",
+      "nextActionsTitle": "Next focus",
+      "recentActivityTitle": "Recent activity",
+      "recentActivitySubtitle": "A focused view of your latest momentum.",
+      "timelineSubtitle": "Detailed activity and milestones across your project.",
+      "showFullTimeline": "Open full timeline",
+      "hideTimeline": "Hide full timeline",
+      "emptyActions": "You're on a steady track. Keep building on what you've started.",
+      "loadFailed": "Unable to load progress summary",
+      "adjustStage": "Adjust stage",
+      "stageSourceSystem": "System-derived",
+      "stageSourceOverride": "Adjusted",
+      "detailsTitle": "How we calculate progress",
+      "detailsSubtitle": "Stage influences your recommendations.",
+      "signalsTitle": "Key signals",
+      "signalsDesignLabel": "Design completeness",
+      "signalsDesignCaption": "Core research design fields filled in",
+      "signalsContentLabel": "Research outputs",
+      "signalsContentCaption": "Notes, literature, and outcomes combined",
+      "signalsMetadataLabel": "Metadata coverage",
+      "signalsMetadataCaption": "Tags and metadata coverage across items",
+      "signalsMomentumLabel": "Momentum (7d)",
+      "signalsMomentumCaption": "Active days: {days} | Last activity: {date}",
+      "overrideTitle": "Adjust research stage",
+      "overrideDescription": "Fine-tune the stage if you feel your project is slightly ahead or behind.",
+      "overrideStageLabel": "Stage",
+      "overrideStagePlaceholder": "Select a stage",
+      "overrideReasonLabel": "Reason (optional)",
+      "overrideReasonPlaceholder": "Add a short note explaining the adjustment.",
+      "overrideCancel": "Cancel",
+      "overrideSave": "Save adjustment",
+      "overrideSaving": "Saving...",
+      "overrideSaveFailed": "Unable to save stage adjustment",
+      "overrideSystemLabel": "System stage: {stage}"
+    },
+    "stages": {
+      "foundation": {
+        "label": "Foundation",
+        "description": "You’re establishing the core structure and research intent."
+      },
+      "exploration": {
+        "label": "Exploration",
+        "description": "You’re actively gathering sources and shaping early insights."
+      },
+      "synthesis": {
+        "label": "Synthesis",
+        "description": "You’re connecting evidence into structured findings and models."
+      },
+      "delivery": {
+        "label": "Delivery",
+        "description": "You’re refining outputs and preparing research outcomes."
+      }
+    },
+    "summaryHighlights": {
+      "designCompletion": "Design completeness: {rate}%",
+      "contentCounts": "Research outputs documented: {count}",
+      "metadataCoverage": "Metadata coverage: {coverage}%"
+    },
+    "momentum": {
+      "title": "Momentum & Milestones",
+      "subtitle": "Track recent momentum and celebrate key firsts.",
+      "activityLast7": "Events in last 7 days",
+      "activityLast30": "Events in last 30 days",
+      "activeDays": "Active days (last 14)",
+      "lastActivity": "Last activity",
+      "noActivity": "No recent activity",
+      "milestonesTitle": "Milestones",
+      "noMilestones": "No milestones yet",
+      "milestones": {
+        "literature": "First literature added",
+        "insights": "First keyword analysis",
+        "models": "First model created",
+        "outcomes": "First outcome defined"
+      }
+    },
     "complete": "完成",
     "researchLevels": "研究等级",
     "yourJourney": "您通往研究精通的旅程",
@@ -3571,6 +3594,62 @@
       "ready": {
         "title": "准备好开始了吗？",
         "description": "定期使用此概览页面保持您的研究有序、专注和正轨。"
+      }
+    },
+    "researchQuestions": {
+      "questionsList": {
+        "title": "您的问题列表",
+        "description": "在此浏览所有研究问题。父问题可以展开以显示子问题，您可以按状态筛选或按关键词搜索。"
+      },
+      "subQuestions": {
+        "title": "子问题",
+        "description": "将宽泛的问题分解为聚焦的子问题。将鼠标悬停在列表中的任意问题上，点击「子问题」即可在其下方嵌套新问题。父问题会显示箭头以展开或折叠其子问题。"
+      },
+      "searchFilter": {
+        "title": "搜索和筛选",
+        "description": "使用搜索栏查找特定问题，使用状态筛选器将视图缩小到草稿、活跃或已归档的问题。"
+      },
+      "newQuestion": {
+        "title": "创建新问题",
+        "description": "点击此处为您的项目添加新的研究问题或子问题。精心设计的问题将指导您的整个研究过程。"
+      },
+      "detailTabs": {
+        "title": "问题详情标签页",
+        "description": "探索所选问题的不同方面：查看和编辑详情、分析设计对齐、查看关联文献或跟踪版本历史。"
+      },
+      "analyzeButton": {
+        "title": "AI驱动分析",
+        "description": "让Quester分析您的研究问题与项目设计方法论的对齐程度。获取可操作的建议来完善您的问题。"
+      }
+    },
+    "analyst": {
+      "header": {
+        "title": "研究分析师",
+        "description": "您的AI研究助手。询问有关文献的问题、获取摘要、识别主题，并通过对话探索您的研究数据。"
+      },
+      "scopeBar": {
+        "title": "文献范围",
+        "description": "控制分析师在回答问题时可以引用哪些文献。选择特定论文或使用所有可用文献。"
+      },
+      "rqFilter": {
+        "title": "研究问题筛选",
+        "description": "通过选择特定的研究问题来聚焦分析。这有助于AI提供更有针对性和相关性的分析。"
+      },
+      "inputArea": {
+        "title": "提出您的问题",
+        "description": "在此输入您的研究问题或分析请求。分析师将搜索您的文献并提供基于证据的回答。"
+      },
+      "conversation": {
+        "title": "对话线程",
+        "description": "您与分析师的对话历史显示在此处。每个回答都包含对您文献的引用和参考。"
+      },
+      "sessions": {
+        "title": "会话历史",
+        "description": "打开会话侧边栏以查看、切换或创建新的对话会话。每个会话保持独立的上下文。"
+      },
+      "artifacts": {
+        "title": "已保存的工件",
+        "description": "查看和管理从分析师回答中保存的工件。工件是可重复使用的分析片段，您可以稍后参考。"
       }
     },
     "progress": {

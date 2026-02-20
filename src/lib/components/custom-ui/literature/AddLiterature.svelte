@@ -59,6 +59,9 @@
     start_date?: Date;
     end_date?: Date;
     city: string;
+    doi?: string;
+    isbn?: string;
+    keywords?: string[];
     status?: "success" | "failure" | "Not Started";
   };
 
@@ -314,6 +317,9 @@
             startDate: ref.start_date ? ref.start_date.toString() : null,
             endDate: ref.end_date ? ref.end_date.toString() : null,
             city: ref.city || "",
+            doi: ref.doi || "",
+            isbn: ref.isbn || "",
+            keywords: ref.keywords ? JSON.stringify(ref.keywords) : null,
             status: "Not Started",
             projectId: urlProjectId,
             userId: auth.user?.id,

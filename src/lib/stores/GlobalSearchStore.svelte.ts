@@ -20,7 +20,8 @@ export interface SearchResult {
     | "project"
     | "outcome"
     | "model"
-    | "keyword_analysis";
+    | "keyword_analysis"
+    | "research_question";
   title: string;
   snippet?: string;
   content?: any; // The actual content object from backend
@@ -33,6 +34,8 @@ export interface SearchResult {
     section_type?: string;
     created_at?: string;
     updated_at?: string;
+    status?: string;
+    alignmentScore?: number;
   };
   citation?: string;
   projectInfo?: {
@@ -75,6 +78,23 @@ export interface CachedSearchResult {
 
 export type SearchMode = "search" | "chat";
 export type SearchScope = "current" | "all";
+export type PaletteMode = "default" | "search" | "actions" | "chat";
+
+export interface AutocompleteResult {
+  type: string;
+  id: string;
+  title: string;
+  subtitle?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface QuickAction {
+  id: string;
+  label: string;
+  icon?: string;
+  action: () => void;
+  keywords?: string[];
+}
 
 // Search cache with 5-minute TTL
 class SearchCache {
@@ -134,30 +154,46 @@ function saveRecentSearches(searches: string[]) {
   }
 }
 
-// Helper functions for search scope localStorage
-function getSearchScope(): SearchScope {
-  if (typeof window === "undefined") return "current";
-  try {
-    const stored = localStorage.getItem("searchScope");
-    return stored === "all" ? "all" : "current";
-  } catch {
-    return "current";
+function getSearchLimit(searchQuery: string): number {
+  const normalized = searchQuery.trim();
+  const words = normalized.split(/\s+/).filter(Boolean);
+
+  // Single-term queries need a wider candidate pool to avoid missing obvious title matches.
+  if (words.length <= 1) {
+    return 50;
   }
+
+  return Math.min(Math.max(words.length * 4, 12), 30);
 }
 
-function saveSearchScope(scope: SearchScope) {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem("searchScope", scope);
-  } catch (error) {
-    console.error("Failed to save search scope:", error);
+function getResultRelevanceScore(result: SearchResult, normalizedQuery: string): number {
+  const similarity = Number.isFinite(result.similarity) ? result.similarity : 0;
+
+  if (!normalizedQuery) {
+    return similarity;
   }
+
+  const title = result.title?.toLowerCase().trim() || "";
+  const snippet = result.snippet?.toLowerCase() || "";
+
+  let lexicalBoost = 0;
+
+  if (title === normalizedQuery) {
+    lexicalBoost = 1.4;
+  } else if (title.startsWith(normalizedQuery)) {
+    lexicalBoost = 1.2;
+  } else if (title.includes(normalizedQuery)) {
+    lexicalBoost = 1.0;
+  } else if (snippet.includes(normalizedQuery)) {
+    lexicalBoost = 0.6;
+  }
+
+  return similarity + lexicalBoost;
 }
 
 // Create the store state
 let query = $state("");
 let mode = $state<SearchMode>("search");
-let scope = $state<SearchScope>("current");
 let isOpen = $state(false);
 let results = $state<SearchResult[]>([]);
 let chatMessages = $state<ChatMessage[]>([]);
@@ -175,6 +211,7 @@ let activeFilters = $state<SearchFilters>({
     "outcome",
     "model",
     "keyword_analysis",
+    "research_question",
   ],
   projects: [],
   section_types: [],
@@ -190,10 +227,18 @@ let chatHistoryError = $state<string | null>(null);
 let autoSaveEnabled = $state(true);
 let lastSaveTime = $state<Date | null>(null);
 
+// Command palette state
+let paletteMode = $state<PaletteMode>("default");
+let autocompleteResults = $state<AutocompleteResult[]>([]);
+let isAutocompleting = $state(false);
+let registeredActions = $state<QuickAction[]>([]);
+let projectContext = $state<{ projectId: string; projectName: string } | null>(null);
+
 // Derived states
+const scope: SearchScope = $derived(projectContext !== null ? "current" : "all");
 const hasResults = $derived(results.length > 0);
 const hasActiveFilters = $derived(
-  activeFilters.content_types.length < 6 ||
+  activeFilters.content_types.length < 7 ||
     activeFilters.projects.length > 0 ||
     activeFilters.section_types.length > 0 ||
     activeFilters.date_range?.start ||
@@ -212,10 +257,9 @@ const sessionTitle = $derived(
   currentSession?.title || generateSessionTitle(chatMessages)
 );
 
-// Initialize recent searches and scope
+// Initialize recent searches
 function initializeRecentSearches() {
   recentSearches = getRecentSearches();
-  scope = getSearchScope();
 }
 
 // Get current project ID from URL or store
@@ -511,17 +555,16 @@ async function performSearch(searchQuery: string = query): Promise<void> {
     return;
   }
 
-  // Get current project ID - only required for current project scope
-  const projectId = getCurrentProjectId();
+  // Get project ID from command palette context - only required for current project scope
+  const projectId = projectContext?.projectId;
   if (scope === "current" && !projectId) {
-    error = "Please navigate to a project to search within current project";
+    error = "Please set a project context in the command palette to search within current project";
     results = [];
     return;
   }
 
-  // Dynamic limit based on query complexity
-  const queryWords = searchQuery.trim().split(/\s+/).length;
-  const dynamicLimit = Math.min(Math.max(queryWords * 2, 5), 15);
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const dynamicLimit = getSearchLimit(searchQuery);
 
   // Check cache first
   const cacheKey = `${searchQuery}:${projectId}:${dynamicLimit}:${scope}:${JSON.stringify(
@@ -565,12 +608,23 @@ async function performSearch(searchQuery: string = query): Promise<void> {
     }
 
     const data = await response.json();
-    // Filter results by similarity threshold (only show results with >30% similarity)
-    const allResults = data.results || [];
-    const filteredResults = allResults.filter(
-      (result: SearchResult) => result.similarity > 0.3
-    );
-    results = filteredResults;
+    const allResults: SearchResult[] = Array.isArray(data.results) ? data.results : [];
+
+    // Deduplicate and keep the strongest candidate per resource.
+    const uniqueResults = new Map<string, SearchResult>();
+    for (const result of allResults) {
+      const key = `${result.type}:${result.id}`;
+      const existing = uniqueResults.get(key);
+      if (!existing || (result.similarity ?? 0) > (existing.similarity ?? 0)) {
+        uniqueResults.set(key, result);
+      }
+    }
+
+    const rankedResults = Array.from(uniqueResults.values()).sort((a, b) => {
+      return getResultRelevanceScore(b, normalizedQuery) - getResultRelevanceScore(a, normalizedQuery);
+    });
+
+    results = rankedResults;
 
     // Cache the results
     searchCache.set(cacheKey, {
@@ -687,10 +741,10 @@ function clearContextSelection(): void {
 async function sendChatMessage(message: string): Promise<void> {
   if (!message.trim() || isStreaming) return;
 
-  // Get current project ID - only required for current project scope
-  const projectId = getCurrentProjectId();
+  // Get current project ID from command palette context
+  const projectId = projectContext?.projectId;
   if (!projectId) {
-    error = "Please navigate to a project to use AI chat";
+    error = "Please select a project context to use AI chat";
     return;
   }
 
@@ -900,6 +954,75 @@ async function sendChatMessage(message: string): Promise<void> {
   }
 }
 
+// Autocomplete function
+async function performAutocomplete(q: string): Promise<void> {
+  if (!q.trim() || q.trim().length < 2) {
+    autocompleteResults = [];
+    return;
+  }
+
+  const projectId = projectContext?.projectId;
+
+  isAutocompleting = true;
+
+  try {
+    const requestBody: Record<string, unknown> = {
+      query: q,
+      scope,
+    };
+    if (projectId) {
+      requestBody.projectId = projectId;
+    }
+
+    const response = await api.stream(`/search/autocomplete`, {
+      method: "POST",
+      body: requestBody,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Autocomplete failed: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    autocompleteResults = data.results || [];
+  } catch (err) {
+    console.error("Autocomplete error:", err);
+    autocompleteResults = [];
+  } finally {
+    isAutocompleting = false;
+  }
+}
+
+// Debounced autocomplete (150ms)
+const debouncedAutocomplete = debounce(performAutocomplete, 150);
+
+// Action registry
+function registerActions(actions: QuickAction[]): void {
+  registeredActions = actions;
+}
+
+function getFilteredActions(q: string): QuickAction[] {
+  if (!q.trim()) return registeredActions;
+  const lower = q.toLowerCase();
+  return registeredActions.filter(
+    (a) =>
+      a.label.toLowerCase().includes(lower) ||
+      a.keywords?.some((k) => k.toLowerCase().includes(lower))
+  );
+}
+
+function setPaletteMode(newMode: PaletteMode): void {
+  paletteMode = newMode;
+}
+
+function setProjectContext(projectId: string, projectName: string): void {
+  projectContext = { projectId, projectName };
+}
+
+function clearProjectContext(): void {
+  projectContext = null;
+}
+
 // Store interface
 export const globalSearchStore = {
   // Getters
@@ -987,6 +1110,23 @@ export const globalSearchStore = {
     return sessionTitle;
   },
 
+  // Command palette getters
+  get paletteMode() {
+    return paletteMode;
+  },
+  get autocompleteResults() {
+    return autocompleteResults;
+  },
+  get isAutocompleting() {
+    return isAutocompleting;
+  },
+  get registeredActions() {
+    return registeredActions;
+  },
+  get projectContext() {
+    return projectContext;
+  },
+
   // Actions
   open() {
     isOpen = true;
@@ -1006,18 +1146,6 @@ export const globalSearchStore = {
   setMode(newMode: SearchMode) {
     mode = newMode;
     error = null;
-  },
-
-  setScope(newScope: SearchScope) {
-    scope = newScope;
-    saveSearchScope(newScope);
-    error = null;
-    // Clear cache when scope changes
-    searchCache.clear();
-    // Re-run search if there's a query
-    if (query.trim()) {
-      debouncedSearch();
-    }
   },
 
   setQuery(newQuery: string) {
@@ -1058,6 +1186,7 @@ export const globalSearchStore = {
         "outcome",
         "model",
         "keyword_analysis",
+        "research_question",
       ],
       projects: [],
       section_types: [],
@@ -1138,4 +1267,12 @@ export const globalSearchStore = {
   clearChatHistoryError() {
     chatHistoryError = null;
   },
+
+  // Command palette methods
+  performAutocomplete: debouncedAutocomplete,
+  setPaletteMode,
+  registerActions,
+  getFilteredActions,
+  setProjectContext,
+  clearProjectContext,
 };

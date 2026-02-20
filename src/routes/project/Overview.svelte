@@ -14,6 +14,7 @@
   import { customEventsStore } from "$lib/stores/CustomEventsStore";
   import CustomEventForm from "$lib/components/custom-ui/custom-events/CustomEventForm.svelte";
   import GrantDetails from "$lib/components/project/GrantDetails.svelte";
+  import ResearchQuestionsOverview from "$lib/components/project/ResearchQuestionsOverview.svelte";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { _ } from "svelte-i18n";
   import { get } from "svelte/store";
@@ -144,6 +145,9 @@
         <div id="project-overview-card">
           <ProjectOverview />
         </div>
+
+        <!-- Research Questions -->
+        <ResearchQuestionsOverview />
 
         <!-- Keywords -->
         {#if projectStore.currentProject}

@@ -127,12 +127,10 @@
       {
         headerName: "",
         width: 50,
-        checkboxSelection: true,
-        headerCheckboxSelection: true,
         resizable: false,
         sortable: false,
         filter: false,
-        suppressMenu: true,
+        suppressHeaderMenuButton: true,
         lockPosition: "left",
       },
       {
@@ -202,7 +200,7 @@
           suppressAndOrCondition: true,
         },
         type: "numericColumn",
-        suppressMenu: true,
+        suppressHeaderMenuButton: true,
       },
       {
         field: "type",
@@ -260,7 +258,7 @@
           }
           return "";
         },
-        suppressMenu: true,
+        suppressHeaderMenuButton: true,
       },
       {
         field: "sourceFileId",
@@ -275,7 +273,7 @@
           return aHas ? 1 : -1;
         },
         filter: false,
-        suppressMenu: true,
+        suppressHeaderMenuButton: true,
         // Ensure content in this cell is vertically centered
         cellStyle: { display: 'flex', alignItems: 'center', justifyContent: 'center' },
         cellRenderer: (params: ICellRendererParams<Literature>) => {
@@ -347,8 +345,12 @@
       menuTabs: ["filterMenuTab"],
     },
     animateRows: true,
-    rowSelection: "multiple",
-    suppressRowClickSelection: true,
+    rowSelection: {
+      mode: "multiRow",
+      checkboxes: true,
+      headerCheckbox: true,
+      enableClickSelection: false,
+    } as any,
     onRowClicked: (event) => {
       if (
         event.data &&

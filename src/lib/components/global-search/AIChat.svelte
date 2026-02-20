@@ -747,7 +747,7 @@
                                   class="text-xs text-muted-foreground mb-2 font-medium flex items-center gap-1"
                                 >
                                   <Sparkles class="size-3" />
-                                  AI Analysis Tools Used:
+                                  Quester Analysis Tools Used:
                                 </div>
                                 <div class="flex flex-wrap gap-2">
                                   {#each toolsUsed as tool}

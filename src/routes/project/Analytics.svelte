@@ -21,8 +21,6 @@
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
   import EmptyState from "$lib/components/ui/empty-state/EmptyState.svelte";
-  import KeyInsights from "$lib/components/analytics/KeyInsights.svelte";
-  import { insightsStore } from "$lib/stores/InsightsStore";
   import { get } from "svelte/store";
   import { _ } from "svelte-i18n";
 
@@ -592,51 +590,6 @@
     };
   });
 
-  // Auto-generate insights if conditions are met
-  async function tryAutoGenerateInsights(
-    projectId: string,
-    analyticsData: any
-  ) {
-    try {
-      // Check if we can generate insights (daily limit not reached)
-      if (!insightsStore.canGenerateInsights(projectId)) {
-        return;
-      }
-
-      // Check if there are existing insights for this project
-      const existingInsights = insightsStore.getInsights(projectId);
-
-      // Check if we have significant data to warrant insights generation
-      const hasSignificantData =
-        (analyticsData.totalLiteratureCount || 0) >= 5 || // At least 5 pieces of literature
-        (analyticsData.totalNotesCount || 0) >= 3; // Or at least 3 notes
-
-      if (!hasSignificantData) {
-        return;
-      }
-
-      // If no existing insights, auto-generate
-      if (existingInsights.length === 0) {
-        await insightsStore.generateInsights(projectId, false, analyticsData);
-        return;
-      }
-
-      // If significant change in data (more than 25% increase), auto-generate
-      const lastUpdate = insightsStore.getLastUpdated(projectId);
-      if (lastUpdate) {
-        const timeSinceLastUpdate = Date.now() - lastUpdate.getTime();
-        const hoursOld = timeSinceLastUpdate / (1000 * 60 * 60);
-
-        // Auto-regenerate if insights are more than 24 hours old and we have new data
-        if (hoursOld > 24) {
-          await insightsStore.generateInsights(projectId, false, analyticsData);
-        }
-      }
-    } catch (error) {
-      console.error("Error in auto-generation:", error);
-    }
-  }
-
   async function loadData() {
     const projectId = projectStore.currentProject?.id;
     if (!projectId) return;
@@ -659,9 +612,6 @@
       );
 
       data = { summary: analysisData };
-
-      // Auto-generate insights if there's significant new data and we can generate
-      await tryAutoGenerateInsights(projectId, analysisData);
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {
@@ -1379,14 +1329,6 @@
       </div>
     </Dialog.Content>
   </Dialog.Root>
-
-  <!-- Key Insights Section -->
-  {#if projectStore.currentProject}
-    <KeyInsights
-      projectId={projectStore.currentProject.id}
-      analyticsData={data?.summary}
-    />
-  {/if}
 
   {#if isLoading}
     <div class="loading">{$_('analytics.loadingData')}</div>

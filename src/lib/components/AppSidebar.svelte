@@ -19,6 +19,12 @@
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { api } from "$lib/services/api-client";
   import { _ } from "svelte-i18n";
+  import { globalSearchStore } from "$lib/stores/GlobalSearchStore";
+
+  // Clear project context when AppSidebar is shown (navigating away from a project)
+  $effect(() => {
+    globalSearchStore.clearProjectContext();
+  });
 
   // Location for active route detection
   const location = useLocation();
