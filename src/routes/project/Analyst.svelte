@@ -33,11 +33,6 @@
   const projectId = $derived(projectStore.currentProject?.id);
 
   onMount(() => {
-    if (projectId) {
-      analystStore.loadSessions(projectId);
-      loadResearchQuestions(projectId);
-    }
-
     // Check for prefill from Research Questions deep-link
     const prefill = sessionStorage.getItem("analyst_prefill");
     if (prefill) {
@@ -55,9 +50,10 @@
     analystStore.setAvailableResearchQuestions(researchQuestionsStore.questions);
   }
 
-  // Reload research questions when project changes
+  // Load sessions and research questions when project is available or changes
   $effect(() => {
     if (projectId) {
+      analystStore.loadSessions(projectId);
       loadResearchQuestions(projectId);
     }
   });
