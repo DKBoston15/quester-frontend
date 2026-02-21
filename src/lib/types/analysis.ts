@@ -218,6 +218,12 @@ export interface ResearchQuestionScopeItem {
   isParent?: boolean
 }
 
+export interface NoteScopeItem {
+  id: string
+  name: string
+  type: string
+}
+
 export interface MessageMetadata {
   usage?: {
     promptTokens: number
@@ -234,6 +240,7 @@ export interface MessageMetadata {
   suggestions?: SuggestionItem[]
   literatureScope?: LiteratureScopeItem[]
   researchQuestionScope?: ResearchQuestionScopeItem[]
+  noteScope?: NoteScopeItem[]
 }
 
 // ---------------------------------------------------------------------------

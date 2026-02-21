@@ -9,9 +9,10 @@
   import { literatureStore } from "$lib/stores/LiteratureStore";
   import Filter from "lucide-svelte/icons/filter";
   import HelpCircle from "lucide-svelte/icons/help-circle";
+  import StickyNote from "lucide-svelte/icons/sticky-note";
   import X from "lucide-svelte/icons/x";
   import Check from "lucide-svelte/icons/check";
-  import type { LiteratureScopeItem } from "$lib/types/analysis";
+  import type { LiteratureScopeItem, NoteScopeItem } from "$lib/types/analysis";
 
   interface Props {
     projectId?: string;
@@ -190,6 +191,57 @@
     const newItems = filteredQuestions.filter((i) => !existingIds.has(i.id));
     if (newItems.length > 0) {
       analystStore.setResearchQuestionScope([...selectedQuestionItems, ...newItems]);
+    }
+  }
+
+  // Notes scope
+  let notesOpen = $state(false);
+  let notesSearchValue = $state("");
+
+  let selectedNoteIds = $derived(analystStore.selectedNoteIds);
+  let selectedNoteItems = $derived(analystStore.selectedNoteItems);
+  let selectedNoteSet = $derived(new Set(selectedNoteIds));
+  let allNotes = $derived(analystStore.availableNotes);
+
+  let filteredNotes = $derived(
+    notesSearchValue
+      ? allNotes.filter((n) => {
+          const query = notesSearchValue.toLowerCase();
+          return n.name.toLowerCase().includes(query);
+        })
+      : allNotes,
+  );
+
+  const MAX_VISIBLE_NOTE_BADGES = 2;
+  let showAllNoteBadges = $state(false);
+  let visibleNoteItems = $derived(
+    showAllNoteBadges
+      ? selectedNoteItems
+      : selectedNoteItems.slice(0, MAX_VISIBLE_NOTE_BADGES),
+  );
+  let hiddenNoteCount = $derived(
+    Math.max(0, selectedNoteItems.length - MAX_VISIBLE_NOTE_BADGES),
+  );
+
+  function toggleNote(item: NoteScopeItem) {
+    analystStore.toggleNoteItem(item);
+  }
+
+  function removeNote(id: string) {
+    const item = selectedNoteItems.find((i) => i.id === id);
+    if (item) analystStore.toggleNoteItem(item);
+  }
+
+  function clearAllNotes() {
+    analystStore.clearNoteScope();
+    showAllNoteBadges = false;
+  }
+
+  function selectAllFilteredNotes() {
+    const existingIds = new Set(selectedNoteIds);
+    const newItems = filteredNotes.filter((i) => !existingIds.has(i.id));
+    if (newItems.length > 0) {
+      analystStore.setNoteScope([...selectedNoteItems, ...newItems]);
     }
   }
 </script>
@@ -469,6 +521,141 @@
       <button
         class="text-xs text-muted-foreground hover:text-foreground transition-colors"
         onclick={clearAllQuestions}
+        {disabled}
+      >
+        Clear
+      </button>
+    {/if}
+  {/if}
+
+  <!-- Notes Scope Filter -->
+  {#if allNotes.length > 0}
+    <span class="text-muted-foreground/40 select-none">|</span>
+    <Popover.Root bind:open={notesOpen}>
+      <Popover.Trigger disabled={disabled}>
+        <Button
+          variant="ghost"
+          size="sm"
+          class="h-7 gap-1.5 text-xs {selectedNoteItems.length > 0
+            ? 'text-foreground'
+            : 'text-muted-foreground'}"
+          {disabled}
+        >
+          <StickyNote class="h-3 w-3" />
+          {#if selectedNoteItems.length === 0}
+            Notes
+          {:else}
+            {selectedNoteItems.length} note{selectedNoteItems.length === 1 ? "" : "s"}
+          {/if}
+        </Button>
+      </Popover.Trigger>
+      <Portal>
+        <Popover.Content
+          class="w-[340px] p-0 z-[9999]"
+          side="top"
+          align="start"
+        >
+          <Command.Root shouldFilter={false}>
+            <Command.Input
+              placeholder="Search notes..."
+              bind:value={notesSearchValue}
+            />
+            <Command.List class="max-h-[240px]">
+              <Command.Empty>No notes found.</Command.Empty>
+              <Command.Group>
+                {#each filteredNotes as note (note.id)}
+                  <Command.Item
+                    value={`${note.name}___${note.id}`}
+                    onSelect={() => toggleNote(note)}
+                    class="cursor-pointer"
+                  >
+                    <div class="flex items-center gap-2 w-full">
+                      <div
+                        class="flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border {selectedNoteSet.has(
+                          note.id,
+                        )
+                          ? 'bg-primary border-primary'
+                          : 'border-muted-foreground/40'}"
+                      >
+                        {#if selectedNoteSet.has(note.id)}
+                          <Check class="h-3 w-3 text-primary-foreground" />
+                        {/if}
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="text-sm truncate">{note.name}</div>
+                      </div>
+                      <Badge variant="outline" class="text-[9px] h-4 px-1 capitalize">
+                        {note.type.toLowerCase()}
+                      </Badge>
+                    </div>
+                  </Command.Item>
+                {/each}
+              </Command.Group>
+            </Command.List>
+            <div
+              class="flex items-center justify-between border-t px-3 py-2 text-xs text-muted-foreground"
+            >
+              <span>
+                {selectedNoteItems.length} of {allNotes.length} selected
+              </span>
+              <div class="flex gap-2">
+                <button
+                  class="hover:text-foreground transition-colors"
+                  onclick={selectAllFilteredNotes}
+                >
+                  Select all
+                </button>
+                {#if selectedNoteItems.length > 0}
+                  <button
+                    class="hover:text-foreground transition-colors"
+                    onclick={clearAllNotes}
+                  >
+                    Clear
+                  </button>
+                {/if}
+              </div>
+            </div>
+          </Command.Root>
+        </Popover.Content>
+      </Portal>
+    </Popover.Root>
+
+    {#if selectedNoteItems.length > 0}
+      {#each visibleNoteItems as item (item.id)}
+        <Badge
+          variant="secondary"
+          class="h-6 gap-1 pl-2 pr-1 text-xs max-w-[200px] bg-amber-100 dark:bg-amber-900/30"
+        >
+          <StickyNote class="h-2.5 w-2.5 shrink-0" />
+          <span class="truncate">{item.name}</span>
+          <button
+            class="ml-0.5 rounded-full hover:bg-muted-foreground/20 p-0.5"
+            onclick={() => removeNote(item.id)}
+            {disabled}
+          >
+            <X class="h-3 w-3" />
+          </button>
+        </Badge>
+      {/each}
+      {#if hiddenNoteCount > 0 && !showAllNoteBadges}
+        <button
+          class="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          onclick={() => (showAllNoteBadges = true)}
+        >
+          +{hiddenNoteCount} more
+        </button>
+      {/if}
+      {#if showAllNoteBadges && selectedNoteItems.length > MAX_VISIBLE_NOTE_BADGES}
+        <button
+          class="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          onclick={() => (showAllNoteBadges = false)}
+        >
+          Show less
+        </button>
+      {/if}
+      <button
+        class="text-xs text-muted-foreground hover:text-foreground transition-colors"
+        onclick={clearAllNotes}
         {disabled}
       >
         Clear
