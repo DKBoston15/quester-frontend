@@ -7,6 +7,7 @@ import type {
   SessionSummary,
   SuggestionItem,
   LiteratureScopeItem,
+  NoteScopeItem,
 } from '$lib/types/analysis';
 import type { ResearchQuestion } from '$lib/stores/ResearchQuestionsStore.svelte';
 
@@ -116,6 +117,9 @@ interface AnalystState {
   selectedResearchQuestionIds: string[];
   selectedResearchQuestionItems: ResearchQuestionScopeItem[];
   availableResearchQuestions: ResearchQuestionScopeItem[];
+  selectedNoteIds: string[];
+  selectedNoteItems: NoteScopeItem[];
+  availableNotes: NoteScopeItem[];
 }
 
 class AnalystStore {
@@ -139,6 +143,9 @@ class AnalystStore {
     selectedResearchQuestionIds: [],
     selectedResearchQuestionItems: [],
     availableResearchQuestions: [],
+    selectedNoteIds: [],
+    selectedNoteItems: [],
+    availableNotes: [],
   });
 
   private abortController: AbortController | null = null;
@@ -162,6 +169,9 @@ class AnalystStore {
   get selectedResearchQuestionIds() { return this.state.selectedResearchQuestionIds; }
   get selectedResearchQuestionItems() { return this.state.selectedResearchQuestionItems; }
   get availableResearchQuestions() { return this.state.availableResearchQuestions; }
+  get selectedNoteIds() { return this.state.selectedNoteIds; }
+  get selectedNoteItems() { return this.state.selectedNoteItems; }
+  get availableNotes() { return this.state.availableNotes; }
 
   /**
    * Send a query and stream the response.
@@ -181,11 +191,14 @@ class AnalystStore {
     const scopeItems = [...this.state.selectedLiteratureItems];
     const questionIds = [...this.state.selectedResearchQuestionIds];
     const questionItems = [...this.state.selectedResearchQuestionItems];
+    const noteIds = [...this.state.selectedNoteIds];
+    const noteItems = [...this.state.selectedNoteItems];
 
     // Add optimistic user message
     const metadata: any = {};
     if (scopeItems.length > 0) metadata.literatureScope = scopeItems;
     if (questionItems.length > 0) metadata.researchQuestionScope = questionItems;
+    if (noteItems.length > 0) metadata.noteScope = noteItems;
 
     const userMsg: AnalystMessage = {
       id: `temp-${Date.now()}`,
@@ -210,6 +223,7 @@ class AnalystStore {
           sessionId: this.state.currentSessionId ?? undefined,
           ...(scopeIds.length > 0 ? { literatureIds: scopeIds } : {}),
           ...(questionIds.length > 0 ? { researchQuestionIds: questionIds } : {}),
+          ...(noteIds.length > 0 ? { noteIds } : {}),
           signal: this.abortController.signal,
         },
         {
@@ -455,6 +469,8 @@ class AnalystStore {
     this.state.selectedLiteratureItems = [];
     this.state.selectedResearchQuestionIds = [];
     this.state.selectedResearchQuestionItems = [];
+    this.state.selectedNoteIds = [];
+    this.state.selectedNoteItems = [];
   }
 
   setLiteratureScope(items: LiteratureScopeItem[]) {
@@ -510,6 +526,31 @@ class AnalystStore {
     } else {
       this.state.selectedResearchQuestionItems = [...this.state.selectedResearchQuestionItems, item];
       this.state.selectedResearchQuestionIds = [...this.state.selectedResearchQuestionIds, item.id];
+    }
+  }
+
+  setAvailableNotes(notes: NoteScopeItem[]) {
+    this.state.availableNotes = notes;
+  }
+
+  setNoteScope(items: NoteScopeItem[]) {
+    this.state.selectedNoteItems = items;
+    this.state.selectedNoteIds = items.map((i) => i.id);
+  }
+
+  clearNoteScope() {
+    this.state.selectedNoteItems = [];
+    this.state.selectedNoteIds = [];
+  }
+
+  toggleNoteItem(item: NoteScopeItem) {
+    const idx = this.state.selectedNoteIds.indexOf(item.id);
+    if (idx >= 0) {
+      this.state.selectedNoteItems = this.state.selectedNoteItems.filter((i) => i.id !== item.id);
+      this.state.selectedNoteIds = this.state.selectedNoteIds.filter((id) => id !== item.id);
+    } else {
+      this.state.selectedNoteItems = [...this.state.selectedNoteItems, item];
+      this.state.selectedNoteIds = [...this.state.selectedNoteIds, item.id];
     }
   }
 

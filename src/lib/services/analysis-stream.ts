@@ -44,6 +44,7 @@ export interface AnalysisStreamParams {
   sessionId?: string
   literatureIds?: string[]
   researchQuestionIds?: string[]
+  noteIds?: string[]
   signal?: AbortSignal
 }
 
@@ -63,6 +64,7 @@ export async function streamAnalysis(
       ...(params.sessionId ? { sessionId: params.sessionId } : {}),
       ...(params.literatureIds?.length ? { literatureIds: params.literatureIds } : {}),
       ...(params.researchQuestionIds?.length ? { researchQuestionIds: params.researchQuestionIds } : {}),
+      ...(params.noteIds?.length ? { noteIds: params.noteIds } : {}),
     },
     signal: params.signal,
     timeout: 120_000,

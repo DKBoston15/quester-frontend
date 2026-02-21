@@ -3,6 +3,7 @@
   import { projectStore } from "$lib/stores/ProjectStore";
   import { analystStore } from "$lib/stores/AnalystStore.svelte";
   import { researchQuestionsStore } from "$lib/stores/ResearchQuestionsStore.svelte";
+  import { notesStore } from "$lib/stores/NotesStore.svelte";
   import ConversationThread from "$lib/components/analyst/ConversationThread.svelte";
   import InputArea from "$lib/components/analyst/InputArea.svelte";
   import SessionSidebar from "$lib/components/analyst/SessionSidebar.svelte";
@@ -50,11 +51,19 @@
     analystStore.setAvailableResearchQuestions(researchQuestionsStore.questions);
   }
 
-  // Load sessions and research questions when project is available or changes
+  async function loadNotes(pid: string) {
+    await notesStore.loadNotes(pid);
+    analystStore.setAvailableNotes(
+      notesStore.notes.map((n) => ({ id: n.id, name: n.name, type: n.type })),
+    );
+  }
+
+  // Load sessions, research questions, and notes when project is available or changes
   $effect(() => {
     if (projectId) {
       analystStore.loadSessions(projectId);
       loadResearchQuestions(projectId);
+      loadNotes(projectId);
     }
   });
 
