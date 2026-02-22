@@ -149,6 +149,7 @@ class AnalystStore {
   });
 
   private abortController: AbortController | null = null;
+  private lastProjectId: string | null = null;
 
   // Getters
   get sessions() { return this.state.sessions; }
@@ -371,6 +372,11 @@ class AnalystStore {
    * Load sessions for a project.
    */
   async loadSessions(projectId: string) {
+    if (this.lastProjectId && this.lastProjectId !== projectId) {
+      this.startNewSession();
+    }
+    this.lastProjectId = projectId;
+
     try {
       const { sessions } = await getSessions(projectId);
       this.state.sessions = sessions;

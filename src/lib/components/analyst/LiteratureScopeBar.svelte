@@ -9,7 +9,7 @@
   import { literatureStore } from "$lib/stores/LiteratureStore";
   import Filter from "lucide-svelte/icons/filter";
   import HelpCircle from "lucide-svelte/icons/help-circle";
-  import StickyNote from "lucide-svelte/icons/sticky-note";
+  import Pencil from "lucide-svelte/icons/pencil";
   import X from "lucide-svelte/icons/x";
   import Check from "lucide-svelte/icons/check";
   import type { LiteratureScopeItem, NoteScopeItem } from "$lib/types/analysis";
@@ -434,7 +434,7 @@
                     onSelect={() => toggleQuestion(question)}
                     class="cursor-pointer"
                   >
-                    <div class="flex items-center gap-2 w-full {question.parentQuestionId ? 'pl-3' : ''}">
+                    <div class="flex items-center gap-2 w-full {!question.isParent ? 'pl-3' : ''}">
                       <div
                         class="flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border {selectedQuestionSet.has(
                           question.id,
@@ -541,7 +541,7 @@
             : 'text-muted-foreground'}"
           {disabled}
         >
-          <StickyNote class="h-3 w-3" />
+          <Pencil class="h-3 w-3" />
           {#if selectedNoteItems.length === 0}
             Notes
           {:else}
@@ -626,7 +626,7 @@
           variant="secondary"
           class="h-6 gap-1 pl-2 pr-1 text-xs max-w-[200px] bg-amber-100 dark:bg-amber-900/30"
         >
-          <StickyNote class="h-2.5 w-2.5 shrink-0" />
+          <Pencil class="h-2.5 w-2.5 shrink-0" />
           <span class="truncate">{item.name}</span>
           <button
             class="ml-0.5 rounded-full hover:bg-muted-foreground/20 p-0.5"
