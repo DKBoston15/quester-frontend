@@ -22,8 +22,7 @@
   import { _ } from "svelte-i18n";
   import { get } from "svelte/store";
 
-  const t = (key: string, options?: { values?: Record<string, unknown> }) =>
-    get(_)(key, options);
+  const t = (key: string) => get(_)(key);
 
   let showSidebar = $state(false);
   let showArtifactPanel = $state(false);
@@ -185,15 +184,9 @@
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <Button
-          id="analyst-artifacts-button"
-          variant="outline"
-          size="sm"
-          onclick={() => (showArtifactPanel = true)}
-          title="Saved artifacts"
-        >
-          <BookmarkCheck class="h-4 w-4 mr-2" />
-          <span class="hidden sm:inline">Artifacts</span>
+        <Button variant="outline" size="sm" onclick={handleNewSession}>
+          <Plus class="h-4 w-4 mr-2" />
+          <span class="hidden sm:inline">New</span>
         </Button>
         <Button
           id="analyst-sessions-toggle"
@@ -205,9 +198,15 @@
           <History class="h-4 w-4 mr-2" />
           <span class="hidden sm:inline">Sessions</span>
         </Button>
-        <Button variant="outline" size="sm" onclick={handleNewSession}>
-          <Plus class="h-4 w-4 mr-2" />
-          <span class="hidden sm:inline">New</span>
+        <Button
+          id="analyst-artifacts-button"
+          variant="outline"
+          size="sm"
+          onclick={() => (showArtifactPanel = true)}
+          title="Saved artifacts"
+        >
+          <BookmarkCheck class="h-4 w-4 mr-2" />
+          <span class="hidden sm:inline">Artifacts</span>
         </Button>
         <Tooltip.Provider>
           <Tooltip.Root>
