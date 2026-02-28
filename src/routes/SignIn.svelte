@@ -1,17 +1,10 @@
 <script lang="ts">
-  export let onLogin: () => void;
   import logo from "../assets/logo.png";
   import { ModeToggle } from "$lib/components/ui/darkmode-toggle";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { _ } from "svelte-i18n";
 
-  function handleGoogleSignIn() {
-    onLogin();
-  }
-
-  function handleEmailSignIn() {
-    onLogin();
-  }
+  const { onLogin }: { onLogin: () => void } = $props();
 </script>
 
 <div
@@ -86,46 +79,18 @@
           <p
             class="text-[13px] leading-[20px] text-muted-foreground dark:text-textSecondary"
           >
-            Choose a sign-in method below to continue.
+            You'll be able to choose your sign-in method on the next screen.
           </p>
         </div>
 
-        <div class="mt-6 space-y-5">
+        <div class="mt-6">
           <button
-            id="btn-google"
+            id="btn-sign-in"
             class="flex h-11 w-full items-center justify-center gap-3 rounded-[12px] bg-white text-[15px] font-bold leading-[24px] text-[#0B0E13] shadow-sm transition duration-150 hover:-translate-y-[1px] hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-card dark:bg-[#F2F5F9] dark:hover:shadow-[0_14px_44px_rgba(0,0,0,0.25)] dark:focus-visible:ring-offset-surface"
             type="button"
-            on:click={handleGoogleSignIn}
+            onclick={onLogin}
           >
-            <img
-              src="/icons/google.svg"
-              alt=""
-              aria-hidden="true"
-              class="h-5 w-5"
-            />
-            Continue with Google
-          </button>
-
-          <div
-            class="relative text-center text-[13px] leading-[20px] text-muted-foreground dark:text-textSecondary"
-            role="separator"
-            aria-label="or"
-          >
-            <div class="h-px bg-border dark:bg-stroke"></div>
-            <span
-              class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-2 text-[12px] text-muted-foreground dark:bg-surface dark:text-textSecondary"
-            >
-              or
-            </span>
-          </div>
-
-          <button
-            id="btn-email-password"
-            class="flex h-11 w-full items-center justify-center gap-2 rounded-[12px] border border-border bg-muted/60 text-[15px] font-bold leading-[24px] text-foreground transition duration-150 hover:-translate-y-[1px] hover:bg-muted hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-card dark:border-stroke dark:bg-surfaceAlt dark:text-textPrimary dark:hover:bg-[#1A2130] dark:hover:shadow-[0_14px_44px_rgba(0,0,0,0.35)] dark:focus-visible:ring-offset-surface"
-            type="button"
-            on:click={handleEmailSignIn}
-          >
-            Use email &amp; password
+            Sign in to Quester
           </button>
         </div>
 

@@ -6,17 +6,20 @@ export type UserMetadata = {
 };
 
 export type User = {
-  id: number;
+  id: string;
+  authProviderId: string;
   email: string;
   firstName: string;
   lastName: string;
   avatarUrl: string | null;
   orcidUrl: string | null;
+  emailVerified?: boolean;
   metadata?: UserMetadata | null;
 };
 
 export interface Organization {
   id: string;
+  authProviderOrgId?: string;
   name: string;
   slug: string;
   billingProviderId?: string;
@@ -172,4 +175,15 @@ export interface Grant {
 
   // Relations
   project?: Project;
+}
+
+export interface ResourcePermissions {
+  canManage: boolean;
+  canInviteUsers: boolean;
+  canChangeRoles: boolean;
+  canCreateProjects?: boolean;
+  canCreateDepartments?: boolean;
+  canCreateNestedDepartments?: boolean;
+  canAddSelf?: boolean;
+  canDelete?: boolean;
 }

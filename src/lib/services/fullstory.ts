@@ -1,8 +1,7 @@
 import { init, FullStory } from '@fullstory/browser';
 import type { User } from '../types/auth';
 
-// Initialize FullStory when the module loads
-const FULLSTORY_ORG_ID = 'o-23MSRK-na1';
+const FULLSTORY_ORG_ID = import.meta.env.VITE_FULLSTORY_ORG_ID || 'o-23MSRK-na1';
 let fullStoryInitialized = false;
 
 export function initializeFullStory() {
@@ -16,7 +15,7 @@ export function identifyUser(user: User) {
 
   // Set user identity in FullStory using the v2 API
   FullStory('setIdentity', {
-    uid: user.id.toString(), // FullStory expects string IDs
+    uid: user.authProviderId || user.id,
     properties: {
       displayName: `${user.firstName} ${user.lastName}`,
       email: user.email,

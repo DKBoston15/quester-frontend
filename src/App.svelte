@@ -48,36 +48,18 @@
     // Initialize FullStory
     initializeFullStory();
 
-    // Safety timeout - force loading to false after 10 seconds
-    const safetyTimeout = setTimeout(() => {
-      if (destroyed) {
-        return;
-      }
-
-      isCheckingAuth = false;
-      // Force a re-render
-      document.dispatchEvent(new Event("forceRerender"));
-    }, 10000);
-
-    const { promise: timeoutPromise, cancel: cancelTimeout } = createTimeoutPromise(
-      10000,
-      "Auth verification timed out after 10 seconds"
-    );
-
-    // Create a promise that rejects after a timeout
     const runAuthCheck = async () => {
+      let timeoutId: ReturnType<typeof setTimeout> | null = null;
       try {
-        // Race the auth verification against the timeout
-        await Promise.race([auth.verifySession(), timeoutPromise]);
+        // Race auth verification against a 15s timeout to prevent infinite loading
+        const timeout = new Promise<never>((_, reject) => {
+          timeoutId = setTimeout(() => reject(new Error("Auth verification timed out")), 15000);
+        });
+        await Promise.race([auth.verifySession(), timeout]);
 
-        if (destroyed) {
-          return;
-        }
+        if (destroyed) return;
 
         if (!auth.isAuthenticated && window.location.pathname !== "/") {
-          console.error(
-            'App.svelte onMount: <<< REDIRECTING TO / >>> Condition met: !auth.isAuthenticated && window.location.pathname !== "/"'
-          );
           navigate("/", { replace: true });
         } else if (auth.isAuthenticated && window.location.pathname === "/") {
           navigate("/dashboard", { replace: true });
@@ -87,23 +69,15 @@
           localeStore.initializeFromUser(auth.user.metadata.locale);
         }
       } catch (err) {
-        if (destroyed) {
-          return;
-        }
+        if (destroyed) return;
 
         console.error("Error during auth verification:", err);
-        // If we timeout or have another error, force isCheckingAuth to false
-        // and clear user to reset auth state
         isCheckingAuth = false;
-        auth.clearUser(); // This internally sets isLoading to false
+        auth.clearUser();
         navigate("/", { replace: true });
       } finally {
-        cancelTimeout();
-
+        if (timeoutId !== null) clearTimeout(timeoutId);
         if (!destroyed) {
-          // Ensure the safety timeout is cleared
-          clearTimeout(safetyTimeout);
-          // Double-check the isCheckingAuth state
           isCheckingAuth = false;
         }
       }
@@ -113,8 +87,6 @@
 
     return () => {
       destroyed = true;
-      clearTimeout(safetyTimeout);
-      cancelTimeout();
     };
   });
 
@@ -146,14 +118,11 @@
   }
 
   const currentOrgName = $derived(auth.currentOrganization?.name || "");
-  
-  // Organization owner role ID
-  const ORGANIZATION_OWNER_ROLE_ID = "e820de49-d7bd-42d7-8b05-49279cee686f";
-  
-  // Check if user is organization owner
+
+  // Check if user is organization owner (by role name, not hardcoded UUID)
   const isOrganizationOwner = $derived(
     auth.currentOrganization?.organizationRoles?.some(
-      (role) => role.roleId === ORGANIZATION_OWNER_ROLE_ID
+      (role) => role.role?.name === 'Owner'
     ) || false
   );
 
@@ -171,25 +140,6 @@
     }
   });
 
-  function createTimeoutPromise(durationMs: number, message: string) {
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-
-    const promise = new Promise<never>((_, reject) => {
-      timeoutId = setTimeout(() => {
-        reject(new Error(message));
-      }, durationMs);
-    });
-
-    return {
-      promise,
-      cancel() {
-        if (timeoutId !== null) {
-          clearTimeout(timeoutId);
-          timeoutId = null;
-        }
-      },
-    };
-  }
 </script>
 
 {#if !i18nReady}

@@ -1,6 +1,7 @@
 
   import { api } from "$lib/services/api-client";
   import { auth } from "$lib/stores/AuthStore";
+  import type { ResourcePermissions } from "$lib/types/auth";
   import { _ } from "svelte-i18n";
   import { get } from "svelte/store";
 
@@ -18,7 +19,11 @@
   let userResources = $state<any | null>(null);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
-  let permissions = $state<Record<string, boolean>>({});
+  let permissions = $state<ResourcePermissions>({
+    canManage: false,
+    canInviteUsers: false,
+    canChangeRoles: false,
+  });
   let settings = $state<Record<string, any>>({});
   let settingsError = $state<string | null>(null);
   let userLoginStatsMap = $state<Record<string, any> | null>(null);
@@ -90,7 +95,7 @@
       departmentStructure = null;
       projectTeam = null;
       settings = {}; // Clear settings as well
-      permissions = {}; // Clear permissions
+      permissions = { canManage: false, canInviteUsers: false, canChangeRoles: false };
       settingsError = null;
 
       // Load the selected resource data
@@ -204,7 +209,7 @@
         }
 
         organizationStructure = data.organization;
-        permissions = data.permissions || {};
+        permissions = { canManage: false, canInviteUsers: false, canChangeRoles: false, ...(data.permissions || {}) };
 
         // Extract and store settings included in the organization structure response
         const newSettings: Record<string, any> = {};
@@ -291,7 +296,7 @@
         }
 
         departmentStructure = data.department;
-        permissions = data.permissions || {};
+        permissions = { canManage: false, canInviteUsers: false, canChangeRoles: false, ...(data.permissions || {}) };
       } catch (err) {
         console.error("Error loading department structure:", err);
         error =
@@ -349,7 +354,7 @@
         }
 
         projectTeam = data.project;
-        permissions = data.permissions || {};
+        permissions = { canManage: false, canInviteUsers: false, canChangeRoles: false, ...(data.permissions || {}) };
       } catch (err) {
         console.error("Error loading project team:", err);
         error =
@@ -624,7 +629,7 @@
       userResources = null;
       isLoading = false;
       error = null;
-      permissions = {};
+      permissions = { canManage: false, canInviteUsers: false, canChangeRoles: false };
       settings = {};
       settingsError = null;
       userLoginStatsMap = null;
@@ -705,7 +710,7 @@
             // Or clear related structures if no orgs left
             departmentStructure = null;
             projectTeam = null;
-            permissions = {};
+            permissions = { canManage: false, canInviteUsers: false, canChangeRoles: false };
           }
         }
 

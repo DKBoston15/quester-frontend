@@ -38,6 +38,8 @@
   import TeamMembersList from "$lib/components/TeamMembersList.svelte";
   import InvitationManager from "$lib/components/InvitationManager.svelte";
   import RoleManager from "$lib/components/RoleManager.svelte";
+  import { UsersManagement } from "$lib/components/workos-widgets";
+  import type { ResourcePermissions } from "$lib/types/auth";
   import TeamSizeIndicator from "$lib/components/TeamSizeIndicator/TeamSizeIndicator.svelte";
   import { api } from "$lib/services/api-client";
   import { driver, type DriveStep } from "driver.js";
@@ -93,6 +95,13 @@
 
   // Load data on mount
   onMount(() => {
+    // Listen for workspace switches
+    function handleOrgChanged() {
+      teamManagement.initialize();
+      checkSubscriptionLimits();
+    }
+    window.addEventListener("organizationChanged", handleOrgChanged);
+
     void (async () => {
       try {
         // Check URL parameters for resource selection
@@ -134,6 +143,10 @@
         isLoading = false;
       }
     })();
+
+    return () => {
+      window.removeEventListener("organizationChanged", handleOrgChanged);
+    };
   });
 
   // Rebuild tour when resource selection changes (with guard to prevent infinite loops)
@@ -796,109 +809,130 @@
 
               <!-- Main Content -->
               {#if !teamManagement.isLoading && (teamManagement.organizationStructure || teamManagement.departmentStructure || teamManagement.projectTeam)}
-                <!-- Team Members Section -->
-                <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
-                  <Card class="mb-6 hover-lift" data-tour="team-members">
-                    <CardHeader>
-                      <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                          <Users class="h-5 w-5" />
-                          <CardTitle
-                            >{$_('team.teamMembers')} ({getUsersForCurrentResource()
-                              .length})</CardTitle
-                          >
-                        </div>
-                        {#if !showInvitationsTab && (teamManagement.permissions.canInviteUsers || isOrganizationOwner() || teamManagement.settings?.allowMemberInvitations)}
-                          <Button onclick={() => (showInviteModal = true)}>
-                            <UserPlus class="h-4 w-4 mr-2" />
-                            {$_('team.inviteTeam')}
-                          </Button>
-                        {/if}
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      {#if subscriptionLimits && subscriptionLimits.maxUsers > 0}
-                        <div class="mb-4 p-3 bg-muted rounded-lg">
-                          <TeamSizeIndicator
-                            currentCount={getUsersForCurrentResource().length}
-                            maxUsers={subscriptionLimits.maxUsers}
-                            subscriptionPlan={subscriptionLimits.subscriptionPlan}
-                            showAlerts={false}
-                          />
-                        </div>
-                      {/if}
-
-                      <TeamMembersList
-                        users={getUsersForCurrentResource()}
-                        resourceType={teamManagement.selectedResourceType}
-                        canChangeRoles={teamManagement.permissions
-                          .canChangeRoles}
-                        onUserSelect={handleUserSelect}
-                        {subscriptionLimits}
-                      />
-                    </CardContent>
-                  </Card>
-                </div>
-
-                <!-- Invitations Section -->
-                {#if showInvitationsTab}
-                  <div in:fly={{ y: 20, duration: 400, delay: 200 }}>
-                    <Card
-                      class="mb-6 hover-lift"
-                      id="invitation-section"
-                      data-tour="invitations"
-                    >
+                {#if teamManagement.selectedResourceType === 'organization' && teamManagement.selectedResourceId}
+                  <!-- Organization-level: Use UsersManagement widget -->
+                  <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
+                    <Card class="hover-lift" data-tour="team-members">
+                      <CardContent class="pt-6">
+                        <UsersManagement
+                          organizationId={teamManagement.selectedResourceId}
+                          permissions={{
+                            canManage: teamManagement.permissions.canManage ?? false,
+                            canInviteUsers: teamManagement.permissions.canInviteUsers ?? false,
+                            canChangeRoles: teamManagement.permissions.canChangeRoles ?? false,
+                          } satisfies ResourcePermissions}
+                          currentUserId={auth.user?.id}
+                          onMembershipChange={refreshData}
+                        />
+                      </CardContent>
+                    </Card>
+                  </div>
+                {:else}
+                  <!-- Department/Project-level: Keep existing components -->
+                  <!-- Team Members Section -->
+                  <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
+                    <Card class="mb-6 hover-lift" data-tour="team-members">
                       <CardHeader>
-                        <div class="flex items-center gap-2">
-                          <Mail class="h-5 w-5" />
-                          <CardTitle>{$_('team.teamInvitations')}</CardTitle>
+                        <div class="flex items-center justify-between">
+                          <div class="flex items-center gap-2">
+                            <Users class="h-5 w-5" />
+                            <CardTitle
+                              >{$_('team.teamMembers')} ({getUsersForCurrentResource()
+                                .length})</CardTitle
+                            >
+                          </div>
+                          {#if !showInvitationsTab && (teamManagement.permissions.canInviteUsers || isOrganizationOwner() || teamManagement.settings?.allowMemberInvitations)}
+                            <Button onclick={() => (showInviteModal = true)}>
+                              <UserPlus class="h-4 w-4 mr-2" />
+                              {$_('team.inviteTeam')}
+                            </Button>
+                          {/if}
                         </div>
-                        <CardDescription>
-                          {$_('team.sendInvitationsDescription')}
-                        </CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <InvitationManager
+                        {#if subscriptionLimits && subscriptionLimits.maxUsers > 0}
+                          <div class="mb-4 p-3 bg-muted rounded-lg">
+                            <TeamSizeIndicator
+                              currentCount={getUsersForCurrentResource().length}
+                              maxUsers={subscriptionLimits.maxUsers}
+                              subscriptionPlan={subscriptionLimits.subscriptionPlan}
+                              showAlerts={false}
+                            />
+                          </div>
+                        {/if}
+
+                        <TeamMembersList
+                          users={getUsersForCurrentResource()}
                           resourceType={teamManagement.selectedResourceType}
-                          resourceId={teamManagement.selectedResourceId}
-                          onInviteSent={refreshData}
+                          canChangeRoles={teamManagement.permissions
+                            .canChangeRoles}
+                          onUserSelect={handleUserSelect}
                           {subscriptionLimits}
                         />
                       </CardContent>
                     </Card>
                   </div>
-                {/if}
 
-                <!-- Add Users Section (for departments/projects) -->
-                {#if canShowAddUsersTab()}
-                  <div in:fly={{ y: 20, duration: 400, delay: 300 }}>
-                    <Card
-                      class="hover-lift"
-                      id="add-users-section"
-                      data-tour="add-users"
-                    >
-                      <CardHeader>
-                        <div class="flex items-center gap-2">
-                          <UserCog class="h-5 w-5" />
-                          <CardTitle>{$_('team.addExistingUsers')}</CardTitle>
-                        </div>
-                        <CardDescription>
-                          {$_('team.addExistingUsersDescription')}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <ResourceUserManager
-                          resourceType={teamManagement.selectedResourceType ===
-                          "department"
-                            ? "department"
-                            : "project"}
-                          resourceId={teamManagement.selectedResourceId || ""}
-                          {organizationId}
-                          onUserAdded={refreshData}
-                        />
-                      </CardContent>
-                    </Card>
-                  </div>
+                  <!-- Invitations Section -->
+                  {#if showInvitationsTab}
+                    <div in:fly={{ y: 20, duration: 400, delay: 200 }}>
+                      <Card
+                        class="mb-6 hover-lift"
+                        id="invitation-section"
+                        data-tour="invitations"
+                      >
+                        <CardHeader>
+                          <div class="flex items-center gap-2">
+                            <Mail class="h-5 w-5" />
+                            <CardTitle>{$_('team.teamInvitations')}</CardTitle>
+                          </div>
+                          <CardDescription>
+                            {$_('team.sendInvitationsDescription')}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <InvitationManager
+                            resourceType={teamManagement.selectedResourceType}
+                            resourceId={teamManagement.selectedResourceId}
+                            onInviteSent={refreshData}
+                            {subscriptionLimits}
+                          />
+                        </CardContent>
+                      </Card>
+                    </div>
+                  {/if}
+
+                  <!-- Add Users Section (for departments/projects) -->
+                  {#if canShowAddUsersTab()}
+                    <div in:fly={{ y: 20, duration: 400, delay: 300 }}>
+                      <Card
+                        class="hover-lift"
+                        id="add-users-section"
+                        data-tour="add-users"
+                      >
+                        <CardHeader>
+                          <div class="flex items-center gap-2">
+                            <UserCog class="h-5 w-5" />
+                            <CardTitle>{$_('team.addExistingUsers')}</CardTitle>
+                          </div>
+                          <CardDescription>
+                            {$_('team.addExistingUsersDescription')}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <ResourceUserManager
+                            resourceType={teamManagement.selectedResourceType ===
+                            "department"
+                              ? "department"
+                              : "project"}
+                            resourceId={teamManagement.selectedResourceId || ""}
+                            {organizationId}
+                            onUserAdded={refreshData}
+                          />
+                        </CardContent>
+                      </Card>
+                    </div>
+                  {/if}
                 {/if}
               {/if}
 

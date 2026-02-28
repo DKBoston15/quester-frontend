@@ -371,14 +371,14 @@
     // Check project roles
     if (project.projectRoles && Array.isArray(project.projectRoles)) {
       return project.projectRoles.some(
-        (role: any) => role.userId.toString() === auth.user?.id.toString()
+        (role: any) => String(role.userId) === auth.user?.id
       );
     }
 
     // Check users array as fallback
     if (project.users && Array.isArray(project.users)) {
       return project.users.some(
-        (user: any) => user.id.toString() === auth.user?.id.toString()
+        (user: any) => String(user.id) === auth.user?.id
       );
     }
 
@@ -395,7 +395,7 @@
       Array.isArray(department.departmentRoles)
     ) {
       return department.departmentRoles.some(
-        (role) => role.userId.toString() === auth.user?.id.toString()
+        (role) => String(role.userId) === auth.user?.id
       );
     }
 

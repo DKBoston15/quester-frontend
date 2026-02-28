@@ -1,4 +1,3 @@
-import { API_BASE_URL } from "$lib/config";
 import { setGlobalLogoutHandler, api } from "../services/api-client";
 import type { Organization, User } from "../types/auth";
 import { identifyUser, clearUserIdentity } from "../services/fullstory";
@@ -30,18 +29,8 @@ export const auth = {
   async setUser(newUser: User) {
     user = newUser;
     if (newUser) {
-      // Identify user in FullStory
       identifyUser(newUser);
-
-      const orgs = await this.fetchUserOrganizations();
-      if (orgs && orgs.length > 0) {
-        // Load the last selected org from localStorage if available
-        const lastOrgId = localStorage.getItem("lastSelectedOrgId");
-        const lastOrg = orgs.find((org: Organization) => org.id === lastOrgId);
-        await this.setCurrentOrganization(lastOrg || orgs[0]);
-      } else {
-        await this.setCurrentOrganization(null);
-      }
+      await this.loadAndSetOrganization();
     }
     isLoading = false;
   },
@@ -89,10 +78,12 @@ export const auth = {
     try {
       // Use centralized API client with skip auth check to prevent loops
       const data = await api.get(
-        `/organizations/by-user?userId=${user?.id}`,
+        `/organizations/by-user?userId=${user?.id}&limit=100`,
         { skipAuthCheck: true }
       );
-      return data as Organization[];
+      // Backend returns paginated response { data: [...], meta: {...} }
+      const orgs = (data as any)?.data ?? data;
+      return Array.isArray(orgs) ? orgs as Organization[] : [];
     } catch (error) {
       console.error("Failed to fetch organizations:", error);
       return null;
@@ -101,29 +92,11 @@ export const auth = {
 
   async verifySession() {
     try {
-      // Use centralized API client with skip auth check to prevent loops
       const data = await api.get(`/auth/verify`, { skipAuthCheck: true });
       if (data?.user) {
-        // First set the user
         user = data.user;
-
-        // Identify user in FullStory
-        if (user) {
-          identifyUser(user);
-        }
-
-        // Then load organizations
-        const orgs = await this.fetchUserOrganizations();
-        if (orgs && orgs.length > 0) {
-          // Load the last selected org from localStorage if available
-          const lastOrgId = localStorage.getItem("lastSelectedOrgId");
-          const lastOrg = orgs.find(
-            (org: Organization) => org.id === lastOrgId
-          );
-          await this.setCurrentOrganization(lastOrg || orgs[0]);
-        } else {
-          await this.setCurrentOrganization(null);
-        }
+        identifyUser(user!);
+        await this.loadAndSetOrganization();
       } else {
         this.clearUser();
       }
@@ -135,8 +108,15 @@ export const auth = {
     }
   },
 
-  login() {
-    window.location.href = `${API_BASE_URL}/auth/redirect`;
+  async loadAndSetOrganization() {
+    const orgs = await this.fetchUserOrganizations();
+    if (orgs && orgs.length > 0) {
+      const lastOrgId = localStorage.getItem("lastSelectedOrgId");
+      const lastOrg = orgs.find((org: Organization) => org.id === lastOrgId);
+      await this.setCurrentOrganization(lastOrg || orgs[0]);
+    } else {
+      await this.setCurrentOrganization(null);
+    }
   },
 
   async logout() {
@@ -151,17 +131,16 @@ export const auth = {
     }
   },
 
-  // Make sure the rest of your AuthStore code (setUser, verifySession etc.) remains the same
-
   async updateUser(userData: Partial<User>) {
     try {
-      // Use centralized API client which handles auth errors automatically
-      const updatedUser = await api.put(`/users/${user?.id}`, userData);
+      const updatedUser = await api.put(`/users/me/profile`, userData);
       // Update user data directly without re-fetching organizations
       // to avoid resetting app state
       user = { ...user!, ...updatedUser };
       // Re-identify user in FullStory with updated info
-      identifyUser(user);
+      if (user) {
+        identifyUser(user);
+      }
       syncPosthogIdentity();
       return { success: true, user: updatedUser };
     } catch (error) {
@@ -202,5 +181,5 @@ function syncPosthogIdentity() {
     properties.organization_id = currentOrganization.id;
   }
 
-  posthog.identify(user.id.toString(), properties);
+  posthog.identify(user.authProviderId || user.id, properties);
 }

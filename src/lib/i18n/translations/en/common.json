@@ -22,6 +22,8 @@
     "add": "Add",
     "adding": "Adding...",
     "creating": "Creating...",
+    "sending": "Sending...",
+    "removing": "Removing...",
     "retry": "Retry",
     "tutorial": "Tutorial",
     "error": "Error",
@@ -138,6 +140,14 @@
     "analytics": "Analytics",
     "toggleSidebar": "Toggle Sidebar"
   },
+  "workspace": {
+    "workspaces": "Workspaces",
+    "switchWorkspace": "Switch workspace",
+    "createNew": "Create new workspace",
+    "member": "member",
+    "members": "members",
+    "freePlan": "Free"
+  },
   "projectSidebar": {
     "overview": "Overview",
     "literature": "Literature",
@@ -205,7 +215,9 @@
     "selectLanguage": "Select language",
     "languageDescription": "Choose your preferred language for the application interface. Changes take effect immediately.",
     "profileInformation": "Profile Information",
-    "languagePreferences": "Language Preferences"
+    "languagePreferences": "Language Preferences",
+    "verified": "Verified",
+    "managedByWorkOS": "Managed by SSO"
   },
   "team": {
     "title": "Team Management",
@@ -285,6 +297,31 @@
     "department": "Department",
     "project": "Project",
     "failedToJoin": "Failed to join. Please try again.",
+    "members": "Members",
+    "invitations": "Invitations",
+    "searchMembers": "Search members...",
+    "name": "Name",
+    "email": "Email",
+    "role": "Role",
+    "you": "You",
+    "inviteByEmail": "Email Address",
+    "emailPlaceholder": "colleague@university.edu",
+    "sendInvite": "Send Invite",
+    "selectRole": "Select role",
+    "seatsUsed": "{used} of {limit} seats used",
+    "sentAt": "Sent",
+    "noPendingInvitations": "No pending invitations",
+    "noMatchingMembers": "No matching members found",
+    "noMembers": "No members yet",
+    "removeMemberTitle": "Remove Member",
+    "removeMemberConfirm": "Are you sure you want to remove {name} from this organization? They will lose access to all resources.",
+    "remove": "Remove",
+    "invitationSent": "Invitation sent successfully",
+    "invitationRevoked": "Invitation revoked",
+    "roleUpdated": "Role updated successfully",
+    "memberRemoved": "Member removed successfully",
+    "userAlreadyMember": "This user is already a member",
+    "userAlreadyInvited": "This user already has a pending invitation",
     "roles": {
       "owner": "Owner",
       "admin": "Admin",
@@ -995,7 +1032,13 @@
     "failedToJoin": "Failed to join. Please try again.",
     "failedToFetchPlans": "Failed to fetch plans",
     "failedToInitializeDashboard": "Failed to initialize dashboard",
-    "failedToLoadLiterature": "Failed to load literature"
+    "failedToLoadLiterature": "Failed to load literature",
+    "failedToLoadTeam": "Failed to load team data",
+    "failedToSendInvitation": "Failed to send invitation",
+    "failedToRevokeInvitation": "Failed to revoke invitation",
+    "failedToRemoveMember": "Failed to remove member",
+    "failedToUpdateProfile": "Failed to update profile",
+    "userNotFound": "User not found"
   },
   "validation": {
     "required": "This field is required",
@@ -1004,7 +1047,11 @@
     "maxLength": "Must be at most {max} characters",
     "passwordMismatch": "Passwords do not match",
     "invalidUrl": "Please enter a valid URL",
-    "invalidNumber": "Please enter a valid number"
+    "invalidNumber": "Please enter a valid number",
+    "emailRequired": "Email address is required",
+    "invalidEmail": "Please enter a valid email address",
+    "firstNameRequired": "First name is required",
+    "lastNameRequired": "Last name is required"
   },
   "tours": {
     "dashboard": {

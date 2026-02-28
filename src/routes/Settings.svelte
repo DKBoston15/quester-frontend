@@ -17,6 +17,7 @@
   import * as Select from "$lib/components/ui/select";
   import TeamSettings from "$lib/components/TeamSettings.svelte";
   import ManageSubscription from "$lib/components/ManageSubscription.svelte";
+  import { UserProfile } from "$lib/components/workos-widgets";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import AppSidebar from "$lib/components/AppSidebar.svelte";
   import * as Tooltip from "$lib/components/ui/tooltip";
@@ -413,104 +414,20 @@
               <!-- Profile Tab -->
               {#if activeTab === "profile"}
                 <div id="profile-tab-content" class="space-y-6">
-                  <!-- Profile Information Section -->
-                  <form
-                    class="space-y-4 p-4 border rounded-lg dark:border-dark-border"
-                    onsubmit={(e) => {
-                      e.preventDefault();
-                      saveProfile();
-                    }}
-                  >
-                    <h3 class="text-lg font-medium">{$_('settings.profileInformation')}</h3>
-                    <div class="grid gap-4 md:grid-cols-2">
-                      <div class="space-y-2">
-                        <Label for="firstName">{$_('settings.firstName')}</Label>
-                        <Input
-                          id="firstName"
-                          placeholder={$_('settings.firstName')}
-                          bind:value={firstName}
-                          class="border-2  dark:border-dark-border"
-                        />
-                      </div>
-                      <div class="space-y-2">
-                        <Label for="lastName">{$_('settings.lastName')}</Label>
-                        <Input
-                          id="lastName"
-                          placeholder={$_('settings.lastName')}
-                          bind:value={lastName}
-                          class="border-2  dark:border-dark-border"
-                        />
-                      </div>
-                    </div>
-
-                    <div class="space-y-2">
-                      <Label for="email">{$_('settings.email')}</Label>
-                      <Input
-                        disabled
-                        id="email"
-                        type="email"
-                        placeholder={$_('settings.email')}
-                        bind:value={email}
-                        class="border-2  dark:border-dark-border"
-                      />
-                    </div>
-
-                    <div class="space-y-2">
-                      <Label for="orcidUrl">
-                        {$_('settings.orcidUrl')}
-                        <span class="text-sm text-muted-foreground font-normal">
-                          ({$_('common.optional')})
-                        </span>
-                      </Label>
-                      <Input
-                        id="orcidUrl"
-                        type="url"
-                        placeholder="https://orcid.org/0000-0000-0000-0000"
-                        bind:value={orcidUrl}
-                        class={`border-2 dark:border-dark-border ${orcidError ? "border-destructive" : ""}`}
-                      />
-                      {#if orcidError}
-                        <p class="text-sm text-destructive">{orcidError}</p>
-                      {:else}
-                        <p class="text-sm text-muted-foreground">
-                          {$_('settings.orcidDescription')}
-                          <a
-                            href="https://orcid.org/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="text-primary hover:underline"
-                          >
-                            {$_('settings.learnMoreOrcid')}
-                          </a>
-                        </p>
-                      {/if}
-                    </div>
-
-                    {#if message}
-                      <div
-                        class={`p-3 rounded-md ${message.type === "success" ? "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200" : "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200"}`}
-                      >
-                        {message.text}
-                      </div>
-                    {/if}
-
-                    <div class="flex justify-end">
-                      <Button
-                        id="profile-save-button"
-                        type="submit"
-                        disabled={isLoading}
-                      >
-                        {#if isLoading}
-                          <div
-                            class="h-4 w-4 mr-2 border-2 border-t-transparent rounded-full animate-spin"
-                          ></div>
-                          {$_('settings.saving')}
-                        {:else}
-                          {$_('settings.saveChanges')}
-                        {/if}
-                      </Button>
-                    </div>
-                  </form>
+                  <!-- Profile Information Section (UserProfile Widget) -->
+                  <div class="p-4 border rounded-lg dark:border-dark-border">
+                    <h3 class="text-lg font-medium mb-4">{$_('settings.profileInformation')}</h3>
+                    <UserProfile
+                      user={auth.user}
+                      onUpdate={async (userData) => {
+                        await auth.updateUser(userData);
+                        // Sync local form state for backward compatibility
+                        if (userData.firstName !== undefined) firstName = userData.firstName;
+                        if (userData.lastName !== undefined) lastName = userData.lastName;
+                        if (userData.orcidUrl !== undefined) orcidUrl = userData.orcidUrl || "";
+                      }}
+                    />
+                  </div>
 
                   <!-- Language Preferences Section (saves automatically) -->
                   <div class="space-y-4 p-4 border rounded-lg dark:border-dark-border">

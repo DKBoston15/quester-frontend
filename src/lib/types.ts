@@ -1,6 +1,6 @@
 export interface Note {
   id: string;
-  user_id: number;
+  user_id: string;
   projectId: string;
   literatureId?: string;
   name: string;
@@ -20,7 +20,7 @@ export interface Note {
 
 export interface Outcome {
   id: string;
-  user_id: number;
+  user_id: string;
   projectId: string;
   name: string;
   type: string;

@@ -1,14 +1,7 @@
 <script>
-  import { onMount } from "svelte";
   import { navigate } from "svelte-routing";
   import { auth } from "$lib/stores/AuthStore";
   import { _ } from "svelte-i18n";
-
-  onMount(() => {
-    if (!auth.isAuthenticated && !auth.isLoading) {
-      navigate("/");
-    }
-  });
 
   $effect(() => {
     if (!auth.isAuthenticated && !auth.isLoading) {

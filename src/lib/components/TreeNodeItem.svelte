@@ -73,7 +73,7 @@
     ) {
       return department.departmentRoles.some((role) => {
         // Use string comparison for user IDs
-        const isUserRole = role.userId.toString() === auth.user?.id.toString();
+        const isUserRole = String(role.userId) === auth.user?.id;
         // Check if role is admin or owner
         const isAdminRole =
           role.roleId === "7dcb0af2-2338-4c03-a797-955925405f90" || // owner
@@ -120,14 +120,14 @@
     if (project.projectRoles && Array.isArray(project.projectRoles)) {
       return project.projectRoles.some((role) => {
         // Use string comparison for user IDs
-        return role.userId.toString() === auth.user?.id.toString();
+        return String(role.userId) === auth.user?.id;
       });
     }
 
     // Check users array as fallback
     if (project.users && Array.isArray(project.users)) {
       return project.users.some(
-        (user) => user.id.toString() === auth.user?.id.toString()
+        (user) => String(user.id) === auth.user?.id
       );
     }
 

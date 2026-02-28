@@ -67,6 +67,14 @@
           currentStep = state.step;
         }
 
+        // If explicitly creating a new workspace, skip loading existing org data
+        if (state?.createNew) {
+          orgName = "";
+          hasExistingWorkspace = false;
+          currentStep = 1;
+          return;
+        }
+
         const data = await api.get(
           `/organizations/by-user?userId=${auth.user?.id}`
         );

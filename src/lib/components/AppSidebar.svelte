@@ -20,6 +20,8 @@
   import { api } from "$lib/services/api-client";
   import { _ } from "svelte-i18n";
   import { globalSearchStore } from "$lib/stores/GlobalSearchStore";
+  import { WorkspaceSwitcher } from "$lib/components/workos-widgets";
+  import type { Organization } from "$lib/types/auth";
 
   // Clear project context when AppSidebar is shown (navigating away from a project)
   $effect(() => {
@@ -69,6 +71,7 @@
 
   let projects = $state<any[]>([]);
   let isProjectsOpen = $state<string | undefined>("projects");
+  let userOrganizations = $state<Organization[]>([]);
 
   let canViewOrgAnalytics = $state(false);
 
@@ -143,6 +146,7 @@
     if (auth.currentOrganization) {
       teamManagement.loadUserResources();
       loadProjects();
+      loadUserOrganizations();
 
       // Wait for resources to be loaded before checking roles
       setTimeout(() => {
@@ -198,6 +202,20 @@
     }
   }
 
+  async function loadUserOrganizations() {
+    const orgs = await auth.fetchUserOrganizations();
+    if (orgs) userOrganizations = orgs;
+  }
+
+  async function handleWorkspaceSwitch(org: Organization) {
+    await auth.setCurrentOrganization(org);
+    // If viewing a project/dept from the old org, navigate to dashboard
+    const path = window.location.pathname;
+    if (path.startsWith("/project/")) {
+      navigate("/dashboard", { replace: true });
+    }
+  }
+
   function handleLogout() {
     auth.logout();
   }
@@ -208,22 +226,18 @@
   class="border-r-2 dark:border-dark-border bg-gradient-to-b from-card to-background shadow-[4px_0px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_0px_0px_0px_rgba(44,46,51,0.1)]"
 >
   <Sidebar.Header class="border-b-2 dark:border-dark-border">
-    <div class="flex items-center gap-2 py-2">
+    <div class="py-2 group-data-[collapsible=icon]:hidden">
+      <WorkspaceSwitcher
+        organizations={userOrganizations}
+        currentOrganizationId={auth.currentOrgId}
+        onSwitch={handleWorkspaceSwitch}
+        onCreate={() => navigate("/onboarding", { state: { step: 1, createNew: true } })}
+      />
+    </div>
+    <div class="py-2 hidden group-data-[collapsible=icon]:flex justify-center">
       <Sidebar.Trigger
         class="h-8 w-8 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 p-2 rounded-sm"
       />
-      <Tooltip.Root>
-        <Tooltip.Trigger class="overflow-hidden">
-          <span
-            class="block font-bold text-lg truncate group-data-[collapsible=icon]:hidden pr-2"
-          >
-            {auth.currentOrganization?.name || $_('sidebar.selectWorkspace')}
-          </span>
-        </Tooltip.Trigger>
-        <Tooltip.Content side="right" sideOffset={10} class="z-[9999]">
-          <span>{auth.currentOrganization?.name || $_('sidebar.selectWorkspace')}</span>
-        </Tooltip.Content>
-      </Tooltip.Root>
     </div>
   </Sidebar.Header>
 
@@ -379,26 +393,26 @@
 
   </Sidebar.Content>
 
-  <Sidebar.Footer class="border-t-2 dark:border-dark-border">
+  <Sidebar.Footer class="border-t-2 dark:border-dark-border overflow-hidden">
     <div
-      class="flex items-center gap-2 group-data-[collapsible=icon]:flex-col-reverse group-data-[collapsible=icon]:items-center"
+      class="flex items-center gap-2 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:gap-1"
     >
-      <div class="w-[75%] group-data-[collapsible=icon]:w-full">
+      <div class="flex-1 min-w-0 group-data-[collapsible=icon]:w-full">
         <DropdownMenu.Root>
-          <DropdownMenu.Trigger>
+          <DropdownMenu.Trigger class="w-full">
             <div
-              class="flex items-center gap-3 hover:bg-accent rounded-md hover:text-accent-foreground transition-colors duration-300 px-4 py-2 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:justify-center"
+              class="flex items-center gap-3 hover:bg-accent rounded-md hover:text-accent-foreground transition-colors duration-300 px-3 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
             >
               <!-- Avatar Circle -->
-              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/70 text-primary-foreground flex items-center justify-center text-sm font-medium flex-shrink-0">
+              <div class="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-primary/70 text-primary-foreground flex items-center justify-center text-xs font-medium flex-shrink-0">
                 {auth.user?.firstName?.[0] || ''}{auth.user?.lastName?.[0] || ''}
               </div>
 
               <!-- User Info (hidden when collapsed) -->
               <div
-                class="flex-1 text-left group-data-[collapsible=icon]:hidden whitespace-nowrap"
+                class="flex-1 text-left group-data-[collapsible=icon]:hidden min-w-0"
               >
-                <div class="font-medium text-sm">
+                <div class="font-medium text-sm truncate">
                   {auth.user?.firstName}
                   {auth.user?.lastName}
                 </div>
@@ -420,11 +434,12 @@
         </DropdownMenu.Root>
       </div>
       <div
-        class="w-[25%] flex justify-end group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:justify-center"
+        class="flex items-center gap-1 group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:justify-center"
       >
-        <div class="group-data-[collapsible=icon]:p-2">
-          <DarkmodeToggle />
-        </div>
+        <DarkmodeToggle />
+        <Sidebar.Trigger
+          class="h-7 w-7 hover:bg-accent hover:text-accent-foreground transition-colors duration-300 p-1.5 rounded-sm group-data-[collapsible=icon]:hidden"
+        />
       </div>
     </div>
   </Sidebar.Footer>
