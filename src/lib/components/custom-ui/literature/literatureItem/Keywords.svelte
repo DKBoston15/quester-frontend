@@ -3,16 +3,22 @@
   import { literatureStore } from "$lib/stores/LiteratureStore";
   import type { Literature } from "$lib/types/literature";
   import { _ } from "svelte-i18n";
+  import {
+    normalizeKeyword,
+    dedupeKeywords,
+  } from "$lib/utils/normalize-keyword";
 
   const { literature } = $props<{ literature: Literature }>();
   let keywords = $state<string[]>(
-    literature?.keywords ? [...(literature.keywords as string[])] : []
+    literature?.keywords
+      ? dedupeKeywords(literature.keywords as string[])
+      : []
   );
 
   async function updateKeywords(event: CustomEvent<{ tags: string[] }>) {
     try {
       if (literature?.id) {
-        keywords = event.detail.tags;
+        keywords = dedupeKeywords(event.detail.tags);
         await literatureStore.updateLiterature(literature.id, {
           keywords: JSON.stringify(keywords),
         });
@@ -24,5 +30,10 @@
 </script>
 
 <div id="lit-keywords-input">
-  <TagInput tags={keywords} placeholder={$_('literatureKeywords.placeholder')} on:change={updateKeywords} />
+  <TagInput
+    tags={keywords}
+    placeholder={$_('literatureKeywords.placeholder')}
+    normalize={normalizeKeyword}
+    on:change={updateKeywords}
+  />
 </div>
