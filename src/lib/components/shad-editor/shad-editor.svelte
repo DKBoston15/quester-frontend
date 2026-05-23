@@ -74,6 +74,7 @@
     content: Content;
     showToolbar?: boolean;
     placeholder?: string;
+    spellcheck?: boolean;
   }
 
   let {
@@ -89,6 +90,7 @@
     }),
     showToolbar = true,
     placeholder = "Start writing...",
+    spellcheck = false,
   }: Props = $props();
 
   // Use $state for element but not for editor
@@ -103,6 +105,7 @@
         attributes: {
           class:
             "m-auto p-2 px-6 focus:outline-none flex-1 prose text-foreground min-w-full max-h-full overflow-auto dark:prose-invert *:my-2",
+          spellcheck: spellcheck ? "true" : "false",
         },
         handleKeyDown: (view, event) => {
           const key = event.key;
@@ -349,7 +352,7 @@
 
   <div
     bind:this={element}
-    spellcheck="false"
+    {spellcheck}
     class="h-full w-full flex-1 overflow-y-scroll"
   ></div>
 </div>
