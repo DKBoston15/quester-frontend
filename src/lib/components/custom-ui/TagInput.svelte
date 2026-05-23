@@ -6,9 +6,14 @@
   import { _ } from "svelte-i18n";
 
   const dispatch = createEventDispatcher();
-  const { tags, placeholder = "" } = $props<{
+  const {
+    tags,
+    placeholder = "",
+    normalize,
+  } = $props<{
     tags: string[];
     placeholder?: string;
+    normalize?: (value: string) => string;
   }>();
 
   let localTags = $state<string[]>([...tags]);
@@ -22,8 +27,9 @@
   function handleKeydown(event: KeyboardEvent) {
     if (event.key === "Enter" && inputValue.trim()) {
       event.preventDefault();
-      if (!localTags.includes(inputValue.trim())) {
-        localTags = [...localTags, inputValue.trim()];
+      const candidate = normalize ? normalize(inputValue) : inputValue.trim();
+      if (candidate && !localTags.includes(candidate)) {
+        localTags = [...localTags, candidate];
         dispatch("change", { tags: localTags });
       }
       inputValue = "";

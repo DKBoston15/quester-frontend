@@ -6,6 +6,10 @@
   import { X } from "lucide-svelte";
   import { _ } from "svelte-i18n";
   import { get } from "svelte/store";
+  import {
+    normalizeKeyword,
+    dedupeKeywords,
+  } from "$lib/utils/normalize-keyword";
 
   // Helper function for imperative translation access
   const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
@@ -19,7 +23,7 @@
   // Sync initialKeywords into local state when they change (once)
   $effect(() => {
     if (initialKeywords.length > 0 && !initialSyncDone) {
-      keywords = [...initialKeywords].slice(0, 7);
+      keywords = dedupeKeywords(initialKeywords).slice(0, 7);
       initialSyncDone = true;
     }
   });
@@ -33,7 +37,7 @@
   }
 
   function addCurrentKeyword() {
-    const keyword = currentInput.trim();
+    const keyword = normalizeKeyword(currentInput);
     if (!keyword) return;
 
     if (keywords.includes(keyword)) {

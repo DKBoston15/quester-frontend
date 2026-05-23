@@ -130,6 +130,27 @@
     });
   }
 
+  // Union of the project's predefined designs and any "orphan" selections
+  // currently on the literature (selections that aren't in the project's list,
+  // typically auto-identified by older uploads). Returning them as dropdown
+  // items lets users deselect them and save — without orphans, legacy data has
+  // no removal affordance because the multi-select only renders project items.
+  function getDropdownOptions(type: DesignType): Array<{ name: string; isOrphan: boolean }> {
+    const projectOptions = projectStore.designs[type] || [];
+    const projectLower = new Set(
+      projectOptions.map((option) => option.name.toLowerCase())
+    );
+    const items: Array<{ name: string; isOrphan: boolean }> = projectOptions.map(
+      (option) => ({ name: option.name, isOrphan: false })
+    );
+    for (const selection of localDesigns[type].selections) {
+      if (!projectLower.has(selection.toLowerCase())) {
+        items.push({ name: selection, isOrphan: true });
+      }
+    }
+    return items;
+  }
+
   function updateSelections(type: DesignType, selections: string[]) {
     localDesigns = {
       ...localDesigns,
@@ -369,9 +390,11 @@
                           ? [value as string]
                           : []
                     )}
-                  items={(projectStore.designs[type] || []).map((option) => ({
+                  items={getDropdownOptions(type).map((option) => ({
                     value: option.name,
-                    label: getTranslatedDesignName(type, option.name),
+                    label: option.isOrphan
+                      ? `${option.name} (not in project list)`
+                      : getTranslatedDesignName(type, option.name),
                   }))}
                 >
                   <Select.Trigger
@@ -387,15 +410,22 @@
                     class="z-50 max-h-64 w-[var(--bits-select-anchor-width)] select-none overflow-y-auto overflow-x-hidden rounded-md border bg-background p-1 shadow-lg"
                     sideOffset={8}
                   >
-                    {#if (projectStore.designs[type] || []).length > 0}
-                      {#each projectStore.designs[type] || [] as option}
+                    {#each getDropdownOptions(type) as option}
+                      {#if option.isOrphan}
+                        <Select.Item value={option.name} label={`${option.name} (not in project list)`}>
+                          {#snippet children()}
+                            <span class="italic text-muted-foreground">{option.name}</span>
+                            <span class="ml-2 text-xs text-muted-foreground">(not in project list)</span>
+                          {/snippet}
+                        </Select.Item>
+                      {:else}
                         <Select.Item value={option.name} label={getTranslatedDesignName(type, option.name)} />
-                      {/each}
+                      {/if}
                     {:else}
                       <div class="px-3 py-2 text-sm text-muted-foreground">
                         {$_('literatureDesigns.noSavedDesigns', { values: { type: $_(`designTypes.${type}`) } })}
                       </div>
-                    {/if}
+                    {/each}
                   </Select.Content>
                 </Select.Root>
                 <p class="text-xs text-muted-foreground">

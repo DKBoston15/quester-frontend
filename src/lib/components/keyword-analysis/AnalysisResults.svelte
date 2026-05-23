@@ -16,6 +16,7 @@
   import { toast } from "svelte-sonner";
   import { _ } from "svelte-i18n";
   import { get } from "svelte/store";
+  import { dedupeKeywords } from "$lib/utils/normalize-keyword";
 
   // Helper function for imperative translation access
   const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
@@ -55,7 +56,7 @@
 
       return {
         report: report || { report: "" },
-        keywords: Array.isArray(keywords) ? keywords : [],
+        keywords: Array.isArray(keywords) ? dedupeKeywords(keywords) : [],
         frequencyData: frequencyData || {},
       };
     } catch (error) {

@@ -6,6 +6,7 @@
   import { Button } from "$lib/components/ui/button";
   import { DownloadIcon } from "lucide-svelte";
   import { _ } from "svelte-i18n";
+  import { dedupeKeywords } from "$lib/utils/normalize-keyword";
 
   // Define a consistent color scheme for up to 10 keywords
   const colorScheme = [
@@ -50,7 +51,7 @@
           : rawFrequencyData || {};
 
       return {
-        keywords: Array.isArray(newKeywords) ? newKeywords : [],
+        keywords: Array.isArray(newKeywords) ? dedupeKeywords(newKeywords) : [],
         frequencyData: newFrequencyData || {},
       };
     } catch (error) {
