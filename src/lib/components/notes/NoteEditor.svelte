@@ -616,7 +616,8 @@
     <div class="flex-1" style={`--note-header-offset: ${headerHeight}px`}>
       <ShadEditor
         {content}
-on:contentChange={(e) => {
+        spellcheck={true}
+        on:contentChange={(e) => {
           // Update local content from editor
           content = e.detail;
           // Ensure autosave is scheduled immediately on user input
