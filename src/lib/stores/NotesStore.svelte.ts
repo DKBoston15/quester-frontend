@@ -413,6 +413,12 @@
         return;
       }
 
+      // Clear stale data immediately when switching projects
+      if (loadedProjectId && loadedProjectId !== projectId) {
+        notes = [];
+        activeNoteId = null;
+      }
+
       isLoading = true;
       error = null;
 

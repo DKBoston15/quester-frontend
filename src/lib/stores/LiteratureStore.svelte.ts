@@ -60,6 +60,11 @@ function normalizeLiteratureDesignFields<T extends Partial<Literature>>(
         return;
       }
 
+      // Clear stale data immediately when switching projects
+      if (loadedProjectId && loadedProjectId !== projectId) {
+        literatureData = [];
+      }
+
       isLoading = true;
       error = null;
 

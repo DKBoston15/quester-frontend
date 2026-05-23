@@ -203,6 +203,15 @@
         return;
       }
 
+      // Clear stale data immediately when switching projects
+      if (loadedProjectId && loadedProjectId !== projectId) {
+        questions = [];
+        topLevelQuestions = [];
+        allQuestions = [];
+        selectedQuestion = null;
+        versions = [];
+      }
+
       if (!force && loadedProjectId === projectId && !error) {
         return;
       }
