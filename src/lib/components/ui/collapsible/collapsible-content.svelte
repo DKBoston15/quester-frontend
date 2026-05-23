@@ -19,7 +19,7 @@
 <CollapsiblePrimitive.Content
   bind:ref
   class={cn(
-    "overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down",
+    "overflow-hidden",
     className
   )}
   {...restProps}
