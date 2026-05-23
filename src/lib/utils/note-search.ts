@@ -164,3 +164,52 @@ export function getNotePreview(content: unknown, maxLength: number = 100): strin
     ? `${plainText.slice(0, maxLength)}...`
     : plainText;
 }
+
+export function buildNoteSearchSnippet(
+  content: string,
+  query: string,
+  options?: {
+    contextBefore?: number;
+    contextAfter?: number;
+    fallbackLength?: number;
+  }
+): string {
+  const normalizedContent = normalizeWhitespace(content);
+  if (!normalizedContent) return "";
+
+  const {
+    contextBefore = 18,
+    contextAfter = 64,
+    fallbackLength = 96,
+  } = options ?? {};
+
+  const normalizedQuery = normalizeWhitespace(query);
+  if (!normalizedQuery) {
+    return normalizedContent.length > fallbackLength
+      ? `${normalizedContent.slice(0, fallbackLength)}...`
+      : normalizedContent;
+  }
+
+  const lowerContent = normalizedContent.toLowerCase();
+  const lowerQuery = normalizedQuery.toLowerCase();
+  const index = lowerContent.indexOf(lowerQuery);
+
+  if (index === -1) {
+    return normalizedContent.length > fallbackLength
+      ? `${normalizedContent.slice(0, fallbackLength)}...`
+      : normalizedContent;
+  }
+
+  const start = Math.max(0, index - contextBefore);
+  const end = Math.min(
+    normalizedContent.length,
+    index + normalizedQuery.length + contextAfter
+  );
+
+  let snippet = normalizedContent.slice(start, end).trim();
+
+  if (start > 0) snippet = `...${snippet}`;
+  if (end < normalizedContent.length) snippet = `${snippet}...`;
+
+  return snippet;
+}

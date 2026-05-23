@@ -29,6 +29,8 @@
   import { tick } from "svelte";
   import { EmptyState } from "$lib/components/ui/empty-state";
   import {
+    buildNoteSearchSnippet,
+    extractNoteContentText,
     formatNoteFriendlyDate,
     getNotePreview,
     noteMatchesQuery,
@@ -312,6 +314,14 @@
     return (
       filteredByType
         .filter((note) => noteMatchesQuery(note, query, "Other"))
+        .map((note) => {
+          const contentText = extractNoteContentText(note.content);
+
+          return {
+            ...note,
+            contentSnippet: buildNoteSearchSnippet(contentText, query),
+          };
+        })
         // Sort by updated_at date (most recent first)
         .sort(
           (a, b) =>
@@ -559,7 +569,7 @@
                             {note.name || $_('noteList.untitledNote')}
                           {/if}
                         </h4>
-                        <p class="text-sm text-muted-foreground line-clamp-2 break-words break-anywhere">
+                        <p class={`text-sm text-muted-foreground break-words break-anywhere ${isSearchActive ? "line-clamp-3" : "line-clamp-2"}`}>
                           {#if isSearchActive && "contentSnippet" in note}
                             {@render renderHighlightedText(note.contentSnippet as string, `${note.id}-snippet`)}
                           {:else}

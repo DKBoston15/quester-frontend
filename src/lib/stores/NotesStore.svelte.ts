@@ -3,6 +3,7 @@
   import { auth } from "$lib/stores/AuthStore";
   import { api, isAuthError } from "../services/api-client";
   import {
+    buildNoteSearchSnippet,
     extractNoteContentText,
     formatNoteFriendlyDate,
     noteMatchesQuery,
@@ -38,30 +39,6 @@
   // Search highlighting functionality
   let highlightedNotes = $state<Note[]>([]);
 
-  // Create a snippet of text around the search term
-  function getSnippet(
-    content: string,
-    query: string,
-    snippetLength: number = 150
-  ): string {
-    if (!query || !content) return content;
-
-    const lowerContent = content.toLowerCase();
-    const lowerQuery = query.toLowerCase();
-    const index = lowerContent.indexOf(lowerQuery);
-
-    if (index === -1) return content.slice(0, snippetLength);
-
-    const start = Math.max(0, index - snippetLength / 2);
-    const end = Math.min(content.length, start + snippetLength);
-    let snippet = content.slice(start, end);
-
-    if (start > 0) snippet = "..." + snippet;
-    if (end < content.length) snippet += "...";
-
-    return snippet;
-  }
-
   // Process notes for highlighting based on search query
   function processNotesForHighlighting(
     notesToProcess: Note[],
@@ -79,7 +56,7 @@
           const contentText = extractNoteContentText(note.content);
 
           const highlightedName = note.name || t('stores.notes.untitledNote');
-          const contentSnippet = getSnippet(contentText, query);
+          const contentSnippet = buildNoteSearchSnippet(contentText, query);
 
           const sectionTypeLabel =
             typeof note.section_type === "object" && note.section_type !== null

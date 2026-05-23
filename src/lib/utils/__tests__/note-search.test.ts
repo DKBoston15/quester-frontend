@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildNoteSearchSnippet,
   extractNoteContentText,
   getNotePreview,
   noteMatchesQuery,
@@ -90,5 +91,16 @@ describe("note-search", () => {
     expect(getNotePreview("<p>Alpha <strong>Beta</strong> Gamma</p>", 20)).toBe(
       "Alpha Beta Gamma"
     );
+  });
+
+  it("builds a query-focused snippet instead of defaulting to the start of the note", () => {
+    const content =
+      "dfgskjasdfaa dfg dsfg dfgs dfgs dsfg dgsf dfgs dgsf dfgs dsgf bsadfginadfg adfg;kjndfsakljadfskj Hello genuis!";
+
+    const snippet = buildNoteSearchSnippet(content, "Hello");
+
+    expect(snippet).toContain("Hello genuis!");
+    expect(snippet.startsWith("...")).toBe(true);
+    expect(snippet).not.toContain("dfgskjasdfaa");
   });
 });
