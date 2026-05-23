@@ -28,11 +28,23 @@
   import { Portal } from "bits-ui";
   import { tick } from "svelte";
   import { EmptyState } from "$lib/components/ui/empty-state";
+  import {
+    buildNoteSearchSnippet,
+    extractNoteContentText,
+    formatNoteFriendlyDate,
+    getNotePreview,
+    noteMatchesQuery,
+  } from "$lib/utils/note-search";
   import { _ } from "svelte-i18n";
   import { get } from "svelte/store";
 
   // Helper for imperative translation access
   const t = (key: string) => get(_)(key);
+
+  type HighlightSegment = {
+    text: string;
+    matched: boolean;
+  };
 
   // Map section type values to translation keys
   const sectionTypeTranslationKeys: Record<string, string> = {
@@ -286,8 +298,6 @@
 
   // Perform a quick local search for immediate feedback
   function performLocalSearch(notes: Note[], query: string): Note[] {
-    const lowerQuery = query.toLowerCase();
-
     // First filter by type based on the current filter
     let filteredByType = notes;
     if (notesStore.filter.type !== "all") {
@@ -303,92 +313,14 @@
 
     return (
       filteredByType
-        .filter((note) => {
-          // Search only in title, content text (not raw JSON), and date
-          const nameMatch = (note.name || "")
-            .toLowerCase()
-            .includes(lowerQuery);
+        .filter((note) => noteMatchesQuery(note, query, "Other"))
+        .map((note) => {
+          const contentText = extractNoteContentText(note.content);
 
-          // Extract text from content using the same logic as getPreview
-          let contentText = "";
-          try {
-            const content = note.content;
-
-            if (typeof content === "string") {
-              try {
-                // Try to parse as JSON
-                const parsed = JSON.parse(content);
-
-                // If it's a TipTap document
-                if (
-                  parsed.type === "doc" &&
-                  parsed.content &&
-                  Array.isArray(parsed.content)
-                ) {
-                  for (const node of parsed.content) {
-                    if (node.content && Array.isArray(node.content)) {
-                      for (const contentNode of node.content) {
-                        if (contentNode.type === "text" && contentNode.text) {
-                          contentText += contentNode.text + " ";
-                        }
-                      }
-                    }
-                  }
-                }
-              } catch (e) {
-                // Not valid JSON, treat as text
-                const tmp = document.createElement("DIV");
-                tmp.innerHTML = content;
-                contentText = tmp.textContent || tmp.innerText || content;
-              }
-            } else if (typeof content === "object" && content !== null) {
-              const typedContent = content as any;
-              if (
-                typedContent.type === "doc" &&
-                typedContent.content &&
-                Array.isArray(typedContent.content)
-              ) {
-                for (const node of typedContent.content) {
-                  if (node.content && Array.isArray(node.content)) {
-                    for (const contentNode of node.content) {
-                      if (contentNode.type === "text" && contentNode.text) {
-                        contentText += contentNode.text + " ";
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          } catch (err) {
-            console.warn("Error extracting text for search:", err);
-          }
-
-          const contentMatch = contentText.toLowerCase().includes(lowerQuery);
-
-          // Check section_type match
-          let sectionTypeLabel = "Other";
-          if (
-            typeof note.section_type === "object" &&
-            note.section_type !== null
-          ) {
-            sectionTypeLabel =
-              (note.section_type as { value: string; label: string }).label ||
-              "Other";
-          } else if (typeof note.section_type === "string") {
-            sectionTypeLabel = note.section_type;
-          }
-
-          const sectionMatch = sectionTypeLabel
-            .toLowerCase()
-            .includes(lowerQuery);
-
-          // Use friendly date format for consistent searching
-          const friendlyDate = note.updated_at
-            ? formatFriendlyDate(new Date(note.updated_at))
-            : "";
-          const dateMatch = friendlyDate.toLowerCase().includes(lowerQuery);
-
-          return nameMatch || contentMatch || sectionMatch || dateMatch;
+          return {
+            ...note,
+            contentSnippet: buildNoteSearchSnippet(contentText, query),
+          };
         })
         // Sort by updated_at date (most recent first)
         .sort(
@@ -401,21 +333,7 @@
 
   // Format date in a friendly way (e.g., "Feb 25, 2024")
   function formatFriendlyDate(date: Date): string {
-    const months = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-    return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+    return formatNoteFriendlyDate(date);
   }
 
   // Get formatted date
@@ -434,80 +352,57 @@
   // Get preview text
   function getPreview(content: string | any) {
     try {
-      if (!content) return "";
-
-      // Handle string content that might be JSON
-      if (typeof content === "string") {
-        try {
-          // Try to parse as JSON
-          const parsed = JSON.parse(content);
-
-          // If it's a TipTap document
-          if (
-            parsed.type === "doc" &&
-            parsed.content &&
-            Array.isArray(parsed.content)
-          ) {
-            let text = "";
-
-            // Process each node in the document
-            for (const node of parsed.content) {
-              if (node.content && Array.isArray(node.content)) {
-                for (const contentNode of node.content) {
-                  if (contentNode.type === "text" && contentNode.text) {
-                    text += contentNode.text + " ";
-                  }
-                }
-              }
-            }
-
-            if (text.trim()) {
-              return text.slice(0, 100) + (text.length > 100 ? "..." : "");
-            }
-          }
-        } catch (e) {
-          // Not valid JSON, treat as text
-          const tmp = document.createElement("DIV");
-          tmp.innerHTML = content;
-          const plainText = tmp.textContent || tmp.innerText || content;
-          return (
-            plainText.slice(0, 100) + (plainText.length > 100 ? "..." : "")
-          );
-        }
-      }
-
-      // Handle direct object content (already parsed JSON)
-      if (typeof content === "object" && content !== null) {
-        if (
-          content.type === "doc" &&
-          content.content &&
-          Array.isArray(content.content)
-        ) {
-          let text = "";
-
-          // Process each node in the document
-          for (const node of content.content) {
-            if (node.content && Array.isArray(node.content)) {
-              for (const contentNode of node.content) {
-                if (contentNode.type === "text" && contentNode.text) {
-                  text += contentNode.text + " ";
-                }
-              }
-            }
-          }
-
-          if (text.trim()) {
-            return text.slice(0, 100) + (text.length > 100 ? "..." : "");
-          }
-        }
-      }
-
-      // If we couldn't extract any text, return a default message
-      return $_('noteList.noPreviewAvailable');
+      const preview = getNotePreview(content);
+      return preview || $_('noteList.noPreviewAvailable');
     } catch (err) {
       console.warn("Error getting preview:", err);
       return $_('noteList.errorExtractingPreview');
     }
+  }
+
+  function getHighlightSegments(
+    text: string,
+    query: string
+  ): HighlightSegment[] {
+    if (!text) return [];
+
+    const trimmedQuery = query.trim();
+    if (!trimmedQuery) {
+      return [{ text, matched: false }];
+    }
+
+    const escapedQuery = trimmedQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(escapedQuery, "gi");
+    const segments: HighlightSegment[] = [];
+    let lastIndex = 0;
+
+    for (const match of text.matchAll(regex)) {
+      const matchText = match[0];
+      const matchIndex = match.index ?? 0;
+
+      if (matchIndex > lastIndex) {
+        segments.push({
+          text: text.slice(lastIndex, matchIndex),
+          matched: false,
+        });
+      }
+
+      segments.push({
+        text: matchText,
+        matched: true,
+      });
+
+      lastIndex = matchIndex + matchText.length;
+    }
+
+    if (lastIndex < text.length) {
+      segments.push({
+        text: text.slice(lastIndex),
+        matched: false,
+      });
+    }
+
+    return segments.length > 0 ? segments : [{ text, matched: false }];
   }
 
   // Close popover and refocus trigger
@@ -530,6 +425,16 @@
 </script>
 
 <div class="flex flex-col h-full">
+  {#snippet renderHighlightedText(text: string, keyPrefix: string)}
+    {#each getHighlightSegments(text, searchInput.trim()) as segment, index (`${keyPrefix}-${index}`)}
+      {#if segment.matched}
+        <mark>{segment.text}</mark>
+      {:else}
+        {segment.text}
+      {/if}
+    {/each}
+  {/snippet}
+
   <!-- Search Bar and Literature Filter -->
   <div class="p-4 border-b space-y-2">
     <div class="flex gap-2">
@@ -635,7 +540,7 @@
   <!-- Note List -->
   <ScrollArea class="flex-1">
     <div class="p-4 space-y-6">
-      {#each groupedNotes as [date, notes]}
+      {#each groupedNotes as [date, notes] (date)}
         {#if notes.length > 0}
           <div>
             <h3 class="mb-2 px-2 text-sm font-medium text-muted-foreground">
@@ -659,14 +564,14 @@
                       <div class="space-y-1 flex-1 mr-2 min-w-0">
                         <h4 class="font-medium leading-none break-words break-anywhere">
                           {#if isSearchActive && "highlightedName" in note}
-                            {@html note.highlightedName}
+                            {@render renderHighlightedText(note.highlightedName as string, `${note.id}-name`)}
                           {:else}
                             {note.name || $_('noteList.untitledNote')}
                           {/if}
                         </h4>
-                        <p class="text-sm text-muted-foreground line-clamp-2 break-words break-anywhere">
+                        <p class={`text-sm text-muted-foreground break-words break-anywhere ${isSearchActive ? "line-clamp-3" : "line-clamp-2"}`}>
                           {#if isSearchActive && "contentSnippet" in note}
-                            {@html note.contentSnippet}
+                            {@render renderHighlightedText(note.contentSnippet as string, `${note.id}-snippet`)}
                           {:else}
                             {getPreview(note.content)}
                           {/if}
@@ -737,7 +642,7 @@
                             class="text-xs badge-section-type"
                           >
                             {#if isSearchActive && "highlightedSectionType" in note}
-                              {@html note.highlightedSectionType}
+                              {@render renderHighlightedText(note.highlightedSectionType as string, `${note.id}-section`)}
                             {:else}
                               {getTranslatedSectionType(note.section_type)}
                             {/if}
@@ -778,7 +683,7 @@
                       >
                         <Clock class="h-3 w-3" />
                         {#if isSearchActive && "highlightedDate" in note}
-                          {@html note.highlightedDate}
+                          {@render renderHighlightedText(note.highlightedDate as string, `${note.id}-date`)}
                         {:else}
                           {getFormattedDate(note.updated_at)}
                         {/if}

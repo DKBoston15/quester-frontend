@@ -2,10 +2,22 @@
   import type { Note } from "$lib/types";
   import { auth } from "$lib/stores/AuthStore";
   import { api, isAuthError } from "../services/api-client";
+  import {
+    buildNoteSearchSnippet,
+    extractNoteContentText,
+    formatNoteFriendlyDate,
+    noteMatchesQuery,
+  } from "$lib/utils/note-search";
   import { _ } from "svelte-i18n";
   import { get } from "svelte/store";
 
-  const t = (key: string, options?: { values?: Record<string, unknown> }) => get(_)(key, options);
+  type TranslationValues = Record<
+    string,
+    string | number | boolean | Date | null | undefined
+  >;
+
+  const t = (key: string, options?: { values?: TranslationValues }) =>
+    get(_)(key, options);
 
   type FilterType = "literature" | "research" | "all" | "unlinked" | "recent";
   type FilterState = {
@@ -23,136 +35,9 @@
   let filter = $state<FilterState>({
     type: "literature",
   });
-  let localSearchResults = $state<Note[]>([]);
-  let activeLiteratureFilter = $state<string | undefined>(undefined);
 
   // Search highlighting functionality
   let highlightedNotes = $state<Note[]>([]);
-
-  // Strip HTML tags from content
-  function stripHtmlTags(content: string | any): string {
-    if (!content) return "";
-
-    if (typeof content === "object") {
-      try {
-        // Extract text from JSON content
-        return extractTextFromJson(content);
-      } catch (e) {
-        return "";
-      }
-    }
-
-    if (typeof content !== "string") return String(content);
-
-    const tmp = document.createElement("DIV");
-    tmp.innerHTML = content;
-    return tmp.textContent || tmp.innerText || "";
-  }
-
-  // Extract text from JSON content
-  function extractTextFromJson(json: any): string {
-    if (!json) return "";
-    let text = "";
-
-    try {
-      // Handle string JSON
-      if (typeof json === "string") {
-        try {
-          json = JSON.parse(json);
-        } catch (e) {
-          return json;
-        }
-      }
-
-      // Handle TipTap document format
-      if (json.type === "doc" && json.content && Array.isArray(json.content)) {
-        // Process each node in the document
-        json.content.forEach((node: any) => {
-          if (node.type === "paragraph" || node.type === "heading") {
-            // Extract text from paragraph or heading content
-            if (node.content && Array.isArray(node.content)) {
-              node.content.forEach((textNode: any) => {
-                if (textNode.type === "text" && textNode.text) {
-                  text += textNode.text + " ";
-                }
-              });
-              text += "\n";
-            }
-          } else if (node.type === "text" && node.text) {
-            // Direct text node
-            text += node.text + " ";
-          } else if (node.content && Array.isArray(node.content)) {
-            // Other node types with content
-            node.content.forEach((child: any) => {
-              if (child.type === "text" && child.text) {
-                text += child.text + " ";
-              }
-            });
-          }
-        });
-        return text.trim();
-      }
-
-      // Fallback for other JSON structures
-      if (json.content && Array.isArray(json.content)) {
-        json.content.forEach((node: any) => {
-          // Handle text nodes
-          if (node.text) {
-            text += node.text + " ";
-          }
-          // Handle paragraph/headings with text content
-          else if (node.content && Array.isArray(node.content)) {
-            node.content.forEach((child: any) => {
-              if (child.text) {
-                text += child.text + " ";
-              }
-            });
-            text += " ";
-          }
-        });
-      } else if (json.text) {
-        text += json.text + " ";
-      }
-
-      return text.trim();
-    } catch (e) {
-      console.error("Error extracting text from JSON:", e);
-      return "";
-    }
-  }
-
-  // Highlight search terms in text
-  function highlightText(text: string, query: string): string {
-    if (!query || !text) return text;
-
-    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const regex = new RegExp(`(${escapedQuery})`, "gi");
-    return text.replace(regex, "<mark>$1</mark>");
-  }
-
-  // Create a snippet of text around the search term
-  function getSnippet(
-    content: string,
-    query: string,
-    snippetLength: number = 150
-  ): string {
-    if (!query || !content) return content;
-
-    const lowerContent = content.toLowerCase();
-    const lowerQuery = query.toLowerCase();
-    const index = lowerContent.indexOf(lowerQuery);
-
-    if (index === -1) return content.slice(0, snippetLength);
-
-    const start = Math.max(0, index - snippetLength / 2);
-    const end = Math.min(content.length, start + snippetLength);
-    let snippet = content.slice(start, end);
-
-    if (start > 0) snippet = "..." + snippet;
-    if (end < content.length) snippet += "...";
-
-    return highlightText(snippet, query);
-  }
 
   // Process notes for highlighting based on search query
   function processNotesForHighlighting(
@@ -161,188 +46,32 @@
   ): Note[] {
     if (!query) return notesToProcess;
 
+    const fallbackSectionLabel = t("stores.notes.other");
+
     // Only process notes that actually match the query
     return (
       notesToProcess
-        .filter((note) => {
-          // Extract text from content using improved logic
-          let contentText = "";
-          try {
-            const content = note.content;
-
-            if (typeof content === "string") {
-              try {
-                // Try to parse as JSON
-                const parsed = JSON.parse(content) as any;
-
-                // If it's a TipTap document
-                if (
-                  parsed.type === "doc" &&
-                  parsed.content &&
-                  Array.isArray(parsed.content)
-                ) {
-                  for (const node of parsed.content) {
-                    if (node.content && Array.isArray(node.content)) {
-                      for (const contentNode of node.content) {
-                        if (contentNode.type === "text" && contentNode.text) {
-                          contentText += contentNode.text + " ";
-                        }
-                      }
-                    }
-                  }
-                }
-              } catch (e) {
-                // Not valid JSON, treat as text
-                const tmp = document.createElement("DIV");
-                tmp.innerHTML = content;
-                contentText = tmp.textContent || tmp.innerText || content;
-              }
-            } else if (typeof content === "object" && content !== null) {
-              const typedContent = content as any;
-              if (
-                typedContent.type === "doc" &&
-                typedContent.content &&
-                Array.isArray(typedContent.content)
-              ) {
-                for (const node of typedContent.content) {
-                  if (node.content && Array.isArray(node.content)) {
-                    for (const contentNode of node.content) {
-                      if (contentNode.type === "text" && contentNode.text) {
-                        contentText += contentNode.text + " ";
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          } catch (err) {
-            console.warn("Error extracting text for search highlighting:", err);
-          }
-
-          const nameMatch = (note.name || "")
-            .toLowerCase()
-            .includes(query.toLowerCase());
-          const contentMatch = contentText
-            .toLowerCase()
-            .includes(query.toLowerCase());
-
-          // Handle section_type which could be a string or an object
-          let sectionTypeLabel = t('stores.notes.other');
-          if (
-            typeof note.section_type === "object" &&
-            note.section_type !== null
-          ) {
-            sectionTypeLabel =
-              (note.section_type as { value: string; label: string }).label ||
-              t('stores.notes.other');
-          } else if (typeof note.section_type === "string") {
-            sectionTypeLabel = note.section_type;
-          }
-
-          const sectionMatch = sectionTypeLabel
-            .toLowerCase()
-            .includes(query.toLowerCase());
-
-          // Format date in a friendly way for consistent searching
-          const friendlyDate = note.updated_at
-            ? formatFriendlyDate(new Date(note.updated_at))
-            : "";
-          const dateMatch = friendlyDate
-            .toLowerCase()
-            .includes(query.toLowerCase());
-
-          return nameMatch || contentMatch || sectionMatch || dateMatch;
-        })
+        .filter((note) => noteMatchesQuery(note, query, fallbackSectionLabel))
         .map((note) => {
-          // Extract text from content for snippet
-          let contentText = "";
-          try {
-            const content = note.content;
+          const contentText = extractNoteContentText(note.content);
 
-            if (typeof content === "string") {
-              try {
-                // Try to parse as JSON
-                const parsed = JSON.parse(content) as any;
+          const highlightedName = note.name || t('stores.notes.untitledNote');
+          const contentSnippet = buildNoteSearchSnippet(contentText, query);
 
-                // If it's a TipTap document
-                if (
-                  parsed.type === "doc" &&
-                  parsed.content &&
-                  Array.isArray(parsed.content)
-                ) {
-                  for (const node of parsed.content) {
-                    if (node.content && Array.isArray(node.content)) {
-                      for (const contentNode of node.content) {
-                        if (contentNode.type === "text" && contentNode.text) {
-                          contentText += contentNode.text + " ";
-                        }
-                      }
-                    }
-                  }
-                }
-              } catch (e) {
-                // Not valid JSON, treat as text
-                const tmp = document.createElement("DIV");
-                tmp.innerHTML = content;
-                contentText = tmp.textContent || tmp.innerText || content;
-              }
-            } else if (typeof content === "object" && content !== null) {
-              const typedContent = content as any;
-              if (
-                typedContent.type === "doc" &&
-                typedContent.content &&
-                Array.isArray(typedContent.content)
-              ) {
-                for (const node of typedContent.content) {
-                  if (node.content && Array.isArray(node.content)) {
-                    for (const contentNode of node.content) {
-                      if (contentNode.type === "text" && contentNode.text) {
-                        contentText += contentNode.text + " ";
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          } catch (err) {
-            console.warn("Error extracting text for search snippet:", err);
-          }
+          const sectionTypeLabel =
+            typeof note.section_type === "object" && note.section_type !== null
+              ? note.section_type.label ||
+                note.section_type.value ||
+                fallbackSectionLabel
+              : note.section_type || fallbackSectionLabel;
 
-          const highlightedName = highlightText(
-            note.name || t('stores.notes.untitledNote'),
-            query
-          );
-          const contentSnippet = getSnippet(contentText, query);
+          const highlightedSectionType = sectionTypeLabel;
 
-          // Handle section_type which could be a string or an object
-          let sectionTypeLabel = t('stores.notes.other');
-          if (
-            typeof note.section_type === "object" &&
-            note.section_type !== null
-          ) {
-            sectionTypeLabel =
-              (note.section_type as { value: string; label: string }).label ||
-              t('stores.notes.other');
-          } else if (typeof note.section_type === "string") {
-            sectionTypeLabel = note.section_type;
-          }
-
-          const sectionMatch = sectionTypeLabel
-            .toLowerCase()
-            .includes(query.toLowerCase());
-
-          const highlightedSectionType = highlightText(sectionTypeLabel, query);
-
-          // Use friendly date format for highlighting
+          // Preserve a friendly date string for search result rendering
           const friendlyDate = note.updated_at
-            ? formatFriendlyDate(new Date(note.updated_at))
+            ? formatNoteFriendlyDate(new Date(note.updated_at))
             : "";
-          
-          // Only highlight date if it actually matches the query
-          const dateMatch = friendlyDate
-            .toLowerCase()
-            .includes(query.toLowerCase());
-          const highlightedDate = dateMatch ? highlightText(friendlyDate, query) : friendlyDate;
+          const highlightedDate = friendlyDate;
           return {
             ...note,
             highlightedName,
@@ -359,25 +88,6 @@
             new Date(a.updated_at || 0).getTime()
         )
     );
-  }
-
-  // Format date in a friendly way (e.g., "Feb 25, 2024")
-  function formatFriendlyDate(date: Date): string {
-    const months = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-    return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
   }
 
   export const notesStore = {
@@ -680,98 +390,10 @@
         return;
       }
 
-      // Filter notes based on search query
-      const filteredNotes = notes.filter((note) => {
-        // Check name match
-        const nameMatch = note.name
-          ?.toLowerCase()
-          .includes(query.toLowerCase());
-
-        // Extract text from content using improved logic
-        let contentText = "";
-        try {
-          const content = note.content;
-
-          if (typeof content === "string") {
-            try {
-              // Try to parse as JSON
-              const parsed = JSON.parse(content) as any;
-
-              // If it's a TipTap document
-              if (
-                parsed.type === "doc" &&
-                parsed.content &&
-                Array.isArray(parsed.content)
-              ) {
-                for (const node of parsed.content) {
-                  if (node.content && Array.isArray(node.content)) {
-                    for (const contentNode of node.content) {
-                      if (contentNode.type === "text" && contentNode.text) {
-                        contentText += contentNode.text + " ";
-                      }
-                    }
-                  }
-                }
-              }
-            } catch (e) {
-              // Not valid JSON, treat as text
-              const tmp = document.createElement("DIV");
-              tmp.innerHTML = content;
-              contentText = tmp.textContent || tmp.innerText || content;
-            }
-          } else if (typeof content === "object" && content !== null) {
-            const typedContent = content as any;
-            if (
-              typedContent.type === "doc" &&
-              typedContent.content &&
-              Array.isArray(typedContent.content)
-            ) {
-              for (const node of typedContent.content) {
-                if (node.content && Array.isArray(node.content)) {
-                  for (const contentNode of node.content) {
-                    if (contentNode.type === "text" && contentNode.text) {
-                      contentText += contentNode.text + " ";
-                    }
-                  }
-                }
-              }
-            }
-          }
-        } catch (err) {
-          console.warn("Error extracting text for search:", err);
-        }
-
-        const contentMatch = contentText
-          .toLowerCase()
-          .includes(query.toLowerCase());
-
-        // Handle section_type which could be a string or an object
-        let sectionTypeLabel = "Other";
-        if (
-          typeof note.section_type === "object" &&
-          note.section_type !== null
-        ) {
-          sectionTypeLabel =
-            (note.section_type as { value: string; label: string }).label ||
-            "Other";
-        } else if (typeof note.section_type === "string") {
-          sectionTypeLabel = note.section_type;
-        }
-
-        const sectionMatch = sectionTypeLabel
-          .toLowerCase()
-          .includes(query.toLowerCase());
-
-        // Use friendly date format for consistent searching
-        const friendlyDate = note.updated_at
-          ? formatFriendlyDate(new Date(note.updated_at))
-          : "";
-        const dateMatch = friendlyDate
-          .toLowerCase()
-          .includes(query.toLowerCase());
-
-        return nameMatch || contentMatch || sectionMatch || dateMatch;
-      });
+      const fallbackSectionLabel = t("stores.notes.other");
+      const filteredNotes = notes.filter((note) =>
+        noteMatchesQuery(note, query, fallbackSectionLabel)
+      );
 
       // Process filtered notes for highlighting
       highlightedNotes = processNotesForHighlighting(filteredNotes, query);
